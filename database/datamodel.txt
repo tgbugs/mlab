@@ -1,0 +1,100 @@
+#see odML terminologies for ideas for some of this
+#somehow this seems like it is about to be integrated with the expman...
+#not reinventing the wheel, rather important here
+#this should contain pointers to things in the rest of the world, we have google/internet after all, though in some ways this might make filing and keeping track of things easier...
+
+#FIXME this framework should be EXTENSIBLE NOT COMPLETE
+#AND it should be extensible based on MINIMAL STANDARDS allowing for other things too
+
+#cull these and figure out what goes IN the database and HOW it goes in
+#the other stuff should be considered too meta
+
+standards #should be used to determine the minimal columns for a table
+    NIST
+    MINI
+    odML terminologies
+    DOI (fuck everything else)
+    journal citation requirements
+    journal format requirements
+    MLA, APA, Chicago, etc (endnote wat)
+    POSIX
+    IEEE (you name it)
+    MGI
+    Nomenclature IUPAC
+    NIF ontologies
+    #as manifest in the database these look like foreign key constraints...
+    #to a column that contains the information
+    #I will probably have to code it by hand rather than 
+
+output formats
+    publication
+    figure
+    talk
+    slides
+    lab meeting
+    poster
+    web
+
+citeables
+    literature in general
+    book 
+    paper
+    poster
+    talk
+    website
+    personal communication
+
+notes
+
+crossreferences
+    between anything prettymuch
+    #dante is working on tying this directly to PDFs, but fuck PDFs, we want xml reps
+
+people
+    experimenter/investigator
+    principle investigator
+    author(s)
+    contributor(s)
+
+location
+
+organism
+
+datasources
+
+data
+    raw
+
+software
+
+hardware #this covers any piece of equipment really...
+    computer
+    microscope
+    pipette puller
+    
+
+metadata
+    required for a standard
+    REQUIRED FOR REPLICATION
+    needed to interpret raw data
+        file format
+    needed for analysis
+    needed to understand the data
+    needed to answer a hypothesis
+    needed to fit data into the current literature
+
+project/question
+    the thing that experiments are grouped under
+
+experiment
+
+analysis
+
+hypothesis
+    heirarchical (yeah, look at dat file system >_<)
+
+theory
+    
+code/codebase
+    git repo
+    software/hardware stack information
