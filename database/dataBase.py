@@ -30,7 +30,7 @@
 from datetime import datetime,timedelta #ALL TIMES ARE UTC WITH tzinfo=None, CONVERT LATER
 
 #IEEE DOUBLE and numpy float64 have the same format, 1 bit sign, 11 bits exponent, 52 bits mantissa
-from sqlalchemy                         import Table, Column, Boolean, Integer, Float, String, Text, DateTime, Date, ForeignKey, ForeignKeyConstraint, CheckConstraint, create_engine, event
+from sqlalchemy                         import Table, Column, Boolean, Integer, Float, String, Unicode, Text, DateTime, Date, ForeignKey, ForeignKeyConstraint, CheckConstraint, create_engine, event
 from sqlalchemy.orm                     import relationship, backref, Session
 from sqlalchemy.ext.declarative         import declarative_base, declared_attr
 from sqlalchemy.ext.associationproxy    import association_proxy
@@ -39,7 +39,7 @@ from sqlalchemy.engine                  import Engine
 #import sys
 #sys.path.append('T:/db/Dropbox/mlab/code/')
 
-from tomsDebug                          import TDB
+from debug                              import TDB
 
 tdb=TDB()
 printD=tdb.printD
@@ -250,6 +250,7 @@ class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific
     absolute_error=Column(Float(precision=53)) #note: it is safe to store any timedelta less than a couple of years and still retain microseconds at full precision
     #estimated=Column(DateTime) #transaction thingy for later
 
+    printD('I get here')
     matingRecord=relationship('MatingRecord',primaryjoin='MatingRecord.dob_id==DOB.id',backref=backref('dob',uselist='False')) #FIXME need to force match litter/mr dob...
     printD('I get here')
     litter=relationship('Litter',primaryjoin='Litter.dob_id==DOB.id',backref=backref('dob',uselist=False)) #attempt to enforce one litter per DOB?
@@ -358,7 +359,7 @@ class Mouse(HasNotes, Base):
         return base+'%s %s %s'%(self.dob.strHelper(1),litter,breedingRec)
 
 
-class Breeder(HasNotes, Base):
+class Breeder(Base):
     id=Column(Integer,ForeignKey('mouse.id'),primary_key=True,autoincrement=False)
     #sex=Column(String,ForeignKey('sex.id'),nullable=False) #FIXME ah balls, didn't workout...
     sex=Column(String,nullable=False) #FIXME ah balls, didn't workout...
@@ -383,14 +384,15 @@ class Breeder(HasNotes, Base):
 
     def strHelper(self,depth=0):
         base=super().strHelper(depth,'id')
-        return base+'%s'%(self.mouse.strHelper(depth+1))
+        return base#+'%s'%(self.mouse.strHelper(depth+1))
 
     def __repr__(self):
         base=super().__repr__('id')
-        return base+'%s %s %s\n'%(self.mouse.strHelper(1),''.join([mr.strHelper(1) for mr in self.matingRecords]),''.join([lit.strHelper(1) for lit in self.litters]))
+        #return base+'%s %s %s\n'%(self.mouse.strHelper(1),''.join([mr.strHelper(1) for mr in self.matingRecords]),''.join([lit.strHelper(1) for lit in self.litters]))
+        return base+'%s %s\n'%(''.join([mr.strHelper(1) for mr in self.matingRecords]),''.join([lit.strHelper(1) for lit in self.litters]))
 
 
-class Sire(Breeder):
+class Sire(HasNotes, Breeder):
     #__tablename__=None #used to force single table inheritance, note: exclude_properties is not needed here
     id=Column(Integer,ForeignKey('breeder.id'),primary_key=True,autoincrement=False)
     #sex=Column(String,nullable=False) #FIXME ah balls, didn't workout...
@@ -403,7 +405,7 @@ class Sire(Breeder):
     __mapper_args__ = {'polymorphic_identity':'m'}
 
 
-class Dam(Breeder):
+class Dam(HasNotes, Breeder):
     #__tablename__=None #used to force single table inheritance, note: exclude_properties is not needed here #turns out STI is good in one dir, but for other constraints it sucks :/
     id=Column(Integer,ForeignKey('breeder.id'),primary_key=True,autoincrement=False)
 
@@ -415,9 +417,9 @@ class Dam(Breeder):
 
 
 class MatingRecord(HasNotes, Base):
-    id=Column(Integer,autoincrement=True) #WTF?! getting erros from this due to having it set as a primary key?!?!?
-    sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'),primary_key=True) #backref
-    dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'),primary_key=True) #backref
+    id=Column(Integer,primary_key=True)#,unique=True) #THIS MUST BE UNIQUIE DUHHHH #FIXME wierd stuff be here!??!
+    sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'))#,primary_key=True) #backref
+    dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'))#,primary_key=True) #backref
     startDateTime=Column(DateTime,nullable=False)#,primary_key=True) #FIXME fucking strings
     stopTime=Column(DateTime)
     est_e0=Column(DateTime) #FIXME this shit will error
@@ -437,9 +439,9 @@ class MatingRecord(HasNotes, Base):
     def est_e0(self):
         raise AttributeError('readonly attribute, set a stopTime if you want this')
     
-    dob_id=Column(Integer,ForeignKey('dob.id'))
+    dob_id=Column(Integer,ForeignKey('dob.id')) #FIXME the foreing key missmatch I get on update is cause by... what? check for referencing a table that does not exist
     
-    litter=relationship('Litter',primaryjoin='and_(MatingRecord.sire_id==foreign(Litter.sire_id),MatingRecord.dam_id==foreign(Litter.dam_id),MatingRecord.dob_id==foreign(Litter.dob_id))',uselist=False,backref=backref('matingRecord',uselist=False))
+    litter=relationship('Litter',primaryjoin='and_(MatingRecord.id==foreign(Litter.mr_id),MatingRecord.sire_id==foreign(Litter.sire_id),MatingRecord.dam_id==foreign(Litter.dam_id),MatingRecord.dob_id==foreign(Litter.dob_id))',uselist=False,backref=backref('matingRecord',uselist=False))
     #litter=relationship('Litter',primaryjoin='and_(MatingRecord.sire_id==foreign(Litter.sire_id),MatingRecord.dam_id==foreign(Litter.dam_id),MatingRecord.startDateTime==foreign(Litter.mr_sdt))',uselist=False,backref=backref('matingRecord',uselist=False)) FIXME this is where the dates being strings is a problem, REALLY can't use them as primary keys :(
     
     def __init__(self,sire_id=None,Sire=None,dam_id=None,Dam=None,startDateTime=None,stopTime=None,notes=[]):
@@ -479,7 +481,7 @@ class Litter(HasNotes, Base):
     #could to id=None here too...
     sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'),nullable=False) #can have mice w/o litters, but no litters w/o mice
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'),nullable=False)
-    mr_id=Column(DateTime, ForeignKey('matingrecord.id'),unique=True) #FIXME could be the source?
+    mr_id=Column(Integer, ForeignKey('matingrecord.id'),unique=True) #could be the source? YEP IT WAS
     #mr_sdt=Column(DateTime, ForeignKey('matingrecord.startDateTime'),unique=True) #FIXME could be the source?
     dob_id=Column(Integer,ForeignKey('dob.id'),nullable=False)
 
@@ -531,7 +533,7 @@ class Litter(HasNotes, Base):
 
         if MatingRecord:
             if MatingRecord.startDateTime:
-                #self.dob_id=MatingRecord.dob_id #FIXME
+                self.dob_id=MatingRecord.dob_id #FIXME
                 #self.mr_sdt=MatingRecord.startDateTime #FIXME it may be more efficient to just have MR id's...? well... not really actually
                 self.mr_id=MatingRecord.id
                 self.dam_id=MatingRecord.dam_id
@@ -556,13 +558,14 @@ class Litter(HasNotes, Base):
         try:
             sire=self.sire.strHelper(depth+1)
         except:
+            raise
             sire='\n\tSire Unknown'
         return base+'%s %s'%(sire,self.dam.strHelper(depth+1))
 
     def __repr__(self):
         base=super().__repr__()
         try:
-            sire=self.sire.strHelper(depth+1)
+            sire=self.sire.strHelper(1)
         except:
             sire='\n\tSire Unknown'
         try:
@@ -683,8 +686,8 @@ def populateConstraints(session):
     #http://en.wikipedia.org/wiki/SI_derived_units
     #http://en.wikipedia.org/wiki/Units_accepted_for_use_with_SI
 
-    #FIXME make auto unit conversions for DA?
-    #FIXME need some way to implement sets of units? bugger
+    #TODO make auto unit conversions for DA?
+    #TODO need some way to implement sets of units? bugger
     SI_UNITS=(
         #name, symbol
         ('meter','m'),
@@ -824,7 +827,7 @@ def populateConstraints(session):
                     ('deci','d',-1),
                     ('centi','c',-2),
                     ('milli','m',-3),
-                    #('micro','\u03BC',-6,), #unicode=U+03BC  #FIXME terminal haveing problemms
+                    ('micro','\u03BC',-6), #unicode=U+03BC  #FIXME terminal haveing problemms
                     ('micro','u',-6,), #also unoffically used
                     ('nano','n',-9),
                     ('pico','p',-12),
@@ -835,9 +838,9 @@ def populateConstraints(session):
                 )
 
     SEXES=(
-            ('male','m','\u2642'), #U+2642
+            ('male','m','\u2642'), #U+2642 #FIXME stupid windows console crashing symbol output >_<; in windows shell chcp 65001
             ('female','f','\u2640'), #U+2640
-            ('unknown','u','\u26AA'), #using unicode U+26AA for this
+            ('unknown','u','\u26AA'), #using unicode U+26AA for this #FIXME chcp 65001 doesn't work for displaying this one; also apparently lucidia console required? nope, didn't fix it
         )
 
     session.add_all([SI_PREFIX(prefix=prefix,symbol=symbol,E=E) for prefix,symbol,E in SI_PREFIXES])
@@ -873,8 +876,11 @@ class SEX(Base):
     """Static table for sex"""
     id=None
     symbol=Column(String(1)) #the actual symbols
+    #symbol=Column(Unicode(1)) #the actual symbols
     name=Column(String(14),primary_key=True,autoincrement=False) #'male','female','unknown' #FIXME do I need the autoincrement 
     abbrev=Column(String(1)) #'m','f','u'
+    def __repr__(self):
+        return '\n%s %s %s'%(self.name,self.abbrev,self.symbol) #FIXME somehow there are trailing chars here >_<
 
 class Strain(Base): #TODO
     #FIXME class for strain IDs pair up with the shorthand names that I use and make sure mappings are one to one
@@ -926,17 +932,15 @@ def makeObjects(session):
         now=datetime.utcnow()
         mr=MatingRecord(Sire=sires[sire_arr[i]],Dam=dams[dam_arr[i]], startDateTime=now+timedelta(hours=i),stopTime=now+timedelta(hours=12))
         session.add(mr)
-        session.commit()
+        session.commit() #FIXME problem here
 
         dob1=DOB(mr.est_e0+timedelta(days=19))
         session.add(dob1)
-        session.commit() #FIXME this is where shit is seeming to break...
-        printD(dob1.id)
+        session.commit()
 
         mr.dob_id=dob1.id
         session.add(mr)
         session.commit()
-        printD(mr)
 
         lit=Litter(MatingRecord=mr,DOB=dob1) #FIXME there is a problem comparing datetimes because they are strings on they way back out >_<
         session.add(lit)
@@ -944,7 +948,6 @@ def makeObjects(session):
 
         session.add_all(lit.make_members(litter_sizes[i]))
         session.commit()
-
 
 
 def main():
@@ -959,8 +962,8 @@ def main():
         cursor.close()
 
     #setup the engine
-    echo=True
-    #echo=False
+    #echo=True
+    echo=False
     dbPath=':memory:'
     #dbPath='test2' #holy crap that is alow slower on the writes!
     engine = create_engine('sqlite:///%s'%(dbPath), echo=echo) #FIXME, check if the problems with datetime and DateTime on sqlite and sqlite3 modules are present!
@@ -1008,23 +1011,24 @@ def main():
     [printD(c,'\n') for c in session.query(SI_PREFIX)]
     [printD(c,'\n') for c in session.query(SI_UNIT)]
     [printD(c,'\n') for c in session.query(SEX)]
-    print('\n###***mice***')
-    for mouse in session.query(Mouse):
-        printD('\n',mouse)
-    print('\n###***sires***')
-    for s in session.query(Sire):
-        printD('\n',s)
-    print('\n###***dams***')
-    for d in session.query(Dam):
-        printD('\n',d)
-    print('\n###***MatingRecords***')
-    for mate in session.query(MatingRecord):
-        printD('\n',mate)
-    print('\n###***Litters***')
-    for lit in session.query(Litter):
-        printD('\n',lit)
-    for note in session.query(Note):
-        print('\n',note)
+    if 0:
+        print('\n###***mice***')
+        for mouse in session.query(Mouse):
+            print('\n',mouse)
+        print('\n###***sires***')
+        for s in session.query(Sire):
+            print('\n',s)
+        print('\n###***dams***')
+        for d in session.query(Dam):
+            print('\n',d)
+        print('\n###***MatingRecords***')
+        for mate in session.query(MatingRecord):
+            print('\n',mate)
+        print('\n###***Litters***')
+        for lit in session.query(Litter):
+            print('\n',lit)
+        for note in session.query(Note):
+            print('\n',note)
 
     #input('hit something to exit')
     
