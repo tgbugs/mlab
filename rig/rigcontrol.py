@@ -1,4 +1,4 @@
-from funcClasses import *
+from functions import *
 from queue import Queue,Empty
 from dictMan import *
 from keyInput import keyListener
