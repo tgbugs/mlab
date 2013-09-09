@@ -1,14 +1,18 @@
 import ctypes
 import ctypes.wintypes
-from tomsDebug import TDB,ploc
-import rpdb2
+from debug import TDB,ploc
+try:
+    import rpdb2
+except:
+    pass
+
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
 tdbOff=tdb.tdbOff
 tdbOff()
 
-def Listener(charBuffer,keyHandler,modestate=None,cleanup=lambda:0): #FIXME
+def keyListener(charBuffer,keyHandler,modestate=None,cleanup=lambda:0): #FIXME
         #http://techtonik.rainforce.org
         STD_INPUT_HANDLE = -10
         # Constant for infinite timeout in WaitForMultipleObjects()

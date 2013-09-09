@@ -1,12 +1,15 @@
 from functions import *
 from queue import Queue,Empty
 from dictMan import *
-from keyInput import keyListener
+from key import keyListener
 from inspect import currentframe
 import threading
 from debug import TDB,ploc
 from keybinds import keyDicts
-import rpdb2
+try:
+    import rpdb2
+except:
+    pass
 
 tdb=TDB()
 printD=tdb.printD

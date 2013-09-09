@@ -3,9 +3,11 @@ import datetime
 import inspect as ins
 from sys import stdout
 from time import sleep
-from tomsDebug import TDB,ploc
-import rpdb2
-#rpdb2.settrace()
+from debug import TDB,ploc
+try:
+    import rpdb2
+except:
+    pass
 
 tdb=TDB()
 printD=tdb.printD
