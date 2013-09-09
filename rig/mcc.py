@@ -118,7 +118,7 @@ class mccControl:
 
     def __init__(self): #use this one for now
         self.mccDllPath='C:/Axon/MultiClamp 700B Commander/3rd Party Support/AxMultiClampMsg/'
-        self.getDLL()
+        self.getDLL() #FIXME this fails silently on 64bit see if we can make it more explicit
         self._pnError=byref(c_int()) #err pointer
         self.CreateObject() #create the dll handle NOTE: this MUST be called EVERY time
         #check for the first MC, if we don't find it threaded sleep do it again

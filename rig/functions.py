@@ -170,7 +170,7 @@ class datFuncs(kCtrlObj):
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
     def __init__(self, modestate):
         from mcc import mccControl
-        super().__init__(modestate,mccControl)
+        super().__init__(modestate,mccControl) #FIXME this needs better error messages
         #self.initController(mccmsg)
         self.MCCstateDict={}
         #self.wrapDoneCB()
