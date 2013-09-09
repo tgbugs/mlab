@@ -54,7 +54,7 @@ errdict={6000:'MCCMSG_ERROR_NOERROR', 6001:'MCCMSG_ERROR_OUTOFMEMORY',\
          6004:'MCCMSG_ERROR_INVALIDPARAMETER', 6005:'MCCMSG_ERROR_MSGTIMEOUT',\
          6006:'MCCMSG_ERROR_MCCCOMMANDFAIL'}
 
-class Control:
+class mccControl:
     def _1_init__(self):
         #load the mcc msg dll
         #mccDllPath='C:/Axon/MultiClamp 700B Commander/3rd Party Support/AxMultiClampMsg/' #change this to match install loc #NOTE: can't just place the DLL in random places :(

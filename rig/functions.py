@@ -37,8 +37,8 @@ class kCtrlObj:
         try:
             self.ctrl.cleanup()
             del(self.ctrl)
-            from mccpy import mccmsg
-            self.ctrl=mccmsg()
+            from mcc import mccControl
+            self.ctrl=Control()
             self.ikCtrlDict[self.__mode__]=self
             self.updateModeDict()
         except:
@@ -97,8 +97,8 @@ class kCtrlObj:
 
 class clxFuncs(kCtrlObj):
     def __init__(self, modestate):
-        from clx import Control
-        super().__init__(modestate,Control)
+        from clx import clxControl
+        super().__init__(modestate,clxControl)
         #self.initController(clxmsg)
         #printD('clx ctrl',self.ctrl)
         #self.clxCleanup=self.cleanup
@@ -169,8 +169,8 @@ class datFuncs(kCtrlObj):
 
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
     def __init__(self, modestate):
-        from mcc import Control
-        super().__init__(modestate,Control)
+        from mcc import mccControl
+        super().__init__(modestate,mccControl)
         #self.initController(mccmsg)
         self.MCCstateDict={}
         #self.wrapDoneCB()
@@ -304,8 +304,8 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
 
 class espFuncs(kCtrlObj):
     def __init__(self, modestate):
-        from esp import Control
-        super().__init__(modestate,Control)
+        from esp import espControl
+        super().__init__(modestate,espControl)
         self.markDict={} #FIXME
         self.posDict={} #FIXME
         #self.initController(npControl)
@@ -374,7 +374,7 @@ class espFuncs(kCtrlObj):
         self.keyHandler(1)
         key=self.charBuffer.get()
         if key in self.markDict:
-            print('Moved to: ',self.ctrl.BsetPos(self.markDict[key])) #AH HA! THIS is what is printing stuff out as I mvoe
+            print('Moved to: ',self.ctrl.BsetPos(self.markDict[key])) #AH HA! THIS is what is printing stuff out as I mvoe FIXME I removed BsetPos at some point and now I need to add it... back? or what
         else:
             print('No position has been set for mark %s'%(key))
         return self

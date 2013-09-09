@@ -27,7 +27,7 @@ eg
 
 """
 
-class Control:
+class espControl:
     """controller class for esp300, attempts to be
     nonblocking on the serial port by only connecting
     when a command is delivered, may change so that
@@ -165,8 +165,8 @@ class Control:
         self.write('1HX')
         return 1
 
-    def setPos(self,pos): #this lets the output of getPos feed directly in to set pos
-        """1HW and/or 1HX block the newport's queue set the position of the newport to floats x,y"""
+    def setPos(self,pos): #this lets the output of getPos feed directly in to set pos FIXME may need BsetPos
+        """1HW and/or 1HX block the newport's queue set the position of the newport to floats x,y""" 
         self.getPos() #need to do this first
         if self._cX==pos[0] and self._cY==pos[1]:
             print('Yer already thar mate!')

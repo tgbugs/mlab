@@ -68,7 +68,7 @@ def errPrint(pnErr):
         return 0
 
 #main class
-class Control: #clxmsg
+class clxControl: #clxmsg
     def __init__(self):
         #load the clx msg dll
         clxDllPath='C:/Axon/pCLAMP9.2/3rd Party Support/AxClampexMsg/' #change this to match install loc
