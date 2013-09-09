@@ -13,7 +13,7 @@ def rigDict():
         'q':
             {'mccFuncs':{0:'cleanup'},
              'clxFuncs':{1:'cleanup'},
-             'npcFuncs':{2:'cleanup'},
+             'espFuncs':{2:'cleanup'},
              'keyfuncs':{3:'esc'},
             },
 
@@ -42,7 +42,7 @@ def rigDict():
         'y':'getState',
         },
 
-        'npcFuncs':
+        'espFuncs':
         {
         #'o':'readProgram',
         'w':'move',
@@ -52,7 +52,7 @@ def rigDict():
         'p':'printMarks',
         'e':'printError',
         #'w':'printPosDict',
-        #'e':('setMode','npc'),
+        #'e':('setMode','esp'),
         'i':'getDisp',
         #'s':'setSpeedDef',
         'g':'getPos',

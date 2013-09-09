@@ -5,7 +5,7 @@ import threading
 #import pdb
 #from tomsDebug import *
 from rigcontrol import modeState
-from keyInput import keyListener
+from rig.key.input import keyListener
 from queue import Queue
 
 ni=windll.nicaiu
@@ -51,7 +51,7 @@ def CHK(err):
         raise RuntimeError('nidaq generated warning %d: %s'%(err,repr(buf.value)))
 #
 #probably best to just create a new task on demand? or have them all up and ready to go? I got the ram...
-class trigWaveTask: #this doesnt have to be a class, just return a lambda:start...?
+class trigWaveTask:
     """a class for holding waveforms to be triggered off digital input and played via AO"""
     #could make a waveform dictionary... AWE YEAH DICTS
     def __init__(self,waveform,sampRate=10000.0,triggerTerminal=b'PFI0',ao=b'Dev1/ao0'):

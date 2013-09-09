@@ -8,7 +8,7 @@ printFD=tdb.printFuncDict
 tdbOff=tdb.tdbOff
 tdbOff()
 
-def keyListener(charBuffer,keyHandler,modestate=None,cleanup=lambda:0): #FIXME
+def Listener(charBuffer,keyHandler,modestate=None,cleanup=lambda:0): #FIXME
         #http://techtonik.rainforce.org
         STD_INPUT_HANDLE = -10
         # Constant for infinite timeout in WaitForMultipleObjects()

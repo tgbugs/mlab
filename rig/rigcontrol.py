@@ -4,25 +4,14 @@ from dictMan import *
 from keyInput import keyListener
 from inspect import currentframe
 import threading
-from tomsDebug import TDB,ploc
+from debug import TDB,ploc
 from keybinds import keyDicts
 import rpdb2
-
 
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
 tdbOff=tdb.tdbOff
-
-class thrdCaller:
-    def __init__(self,function,keyListen):
-        self.func=function
-        self.keyListen=keyListen
-    def check(self):
-        if not self.func():
-            while not self.keyListen.stopflag:
-                pass
-
 
 class modeState:
     def __init__(self,charBuffer):
@@ -130,8 +119,8 @@ def main():
 
     modestate.keyThread=keyThread
 
-    kCtrlObjs=clxFuncs,datFuncs,keyFuncs,mccFuncs,npcFuncs
-    #kCtrlObjs=datFuncs,keyFuncs,mccFuncs,npcFuncs
+    kCtrlObjs=clxFuncs,datFuncs,keyFuncs,mccFuncs,espFuncs
+    #kCtrlObjs=datFuncs,keyFuncs,mccFuncs,espFuncs
     for cls in kCtrlObjs:
         modestate.loadModule(cls) #the threading IN THE THINGS will take care of any problems we have you idiot
 

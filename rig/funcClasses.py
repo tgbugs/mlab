@@ -12,9 +12,7 @@ printD=tdb.printD
 printFD=tdb.printFuncDict
 tdbOff=tdb.tdbOff
 
-#in theory I could remplement this all as not classes... why classes why, I dont not understand! GRRRRRR
-
-#at the moment this works fine, but I should really split these out and put them in with their respective controllers... (?)
+#file to consolidate all the different functions I want to execute using the xxx.Control classes
 
 class kCtrlObj:
     """key controller object"""
@@ -97,8 +95,8 @@ class kCtrlObj:
 
 class clxFuncs(kCtrlObj):
     def __init__(self, modestate):
-        from clxpy import clxmsg
-        super().__init__(modestate,clxmsg)
+        from clx import Control
+        super().__init__(modestate,Control)
         #self.initController(clxmsg)
         #printD('clx ctrl',self.ctrl)
         #self.clxCleanup=self.cleanup
@@ -169,8 +167,8 @@ class datFuncs(kCtrlObj):
 
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
     def __init__(self, modestate):
-        from mccpy import mccmsg
-        super().__init__(modestate,mccmsg)
+        from mcc import Control
+        super().__init__(modestate,Control)
         #self.initController(mccmsg)
         self.MCCstateDict={}
         #self.wrapDoneCB()
@@ -302,10 +300,10 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         except:
             pass
 
-class npcFuncs(kCtrlObj):
+class espFuncs(kCtrlObj):
     def __init__(self, modestate):
-        from npcpy import npControl
-        super().__init__(modestate,npControl)
+        from esp import Control
+        super().__init__(modestate,Control)
         self.markDict={} #FIXME
         self.posDict={} #FIXME
         #self.initController(npControl)
@@ -496,7 +494,7 @@ def printArray(array, fixed=0): #fixme move this somehwere?
 #utility functions
 
 def main():
-    npc=npcFuncs(None,None,None,None)
+    esp=espFuncs(None,None,None,None)
     #mcc=mccFuncs(None,None,None,None)
 
 if __name__=='__main__':

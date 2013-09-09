@@ -2,7 +2,7 @@ from ctypes import *
 from time import sleep
 import inspect as ins
 import os
-from tomsDebug import TDB,ploc
+from debug import TDB,ploc
 #import rpdb2
 #rpdb2.settrace()
 
@@ -54,7 +54,7 @@ errdict={6000:'MCCMSG_ERROR_NOERROR', 6001:'MCCMSG_ERROR_OUTOFMEMORY',\
          6004:'MCCMSG_ERROR_INVALIDPARAMETER', 6005:'MCCMSG_ERROR_MSGTIMEOUT',\
          6006:'MCCMSG_ERROR_MCCCOMMANDFAIL'}
 
-class mccmsg:
+class Control:
     def _1_init__(self):
         #load the mcc msg dll
         #mccDllPath='C:/Axon/MultiClamp 700B Commander/3rd Party Support/AxMultiClampMsg/' #change this to match install loc #NOTE: can't just place the DLL in random places :(
@@ -855,7 +855,7 @@ def viewFuncs():
 
 def main():
     #viewFuncs()
-    mcc=mccmsg()
+    mcc=Control()
     new=[]
     for mc in mcc.mcList:
         new.append(val(mc[1],c_char_p))

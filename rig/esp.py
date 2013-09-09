@@ -27,7 +27,7 @@ eg
 
 """
 
-class npControl:
+class Control:
     """controller class for esp300, attempts to be
     nonblocking on the serial port by only connecting
     when a command is delivered, may change so that
@@ -47,7 +47,7 @@ class npControl:
             self.sim=0
         except IOError:
             print('No serial port found, running in sim mode.')
-            self.esp=fakeEsp(port,baudrate,bytesize,parity,stopbits,timeout)
+            self.esp=_fakeEsp(port,baudrate,bytesize,parity,stopbits,timeout)
             self.sim=1
             #FIXME and go into a loop and periodically check to see if we've got it
 
@@ -198,7 +198,7 @@ class npControl:
         self.esp.close()
         return 1
 
-class fakeEsp:
+class _fakeEsp:
     """this creates a fake serial connection to the esp for testing"""
     def __init__(self,port,baudrate,bytesize,parity,stopbits,timeout):
         import numpy as np
@@ -230,14 +230,14 @@ class fakeEsp:
         pass
 
 def main():
-    npc=npControl()
+    esp=Control()
     import inspect
-    from tomsDebug import TDB
+    from debug import TDB
     tdb=TDB()
     printFD=tdb.printFuncDict
-    printFD(inspect.getmembers(npc))
-    print(npc.getPos())
-    print(npc.getErr())
+    printFD(inspect.getmembers(esp))
+    print(esp.getPos())
+    print(esp.getErr())
 
 
 if __name__=='__main__':

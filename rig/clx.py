@@ -1,7 +1,7 @@
 from ctypes import *
 import os
 import inspect as ins
-from tomsDebug import TDB
+from debug import TDB
 from time import sleep
 #import rpdb2
 #rpdb2.settrace()
@@ -68,7 +68,7 @@ def errPrint(pnErr):
         return 0
 
 #main class
-class clxmsg:
+class Control: #clxmsg
     def __init__(self):
         #load the clx msg dll
         clxDllPath='C:/Axon/pCLAMP9.2/3rd Party Support/AxClampexMsg/' #change this to match install loc
