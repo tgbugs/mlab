@@ -1,6 +1,6 @@
 ##The keybinding dictionaries themselves!
 #functions can help contain stuff and assemble EVEN LONGER sequences
-from tomsDebug import TDB
+from debug import TDB
 #import rpdb2
 #rpdb2.settrace()
 
