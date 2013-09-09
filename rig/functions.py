@@ -95,6 +95,7 @@ class kCtrlObj:
     def cleanup(self):
         pass
 
+
 class clxFuncs(kCtrlObj):
     def __init__(self, modestate):
         from clx import clxControl
@@ -164,7 +165,6 @@ class datFuncs(kCtrlObj):
         """Sadly there is still some data that I can't automatically collect"""
         #get cell depths FROM SAME STARTING POINT??? measure this before expanding tissue with internal???
         return self
-
 
 
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
@@ -302,6 +302,7 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         except:
             pass
 
+
 class espFuncs(kCtrlObj):
     def __init__(self, modestate):
         from esp import espControl
@@ -338,12 +339,12 @@ class espFuncs(kCtrlObj):
         stdout.flush()
         self.keyHandler(1)
         key=self.charBuffer.get()
-        printD('we got the key from charBuffer')
+        #printD('we got the key from charBuffer')
         if key in self.markDict:
             print('Mark %s is already being used, do you want to replace it? y/N'%(key))
             self.keyHandler(1)
-            key=self.charBuffer.get()
-            if key=='y':
+            yeskey=self.charBuffer.get()
+            if yeskey=='y' or yeskey=='Y':
                 self.markDict[key]=self.ctrl.getPos()
                 print(key,'=',self.markDict[key])
             else:
@@ -409,11 +410,13 @@ class espFuncs(kCtrlObj):
 
         dist1=1
         print(list(self.markDict.keys()))
-        while self.keyThread.is_alive():
+        while self.keyThread.is_alive(): #FIXME may need a reentrant lock here to deal w/ keyboard control
             self.keyHandler(1) #call this up here so the pass through is waiting
-            dist=(npsum((arr(self.ctrl._BgetPos()-arr(list(self.markDict.values()))))**2,axis=1))**.5 #FIXME the problem here is w/ _BgetPos()
+            pos=self.markDict.values()
+            dist=(npsum((arr(self.ctrl._BgetPos()-arr(list(pos))))**2,axis=1))**.5 #FIXME the problem here is w/ _BgetPos()
             if dist1!=dist[0]:
-                stdout.write('\r'+printArray(dist,fixed=1)) #FIXME if the terminal is too narrow it will scroll :(
+                #names='%s \r'%(list(self.markDict.keys())) #FIXME sadly, it seems there is no way ;_;
+                stdout.write('\r'+''.join(map('{:1.5f} '.format,dist)))
                 stdout.flush()
                 dist1=dist[0]
             try:
@@ -450,7 +453,7 @@ class espFuncs(kCtrlObj):
         self.moveDict=moveDict
         return self
 
-    def move(self):
+    def move(self): #FIXME this does not work in displacement mode because modestate.key is always i
         key=self.modestate.key
         if key.isupper(): #shit, this never triggers :(
             #printD('upper')
@@ -468,6 +471,7 @@ class espFuncs(kCtrlObj):
         print(self.ctrl.readProgram())
         return self
 
+
 class keyFuncs(kCtrlObj):
     """utility functions eg meta functions such as : cmd and the like"""
     def __init__(self, modestate):
@@ -481,19 +485,6 @@ class keyFuncs(kCtrlObj):
     def esc(self):
         return 0
 
-
-def printArray(array, fixed=0): #fixme move this somehwere?
-    outstr='['
-    for i in array:
-        if not fixed:
-            outstr+=' %1.5f'%(i)
-        else: 
-            outstr+=' %1.5F'%(i)
-    outstr+=']'
-    return outstr
-
-
-#utility functions
 
 def main():
     esp=espFuncs(None,None,None,None)

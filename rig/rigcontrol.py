@@ -84,9 +84,10 @@ class modeState:
             self.keyRequest=1
             return 1
         if self.keyRequest:
+            self.key=self.charBuffer.queue[0] #TODO look at this, we can use this everywhere! no need for key requests! BUT NOT TODAY
             self.keyRequest=0
             return 1 #if a request is in then return before getting the function from the queue
-        self.key=self.charBuffer.get()
+        self.key=self.charBuffer.get() #FIXME self.key needs to update no matter what...
         try:
             function=self.keyActDict[self.key]
             if function:
@@ -107,9 +108,9 @@ class modeState:
                 kCtrl.cleanup()
             except:
                 printD('cleaup for',kCtrl,'failed')
-        printD(threading.active_count())
-        printD(threading.enumerate())
-        printD('done!')
+        #printD(threading.active_count())
+        #printD(threading.enumerate())
+        print('done!')
 
 
 def main():
@@ -130,6 +131,8 @@ def main():
 
 
     #printFD(modestate.modeDict)
+
+    #once all the startup threads are done, try to set the mode to rig
     while 1:
         try:
             modestate.setMode('rig')

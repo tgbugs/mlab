@@ -74,11 +74,17 @@ class espControl:
     def POST(self):
         print('ESP POST',self.getPos())
 
-    def write(self,string,writeback=0):
+    def write(self,string,writeback=0): #FIXME may need an rlock here... yep, writeTimeout doesnt work
         out=string+'\r\n'
-        self.esp.write(out.encode('ascii'))
-        if writeback: #FIXME in theory we could make a list of all the commands that need to be read, but then I would have to parse the string :/ someday, some day
-            return self.read()
+        try:
+            self.rlock.acquire() #MAGIC :D
+            self.esp.write(out.encode('ascii'))
+            if writeback: #FIXME in theory we could make a list of all the commands that need to be read, but then I would have to parse the string :/ someday, some day
+                return self.read()
+        except:
+            raise IOError('Could not acquire lock to write to serial')
+        finally:
+            self.rlock.release()
 
     def read(self):
         try:
