@@ -200,6 +200,9 @@ var/
 sdist/
 develop-eggs/
 .installed.cfg
+__pycache__/
+
+
 
 # Installer logs
 pip-log.txt
