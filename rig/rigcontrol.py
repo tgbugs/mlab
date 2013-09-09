@@ -1,7 +1,7 @@
-from functions import *
+from rig.functions import *
 from queue import Queue,Empty
-from dictMan import *
-from key import keyListener
+from rig.dictMan import *
+from rig.key import keyListener
 from inspect import currentframe
 import threading
 from debug import TDB,ploc

@@ -391,7 +391,7 @@ class espFuncs(kCtrlObj):
             from numpy import random #only for testing remove later
             a,b=random.uniform(-10,10,2) #DO NOT SET cX or cY manually
             self.ctrl.setPos((a,b))
-            print(self.ctrl.cX,self.ctrl.cY)
+            print(self.ctrl._cX,self.ctrl._cY)
         else:
             print('Not in fake mode! Not moving!')
         return self
@@ -460,7 +460,7 @@ class espFuncs(kCtrlObj):
             self.ctrl.move(self.moveDict[key.lower()],.1)
         return self
     def printError(self):
-        print(self.ctrl.getErr())
+        print('Error:',self.ctrl.getErr().decode('utf-8'))
         return self
     def readProgram(self):
         #self.keyHandler(1)
