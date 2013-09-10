@@ -1,10 +1,10 @@
-from dataBase import Base
+from datetime import datetime
+
+from sqlalchemy                         import Float
+from sqlalchemy                         import ForeignKeyConstraint
+
+from database.main import Base
 from notes import HasNotes
-
-
-from sqlalchemy                         import Table, Column, Boolean, Integer, Float, String, Unicode, Text, DateTime, Date, ForeignKey, ForeignKeyConstraint, CheckConstraint, create_engine, event
-from sqlalchemy.orm                     import relationship, backref
-
 
 ###--------------------
 ###  Measurement tables, to enforce untils and things... it may look over normalized, but it means that every single measurement I take will have a datetime associated as well as units
@@ -42,7 +42,7 @@ class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here
     value3=Column(Float(53))
     #somehow I think that there is a possibility that I will want to have a form of some kind where I have lots of measurements but 
     def __init__(self,value,SI_prefix,SI_unit,Source=None,source_id=None):
-        self.dateTime=datetime.utcnow()
+        self.dateTime=datetime.utcnow() #FIXME
         self.value=value
         self.SI_prefix=SI_prefix
         self.SI_unit=SI_unit

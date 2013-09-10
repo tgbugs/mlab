@@ -1,11 +1,16 @@
 #source file contining the definitions for all the tables related to mouse management
 #in theory since this now has the 'mice' namespace I could rename it to mouse.py and then do DOB organism breeder male_breeder female_breeder MatingRecord Litter
 
-from dataBase import Base
-from notes import HasNotes
+from imports import *
+from sqlalchemy                         import Float
+from sqlalchemy                         import ForeignKeyConstraint
 
-from sqlalchemy                         import Table, Column, Boolean, Integer, Float, String, Unicode, Text, DateTime, Date, ForeignKey, ForeignKeyConstraint, CheckConstraint, create_engine, event
-from sqlalchemy.orm                     import relationship, backref
+from sqlalchemy.ext.declarative         import declared_attr #main mice notes
+
+from dateTimeFuncs import *
+
+from database.main import Base
+from notes import HasNotes
 
 #some global variables that are used here and there that would be magic otherwise
 plusMinus='\u00B1'

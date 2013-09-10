@@ -1,12 +1,13 @@
 #Base file for creating the tables that I will use to store all my (meta)data
 
 #__table_args__ = {'extend_existing':True} #XXX useful!
-from constraints import *
-from notes import *
-from experiments import *
-from inventory import *
-from people import *
-from mice import *
+#FIXME somehow still circular deps here...
+#from database.constraints import *
+#from database.notes import *
+#from database.experiments import *
+#from database.inventory import *
+#from database.people import *
+#from database.mice import *
 
 #TODO therefore we need a 'convert local to utc for storage'
 #TODO start moving stuff out of here that we don't use to define the tables
@@ -39,20 +40,21 @@ from mice import *
 #this means that this database stays flexible in terms of what kinds of experiments it can handle
 #it also maximizes poratbility between different backend databases
 
-from datetime import datetime,timedelta #ALL TIMES ARE UTC WITH tzinfo=None, CONVERT LATER
+from datetime import datetime
 
-#IEEE DOUBLE and numpy float64 have the same format, 1 bit sign, 11 bits exponent, 52 bits mantissa
-from sqlalchemy                         import Table, Column, Boolean, Integer, Float, String, Unicode, Text, DateTime, Date, ForeignKey, ForeignKeyConstraint, CheckConstraint, create_engine, event
-from sqlalchemy.orm                     import relationship, backref, Session
-from sqlalchemy.ext.declarative         import declarative_base, declared_attr
-from sqlalchemy.ext.associationproxy    import association_proxy
+#from imports import *
+from sqlalchemy                         import event
+from sqlalchemy                         import create_engine
+from sqlalchemy.orm                     import Session
 from sqlalchemy.engine                  import Engine
+from sqlalchemy.ext.declarative         import declarative_base, declared_attr
 
 from debug                              import TDB
 
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
+tdboff=tdb.tdbOff()
 
 class DefaultBase(object):
     @declared_attr

@@ -1,8 +1,9 @@
-from dataBase import Base
+from imports import *
+from sqlalchemy                         import Float
+
+from database.main import Base
 from notes import HasNotes
 
-from sqlalchemy                         import Table, Column, Boolean, Integer, Float, String, Unicode, Text, DateTime, Date, ForeignKey, ForeignKeyConstraint, CheckConstraint
-from sqlalchemy.orm                     import relationship, backref
 #experiment variables that are sub mouse, everything at and above the level of the mouse is also an experimental variable that I want to keep track of independently if possible
 #this means that I MIGHT want to make them experimental variables so that I can automatically tag them with the experiment/s any one of them has been involved in? viewonly
 

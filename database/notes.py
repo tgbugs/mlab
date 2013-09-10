@@ -1,9 +1,11 @@
-from dataBase import Base
-
-from sqlalchemy                         import Column, String, ForeignKey
-from sqlalchemy.orm                     import relationship, backref
+from imports import *
+from sqlalchemy                         import Text
 from sqlalchemy.ext.declarative         import declared_attr
 from sqlalchemy.ext.associationproxy    import association_proxy
+
+from dateTimeFuncs import *
+
+from database.main import Base
 #all I want is a many-many relationship between targets and notes but that doesn't quite work ;_; Association per tble maybe?? that way we don't need a mixin
 
 class NoteAssociation(Base): #turns out we want joined table inheritance... #I think I need multiple tables for this...

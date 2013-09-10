@@ -1,9 +1,7 @@
 #contains all the constraint tables and their initial values 
+from imports import *
 
-from dataBase                           import Base
-
-from sqlalchemy                         import Table, Column, Integer, String, Unicode, DateTime, create_engine
-from sqlalchemy.orm                     import relationship, backref
+from database.main                           import Base
 
 #some global variables that are used here and there that would be magic otherwise
 OMEGA='\u03A9' #use this instead of 2126 which is for backward compatability 

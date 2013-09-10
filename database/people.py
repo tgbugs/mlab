@@ -1,8 +1,9 @@
-from dataBase import Base
-from notes import HasNotes
+from imports import *
+from sqlalchemy                         import Date
+from sqlalchemy                         import ForeignKeyConstraint
 
-from sqlalchemy                         import Table, Column, Boolean, Integer, Float, String, Unicode, Text, DateTime, Date, ForeignKey, ForeignKeyConstraint, CheckConstraint, create_engine, event
-from sqlalchemy.orm                     import relationship, backref
+from database.main import Base
+from notes import HasNotes
 
 ###---------------
 ###  People tables
