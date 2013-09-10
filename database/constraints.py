@@ -1,7 +1,7 @@
 #contains all the constraint tables and their initial values 
 from imports import *
 
-from database.main                           import Base
+from database.base                           import Base
 
 #some global variables that are used here and there that would be magic otherwise
 OMEGA='\u03A9' #use this instead of 2126 which is for backward compatability 
@@ -221,5 +221,3 @@ def populateConstraints(session):
     session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in NON_SI_UNITS])
     session.add_all([SEX(name=name,abbrev=abbrev,symbol=symbol) for name,abbrev,symbol in SEXES])
     return session.commit()
-
-Base.metadata.create_all(engine) #FIXME does this work?

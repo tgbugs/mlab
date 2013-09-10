@@ -1,10 +1,11 @@
+from imports import *
 from datetime import datetime
 
 from sqlalchemy                         import Float
 from sqlalchemy                         import ForeignKeyConstraint
 
-from database.base import Base
-from notes import HasNotes
+from database.base import Base, HasNotes
+#from notes import HasNotes
 
 ###--------------------
 ###  Measurement tables, to enforce untils and things... it may look over normalized, but it means that every single measurement I take will have a datetime associated as well as units
@@ -56,9 +57,24 @@ class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here
     def __repr__(self):
         return '\n%s %s%s collected %s from %s'%(self.value,self.prefix,self.units,frmtDT(self.dateTime),self.source.strHelper())
 
-###-------------
-###  Datasources/Datasyncs
-###-------------
+class espPosition(OneDData):
+    """table to hold all the esp positions that I collect, they can be associated to a cell, or to a stimulation event or whatever"""
+    id=Column(Integer,ForeignKey('oneddata.id'),primary_key=True)
+    #this needs an association table or a mixin for HasPosition or some shit ;_; ?? or 'HasData' or something...
+    #x
+    #y
+    associated_object=Column(Integer) #bugger
+    pass
+
+
+class espCalibration(HasNotes, Base):
+    pass
+###------------
+###  Doccuments
+###------------
+
+class IACUCProtocols(Base): #note: probs can't store them here, but just put a number and a link (frankly no sense, they are kept in good order elsewere)
+    pass
 
 class Protocols(Base):
     pass
@@ -69,11 +85,23 @@ class Recipe(HasNotes, Base):
     #internal
     #sucrose
 
-class Reposity(Base):
+###-------------
+###  Datasources/Datasyncs
+###-------------
+
+
+class Repository(Base):
+    __tablename__='repositories'
     #FIXME url should be full path
     url=Column(String) #make sure this can follow logical file:// or localhost://
     name=Column(String) #a little note saying what data is stored here, eg, abf files
     credentials_file=Column(String) #TODO this is going to be a massive security bit
+
+class File(Base):
+    #FIXME put this in constraints ??
+    id=None
+    type=Column(String(3),primary_key=True)
+    #hdf5, abf, py etc
 
 class DataFile(Base):
     #TODO path, should the database maintain this???, yes
@@ -83,13 +111,13 @@ class DataFile(Base):
     #ideally we want this to be dynamic so that the DataPath can change and all the DataFile entries will learn about it
     #it might just be better to do it by hand so UPDATE doesn't swamp everything
     #the path cannot be the primary key of the datapath table AND accomodate path changes
-    repo_id=Column(Integer, ForeignKey('repository.id'))
+    repo_id=Column(Integer, ForeignKey('repositories.id'))
     filename=Column(String)
-    extension=Column(String,Foreignkey('df_extensions.type'))
-    metadata_id=Column(Integer,ForeignKey('metadata.id'))
+    filetype=Column(String,ForeignKey('file.type'))
+    #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
+    experiment_id=Column(Integer,ForeignKey('experiment.id'))
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
 
     experiment_id=Column(Integer,ForeignKey('experiments.id'))
 
 
-Base.metadata.create_all(engine)

@@ -9,8 +9,8 @@ from sqlalchemy.ext.declarative         import declared_attr #main mice notes
 
 from dateTimeFuncs import *
 
-from database.base import Base
-from notes import HasNotes
+from database.base import Base, HasNotes
+#from notes import HasNotes
 
 #some global variables that are used here and there that would be magic otherwise
 plusMinus='\u00B1'
@@ -372,4 +372,3 @@ class Litter(HasNotes, Base):
             matingRecord='\n\tMatingRecord None'
         return base+'%s %s %s'%(sire,self.dam.strHelper(1),matingRecord)
 
-Base.metadata.create_all(engine)

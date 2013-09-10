@@ -1,5 +1,7 @@
-from database.base import Base
-from notes import HasNotes
+from imports import *
+
+from database.base import Base, HasNotes
+#from notes import HasNotes
 
 #TODO could just make this a hardware table and maybe CHECK that the type matches?
 #then just have another table for any specifics on that, could do the same for the reagents, since most of them are going to have links to urls and msdses or whatever the fuck
@@ -49,4 +51,3 @@ class Solution(HasNotes, Base): #using an id for the one since so much to pass a
     stock_id=Column(Integer,ForeignKey('stock.mix_dateTime'))
 
 
-Base.metadata.create_all(engine)

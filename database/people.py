@@ -2,8 +2,8 @@ from imports import *
 from sqlalchemy                         import Date
 from sqlalchemy                         import ForeignKeyConstraint
 
-from database.base import Base
-from notes import HasNotes
+from database.base import Base, HasNotes
+#from notes import HasNotes
 
 ###---------------
 ###  People tables
@@ -31,4 +31,3 @@ class Person(HasNotes, Base):
     projects=None #FIXME m-m
 
 
-Base.metadata.create_all(engine)
