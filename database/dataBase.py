@@ -237,7 +237,9 @@ class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here
 
     #ieee double, numpy float64, 52bits of mantissa with precision of 53bits
     source_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #backref FIXME
-    value=Column(Float(53),nullable=False) #FIXME make sure this is right; FIXME should this be nullable, see if there are use cases where None for a value instead of zero is useful?
+    value1=Column(Float(53),nullable=False) #FIXME make sure this is right; FIXME should this be nullable, see if there are use cases where None for a value instead of zero is useful?
+    value2=Column(Float(53))
+    value3=Column(Float(53))
     #somehow I think that there is a possibility that I will want to have a form of some kind where I have lots of measurements but 
     def __init__(self,value,SI_prefix,SI_unit,Source=None,source_id=None):
         self.dateTime=datetime.utcnow()
@@ -641,11 +643,12 @@ class LED(HasNotes, Base):
     test_DateTime=None
     voltage_intensity_plot=None
 
-class stim_location(HasNotes, Base):
+class StimulusEvent(HasNotes, Base): #VARIABLE
     id=None
     mouse_id=None
     slice_id=None
     cell_id=None
+    #this is part of the DATAFILE metadata because it is a variable in the experiment
 
 class LED_stimulation(HasNotes, Base):
     id=None
@@ -659,8 +662,17 @@ class LED_stimulation(HasNotes, Base):
     pos_y=None
     pos_z=None #from surface? standarize this please
 
+class espPosition(TwoDData):
+    """table to hold all the esp positions that I collect, they can be associated to a cell, or to a stimulation event or whatever"""
+    #this needs an association table or a mixin for HasPosition or some shit ;_; ?? or 'HasData' or something...
+    #x
+    #y
+    associated_object=Column(Integer
+    pass
+
+
 class espCalibration(HasNotes, Base):
-    id=N
+    pass
 
 class Cell(HasNotes, Base):
     #FIXME this Cell class is NOT extensible
@@ -677,8 +689,8 @@ class Cell(HasNotes, Base):
     loosePatch=None
 
     #mark=Column(String(1)) #marks are VERY unlikely to be reused, do not store in the database direcly handle getting cell position via them elsewhere
-    pos_x=Column(Float) #FIXME positions need
-    pos_y=Column(Float)
+    esp_x=Column(Float) #FIXME positions need
+    esp_y=Column(Float)
     pos_z_rel=Column(Float)
 
     #TODO abfFiles are going to be a many-many relationship here....
@@ -702,7 +714,7 @@ class SlicePrep(HasNotes, Base):
     #sucrose_id
     #sucrose reference to table of solutions
 
-class SliceExperiment(HasNotes, Base):
+class SliceExperiment(Experiment):
     """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
     #with abf files and stuff like that O_O
     #this is coterminus with abffile but keeping it separate will allow for other filetypes more easily
@@ -715,15 +727,30 @@ class SliceExperiment(HasNotes, Base):
 
     #abffile
 
+class HistologyExperiment(Experiment):
+
+
 
 class IUEP(HasNotes, Base):
     dam_id=Column(Integer,ForeignKey('dam.id'),nullable=False)
     dam=relationship('Dam',backref=('iuep'))
 
-class Experimental_Metadata(Base):
-    """Base class for all experiment metadata tables"""
-    datasources=None
-    objects=None
+class Experiment(Base):
+    """Base class to link all experiment metadata tables to DataFile tables"""
+    #need this to group together the variables
+    #this is the base table where each row is one experimental condition or data point, we could call it an experiment since 'Slice Experiment' would be a subtype with its own additional data
+    __tablename__='experiments'
+    dateTime=Column(DateTime,nullable=False)
+    datafiles=relationship('DataFile',backref=backref('metadata',uselist=False))
+    constants=None
+    #nope, we're just going to have some data duplication, because each datafile will have to say 'ah yes, I was associated with this cell, this esp position etc'
+    #variables=None #FIXME these go in metadata, unforunately there is something that varies every time, but THAT should be stored somewhere OTHER than the main unit of analysis on a set of datafiles???
+    __mapper_args__ = {
+        'polymorphic_on':type,
+        'polymorphic_identity':'experiment',
+        #'with_polymorphic':'*'
+    }
+
     #TODO every time a collect an data file of any type and it is determined to be legit (by me) then it should all be stored
     #the experiment is basically the 'dataobject' that links the phenomena studied to the data about it(them)
     #turns out that the 'datafile' IS the normalized place to link all these things together, 
@@ -737,13 +764,27 @@ class ExperimentType(Base):
 ###  Datasources/Datasyncs
 ###-------------
 
+class Reposity(Base):
+    local_path=Column(String)
+    url=Column(String)
+    name=Column(String) #a little note saying what data is stored here, eg, abf files
+    credentials_file=Column(String) #FIXME this is going to be a massive security bit
+
 class DataFile(Base):
+    #TODO path, should the database maintain this???, yes
+    #how to constrain/track files so they don't get lost??
+    #well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
+    #and the constraint will be populated by the DataPath table, if I have 10,000 datafiles though, that could become a NASTY change
+    #ideally we want this to be dynamic so that the DataPath can change and all the DataFile entries will learn about it
+    #it might just be better to do it by hand so UPDATE doesn't swamp everything
+    #the path cannot be the primary key of the datapath table AND accomodate path changes
+    repo_id=Column(Integer, ForeignKey('repository.id'))
+    filename=Column(String)
+    extension=Column(String,Foreignkey('df_extensions.type'))
+    metadata_id=Column(Integer,ForeignKey('metadata.id'))
+    creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
 
-
-class AbfFile(HasNotes, Base):
-    id=Column(String,primary_key=True) #filename without the extension FIXME this is a problem?
-    #all the rigstate should just be put here?!?!? ya probably that makes the most sense
-    sliceExperiemnt_id=Column(Integer,ForeignKey('sliceexperiment.id'))
+    experiment_id=Column(Integer,ForeignKey('experiments.id'))
 
 ###----------------------------------------------------------------
 ###  Helper classes/tables for mice (normalization and constraints)
@@ -758,7 +799,6 @@ class SI_PREFIX(Base): #Yes, these are a good idea because they are written once
     def __repr__(self):
         return '%s'%(self.symbol)
     
-
 class SI_UNIT(Base):
     id=None
     symbol=Column(String(3),primary_key=True) #FIXME varchar may not work
