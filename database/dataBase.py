@@ -163,21 +163,22 @@ class Person(HasNotes, Base):
     #Role=Column(String,ForeignKey('role.id'))
     Role=Column(String)
     neurotree_id=Column(Integer) #for shits and gigs
-    experiments=relationship('Experiment',backref='investigator') #SOMETHING SOMETHING ACCESS CONTROL
+    experiments=relationship('Experiment',backref='investigator') #SOMETHING SOMETHING ACCESS CONTROL also in theory this might be m-m in some wierd situation where >1 person involved
+    projects=None #FIXME m-m
 
 
 ###----------------------
 ###  cages and cage racks
 ###----------------------
 
-class CageRack(Base):
+class CageRack(Base): #TODO this a 'collection'
     id=Column(Integer,primary_key=True)
     row=Column(Integer,primary_key=True,autoincrement=False)
     col=Column(String,primary_key=True,autoincrement=False)
     cage_id=Column(Integer,ForeignKey('cage.id'))
 
 
-class Cage(Base):
+class Cage(Base): #TODO this is a 'unit'
     #the cool bit is that I can actually do all of these before hand if I print out my cage cards and get them prepped
     id=Column(Integer,primary_key=True, autoincrement=False) #cage card numbers
     location=relationship('CageRack',backref=backref('cage',uselist=False),uselist=False)
@@ -188,11 +189,10 @@ class Cage(Base):
 ###  Reagents
 ###----------
 
-class Recipe(HasNotes, Base):
-    id=Column(String,primary_key=True)
-    #acsf
-    #internal
-    #sucrose
+class Reagent(Base): #TODO
+    """base table for all reagents, long run could probably could interface with and inventory, but we arent anywhere near there yet"""
+    pass
+
 
 class Stock(HasNotes, Base):
     id=None
@@ -213,7 +213,7 @@ class Solution(HasNotes, Base): #using an id for the one since so much to pass a
 class Datasource(HasNotes, Base):
     __tablename__='datasources'
     source_class=Column(String)
-    ForeignKeyConstraint('Datasource.source_class',['people.id','users.id','abffile.id'])
+    ForeignKeyConstraint('Datasource.source_class',['people.id','users.id','datafile.id'])
     data1=relationship('OneDData',backref=backref('source',uselist=False))
     #FIXME 
 
@@ -728,20 +728,28 @@ class SliceExperiment(Experiment):
     #abffile
 
 class HistologyExperiment(Experiment):
+    pass
 
 
+class IUEPExperiment(Experiment):
 
-class IUEP(HasNotes, Base):
-    dam_id=Column(Integer,ForeignKey('dam.id'),nullable=False)
-    dam=relationship('Dam',backref=('iuep'))
+class Project(Base):
+    PI=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc...
+    people=relationship('Person',backref='projects') #FIXME m-m
+    protocol_number=Column(Integer,ForeignKey('IACUCProtocl.id'))
+
 
 class Experiment(Base):
     """Base class to link all experiment metadata tables to DataFile tables"""
     #need this to group together the variables
     #this is the base table where each row is one experimental condition or data point, we could call it an experiment since 'Slice Experiment' would be a subtype with its own additional data
     __tablename__='experiments'
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)
+    #subject_id=Column(Integer,nullable=False)
+    #ForeignKeyConstraint('Experiment.subject_id',['mouse.id','organism.id','cellCulture.id'])
     dateTime=Column(DateTime,nullable=False)
-    datafiles=relationship('DataFile',backref=backref('metadata',uselist=False))
+    protocol_id=Column(Integer,ForeignKey('protocols.id'))
+    datafiles=relationship('DataFile',backref=backref('experiment',uselist=False))
     constants=None
     #nope, we're just going to have some data duplication, because each datafile will have to say 'ah yes, I was associated with this cell, this esp position etc'
     #variables=None #FIXME these go in metadata, unforunately there is something that varies every time, but THAT should be stored somewhere OTHER than the main unit of analysis on a set of datafiles???
@@ -764,11 +772,20 @@ class ExperimentType(Base):
 ###  Datasources/Datasyncs
 ###-------------
 
+class Protocols(Base):
+    pass
+
+class Recipe(HasNotes, Base):
+    id=Column(String,primary_key=True)
+    #acsf
+    #internal
+    #sucrose
+
 class Reposity(Base):
-    local_path=Column(String)
-    url=Column(String)
+    #FIXME url should be full path
+    url=Column(String) #make sure this can follow logical file:// or localhost://
     name=Column(String) #a little note saying what data is stored here, eg, abf files
-    credentials_file=Column(String) #FIXME this is going to be a massive security bit
+    credentials_file=Column(String) #TODO this is going to be a massive security bit
 
 class DataFile(Base):
     #TODO path, should the database maintain this???, yes
