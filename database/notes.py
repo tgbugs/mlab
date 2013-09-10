@@ -1,9 +1,9 @@
-from imports import *
+from database.imports import *
 from sqlalchemy                         import Text
 from sqlalchemy.ext.declarative         import declared_attr
 from sqlalchemy.ext.associationproxy    import association_proxy
 
-from dateTimeFuncs import *
+from database.dateTimeFuncs import *
 
 from database.base import Base
 #all I want is a many-many relationship between targets and notes but that doesn't quite work ;_; Association per tble maybe?? that way we don't need a mixin

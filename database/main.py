@@ -44,11 +44,11 @@ from datetime import datetime
 
 from sqlalchemy                         import event
 from sqlalchemy                         import create_engine
-from sqlalchemy.orm                     import Session
+from sqlalchemy.orm                     import scoped_session, sessionmaker #YAY this was what was missing
 from sqlalchemy.engine                  import Engine
 from sqlalchemy.ext.declarative         import declared_attr
 
-from database.base          import Base
+from database.base          import init_db
 from database.constraints   import *
 from database.experiments   import *
 from database.inventory     import *
@@ -57,7 +57,12 @@ from database.notes         import * #FIXME exceptionally broken at the moment
 from database.mice          import *
 from database.data          import *
 
-from debug                              import TDB
+try:
+    import rpdb2
+except:
+    pass
+
+from debug                              import TDB,ploc
 
 tdb=TDB()
 printD=tdb.printD
@@ -76,7 +81,6 @@ def makeObjects(session):
     
     #make some notes
     notes=map(str,range(50))
-
 
     urdob=DOB(datetime.strptime('0001-1-1 00:00:00','%Y-%m-%d %H:%M:%S'))
     session.add(urdob)
@@ -146,15 +150,22 @@ def main():
     event.listen(engine,'connect',set_sqlite_pragma)
 
     #create metadata and session
-    Base.metadata.create_all(engine)
-    session = Session(engine)
+    init_db(engine)
+    #session = scoped_session(sessionmaker())
+    #session.configure(bind=engine)
+    Session=sessionmaker(bind=engine)
+    session = Session()
 
+
+    ploc(globals())
+
+    #rpdb2.start_embedded_debugger('poop')
     #populate constraint tables
     populateConstraints(session)
 
     #do some tests!
-
     makeObjects(session)
+
 
     print('\n###***constraints***')
     [printD(c,'\n') for c in session.query(SI_PREFIX)]

@@ -17,7 +17,7 @@ class HasNotes(object): #FIXME
     def addNote(string): #FIXME?
         pass
 
-class DefaultBase(object):
+class Base(object):
     @declared_attr
     def __tablename__(cls):
         return cls.__name__.lower()
@@ -29,4 +29,8 @@ class DefaultBase(object):
     def __repr__(self,attr='id'):
         return '\n%s %s'%(self.__class__.__name__,getattr(self,attr))
 
-Base=declarative_base(cls=DefaultBase)
+Base=declarative_base(cls=Base)
+
+def init_db(engine):
+    Base.metadata.create_all(engine, checkfirst=True)
+    

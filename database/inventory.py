@@ -1,4 +1,4 @@
-from imports import *
+from database.imports import *
 
 from database.base import Base, HasNotes
 #from notes import HasNotes

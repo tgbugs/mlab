@@ -1,4 +1,4 @@
-from imports import *
+from database.imports import *
 from sqlalchemy                         import Date
 from sqlalchemy                         import ForeignKeyConstraint
 

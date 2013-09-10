@@ -1,4 +1,4 @@
-from imports import *
+from database.imports import *
 from sqlalchemy                         import Float
 
 from database.base import Base, HasNotes
@@ -35,12 +35,16 @@ class StimulusEvent(HasNotes, Base): #VARIABLE
     cell_id=None
     #this is part of the DATAFILE metadata because it is a variable in the experiment
 
-class LED_stimulation(HasNotes, Base):
+class LED_stimulation(HasNotes, Base): #association linking an espPos to at Cell
     #id=None
+    Column('esp_pos_id',Integer,ForeignKey('LED_stim.id'),primary_key=True),
+    Column('cell_id',Integer,ForeignKey('cell.id'),primary_key=True)
+    
     LED_id=None #TODO table of LED types WITH CALIBRATION??
     mouse_id=None
     slice_id=None
-    cells=relationship('Cell',backref('LED_stims'))
+    cells=relationship('Cell',backref='LED_stims')
+    #holy fucking shti what!?
     dateTime=None
     mark=None
     esp_pos=None #x y
@@ -62,7 +66,7 @@ class Cell(HasNotes, Base):
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO we might be able to link cells to headstages and all that other shit more easily, keeping the data on the cell itself in the cell, tl;dr NORMALIZE!
     #hs_id=Column(Integer,ForeignKey('headstage.channel'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
     #hs_amp_serial=Column(Integer,ForeignKey('headstage.amp_serial'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
-    startDateTime=Column(DateTime)#,primary_key=True)
+    startDateTime=Column(DateTime,nullable=False)
 
     wholeCell=None #FIXME these might should go in analysis??? no...
     loosePatch=None
@@ -80,11 +84,13 @@ class Cell(HasNotes, Base):
     rheobase=None
 
     #exp_parts=relationship('Cell',primaryjoin='Cell.experiment_id==remote(Cell.experiment_id)',back_populates='exp_parts') #FIXME consider remote_side, sqlalchemy is schitzo, it wants remote or foreign
-    cells1=relationship('Cell',
-                         secondary=cell_to_cell,
-                         primaryjoin=id==cell_to_cell.c.cell_1_id,
-                         secondaryjoin=id==cell_to_cell.c.cell_2_id,
-                         backref='cells2')
+    cell_1=relationship('Cell',
+                        secondary=cell_to_cell,
+                        primaryjoin='Cell.id==cell_to_cell.c.cell_2_id',
+                        secondaryjoin='Cell.id==cell_to_cell.c.cell_1_id',
+                        backref='cell_2',
+                        #viewonly=True #FIXME this shouldn't be needed, I follo the example exactly
+                       )
 
 
     #exp_parts=relationship('Cell',backref=backref('exp_parts',remote_side[id]),back_populates='exp_parts') #FIXME consider remote_side, sqlalchemy is schitzo, it wants remote or foreign

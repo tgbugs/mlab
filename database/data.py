@@ -1,4 +1,4 @@
-from imports import *
+from database.imports import *
 from datetime import datetime
 
 from sqlalchemy                         import Float
@@ -31,10 +31,11 @@ class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here
     #FIXME I am currently automatically generating datetime entries for this because I want the record of when it was put into the database, not when it was actually measured...
     #This behavior is more consistent and COULD maybe be used as a pk along with data source
 
-    SI_unit=Column(String,nullable=False)
-    ForeignKeyConstraint('OneDData.SI_unit',['SI_UNIT.symbol','SI_UNIT.name'])
-    SI_prefix=Column(String,nullable=False) #FIXME make sure this works with '' for no prefix or that that is handled as expected
-    ForeignKeyConstraint('OneDData.SI_prefix',['SI_PREFIX.prefix','SI_PREFIX.symbol','SI_PREFIX.E']) #FIXME table names?
+    #SI_unit_symbol=Column(String,ForeignKey('si_unit.symbol'),nullable=False)
+    #SI_unit_name=Column(String,ForeignKey('si_unit.name'),nullable=False) #FIXME damn it plurals fucking everything up, handle those elsewhere
+    #SI_prefix=Column(String,ForeignKey('si_unit.symbol'),nullable=False) #FIXME make sure this works with '' for no prefix or that that is handled as expected
+    #prefix=relationship('SI_PREFIX')
+    #units=relationship('SI_UNIT')
 
     #ieee double, numpy float64, 52bits of mantissa with precision of 53bits
     source_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #backref FIXME
