@@ -26,6 +26,11 @@
 #TODO reimplement notes so that they can apply to multiple things like I do with classDOB, but check the overhead, join inheritance might work
 #make sure to set the 'existing table' option or something?
 
+#TODO neo io for dealing with abf files, but that comes later
+#OBJECTIVE raw data format agnostic, this database does not house the raw data, it houses the assumptions and the results and POINTS to the analysis code and the raw data
+#if needs be the code used to analyize the data can be stored and any updates/diffs can be added to track how numbers were produced
+#this means that this database stays flexible in terms of what kinds of experiments it can handle
+#it also maximizes poratbility between different backend databases
 
 from datetime import datetime,timedelta #ALL TIMES ARE UTC WITH tzinfo=None, CONVERT LATER
 
@@ -47,6 +52,12 @@ printFD=tdb.printFuncDict
 
 #some global variables that are used here and there that would be magic otherwise
 plusMinus='\u00B1'
+OMEGA='\u03A9' #use this instead of 2126 which is for backward compatability 
+degree='\u00B0'
+mu='\u03BC'
+male_symbol='\u2642' #U+2642 #FIXME stupid windows console crashing symbol output >_<; in windows shell chcp 65001
+female_symbol='\u2640' #U+2640
+unknown_symbol='\u26AA' #using unicode U+26AA for this #FIXME chcp 65001 doesn't work for displaying this one; also apparently lucidia console required? nope, didn't fix it
 
 ###---------------------------------------------------------------
 ###  Datetime and timedelta functions to be reused for consistency
@@ -202,10 +213,18 @@ class Solution(HasNotes, Base): #using an id for the one since so much to pass a
 class Datasource(HasNotes, Base):
     __tablename__='datasources'
     source_class=Column(String)
-    ForeignKeyConstraint('Datasource.source_class',['people.id','users.id'])
+    ForeignKeyConstraint('Datasource.source_class',['people.id','users.id','abffile.id'])
     data1=relationship('OneDData',backref=backref('source',uselist=False))
+    #FIXME 
 
-class OneDData(HasNotes, Base):
+class Result(HasNotes, Base):
+    __tablename__='results'
+    datasource_id=None
+    analysis_id=None
+    output_id=None
+
+
+class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here without too much trouble, but keep it < 3d, stuff that is entered manually or is associated with an object
     #id=None #FIXME for now we are just going to go with id as primary_key since we cannot gurantee atomicity for getting datetimes :/
     dateTime=Column(DateTime,nullable=False) #FIXME tons of problems with using dateTime/TIMESTAMP for primary key :(
     #FIXME I am currently automatically generating datetime entries for this because I want the record of when it was put into the database, not when it was actually measured...
@@ -617,15 +636,50 @@ class Slice(HasNotes, Base):
 
     cells=relationship('Cell',primaryjoin='Cell.slice_sdt==Slice.startDateTime',backref=backref('slice',uselist=False))
 
+class LED(HasNotes, Base):
+    wavelength=None
+    test_DateTime=None
+    voltage_intensity_plot=None
+
+class stim_location(HasNotes, Base):
+    id=None
+    mouse_id=None
+    slice_id=None
+    cell_id=None
+
+class LED_stimulation(HasNotes, Base):
+    id=None
+    LED_id=None #TODO table of LED types WITH CALIBRATION??
+    mouse_id=None
+    slice_id=None
+    cells=relationship('Cell',backref('LED_stims'))
+    dateTime=None
+    mark=None
+    pos_x=None
+    pos_y=None
+    pos_z=None #from surface? standarize this please
+
+class espCalibration(HasNotes, Base):
+    id=N
 
 class Cell(HasNotes, Base):
-    id=None
+    #FIXME this Cell class is NOT extensible
+    #probably should use inheritance
+    id=None #FIXME fuck it dude, wouldn't it be easier to just give them unqiue ids so we don't have to worry about datetime? or is it the stupid sqlite problem?
     mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
-    slice_sdt=Column(Integer,ForeignKey('slice.startDateTime'),primary_key=True)
+    slice_sdt=Column(Integer,ForeignKey('slice.startDateTime'),primary_key=True) #FIXME NO DATETIME PRIMARY KEYS
     hs_id=Column(Integer,ForeignKey('headstage.id'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
     #hs_id=Column(Integer,ForeignKey('headstage.channel'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
     #hs_amp_serial=Column(Integer,ForeignKey('headstage.amp_serial'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
     startDateTime=Column(DateTime,primary_key=True)
+
+    wholeCell=None #FIXME these might should go in analysis??? no...
+    loosePatch=None
+
+    #mark=Column(String(1)) #marks are VERY unlikely to be reused, do not store in the database direcly handle getting cell position via them elsewhere
+    pos_x=Column(Float) #FIXME positions need
+    pos_y=Column(Float)
+    pos_z_rel=Column(Float)
 
     #TODO abfFiles are going to be a many-many relationship here....
     abfFile_channel=None #FIXME this nd the headstage serials seems redundant but... wtf? I have to link them somehow
@@ -633,6 +687,10 @@ class Cell(HasNotes, Base):
     breakInTime=None
 
     rheobase=None
+
+    exp_parts=relationship('Cell',primaryjoin='Cell.experiment_id==Cell.experiment_id',back_propagate('exp_parts'))
+
+    #FIXME how to do led stim linkage properly :/ it is a many to many... association??? or table? association between cell and stim position is probably best?
     
     #analysis_id=None #put the analysis in another table that will backprop here
 
@@ -662,19 +720,69 @@ class IUEP(HasNotes, Base):
     dam_id=Column(Integer,ForeignKey('dam.id'),nullable=False)
     dam=relationship('Dam',backref=('iuep'))
 
+class Experimental_Metadata(Base):
+    """Base class for all experiment metadata tables"""
+    datasources=None
+    objects=None
+    #TODO every time a collect an data file of any type and it is determined to be legit (by me) then it should all be stored
+    #the experiment is basically the 'dataobject' that links the phenomena studied to the data about it(them)
+    #turns out that the 'datafile' IS the normalized place to link all these things together, 
+
 class ExperimentType(Base):
     #polymorphic type
     pass
     
 
 ###-------------
-###  Datasources
+###  Datasources/Datasyncs
 ###-------------
+
+class DataFile(Base):
+
 
 class AbfFile(HasNotes, Base):
     id=Column(String,primary_key=True) #filename without the extension FIXME this is a problem?
     #all the rigstate should just be put here?!?!? ya probably that makes the most sense
     sliceExperiemnt_id=Column(Integer,ForeignKey('sliceexperiment.id'))
+
+###----------------------------------------------------------------
+###  Helper classes/tables for mice (normalization and constraints)
+###----------------------------------------------------------------
+
+class SI_PREFIX(Base): #Yes, these are a good idea because they are written once, and infact I can enforce viewonly=True OR even have non-root users see those tables as read only
+    id=None
+    symbol=Column(String(2),primary_key=True)
+    prefix=Column(String(5))
+    E=Column(Integer)
+    relationship('OneDData',backref('prefix')) #FIXME makesure this doesn't add a column!
+    def __repr__(self):
+        return '%s'%(self.symbol)
+    
+
+class SI_UNIT(Base):
+    id=None
+    symbol=Column(String(3),primary_key=True) #FIXME varchar may not work
+    name=Column(String(15),primary_key=True) #this is also a pk so we can accept plurals :)
+    #conversion??
+    relationship('OneDData',backref('units')) #FIXME make sure this doen't add a column
+    def __repr__(self):
+        return '%s'%(self.symbol)
+
+class SEX(Base):
+    """Static table for sex"""
+    id=None
+    symbol=Column(String(1)) #the actual symbols
+    #symbol=Column(Unicode(1)) #the actual symbols
+    name=Column(String(14),primary_key=True,autoincrement=False) #'male','female','unknown' #FIXME do I need the autoincrement 
+    abbrev=Column(String(1)) #'m','f','u'
+    def __repr__(self):
+        return '\n%s %s %s'%(self.name,self.abbrev,self.symbol) #FIXME somehow there are trailing chars here >_<
+
+class Strain(Base): #TODO
+    #FIXME class for strain IDs pair up with the shorthand names that I use and make sure mappings are one to one
+    #will be VERY useful when converting for real things
+    #FIXME: by reflection from jax??? probably not
+    pass
 
 ###----------------------------
 ###  Populate Constraint tables
@@ -709,8 +817,8 @@ def populateConstraints(session):
 
         ('kelvin','K'),
 
-        ('degree Celcius','\u00B0C'), #degrees = U+00B0
-        ('degrees Celcius','\u00B0C'),
+        ('degree Celcius',degree+'C'), #degrees = U+00B0
+        ('degrees Celcius',degree+'C'),
         ('degree Celcius','~oC'), #Tom also accepts using the digraph for the degree symbol...
         ('degrees Celcius','~oC'),
 
@@ -768,8 +876,8 @@ def populateConstraints(session):
         ('farad','F'),
         ('farads','F'),
 
-        ('ohm','\u03A9'), #unicode=U+03A9, this is upper case greek and should be used instead of 2126
-        ('ohms','\u03A9'),
+        ('ohm',OMEGA), #unicode=U+03A9, this is upper case greek and should be used instead of 2126
+        ('ohms',OMEGA),
 
         ('ohm','R'), #R also accepted as per the note on wikipedia and some brit standard
         ('ohms','R'),
@@ -806,8 +914,8 @@ def populateConstraints(session):
         ('osmole','Osm'), #total moles of solute contributing to osmotic pressure
         ('osmoles','Osm'),
 
-        ('degree','\u00B0'), #unicode for the symbol is U+00B0
-        ('degrees','\u00B0'),
+        ('degree',degree), #unicode for the symbol is U+00B0
+        ('degrees',degree),
         ('degree','~o'), #also accepted
         ('degrees','~o'),
     )
@@ -827,7 +935,7 @@ def populateConstraints(session):
                     ('deci','d',-1),
                     ('centi','c',-2),
                     ('milli','m',-3),
-                    ('micro','\u03BC',-6), #unicode=U+03BC  #FIXME terminal haveing problemms
+                    ('micro',mu,-6), #unicode=U+03BC  #FIXME terminal haveing problemms
                     ('micro','u',-6,), #also unoffically used
                     ('nano','n',-9),
                     ('pico','p',-12),
@@ -838,9 +946,9 @@ def populateConstraints(session):
                 )
 
     SEXES=(
-            ('male','m','\u2642'), #U+2642 #FIXME stupid windows console crashing symbol output >_<; in windows shell chcp 65001
-            ('female','f','\u2640'), #U+2640
-            ('unknown','u','\u26AA'), #using unicode U+26AA for this #FIXME chcp 65001 doesn't work for displaying this one; also apparently lucidia console required? nope, didn't fix it
+            ('male','m',male_symbol), #U+2642 #FIXME stupid windows console crashing symbol output >_<; in windows shell chcp 65001
+            ('female','f',female_symbol), #U+2640
+            ('unknown','u',unknown_symbol), #using unicode U+26AA for this #FIXME chcp 65001 doesn't work for displaying this one; also apparently lucidia console required? nope, didn't fix it
         )
 
     session.add_all([SI_PREFIX(prefix=prefix,symbol=symbol,E=E) for prefix,symbol,E in SI_PREFIXES])
@@ -848,45 +956,6 @@ def populateConstraints(session):
     session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in NON_SI_UNITS])
     session.add_all([SEX(name=name,abbrev=abbrev,symbol=symbol) for name,abbrev,symbol in SEXES])
     return session.commit()
-
-###----------------------------------------------------------------
-###  Helper classes/tables for mice (normalization and constraints)
-###----------------------------------------------------------------
-
-class SI_PREFIX(Base): #Yes, these are a good idea because they are written once, and infact I can enforce viewonly=True OR even have non-root users see those tables as read only
-    id=None
-    symbol=Column(String(2),primary_key=True)
-    prefix=Column(String(5))
-    E=Column(Integer)
-    relationship('OneDData',backref('prefix')) #FIXME makesure this doesn't add a column!
-    def __repr__(self):
-        return '%s'%(self.symbol)
-    
-
-class SI_UNIT(Base):
-    id=None
-    symbol=Column(String(3),primary_key=True) #FIXME varchar may not work
-    name=Column(String(15),primary_key=True) #this is also a pk so we can accept plurals :)
-    #conversion??
-    relationship('OneDData',backref('units')) #FIXME make sure this doen't add a column
-    def __repr__(self):
-        return '%s'%(self.symbol)
-
-class SEX(Base):
-    """Static table for sex"""
-    id=None
-    symbol=Column(String(1)) #the actual symbols
-    #symbol=Column(Unicode(1)) #the actual symbols
-    name=Column(String(14),primary_key=True,autoincrement=False) #'male','female','unknown' #FIXME do I need the autoincrement 
-    abbrev=Column(String(1)) #'m','f','u'
-    def __repr__(self):
-        return '\n%s %s %s'%(self.name,self.abbrev,self.symbol) #FIXME somehow there are trailing chars here >_<
-
-class Strain(Base): #TODO
-    #FIXME class for strain IDs pair up with the shorthand names that I use and make sure mappings are one to one
-    #will be VERY useful when converting for real things
-    #FIXME: by reflection from jax??? probably not
-    pass
 
 ###----------
 ###  Test it!
@@ -966,6 +1035,7 @@ def main():
     echo=False
     dbPath=':memory:'
     #dbPath='test2' #holy crap that is alow slower on the writes!
+    #dbPath='C:\\toms_data\\db_test.db'
     engine = create_engine('sqlite:///%s'%(dbPath), echo=echo) #FIXME, check if the problems with datetime and DateTime on sqlite and sqlite3 modules are present!
     event.listen(engine,'connect',set_sqlite_pragma)
 
@@ -979,33 +1049,6 @@ def main():
     #do some tests!
 
     makeObjects(session)
-
-
-    """
-    note1=Note(text='poop')
-    note2=Note(text='poop2')
-    note3=Note(text='poop3')
-    note4=Note(text='poop4')
-    note5=Note(text='poop5')
-    note6=Note(text='dicks')
-    #l1.notes=[Note('asdf note l1 test1')] #FIXME DANGEROUS WILL OVERWRITE
-    #l2.notes(Note('testing note')) #FIXME this one doesnt work
-    l1.notes.append(Note('wat'))
-    l1.notes.append(note1)
-    l1.notes.append(note6)
-    mr1.notes.append(note1)
-    m1.notes.append(note2)
-    m1.notes.append(note3)
-    m2.notes.append(note3)
-    m2.notes.append(note5)
-    session.add_all((mr1,m1,m2,l1,l2))
-    session.commit()
-
-    m3=Mouse(Litter=l1,num=0,sex='male',notes=[])
-    m4=Mouse(Litter=l1,num=1,sex='female',notes=[])
-    session.add_all((m3,m4))
-    session.commit()
-    """
 
     print('\n###***constraints***')
     [printD(c,'\n') for c in session.query(SI_PREFIX)]
