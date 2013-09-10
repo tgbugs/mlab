@@ -1,3 +1,5 @@
+from dataBase import Base
+
 from sqlalchemy                         import Column, String, ForeignKey
 from sqlalchemy.orm                     import relationship, backref
 from sqlalchemy.ext.declarative         import declared_attr

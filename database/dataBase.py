@@ -66,6 +66,7 @@ class DefaultBase(object):
     def __repr__(self,attr='id'):
         return '\n%s %s'%(self.__class__.__name__,getattr(self,attr))
 
+#FIXME for some reason this cannot be imported, will look at it later :/
 Base=declarative_base(cls=DefaultBase) #make an instance of the base class, all other modules need this
 
 ###----------
