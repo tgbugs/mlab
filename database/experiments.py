@@ -46,17 +46,23 @@ class LED_stimulation(HasNotes, Base):
     esp_pos=None #x y
     pos_z=None #from surface? standarize this please
 
+
+cell_to_cell=Table('cell_to_cell', Base.metadata, 
+                   Column('cell_1_id',Integer,ForeignKey('cell.id'),primary_key=True),
+                   Column('cell_2_id',Integer,ForeignKey('cell.id'),primary_key=True)
+                  )
+
 class Cell(HasNotes, Base):
     #FIXME this Cell class is NOT extensible
     #probably should use inheritance
-    id=None #FIXME fuck it dude, wouldn't it be easier to just give them unqiue ids so we don't have to worry about datetime? or is it the stupid sqlite problem?
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
-    slice_sdt=Column(Integer,ForeignKey('slice.startDateTime'),primary_key=True) #FIXME NO DATETIME PRIMARY KEYS
-    hs_id=Column(Integer,ForeignKey('headstage.id'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
-    experiment_id=Column(Integer,nullable=False) #TODO we might be able to link cells to headstages and all that other shit more easily, keeping the data on the cell itself in the cell, tl;dr NORMALIZE!
+    #id=None #FIXME fuck it dude, wouldn't it be easier to just give them unqiue ids so we don't have to worry about datetime? or is it the stupid sqlite problem?
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)
+    slice_sdt=Column(Integer,ForeignKey('slice.startDateTime'),nullable=False) #FIXME NO DATETIME PRIMARY KEYS
+    hs_id=Column(Integer,ForeignKey('headstage.id'),nullable=False)#,ForeignKey('headstages.id')) #FIXME critical
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO we might be able to link cells to headstages and all that other shit more easily, keeping the data on the cell itself in the cell, tl;dr NORMALIZE!
     #hs_id=Column(Integer,ForeignKey('headstage.channel'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
     #hs_amp_serial=Column(Integer,ForeignKey('headstage.amp_serial'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
-    startDateTime=Column(DateTime,primary_key=True)
+    startDateTime=Column(DateTime)#,primary_key=True)
 
     wholeCell=None #FIXME these might should go in analysis??? no...
     loosePatch=None
@@ -73,7 +79,15 @@ class Cell(HasNotes, Base):
 
     rheobase=None
 
-    exp_parts=relationship('Cell',primaryjoin='Cell.experiment_id==remote(Cell.experiment_id)',back_populates='exp_parts') #FIXME consider remote_side
+    #exp_parts=relationship('Cell',primaryjoin='Cell.experiment_id==remote(Cell.experiment_id)',back_populates='exp_parts') #FIXME consider remote_side, sqlalchemy is schitzo, it wants remote or foreign
+    cells1=relationship('Cell',
+                         secondary=cell_to_cell,
+                         primaryjoin=id==cell_to_cell.c.cell_1_id,
+                         secondaryjoin=id==cell_to_cell.c.cell_2_id,
+                         backref='cells2')
+
+
+    #exp_parts=relationship('Cell',backref=backref('exp_parts',remote_side[id]),back_populates='exp_parts') #FIXME consider remote_side, sqlalchemy is schitzo, it wants remote or foreign
 
     #FIXME how to do led stim linkage properly :/ it is a many to many... association??? or table? association between cell and stim position is probably best?
     
