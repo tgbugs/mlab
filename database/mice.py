@@ -9,7 +9,7 @@ from sqlalchemy.ext.declarative         import declared_attr #main mice notes
 
 from dateTimeFuncs import *
 
-from database.main import Base
+from database.base import Base
 from notes import HasNotes
 
 #some global variables that are used here and there that would be magic otherwise

@@ -1,7 +1,7 @@
 from imports import *
 from sqlalchemy                         import Float
 
-from database.main import Base
+from database.base import Base
 from notes import HasNotes
 
 #experiment variables that are sub mouse, everything at and above the level of the mouse is also an experimental variable that I want to keep track of independently if possible

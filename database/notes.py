@@ -5,7 +5,7 @@ from sqlalchemy.ext.associationproxy    import association_proxy
 
 from dateTimeFuncs import *
 
-from database.main import Base
+from database.base import Base
 #all I want is a many-many relationship between targets and notes but that doesn't quite work ;_; Association per tble maybe?? that way we don't need a mixin
 
 class NoteAssociation(Base): #turns out we want joined table inheritance... #I think I need multiple tables for this...

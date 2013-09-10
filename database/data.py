@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy                         import Float
 from sqlalchemy                         import ForeignKeyConstraint
 
-from database.main import Base
+from database.base import Base
 from notes import HasNotes
 
 ###--------------------

@@ -2,7 +2,7 @@ from imports import *
 from sqlalchemy                         import Date
 from sqlalchemy                         import ForeignKeyConstraint
 
-from database.main import Base
+from database.base import Base
 from notes import HasNotes
 
 ###---------------

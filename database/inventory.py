@@ -1,4 +1,4 @@
-from database.main import Base
+from database.base import Base
 from notes import HasNotes
 
 #TODO could just make this a hardware table and maybe CHECK that the type matches?

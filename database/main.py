@@ -42,12 +42,17 @@
 
 from datetime import datetime
 
-#from imports import *
 from sqlalchemy                         import event
 from sqlalchemy                         import create_engine
 from sqlalchemy.orm                     import Session
 from sqlalchemy.engine                  import Engine
-from sqlalchemy.ext.declarative         import declarative_base, declared_attr
+from sqlalchemy.ext.declarative         import declared_attr
+
+from base import Base
+
+
+#from database.constraints import populateConstraints
+import database.constraints
 
 from debug                              import TDB
 
@@ -56,20 +61,21 @@ printD=tdb.printD
 printFD=tdb.printFuncDict
 tdboff=tdb.tdbOff()
 
-class DefaultBase(object):
-    @declared_attr
-    def __tablename__(cls):
-        return cls.__name__.lower()
-    id=Column(Integer, primary_key=True)
+@event.listens_for(Engine, 'connect') #FIXME NOT WORKING!
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute('PRAGMA foreign_keys=ON')
+    cursor.close()
 
-    def strHelper(self,depth=0,attr='id'):
-        tabs='\t'*depth
-        return '\n%s%s %s'%(tabs,self.__class__.__name__,getattr(self,attr))
-    def __repr__(self,attr='id'):
-        return '\n%s %s'%(self.__class__.__name__,getattr(self,attr))
+#setup the engine
+#echo=True
+echo=False
+dbPath=':memory:'
+#dbPath='test2' #holy crap that is alow slower on the writes!
+#dbPath='C:\\toms_data\\db_test.db'
+engine = create_engine('sqlite:///%s'%(dbPath), echo=echo) #FIXME, check if the problems with datetime and DateTime on sqlite and sqlite3 modules are present!
+event.listen(engine,'connect',set_sqlite_pragma)
 
-#FIXME for some reason this cannot be imported, will look at it later :/
-Base=declarative_base(cls=DefaultBase) #make an instance of the base class, all other modules need this
 
 ###----------
 ###  Test it!
@@ -137,22 +143,6 @@ def main():
     #SQLite does not check foreign key constraints by default so we have to turn it on every time we connect to the database
     #the way I have things written at the moment this is ok, but it is why inserting an id=0 has been working
     from time import sleep
-
-    @event.listens_for(Engine, 'connect') #FIXME NOT WORKING!
-    def set_sqlite_pragma(dbapi_connection, connection_record):
-        cursor = dbapi_connection.cursor()
-        cursor.execute('PRAGMA foreign_keys=ON')
-        cursor.close()
-
-    #setup the engine
-    #echo=True
-    echo=False
-    dbPath=':memory:'
-    #dbPath='test2' #holy crap that is alow slower on the writes!
-    #dbPath='C:\\toms_data\\db_test.db'
-    engine = create_engine('sqlite:///%s'%(dbPath), echo=echo) #FIXME, check if the problems with datetime and DateTime on sqlite and sqlite3 modules are present!
-    event.listen(engine,'connect',set_sqlite_pragma)
-
     #create metadata and session
     Base.metadata.create_all(engine)
     session = Session(engine)
