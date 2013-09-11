@@ -143,8 +143,8 @@ def main():
         cursor.close()
 
     #setup the engine
-    echo=True
-    #echo=False
+    #echo=True
+    echo=False
     dbPath=':memory:'
     #dbPath='test2' #holy crap that is alow slower on the writes!
     #dbPath='C:\\toms_data\\db_test.db'
@@ -173,11 +173,11 @@ def main():
     run_tests(session)
 
 
-
-    print('\n###***constraints***')
-    [printD(c,'\n') for c in session.query(SI_PREFIX)]
-    [printD(c,'\n') for c in session.query(SI_UNIT)]
-    [printD(c,'\n') for c in session.query(SEX)]
+    if 0:
+        print('\n###***constraints***')
+        [printD(c,'\n') for c in session.query(SI_PREFIX)]
+        [printD(c,'\n') for c in session.query(SI_UNIT)]
+        [printD(c,'\n') for c in session.query(SEX)]
 
     if 0:
         print('\n###***mice***')

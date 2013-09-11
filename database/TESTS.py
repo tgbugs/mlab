@@ -31,6 +31,19 @@ class TEST:
         sex_arr[sex_seed==0]='f'
         return sex_arr
 
+    def make_NONE(self,*arrays):
+            noneArr=[] 
+            num_nones=int(self.num/5)
+            [noneArr.append(None) for i in range(num_nones)]
+            for array in arrays:
+                array[:num_nones]=noneArr
+                np.random.shuffle(array)
+
+
+                        
+        
+        
+
 class t_people(TEST):
     def make_name(self,names_per=1):
         num=self.num
@@ -50,6 +63,7 @@ class t_people(TEST):
     def make_role(self):
         num=self.num
         roles=['wanker','narf','pi','turd','subject','gradstudent','postdoc']
+        #for the recored putting subjects in with everyone else is TOTALLY a HIPA violation
         rollseed=np.random.choice(len(roles),num)
         out=[roles[i] for i in rollseed]
         return out
@@ -62,7 +76,12 @@ class t_people(TEST):
         #print(genders)
         birthdates=self.make_date()
         roles=self.make_role()
-        ntids=np.random.randint(0,999999,num)
+        ntids=np.int32(np.int32(np.random.sample(num)*100000)/2) #still broken
+        #ntids=np.random.randint(0,99999,num) #test for non unique
+        ntids=list(ntids)
+
+        self.make_NONE(pfns,fns,mns,lns,genders,birthdates,roles,ntids)
+        #FIXME apparently None works differently than kwargs...
 
         self.people=[Person(PrefixName=pfns[i],
                             FirstName=fns[i],
@@ -78,7 +97,8 @@ class t_people(TEST):
         self.session.commit()
 
     def query(self):
-        print(self.session.query(People))
+        #print([p.Gender for p in self.session.query(Person)])
+        print([p for p in self.session.query(Person)])
 
 class t_data(TEST):
     pass
@@ -96,8 +116,9 @@ class t_experiment(TEST):
 
 
 def run_tests(session):
-    people=t_people(session,1000)
+    people=t_people(session,100)
     people.commit()
+    people.query()
 
 def main():
     pt=t_people(None,100)
