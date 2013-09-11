@@ -12,7 +12,7 @@ import numpy as np
 
 
 class TEST:
-    def __init__(self,session,num):
+    def __init__(self,session,num=None):
         self.num=num
         self.session=session
         self.make_all()
@@ -38,6 +38,10 @@ class TEST:
             for array in arrays:
                 array[:num_nones]=noneArr
                 np.random.shuffle(array)
+
+    def commit(self):
+        self.session.add_all(self.records)
+        self.session.commit()
 
 
 class t_people(TEST):
@@ -79,7 +83,7 @@ class t_people(TEST):
         self.make_NONE(pfns,fns,mns,lns,genders,birthdates,roles,ntids)
         #FIXME apparently None works differently than kwargs...
 
-        self.people=[Person(PrefixName=pfns[i],
+        self.records=[Person(PrefixName=pfns[i],
                             FirstName=fns[i],
                             MiddleName=mns[i],
                             LastName=lns[i],
@@ -89,19 +93,39 @@ class t_people(TEST):
                             Birthdate=birthdates[i]) for i in range(num)]
         #print(self.people)
 
-    def commit(self):
-        self.session.add_all(self.people)
-        self.session.commit()
-
     def query(self):
         #print([p.Gender for p in self.session.query(Person)])
         print([p for p in self.session.query(Person)])
 
+class t_repo(TEST):
+    def make_all(self):
+        repolist=[
+                    Repository(url='file:///C:/'),
+                    Repository(url='http://www.google.com/'),
+                    Repository(url='https://www.google.com/')
+        ]
+        self.records=repolist
+
+class t_repopath(TEST):
+    def make_all(self):
+        repo=t_repo(self.session)
+        repo.commit()
+        paths=['/repotest/asdf'
+               ,'repotest/asdf'
+               ,'repotest/asdf/'
+              ]
+        self.records=[]
+        for r in repo.records:
+            self.records.append([RepoPath(Repository=r,path=path) for path in paths])
+
 class t_data(TEST):
-    def get_repopath(self):
-        self.session.query(RepoPath)
-    def make_datafile(self):
-    pass
+    def make_all(self):
+        repop=t_repopath(self.session)
+        repop.commit()
+        for rp in repop.records:
+            pass
+
+        
 
 
 class t_experiment(TEST):
@@ -116,9 +140,13 @@ class t_experiment(TEST):
 
 
 def run_tests(session):
-    people=t_people(session,100)
-    people.commit()
-    people.query()
+    #people=t_people(session,100)
+    #people.commit()
+    #people.query()
+
+    d=t_data()
+
+
 
 def main():
     pass

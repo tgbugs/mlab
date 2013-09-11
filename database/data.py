@@ -6,6 +6,7 @@ from sqlalchemy                         import Text
 from sqlalchemy                         import ForeignKeyConstraint
 
 from database.base import Base, HasNotes
+from database.standards import URL_STAND
 #from notes import HasNotes
 
 ###--------------------
@@ -99,6 +100,8 @@ class Recipe(HasNotes, Base):
 ###  Datasources/Datasyncs
 ###-------------
 
+
+
 class Repository(Base):
     #TODO urllib parse, these will go elsewhere in the actual analysis code or something
     #TODO request.urlopen works perfectly for filesystem stuff
@@ -107,21 +110,42 @@ class Repository(Base):
     id=None
     url=Column(String,primary_key=True) #use urllib.parse for this
     credentials_id=Column(Integer,ForeignKey('credentials.id')) 
+    blurb=Column(Text)
+    paths=relationship('RepoPath',primaryjoin='Repopath.repository==Repository.url')
     #FIXME, move this to people/users because this is part of credentialing not data? move it to wherever I end up putting 'credential things' like users
     #TODO, if we are going to store these in a database then the db needs to pass sec tests, but it is probably better than trying to secure them in a separate file, BUT we will unify all our secure credentials management with the same system
     #TODO there should be a default folder or 
     #access_manager=Column(String) #FIXME the credentials manager will handle this all by itself
+    def __init__(self,url,credentials_id=None):
+        self.url=URL_STAND.baseClean(url)
+        self.credentials_id=credentials_id
+
 
 class RepoPath(Base):
     __tablename__='repopaths'
     #Assumption: repository MUST be the full path to the data, so yes, a single 'repository' might have 10 entries, but that single repository is just a NAME and has not functional purpose for storing/retrieving data
-    id=None
-    repository=Column(String,ForeignKey('repository.url'),primary_key=True)
+    id=Column(Integer,unique=True,autoincrement=True) #to simplify passing repos? is this reasonable?
+    repo_url=Column(String,ForeignKey('repository.url'),primary_key=True)
     path=Column(String,primary_key=True) #make this explicitly relative path?
     assoc_program=Column(String) #FIXME some of these should be automatically updated and check by the programs etc
-    name=Column(String) #a little note saying what data is stored here, eg, abf files
+    relationship('DataFile',backref='repository_path') #FIXME datafiles can be kept in multiple repos...
+    #TODO how do we keep track of data duplication and backups!?!?!?
+    blurb=Column(Text) #a little note saying what data is stored here, eg, abf files
     #TODO we MUST maintain synchrony between where external programs put files and where the database THINKS they put files, some programs may be able to have this specified on file creation, check the clxapi for example, note has to be done by hand for that one
     #FIXME should the REPO HERE maintain a list of files? the filesystem KNOWS what is there
+    def __init__(self,Repo=None,repository_url=None,path=None,assoc_program=None,name=None):
+        self.repo_url=URL_STAND.baseClean(repository)
+        #test to make sure the directory exists
+        clean_path=URL_STAND.pathClean(path)
+        URL_STAND.test_url(self.repository_url+clean_path) #FIXME may need a try in here
+        self.path=clean_path
+        self.assoc_program=assoc_program
+        self.name=name
+        if Repository:
+            if Repository.url:
+                self.repo_url=Repository.url
+            else:
+                raise AttributeError('Repository has no url! Did you commit before referencing the instance directly?')
 
 
 class DataFile(Base):
@@ -136,16 +160,27 @@ class DataFile(Base):
     #RESPONSE: this record cannot be created until the file itself exists
     id=None
     #Assumption: repository ID's refer to a single filesystem folder where there cannot be duplicate names
-    repo=Column(Integer,ForeignKey('repository.url',PrimaryKey=True)
+    repo_url=Column(Integer,ForeignKey('repository.url'),PrimaryKey=True)
     repo_path=Column(Integer, ForeignKey('repopaths.path'), PrimaryKey=True)
     filename=Column(String,PrimarKey=True)
     experiment_id=Column(Integer,ForeignKey('experiments.id')) #FIXME WHEN DO WE LINK THIS??!?!?!?
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
+    #FIXME a bunch of these DateTimes should be TIMESTAMP? using the python implementation is more consistent?
     @property
     def filetype(self):
         return self.filename.split('.')[-1]
-    @filetype.setter(self):
+    @filetype.setter
+    def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
     #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
+    def __init__(self,RepoPath=None,repo_url=None,repo_path=None,filename=None,experitment_id=None):
+        self.repo_url=repo_url
+        self.repo_path=repo_path
+        self.filename=filename
+        self.experiment_id=experiment_id
+        self.creation_DateTime=datetime.utcnow()
+        if RepoPath:
+            if RepoPath.id:
+                self.repopath_id=RepoPath.id
 
 
