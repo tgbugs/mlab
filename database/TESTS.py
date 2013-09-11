@@ -40,10 +40,6 @@ class TEST:
                 np.random.shuffle(array)
 
 
-                        
-        
-        
-
 class t_people(TEST):
     def make_name(self,names_per=1):
         num=self.num
@@ -92,6 +88,7 @@ class t_people(TEST):
                             neurotree_id=ntids[i],
                             Birthdate=birthdates[i]) for i in range(num)]
         #print(self.people)
+
     def commit(self):
         self.session.add_all(self.people)
         self.session.commit()
@@ -101,6 +98,9 @@ class t_people(TEST):
         print([p for p in self.session.query(Person)])
 
 class t_data(TEST):
+    def get_repopath(self):
+        self.session.query(RepoPath)
+    def make_datafile(self):
     pass
 
 
@@ -121,7 +121,8 @@ def run_tests(session):
     people.query()
 
 def main():
-    pt=t_people(None,100)
+    pass
+
 
 if __name__=='__main__':
     main()

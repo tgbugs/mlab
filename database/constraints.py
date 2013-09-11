@@ -18,6 +18,11 @@ _unknown_symbol='\u26AA' #using unicode U+26AA for this #FIXME chcp 65001 doesn'
 ###  Helper classes/tables for mice (normalization and constraints)
 ###----------------------------------------------------------------
 
+class File(Base): #FIXME reinventing the wheel here kids, detect ft don't constraint it
+    id=None
+    type=Column(String(3),primary_key=True)
+    #hdf5, abf, py etc
+
 class SI_PREFIX(Base): #Yes, these are a good idea because they are written once, and infact I can enforce viewonly=True OR even have non-root users see those tables as read only
     id=None
     symbol=Column(String(2),primary_key=True)

@@ -46,7 +46,6 @@ from sqlalchemy                 import event
 from sqlalchemy                 import create_engine
 from sqlalchemy.orm             import Session #scoped_session, sessionmaker
 from sqlalchemy.engine          import Engine
-from sqlalchemy.ext.declarative import declared_attr
 
 from database.base              import init_db
 from database.constraints       import *

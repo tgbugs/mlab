@@ -99,19 +99,30 @@ class Recipe(HasNotes, Base):
 ###  Datasources/Datasyncs
 ###-------------
 
-
 class Repository(Base):
-    __tablename__='repositories'
-    #FIXME url should be full path
-    url=Column(String) #make sure this can follow logical file:// or localhost://
-    name=Column(String) #a little note saying what data is stored here, eg, abf files
-    credentials_file=Column(String) #TODO this is going to be a massive security bit
-
-class File(Base):
-    #FIXME put this in constraints ??
+    #TODO urllib parse, these will go elsewhere in the actual analysis code or something
+    #TODO request.urlopen works perfectly for filesystem stuff
+    #file:///C: #apparently chromium uses file:///C:
+    #file:///D: are technically the base
     id=None
-    type=Column(String(3),primary_key=True)
-    #hdf5, abf, py etc
+    url=Column(String,primary_key=True) #use urllib.parse for this
+    credentials_id=Column(Integer,ForeignKey('credentials.id')) 
+    #FIXME, move this to people/users because this is part of credentialing not data? move it to wherever I end up putting 'credential things' like users
+    #TODO, if we are going to store these in a database then the db needs to pass sec tests, but it is probably better than trying to secure them in a separate file, BUT we will unify all our secure credentials management with the same system
+    #TODO there should be a default folder or 
+    #access_manager=Column(String) #FIXME the credentials manager will handle this all by itself
+
+class RepoPath(Base):
+    __tablename__='repopaths'
+    #Assumption: repository MUST be the full path to the data, so yes, a single 'repository' might have 10 entries, but that single repository is just a NAME and has not functional purpose for storing/retrieving data
+    id=None
+    repository=Column(String,ForeignKey('repository.url'),primary_key=True)
+    path=Column(String,primary_key=True) #make this explicitly relative path?
+    assoc_program=Column(String) #FIXME some of these should be automatically updated and check by the programs etc
+    name=Column(String) #a little note saying what data is stored here, eg, abf files
+    #TODO we MUST maintain synchrony between where external programs put files and where the database THINKS they put files, some programs may be able to have this specified on file creation, check the clxapi for example, note has to be done by hand for that one
+    #FIXME should the REPO HERE maintain a list of files? the filesystem KNOWS what is there
+
 
 class DataFile(Base):
     #TODO path, should the database maintain this???, yes
@@ -121,13 +132,20 @@ class DataFile(Base):
     #ideally we want this to be dynamic so that the DataPath can change and all the DataFile entries will learn about it
     #it might just be better to do it by hand so UPDATE doesn't swamp everything
     #the path cannot be the primary key of the datapath table AND accomodate path changes
-    repo_id=Column(Integer, ForeignKey('repositories.id'))
-    filename=Column(String)
-    filetype=Column(String,ForeignKey('file.type'))
-    #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
-    experiment_id=Column(Integer,ForeignKey('experiment.id'))
+    #TODO next problem: when do we actually CREATE the DataFile and how to we get the number right even if we discard the trial? well, we DONT discard the file, we just keep it, but we need to gracefully deal with deletions/renumbering so that if something goes wrong it will alert to user
+    #RESPONSE: this record cannot be created until the file itself exists
+    id=None
+    #Assumption: repository ID's refer to a single filesystem folder where there cannot be duplicate names
+    repo=Column(Integer,ForeignKey('repository.url',PrimaryKey=True)
+    repo_path=Column(Integer, ForeignKey('repopaths.path'), PrimaryKey=True)
+    filename=Column(String,PrimarKey=True)
+    experiment_id=Column(Integer,ForeignKey('experiments.id')) #FIXME WHEN DO WE LINK THIS??!?!?!?
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
-
-    experiment_id=Column(Integer,ForeignKey('experiments.id'))
+    @property
+    def filetype(self):
+        return self.filename.split('.')[-1]
+    @filetype.setter(self):
+        raise AttributeError('readonly attribute, there should be a file name associate with this record?')
+    #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
 
 
