@@ -42,32 +42,34 @@
 
 from datetime import datetime
 
-from sqlalchemy                         import event
-from sqlalchemy                         import create_engine
-from sqlalchemy.orm                     import scoped_session, sessionmaker #YAY this was what was missing
-from sqlalchemy.engine                  import Engine
-from sqlalchemy.ext.declarative         import declared_attr
+from sqlalchemy                 import event
+from sqlalchemy                 import create_engine
+from sqlalchemy.orm             import Session #scoped_session, sessionmaker
+from sqlalchemy.engine          import Engine
+from sqlalchemy.ext.declarative import declared_attr
 
-from database.base          import init_db
-from database.constraints   import *
-from database.experiments   import *
-from database.inventory     import *
-from database.people        import *
-from database.notes         import * #FIXME exceptionally broken at the moment
-from database.mice          import *
-from database.data          import *
+from database.base              import init_db
+from database.constraints       import *
+from database.experiments       import *
+from database.inventory         import *
+from database.people            import *
+from database.notes             import * #FIXME exceptionally broken at the moment
+from database.mice              import *
+from database.data              import *
+
+from database.TESTS             import run_tests
 
 try:
     import rpdb2
 except:
     pass
 
-from debug                              import TDB,ploc
+from debug                      import TDB,ploc
 
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
-tdboff=tdb.tdbOff()
+tdboff=tdb.tdbOff
 
 ###----------
 ###  Test it!
@@ -76,8 +78,8 @@ tdboff=tdb.tdbOff()
 def makeObjects(session):
     import numpy as np
     sex_seed=np.random.choice(2,100,.52)
-    base_sex=np.array(list('m'*100))
-    sex_arr=base_sex[sex_seed==0]='f'
+    sex_arr=np.array(list('m'*100))
+    sex_arr[sex_seed==0]='f' #FIXME not used and IN PLACE YOU TARD
     
     #make some notes
     notes=map(str,range(50))
@@ -153,24 +155,30 @@ def main():
     init_db(engine)
     #session = scoped_session(sessionmaker())
     #session.configure(bind=engine)
-    Session=sessionmaker(bind=engine)
-    session = Session()
+    #Session=sessionmaker(bind=engine)
+
+    session = Session(engine)
 
 
-    ploc(globals())
+    #ploc(globals())
 
-    #rpdb2.start_embedded_debugger('poop')
     #populate constraint tables
     populateConstraints(session)
 
+    #tests, in the order they need to be done, SHOULD fail if out of order
+
     #do some tests!
     makeObjects(session)
+
+    run_tests(session)
+
 
 
     print('\n###***constraints***')
     [printD(c,'\n') for c in session.query(SI_PREFIX)]
     [printD(c,'\n') for c in session.query(SI_UNIT)]
     [printD(c,'\n') for c in session.query(SEX)]
+
     if 0:
         print('\n###***mice***')
         for mouse in session.query(Mouse):

@@ -37,19 +37,15 @@ class StimulusEvent(HasNotes, Base): #VARIABLE
 
 class LED_stimulation(HasNotes, Base): #association linking an espPos to at Cell
     #id=None
-    Column('esp_pos_id',Integer,ForeignKey('LED_stim.id'),primary_key=True),
+    Column('esp_pos_id',Integer,ForeignKey('espposition.id'),primary_key=True) #from data.py
     Column('cell_id',Integer,ForeignKey('cell.id'),primary_key=True)
     
     LED_id=None #TODO table of LED types WITH CALIBRATION??
-    mouse_id=None
-    slice_id=None
-    cells=relationship('Cell',backref='LED_stims')
-    #holy fucking shti what!?
-    dateTime=None
-    mark=None
-    esp_pos=None #x y
-    pos_z=None #from surface? standarize this please
+    stim_id=None
 
+    dateTime=None
+
+    pos_z=None #from surface? standarize this please
 
 cell_to_cell=Table('cell_to_cell', Base.metadata, 
                    Column('cell_1_id',Integer,ForeignKey('cell.id'),primary_key=True),
@@ -107,12 +103,6 @@ class SlicePrep(HasNotes, Base):
     #sucrose_id
     #sucrose reference to table of solutions
 
-class Project(Base):
-    PI=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc...
-    people=relationship('Person',backref='projects') #FIXME m-m
-    protocol_number=Column(Integer,ForeignKey('iacucprotocols.id'))
-
-
 class Experiment(Base):
     """Base class to link all experiment metadata tables to DataFile tables"""
     #need this to group together the variables
@@ -168,3 +158,4 @@ class IUEPExperiment(Experiment):
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
     __table_args__ = {'extend_existing':True}
     __mapper_args__ = {'polymorphic_identity':'iuep'}
+

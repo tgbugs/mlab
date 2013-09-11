@@ -13,7 +13,7 @@ from database.base import Base, HasNotes
 #from notes import HasNotes
 
 #some global variables that are used here and there that would be magic otherwise
-plusMinus='\u00B1'
+_plusMinus='\u00B1'
 
 ###----------------------
 ###  cages and cage racks
@@ -59,9 +59,9 @@ class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific
 
     def strHelper(self,depth=0):
         tabs='\t'*depth
-        return '\n%sDOB %s %s %s'%(tabs,frmtDT(self.dateTime),plusMinus,self.absolute_error)
+        return '\n%sDOB %s %s %s'%(tabs,frmtDT(self.dateTime),_plusMinus,self.absolute_error)
     def __repr__(self):
-        return '\nDOB %s %s %s'%(frmtDT(self.dateTime),plusMinus,self.absolute_error)
+        return '\nDOB %s %s %s'%(frmtDT(self.dateTime),_plusMinus,self.absolute_error)
 
 
 class Mouse(HasNotes, Base):

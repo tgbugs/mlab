@@ -1,16 +1,18 @@
 #contains all the constraint tables and their initial values 
-from database.imports import *
+from database.imports   import *
 
-from database.base                           import Base
+#from sqlalchemy         import Unicode
+
+from database.base      import Base
 
 #some global variables that are used here and there that would be magic otherwise
 #most of these need chcp 65001 on windows and that requires py33
-OMEGA='\u03A9' #use this instead of 2126 which is for backward compatability 
-degree='\u00B0'
-mu='\u03BC'
-male_symbol='\u2642' #U+2642 #FIXME stupid windows console crashing symbol output >_<; in windows shell chcp 65001
-female_symbol='\u2640' #U+2640
-unknown_symbol='\u26AA' #using unicode U+26AA for this #FIXME chcp 65001 doesn't work for displaying this one; also apparently lucidia console required? nope, didn't fix it
+_OMEGA='\u03A9' #use this instead of 2126 which is for backward compatability 
+_degree='\u00B0'
+_mu='\u03BC'
+_male_symbol='\u2642' #U+2642 #FIXME stupid windows console crashing symbol output >_<; in windows shell chcp 65001
+_female_symbol='\u2640' #U+2640
+_unknown_symbol='\u26AA' #using unicode U+26AA for this #FIXME chcp 65001 doesn't work for displaying this one; also apparently lucidia console required? nope, didn't fix it
 
 ###----------------------------------------------------------------
 ###  Helper classes/tables for mice (normalization and constraints)
@@ -61,7 +63,7 @@ class Strain(Base): #TODO
 
 #TODO make auto unit conversions for DA?
 #TODO need some way to implement sets of units? bugger
-SI_UNITS=(
+_SI_UNITS=(
     #name, symbol
     ('meter','m'),
     ('meters','m'),
@@ -82,8 +84,8 @@ SI_UNITS=(
 
     ('kelvin','K'),
 
-    ('degree Celcius',degree+'C'), #degrees = U+00B0
-    ('degrees Celcius',degree+'C'),
+    ('degree Celcius',_degree+'C'), #degrees = U+00B0
+    ('degrees Celcius',_degree+'C'),
     ('degree Celcius','~oC'), #Tom also accepts using the digraph for the degree symbol...
     ('degrees Celcius','~oC'),
 
@@ -141,8 +143,8 @@ SI_UNITS=(
     ('farad','F'),
     ('farads','F'),
 
-    ('ohm',OMEGA), #unicode=U+03A9, this is upper case greek and should be used instead of 2126
-    ('ohms',OMEGA),
+    ('ohm',_OMEGA), #unicode=U+03A9, this is upper case greek and should be used instead of 2126
+    ('ohms',_OMEGA),
 
     ('ohm','R'), #R also accepted as per the note on wikipedia and some brit standard
     ('ohms','R'),
@@ -174,17 +176,17 @@ SI_UNITS=(
     ('decibel','dB'),
     ('decibels','dB')
 )
-NON_SI_UNITS=(
+_NON_SI_UNITS=(
     #name, symbol
     ('osmole','Osm'), #total moles of solute contributing to osmotic pressure
     ('osmoles','Osm'),
 
-    ('degree',degree), #unicode for the symbol is U+00B0
-    ('degrees',degree),
+    ('degree',_degree), #unicode for the symbol is U+00B0
+    ('degrees',_degree),
     ('degree','~o'), #also accepted
     ('degrees','~o')
 )
-SI_PREFIXES=(
+_SI_PREFIXES=(
                 #prefix, symbol, E
                 ('yotta','Y',24),
                 ('zetta','Z',21),
@@ -200,7 +202,7 @@ SI_PREFIXES=(
                 ('deci','d',-1),
                 ('centi','c',-2),
                 ('milli','m',-3),
-                ('micro',mu,-6),
+                ('micro',_mu,-6),
                 ('micro','u',-6,), #also unoffically used
                 ('nano','n',-9),
                 ('pico','p',-12),
@@ -209,27 +211,26 @@ SI_PREFIXES=(
                 ('zepto','z',-21),
                 ('yocto','y',-24)
 )
-SEXES=(
-        ('male',male_symbol,'m',),
-        ('female',female_symbol,'f'),
-        ('unknown',unknown_symbol,'u')
+_SEXES=(
+        ('male',_male_symbol,'m',),
+        ('female',_female_symbol,'f'),
+        ('unknown',_unknown_symbol,'u')
 )
 
 def populateConstraints(session):
-    session.add_all([SI_PREFIX(prefix=prefix,symbol=symbol,E=E) for prefix,symbol,E in SI_PREFIXES])
-    session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in SI_UNITS])
-    session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in NON_SI_UNITS])
-    session.add_all([SEX(name=name,abbrev=abbrev,symbol=symbol) for name,symbol,abbrev in SEXES])
+    session.add_all([SI_PREFIX(prefix=prefix,symbol=symbol,E=E) for prefix,symbol,E in _SI_PREFIXES])
+    session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in _SI_UNITS])
+    session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in _NON_SI_UNITS])
+    session.add_all([SEX(name=name,abbrev=abbrev,symbol=symbol) for name,symbol,abbrev in _SEXES])
     return session.commit()
 
 if __name__=='__main__':
     import re
     printT=lambda tup:print(re.sub('\), ','),\r\n',str(tup)))
-    printT(SI_UNITS)
+    printT(_SI_UNITS)
     print('')
-    printT(NON_SI_UNITS)
+    printT(_NON_SI_UNITS)
     print('')
-    printT(SI_PREFIXES)
+    printT(_SI_PREFIXES)
     print('')
-    printT(SEXES)
-    print([SI_PREFIX(prefix=prefix,symbol=symbol,E=E) for prefix,symbol,E in SI_PREFIXES])
+    printT(_SEXES)

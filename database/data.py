@@ -2,6 +2,7 @@ from database.imports import *
 from datetime import datetime
 
 from sqlalchemy                         import Float
+from sqlalchemy                         import Text
 from sqlalchemy                         import ForeignKeyConstraint
 
 from database.base import Base, HasNotes
@@ -73,6 +74,14 @@ class espCalibration(HasNotes, Base):
 ###------------
 ###  Doccuments
 ###------------
+
+class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a journal article
+    #move to the 'data/docs' place?!??! because it is tehcnically a container for data not a table that will actively have data written to it, it is a one off reference
+    PI=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc...
+    people=relationship('Person',backref='projects') #FIXME m-m
+    protocol_number=Column(Integer,ForeignKey('iacucprotocols.id'))
+    blurb=Column(Text)
+
 
 class IACUCProtocols(Base): #note: probs can't store them here, but just put a number and a link (frankly no sense, they are kept in good order elsewere)
     pass
