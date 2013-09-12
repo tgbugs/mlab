@@ -7,6 +7,7 @@ from database.base import Base, HasNotes
 #experiment variables that are sub mouse, everything at and above the level of the mouse is also an experimental variable that I want to keep track of independently if possible
 #this means that I MIGHT want to make them experimental variables so that I can automatically tag them with the experiment/s any one of them has been involved in? viewonly
 
+#XXX I can turn this into a webapp really fucking easily, and all i need for paper/notetaking integration is the MOTHER FUCKING RAW XML YOU FUCKS
 
 ###-------------------
 ###  Experiment tables
@@ -103,6 +104,7 @@ class SlicePrep(HasNotes, Base):
     #sucrose_id
     #sucrose reference to table of solutions
 
+
 class Experiment(Base):
     """Base class to link all experiment metadata tables to DataFile tables"""
     #need this to group together the variables
@@ -110,16 +112,17 @@ class Experiment(Base):
     __tablename__='experiments'
 
     id=Column(Integer,primary_key=True)
-    project_id=Column(Integer,nullable=False) #FIXME I suppose in a strange world experiments can belong to two projects damn it...
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME add 'mouse experiment type for further inheritance???'
+    project_id=Column(Integer,nullable=False) #FIXME I suppose in a strange world experiments can belong to two projects damn it... since the interest is in searching for them from top down... data relevant to papers, just like papers relevant to papers
+    experimenter_id=Column(Integer,ForeignKey('people.id')) #FIXME problmes with corrispondence, make sure the person is on the project??? CHECK
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME there are too many subjects to keep them all in one table, could use a check to make sure that the subject id matches the experiment type? actually, joined table inheritance might work, but it adds another column to all the organisms ;_; derp, we'll worry about that when the time comes
     #subject_id=Column(Integer,nullable=False)
     #ForeignKeyConstraint('Experiment.subject_id',['mouse.id','organism.id','cellCulture.id'])
     dateTime=Column(DateTime,nullable=False)
     protocol_id=Column(Integer,ForeignKey('protocols.id'))
+
     datafiles=relationship('DataFile',backref=backref('experiment',uselist=False))
-    experimenter_id=Column(Integer,ForeignKey('people.id')) #FIXME problmes with corrispondence
     constants=None
-    exp_type=Column(String,nullable=False)
+    #exp_type=Column(String,nullable=False)
     #nope, we're just going to have some data duplication, because each datafile will have to say 'ah yes, I was associated with this cell, this esp position etc'
     #variables=None #FIXME these go in metadata, unforunately there is something that varies every time, but THAT should be stored somewhere OTHER than the main unit of analysis on a set of datafiles???
     __mapper_args__ = {
@@ -127,6 +130,24 @@ class Experiment(Base):
         'polymorphic_identity':'experiment',
         #'with_polymorphic':'*'
     }
+    def __init__(self,Project=None,Experimenter=None,Mouse=None,**kwargs):
+        super.__init__()
+        #self.dateTime=datetime.utcnow() #FIXME PLEASE COME UP WITH A STANDARD FOR THIS
+        if Project:
+            if Project.id:
+                self.project_id=Project.id
+            else:
+                raise AttributeError
+        if Experimenter:
+            if Experimenter.id:
+                self.experimenter_id=Experimenter.id
+            else:
+                raise AttributeError
+        if Mouse:
+            if Mouse.id:
+                self.mouse_id=mouse_id
+            else:
+                raise AttributeError
 
     #TODO every time a collect an data file of any type and it is determined to be legit (by me) then it should all be stored
     #the experiment is basically the 'dataobject' that links the phenomena studied to the data about it(them)
@@ -159,3 +180,7 @@ class IUEPExperiment(Experiment):
     __table_args__ = {'extend_existing':True}
     __mapper_args__ = {'polymorphic_identity':'iuep'}
 
+#organism mixins???
+class MouseExperiment: 
+    #@declared_attr
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME add 'mouse experiment type for further inheritance???'

@@ -24,6 +24,16 @@ class TEST:
         deltas=[timedelta(days=int(d)) for d in days] #fortunately timedelta defaults to days so I dont have to read the doccumentation for map
         return [seed - delta for delta in deltas]
 
+    def make_datetime(self,num=None):
+        from datetime import datetime,timedelta
+        if not num:
+            num=self.num
+        seed=date.utcnow()
+        days=np.random.randint(0,365*5,num) #historical dates not supported in the test
+        hours=np.random.randint(0,12,num) #historical dates not supported in the test
+        deltas=[timedelta(days=int(d),hours=int(h)) for d,h in zip(days,hours)] #fortunately timedelta defaults to days so I dont have to read the doccumentation for map
+        return [seed - delta for delta in deltas]
+
     def make_sex(self):
         num=self.num
         sex_seed=np.random.choice(2,num,.52)
@@ -169,6 +179,14 @@ class t_experiment(TEST):
         projects=t_project(self.session,3)
         projects.commit()
         projects.add_people()
+        projects.commit() #FIXME do I need to readd? or can I just commit directly?
+
+        for p in projects.records:
+            mice=[m for m in self.session.query(Mouse)]
+            exps=np.permutation(p.people)[0]
+            datetimes=self.make_datetime()
+
+            Experiment(Project=p,Experimenter=,Mouse=,dateTime=)
 
 
 
