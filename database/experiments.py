@@ -44,7 +44,7 @@ class LED_stimulation(HasNotes, Base): #association linking an espPos to at Cell
     LED_id=None #TODO table of LED types WITH CALIBRATION??
     stim_id=None
 
-    dateTime=None
+    dateTime=Column(DateTime,nullable=False)
 
     pos_z=None #from surface? standarize this please
 
@@ -111,13 +111,15 @@ class Experiment(Base):
     #this is the base table where each row is one experimental condition or data point, we could call it an experiment since 'Slice Experiment' would be a subtype with its own additional data
     __tablename__='experiments'
 
-    id=Column(Integer,primary_key=True)
-    project_id=Column(Integer,nullable=False) #FIXME I suppose in a strange world experiments can belong to two projects damn it... since the interest is in searching for them from top down... data relevant to papers, just like papers relevant to papers
+    #id=Column(Integer,primary_key=True)
+    project_id=Column(Integer,ForeignKey('project.id'),nullable=False) #FIXME I suppose in a strange world experiments can belong to two projects damn it... since the interest is in searching for them from top down... data relevant to papers, just like papers relevant to papers
     person_id=Column(Integer,ForeignKey('people.id'),nullable=False) #FIXME problmes with corrispondence, make sure the person is on the project??? CHECK
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME there are too many subjects to keep them all in one table, could use a check to make sure that the subject id matches the experiment type? actually, joined table inheritance might work, but it adds another column to all the organisms ;_; derp, we'll worry about that when the time comes
+
     #FIXME terminal experiments should automatically add date of death, since for slice prep for example I do sort of record that
     #subject_id=Column(Integer,nullable=False)
     #ForeignKeyConstraint('Experiment.subject_id',['mouse.id','organism.id','cellCulture.id'])
+
     dateTime=Column(DateTime,nullable=False)
     protocol_id=Column(Integer,ForeignKey('protocols.id'))
 
@@ -126,17 +128,18 @@ class Experiment(Base):
     exp_type=Column(String,nullable=False) #FIXME does this need to be nullable?
     #nope, we're just going to have some data duplication, because each datafile will have to say 'ah yes, I was associated with this cell, this esp position etc'
     #variables=None #FIXME these go in metadata, unforunately there is something that varies every time, but THAT should be stored somewhere OTHER than the main unit of analysis on a set of datafiles???
+
     __mapper_args__ = {
         'polymorphic_on':exp_type,
-        'polymorphic_identity':'base_experiment',
-        #'with_polymorphic':'*'
+        'polymorphic_identity':'base_experiment', #FIXME WTH THIS is causing problmes/?!??!
+        'with_polymorphic':'*'
     }
     def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,protocol_id=None,dateTime=None):
         #super.__init__() #:( doesnt work :(
         #self.dateTime=datetime.utcnow() #FIXME PLEASE COME UP WITH A STANDARD FOR THIS
         self.project_id=project_id
         self.person_id=person_id
-        self.mouse_id=mouse_id #FIXME somehow fails silently w/o mouse ID????
+        self.mouse_id=mouse_id
         self.protocol_id=protocol_id
         #self.exp_type='base_experiment'
         self.dateTime=dateTime
@@ -163,9 +166,10 @@ class Experiment(Base):
 
 class SliceExperiment(Experiment):
     """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
-    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
+    __tablename__='sliceexperiment'
+    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
 
-    acsf_id=Column(Integer,ForeignKey('solution.id'),nullable=False) #need to come up with a way to constrain
+    #acsf_id=Column(Integer,ForeignKey('solution.id'),nullable=False) #need to come up with a way to constrain
     #acsf_id #to prevent accidents split teh acsf and internal into different tables to allow for proper fk constraints? NO, not flexible enough
     #internal_id
 
@@ -173,18 +177,20 @@ class SliceExperiment(Experiment):
 
     #abffile
 
-    __table_args__ = {'extend_existing':True}
-    __mapper_args__ = {'polymorphic_identity':'acute slice'}
+    #__table_args__ = {'extend_existing':True}
+    __mapper_args__ = {'polymorphic_identity':'slice'}
 
 class HistologyExperiment(Experiment):
-    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
-    __table_args__ = {'extend_existing':True}
+    __tablename__='histologyexperiment'
+    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
+    #__table_args__ = {'extend_existing':True}
     __mapper_args__ = {'polymorphic_identity':'histology'}
 
 
 class IUEPExperiment(Experiment):
-    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
-    __table_args__ = {'extend_existing':True}
+    __tablename__='iuepexperiment'
+    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
+    #__table_args__ = {'extend_existing':True}
     __mapper_args__ = {'polymorphic_identity':'iuep'}
 
 #organism mixins??? no, bad way to do it, still haven't figured out the good way

@@ -158,17 +158,10 @@ def main():
 
     session = Session(engine)
 
-
-    #ploc(globals())
-
     #populate constraint tables
     populateConstraints(session)
 
-    #tests, in the order they need to be done, SHOULD fail if out of order
-
     #do some tests!
-    #makeObjects(session)
-
     run_tests(session)
 
 

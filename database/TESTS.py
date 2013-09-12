@@ -332,6 +332,7 @@ class t_project(TEST):
 
 class t_experiment(TEST):
     def make_all(self):
+        from time import sleep
         projects=t_project(self.session,3)
         projects.commit()
         projects.add_people()
@@ -344,14 +345,18 @@ class t_experiment(TEST):
 
         self.records=[]
         for p in projects.records:
-            printD([t for t in p.__dict__])
+            printD(p) #FIXME apparently p.__dict__ is not populated until AFTER you call the object...
+            printD([t for t  in p.__dict__.items()]) #FIXME what the fuck, sometimes this catches nothing!?
             mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
             ms=[mice[i] for i in np.random.choice(len(mice),self.num)] #FIXME missing mouse
             #TODO need to test with bad inputs
             exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
             datetimes=self.make_datetime()
 
-            self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],dateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
+            #self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],dateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
+            now=datetime.utcnow()
+            self.records+=[Experiment(project_id=1,person_id=1,mouse_id=1,dateTime=now) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
+            #for i in range(self.num):
 
 
 def run_tests(session):
@@ -372,11 +377,16 @@ def run_tests(session):
     #l.commit()
     #l.add_members()
 
-    #e=t_experiment(session,100):
-    #e.commit()
+    #p=t_project(session,3)
+    #p.commit()
+    #p.add_people()
+    #printD([[t for t in p.__dict__.items()] for p in session.query(Project)])
 
-    d=t_datafile(session,100)
-    d.commit()
+    e=t_experiment(session,100)
+    e.commit()
+
+    #d=t_datafile(session,100)
+    #d.commit()
 
 
 
