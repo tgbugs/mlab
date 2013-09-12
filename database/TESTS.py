@@ -16,6 +16,8 @@ class TEST:
     def __init__(self,session,num=None):
         self.num=num
         self.session=session
+        self.records=[] #this is the output
+        self.setup()
         self.make_all()
     def make_date(self):
         from datetime import date,timedelta
@@ -25,12 +27,12 @@ class TEST:
         deltas=[timedelta(days=int(d)) for d in days] #fortunately timedelta defaults to days so I dont have to read the doccumentation for map
         return [seed - delta for delta in deltas]
 
-    def make_datetime(self,num=None):
+    def make_datetime(self,num=None,years=5):
         from datetime import datetime,timedelta
         if not num:
             num=self.num
         seed=datetime.utcnow()
-        days=np.random.randint(0,365*5,num) #historical dates not supported in the test
+        days=np.random.randint(0,365*years,num) #historical dates not supported in the test
         hours=np.random.randint(0,12,num) #historical dates not supported in the test
         deltas=[timedelta(days=int(d),hours=int(h)) for d,h in zip(days,hours)] #fortunately timedelta defaults to days so I dont have to read the doccumentation for map
         return [seed - delta for delta in deltas]
@@ -53,9 +55,19 @@ class TEST:
                 printD([n for n in array])
                 np.random.shuffle(array)
 
+    #methods every class should have
+    def setup(self):
+        #self.records+=[] #add something to records and commit it here
+        #self.session.commit() #should go here
+        pass
+
+    def make_all(self):
+        pass
+
     def commit(self):
         self.session.add_all(self.records)
         self.session.commit()
+
 
 ###--------
 ###  people
@@ -171,6 +183,44 @@ class t_people(TEST):
         print([p for p in self.session.query(Person)])
 
 ###------
+###  Mice
+###------
+
+class t_dob(TEST):
+    def make_all(self):
+        dts=self.make_datetime(years=2)
+        self.records=[DOB(d) for d in dts]
+
+class t_litter(TEST):
+    def setup(self):
+        urdob=DOB(datetime.strptime('0001-1-1 00:00:00','%Y-%m-%d %H:%M:%S'))
+        self.session.add(urdob)
+        self.session.commit()
+        self.session.add_all([Mouse(eartag=i+300,sex='f',DOB=urdob) for i in range(2)])
+        self.session.add_all([Mouse(eartag=i+200,sex='m',DOB=urdob) for i in range(2)])
+        self.session.commit()
+    def make_all(self):
+        self.records=
+
+class t_sire(TEST):
+    def make_all(self):
+        self.records=
+
+class t_dam(TEST):
+    def make_all(self):
+        self.records=
+
+class t_mice(TEST):
+    def make_all(self):
+        dobs=t_dob(self.session,self.num)
+        tags=np.random.randint(0,1000,self.num)
+        sexes=self.make_sex(self.num)
+        self.records=[Mouse(eartag=tags[i],sex=sexes[i],DOB=dobs[i]) for i in range(self.num)]
+
+
+
+
+###------
 ###  data
 ###------
 
@@ -257,7 +307,7 @@ class t_experiment(TEST):
         self.records=[]
         for p in projects.records:
             mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
-            ms=[mice[i] for i in np.random.choice(len(mice),self.num)]
+            ms=[mice[i] for i in np.random.choice(len(mice),self.num)] #FIXME missing mouse
             #TODO need to test with bad inputs
             exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
             datetimes=self.make_datetime()
@@ -279,8 +329,11 @@ def run_tests(session):
     #ps.commit()
     #printD([[t for t in p.__dict__] for p in ps.records])
 
-    d=t_datafile(session,100)
-    d.commit()
+    e=t_experiment(session,100):
+    e.commit()
+
+    #d=t_datafile(session,100)
+    #d.commit()
 
 
 

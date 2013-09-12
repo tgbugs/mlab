@@ -123,12 +123,12 @@ class Experiment(Base):
 
     datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False)) #FIXME??? WTF???
     constants=None
-    exp_type=Column(String,nullable=False)
+    exp_type=Column(String,nullable=False) #FIXME does this need to be nullable?
     #nope, we're just going to have some data duplication, because each datafile will have to say 'ah yes, I was associated with this cell, this esp position etc'
     #variables=None #FIXME these go in metadata, unforunately there is something that varies every time, but THAT should be stored somewhere OTHER than the main unit of analysis on a set of datafiles???
     __mapper_args__ = {
         'polymorphic_on':exp_type,
-        'polymorphic_identity':'experiment',
+        'polymorphic_identity':'base_experiment',
         #'with_polymorphic':'*'
     }
     def __init__(self,Project=None,Experimenter=None,Mouse=None,project_id=None,experimenter_id=None,mouse_id=None,protocol_id=None,dateTime=None):
@@ -136,9 +136,9 @@ class Experiment(Base):
         #self.dateTime=datetime.utcnow() #FIXME PLEASE COME UP WITH A STANDARD FOR THIS
         self.project_id=project_id
         self.experimenter_id=experimenter_id
-        self.mouse_id=mouse_id
+        self.mouse_id=mouse_id #FIXME somehow fails silently w/o mouse ID????
         self.protocol_id=protocol_id
-        self.experiment_type='base_experiment'
+        #self.exp_type='base_experiment'
         self.dateTime=dateTime
         if Project:
             if Project.id:
@@ -187,7 +187,7 @@ class IUEPExperiment(Experiment):
     __table_args__ = {'extend_existing':True}
     __mapper_args__ = {'polymorphic_identity':'iuep'}
 
-#organism mixins???
+#organism mixins??? no, bad way to do it, still haven't figured out the good way
 class MouseExperiment: 
     #@declared_attr
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME add 'mouse experiment type for further inheritance???'
