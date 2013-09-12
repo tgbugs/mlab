@@ -1,6 +1,7 @@
 from database.imports import *
 from sqlalchemy                         import Date
 from sqlalchemy                         import ForeignKeyConstraint
+from sqlalchemy.ext.associationproxy    import association_proxy
 
 
 from database.base import Base, HasNotes
@@ -50,7 +51,7 @@ class Person(HasNotes, Base):
 
 class User(Base):
     __tablename__='users'
-    person_id=Column(Integer,ForeignKey('people.id',unique=True)) #not all users are people and not all people are users
+    person_id=Column(Integer,ForeignKey('people.id'),unique=True) #not all users are people and not all people are users
     #BUT each person can only have ONE user associated, something something auditing? I'm sure this is super insecure
     #because why the fuck not...
     pass

@@ -115,6 +115,7 @@ class Experiment(Base):
     project_id=Column(Integer,nullable=False) #FIXME I suppose in a strange world experiments can belong to two projects damn it... since the interest is in searching for them from top down... data relevant to papers, just like papers relevant to papers
     experimenter_id=Column(Integer,ForeignKey('people.id')) #FIXME problmes with corrispondence, make sure the person is on the project??? CHECK
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME there are too many subjects to keep them all in one table, could use a check to make sure that the subject id matches the experiment type? actually, joined table inheritance might work, but it adds another column to all the organisms ;_; derp, we'll worry about that when the time comes
+    #FIXME terminal experiments should automatically add date of death, since for slice prep for example I do sort of record that
     #subject_id=Column(Integer,nullable=False)
     #ForeignKeyConstraint('Experiment.subject_id',['mouse.id','organism.id','cellCulture.id'])
     dateTime=Column(DateTime,nullable=False)
@@ -122,7 +123,7 @@ class Experiment(Base):
 
     datafiles=relationship('DataFile',backref=backref('experiment',uselist=False))
     constants=None
-    #exp_type=Column(String,nullable=False)
+    exp_type=Column(String,nullable=False)
     #nope, we're just going to have some data duplication, because each datafile will have to say 'ah yes, I was associated with this cell, this esp position etc'
     #variables=None #FIXME these go in metadata, unforunately there is something that varies every time, but THAT should be stored somewhere OTHER than the main unit of analysis on a set of datafiles???
     __mapper_args__ = {

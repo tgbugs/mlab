@@ -139,7 +139,7 @@ class t_datafile(TEST):
     def make_all(self):
         repop=t_repopath(self.session)
         repop.commit()
-        experiment=t_experiment(self.session)
+        experiment=t_experiment(self.session,100)
         experiment.commit()
         data=[]
         count=0
@@ -181,12 +181,15 @@ class t_experiment(TEST):
         projects.add_people()
         projects.commit() #FIXME do I need to readd? or can I just commit directly?
 
+        self.records=[]
         for p in projects.records:
-            mice=[m for m in self.session.query(Mouse)]
-            exps=np.permutation(p.people)[0]
+            mice=[m for m in self.session.query(Mouse).filter(Mouse.dod=None)]
+            ms=[mice[i] for i in np.random.choice(len(mice),self.num)]
+            #TODO need to test with bad inputs
+            exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
             datetimes=self.make_datetime()
 
-            Experiment(Project=p,Experimenter=,Mouse=,dateTime=)
+            self.records+=[Experiment(Project=p,Experimenter=exps[i],Mouse=ms[i],dateTime=datetimes[i])]
 
 
 
@@ -198,7 +201,7 @@ def run_tests(session):
     #people.commit()
     #people.query()
 
-    d=t_data()
+    d=t_datafile(100)
 
 
 
