@@ -57,4 +57,6 @@ class User(Base):
     pass
 
 
-
+class Credentials(Base): #FIXME table per user is safer since can restrict access by user_id?
+    user_id=Column(Integer,ForeignKey('users.id'))
+    pass

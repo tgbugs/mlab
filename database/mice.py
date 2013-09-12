@@ -10,7 +10,6 @@ from sqlalchemy.ext.declarative         import declared_attr #main mice notes
 from database.dateTimeFuncs import *
 
 from database.base import Base, HasNotes
-#from notes import HasNotes
 
 #some global variables that are used here and there that would be magic otherwise
 _plusMinus='\u00B1'

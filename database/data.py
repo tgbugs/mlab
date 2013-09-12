@@ -99,13 +99,24 @@ class person_to_project(Base):
 class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a journal article
     #move to the 'data/docs' place?!??! because it is tehcnically a container for data not a table that will actively have data written to it, it is a one off reference
     #FIXME somehow experiment is dependent on this... which suggests that it doesn't quite belong in data
-    PI=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc... need a check constraint on people.role=='PI', or really current role... because those could change and violate certain checks/constraints...??? maybe better just to leave it as a person
-    protocol_number=Column(Integer,ForeignKey('iacucprotocols.id'))
+    pi_id=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc... need a check constraint on people.role=='PI', or really current role... because those could change and violate certain checks/constraints...??? maybe better just to leave it as a person
+    #FIXME projects can have multiple PIs! damn it >_<, scaling this shit...
+    iacuc_protocol_id=Column(Integer,ForeignKey('iacucprotocols.id'))
     blurb=Column(Text)
 
     p2p_assoc=relationship('person_to_project',backref='projects')
     #FIXME do we really want write access here? viewonly=True might be useful?
     people=association_proxy('p2p_assoc','people') #people.append but make sure nothing wierd happends
+    relationship
+    def __init__(self,PI=None,pi_id=None,iacuc_protocol_id=None,blurb=None):
+        self.pi_id=pi_id
+        self.iacuc_protocol_id=iacuc_protocol_id
+        self.blurb=blurb
+        if PI:
+            if PI.id:
+                pi_id=PI.id
+            else:
+                raise AttributeError
 
 
 class IACUCProtocols(Base): #note: probs can't store them here, but just put a number and a link (frankly no sense, they are kept in good order elsewere)
@@ -135,7 +146,7 @@ class Repository(Base):
     url=Column(String,primary_key=True) #use urllib.parse for this
     credentials_id=Column(Integer,ForeignKey('credentials.id')) 
     blurb=Column(Text)
-    paths=relationship('RepoPath',primaryjoin='Repopath.repository==Repository.url')
+    paths=relationship('RepoPath',primaryjoin='RepoPath.repo_url==Repository.url')
     #FIXME, move this to people/users because this is part of credentialing not data? move it to wherever I end up putting 'credential things' like users
     #TODO, if we are going to store these in a database then the db needs to pass sec tests, but it is probably better than trying to secure them in a separate file, BUT we will unify all our secure credentials management with the same system
     #TODO there should be a default folder or 
@@ -157,19 +168,19 @@ class RepoPath(Base):
     blurb=Column(Text) #a little note saying what data is stored here, eg, abf files
     #TODO we MUST maintain synchrony between where external programs put files and where the database THINKS they put files, some programs may be able to have this specified on file creation, check the clxapi for example, note has to be done by hand for that one
     #FIXME should the REPO HERE maintain a list of files? the filesystem KNOWS what is there
-    def __init__(self,Repo=None,repository_url=None,path=None,assoc_program=None,name=None):
-        self.repo_url=URL_STAND.baseClean(repository)
-        #test to make sure the directory exists
-        clean_path=URL_STAND.pathClean(path)
-        URL_STAND.test_url(self.repository_url+clean_path) #FIXME may need a try in here
-        self.path=clean_path
+    def __init__(self,Repo=None,repo_url=None,path=None,assoc_program=None,name=None):
+        self.repo_url=URL_STAND.baseClean(repo_url)
         self.assoc_program=assoc_program
         self.name=name
-        if Repository:
-            if Repository.url:
-                self.repo_url=Repository.url
+        if Repo:
+            if Repo.url:
+                self.repo_url=Repo.url
             else:
                 raise AttributeError('Repository has no url! Did you commit before referencing the instance directly?') #FIXME this should never trigger because url is a primary key and not an autoincrementing int...
+        clean_path=URL_STAND.pathClean(path)
+        #test to make sure the directory exists
+        URL_STAND.test_url(self.repo_url+clean_path) #FIXME may need a try in here
+        self.path=clean_path
 
 
 class DataFile(Base):
@@ -184,9 +195,9 @@ class DataFile(Base):
     #RESPONSE: this record cannot be created until the file itself exists
     id=None
     #Assumption: repository ID's refer to a single filesystem folder where there cannot be duplicate names
-    repo_url=Column(Integer,ForeignKey('repository.url'),PrimaryKey=True)
-    repo_path=Column(Integer, ForeignKey('repopaths.path'), PrimaryKey=True)
-    filename=Column(String,PrimarKey=True)
+    repo_url=Column(Integer,ForeignKey('repository.url'),primary_key=True)
+    repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
+    filename=Column(String,primary_key=True)
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     #FIXME a bunch of these DateTimes should be TIMESTAMP? using the python implementation is more consistent?
@@ -198,8 +209,8 @@ class DataFile(Base):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
     #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
     def __init__(self,RepoPath=None,Experiment=None,repo_url=None,repo_path=None,experitment_id=None,filename=None):
-        self.repo_url=repo_url
-        self.repo_path=repo_path
+        self.repo_url=URL_STAND.baseClean(repo_url)
+        self.repo_path=URL_STAND.pathClean(repo_path)
         self.filename=filename
         self.experiment_id=experiment_id
         self.creation_DateTime=datetime.utcnow()

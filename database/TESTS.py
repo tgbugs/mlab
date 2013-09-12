@@ -41,12 +41,15 @@ class TEST:
         sex_arr[sex_seed==0]='f'
         return sex_arr
 
-    def make_NONE(self,*arrays):
+    def make_NONE(self,*arrays): #FIXME very broken for strings
             noneArr=[] 
-            num_nones=int(self.num/5)
+            num_nones=int(self.num/5)+1
             [noneArr.append(None) for i in range(num_nones)]
+            noneArr=np.array(noneArr)
             for array in arrays:
+                #array=np.array(array)
                 array[:num_nones]=noneArr
+                printD([n for n in array])
                 np.random.shuffle(array)
 
     def commit(self):
@@ -93,18 +96,74 @@ class t_people(TEST):
         #ntids=np.random.randint(0,99999,num) #test for non unique
         ntids=list(ntids)
 
-        self.make_NONE(pfns,fns,mns,lns,genders,birthdates,roles,ntids)
-        #FIXME apparently None works differently than kwargs...
 
-        self.records=[Person(PrefixName=pfns[i],
+        #self.make_NONE(pfns,fns,mns,lns,genders,birthdates,roles,ntids) #BROKEN
+
+        self.records=[]
+        self.records+=[Person(PrefixName=pfns[i],
                             FirstName=fns[i],
                             MiddleName=mns[i],
                             LastName=lns[i],
                             Gender=genders[i],
                             Role=roles[i],
                             neurotree_id=ntids[i],
-                            Birthdate=birthdates[i]) for i in range(num)]
-        #print(self.people)
+                            Birthdate=birthdates[i]) for i in range(8,num)]
+        self.records+=[Person(FirstName=fns[i],
+                            MiddleName=mns[i],
+                            LastName=lns[i],
+                            Gender=genders[i],
+                            Role=roles[i],
+                            neurotree_id=ntids[i],
+                            Birthdate=birthdates[i]) for i in range(1)]
+        self.records+=[Person(PrefixName=pfns[i],
+                            MiddleName=mns[i],
+                            LastName=lns[i],
+                            Gender=genders[i],
+                            Role=roles[i],
+                            neurotree_id=ntids[i],
+                            Birthdate=birthdates[i]) for i in range(1,2)]
+        self.records+=[Person(PrefixName=pfns[i],
+                            FirstName=fns[i],
+                            LastName=lns[i],
+                            Gender=genders[i],
+                            Role=roles[i],
+                            neurotree_id=ntids[i],
+                            Birthdate=birthdates[i]) for i in range(2,3)]
+        self.records+=[Person(PrefixName=pfns[i],
+                            FirstName=fns[i],
+                            MiddleName=mns[i],
+                            Gender=genders[i],
+                            Role=roles[i],
+                            neurotree_id=ntids[i],
+                            Birthdate=birthdates[i]) for i in range(3,4)]
+        self.records+=[Person(PrefixName=pfns[i],
+                            FirstName=fns[i],
+                            MiddleName=mns[i],
+                            LastName=lns[i],
+                            Role=roles[i],
+                            neurotree_id=ntids[i],
+                            Birthdate=birthdates[i]) for i in range(4,5)]
+        self.records+=[Person(PrefixName=pfns[i],
+                            FirstName=fns[i],
+                            MiddleName=mns[i],
+                            LastName=lns[i],
+                            Gender=genders[i],
+                            neurotree_id=ntids[i],
+                            Birthdate=birthdates[i]) for i in range(5,6)]
+        self.records+=[Person(PrefixName=pfns[i],
+                            FirstName=fns[i],
+                            MiddleName=mns[i],
+                            LastName=lns[i],
+                            Gender=genders[i],
+                            Role=roles[i],
+                            Birthdate=birthdates[i]) for i in range(6,7)]
+        self.records+=[Person(PrefixName=pfns[i],
+                            FirstName=fns[i],
+                            MiddleName=mns[i],
+                            LastName=lns[i],
+                            Gender=genders[i],
+                            Role=roles[i],
+                            neurotree_id=ntids[i]) for i in range(7,8)]
 
     def query(self):
         #print([p.Gender for p in self.session.query(Person)])
@@ -116,24 +175,30 @@ class t_people(TEST):
 
 class t_repo(TEST):
     def make_all(self):
-        repolist=[
-                    Repository(url='file:///C:/'),
-                    Repository(url='http://www.google.com/'),
-                    Repository(url='https://www.google.com/')
-        ]
-        self.records=repolist
+        self.records=[]
+        repos=(
+                    'file:///C:/',
+                    'http://www.google.com/', #FIXME broken as expected?
+                    'https://www.google.com/' #FIXME broken as expected?
+        )
+        self.records+=[Repository(url=r) for r in repos]
+        #FIXME for some reason adding the fully inited Repository(url='asdf') inside the list didn't work...
+        #figure out why please?!
+
 
 class t_repopath(TEST):
     def make_all(self):
         repo=t_repo(self.session)
         repo.commit()
-        paths=['/repotest/asdf' #FIXME these will error out like crazy
-               ,'repotest/asdf'
-               ,'repotest/asdf/'
-              ]
+        paths=(
+                '/repotest/asdf1', #yep, it caught the similarity
+                'repotest/asdf2',
+                'repotest/asdf3/'
+              )
         self.records=[]
         for r in repo.records:
-            self.records+=([RepoPath(Repository=r,path=path) for path in paths])
+            printD(r)
+            self.records+=([RepoPath(Repo=r,path=path) for path in paths])
 
 class t_datafile(TEST):
     def make_all(self):
@@ -146,7 +211,7 @@ class t_datafile(TEST):
         for exp in experiment.records:
             count+=1
             for rp in repop.records:
-                data+=[DataFile(RepoPath=rp,filename=str(fn)+'.data',exp) for fn in range(5*count)]
+                data+=[DataFile(RepoPath=rp,filename=str(fn)+'.data',Experiment=exp) for fn in range(5*count)]
         self.records=data
             
 ###-------------
@@ -158,13 +223,13 @@ class t_project(TEST):
         people=t_people(self.session,50)
         people.commit()
         #HRM only queries can leverage the power of .filter
-        pis=[pi for pi in session.query(Person).filter(Person.role='pi')]
+        pis=[pi for pi in self.session.query(Person).filter(Person.Role=='pi')]
         pi_n=np.random.choice(len(pis),self.num)
 
         protocol_number=None
         blurb=None
 
-        self.recoreds=[Project(PI=PI[pi_n[n]],protocol_number=protocol_number,blurb=blurb) for n in range(self.num)]
+        self.records=[Project(PI=pis[pi_n[n]],protocol_number=protocol_number,blurb=blurb) for n in range(self.num)]
         count=0
         def add_people(self): #has to be called after commit :/
             people=[p for p in self.session.query(Person)]
@@ -183,7 +248,7 @@ class t_experiment(TEST):
 
         self.records=[]
         for p in projects.records:
-            mice=[m for m in self.session.query(Mouse).filter(Mouse.dod=None)]
+            mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
             ms=[mice[i] for i in np.random.choice(len(mice),self.num)]
             #TODO need to test with bad inputs
             exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
@@ -197,11 +262,18 @@ class t_experiment(TEST):
 
 
 def run_tests(session):
-    #people=t_people(session,100)
+    #people=t_people(session,10)
     #people.commit()
     #people.query()
 
-    d=t_datafile(100)
+    #repos=t_repo(session)
+    #printD([r.url for r in repos.records])
+
+    ps=t_project(session,10)
+    ps.commit()
+
+    #d=t_datafile(session,100)
+    #d.commit()
 
 
 

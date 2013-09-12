@@ -16,4 +16,4 @@ from debug                              import TDB
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
-tdboff=tdb.tdbOff()
+tdboff=tdb.tdbOff

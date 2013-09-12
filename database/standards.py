@@ -25,7 +25,8 @@ class URL_STAND:
             except:
                 raise FileNotFoundError('Local path does not exist!') #FIXME this => wierd error handling
         else:
-            raise NotImplemented
+            print('not a file, not implemented, will not catch')
+            #raise NotImplemented
 
             
 
