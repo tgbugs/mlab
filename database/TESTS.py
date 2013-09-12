@@ -9,6 +9,7 @@ from database.data              import *
 
 import numpy as np
 
+from debug import ploc
 
 
 class TEST:
@@ -220,23 +221,30 @@ class t_datafile(TEST):
 
 class t_project(TEST):
     def make_all(self):
-        people=t_people(self.session,50)
+
+        iacuc_protocol_id=None
+        blurb=None
+
+        self.records=[Project(lab='Scanziani',iacuc_protocol_id=iacuc_protocol_id,blurb=blurb) for n in range(self.num)]
+        count=0
+    def add_people(self): #has to be called after commit :/
+        people=t_people(self.session,100)
         people.commit()
         #HRM only queries can leverage the power of .filter
         pis=[pi for pi in self.session.query(Person).filter(Person.Role=='pi')]
         pi_n=np.random.choice(len(pis),self.num)
 
-        protocol_number=None
-        blurb=None
-
-        self.records=[Project(PI=pis[pi_n[n]],protocol_number=protocol_number,blurb=blurb) for n in range(self.num)]
+        #people=[p for p in self.session.query(Person)]
+        people_n=[np.random.permutation(people.records)[:np.random.randint(1,20)] for i in range(self.num)]
+        assocs=[]
         count=0
-        def add_people(self): #has to be called after commit :/
-            people=[p for p in self.session.query(Person)]
-            people_n=[np.permutation(people)[:np.random.randint(1,20)] for i in range(self.num)]
-            for rec,people in zip(self.records,people_n):
-                for person in people:
-                    rec.people.append(person)
+        for rec,people in zip(self.records,people_n):
+            assocs.append(person_to_project(rec,pis[pi_n[count]]))
+            assocs+=[person_to_project(rec,person) for person in people]
+            #[rec.people.append(person) for person in people] #FIXME somehow this no workey
+            count+=1
+        self.session.add_all(assocs)
+        self.session.commit()
 
 
 class t_experiment(TEST):
@@ -271,6 +279,9 @@ def run_tests(session):
 
     ps=t_project(session,10)
     ps.commit()
+    ps.add_people()
+    ps.commit()
+    printD([p.pi for p in ps.records])
 
     #d=t_datafile(session,100)
     #d.commit()

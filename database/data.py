@@ -99,24 +99,27 @@ class person_to_project(Base):
 class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a journal article
     #move to the 'data/docs' place?!??! because it is tehcnically a container for data not a table that will actively have data written to it, it is a one off reference
     #FIXME somehow experiment is dependent on this... which suggests that it doesn't quite belong in data
-    pi_id=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc... need a check constraint on people.role=='PI', or really current role... because those could change and violate certain checks/constraints...??? maybe better just to leave it as a person
+    lab=Column(String,nullable=False) #this is how we are going to replace the bloodly PI, and leave at the filter Role=='pi'
+    #pi_id=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc... need a check constraint on people.role=='PI', or really current role... because those could change and violate certain checks/constraints...??? maybe better just to leave it as a person
     #FIXME projects can have multiple PIs! damn it >_<, scaling this shit...
     iacuc_protocol_id=Column(Integer,ForeignKey('iacucprotocols.id'))
     blurb=Column(Text)
 
+    #PI=relationship('Person',primaryjoin='and_(Project.pi_id==Person.id,Person.Rold=="pi")') #FIXME pi should also be in people list :/
     p2p_assoc=relationship('person_to_project',backref='projects')
     #FIXME do we really want write access here? viewonly=True might be useful?
     people=association_proxy('p2p_assoc','people') #people.append but make sure nothing wierd happends
     relationship
-    def __init__(self,PI=None,pi_id=None,iacuc_protocol_id=None,blurb=None):
-        self.pi_id=pi_id
+    def __init__(self,lab=None,iacuc_protocol_id=None,blurb=None):
+        #self.pi_id=pi_id
+        self.lab=lab
         self.iacuc_protocol_id=iacuc_protocol_id
         self.blurb=blurb
-        if PI:
-            if PI.id:
-                pi_id=PI.id
-            else:
-                raise AttributeError
+        #if PI:
+            #if PI.id:
+                #pi_id=PI.id
+            #else:
+                #raise AttributeError
 
 
 class IACUCProtocols(Base): #note: probs can't store them here, but just put a number and a link (frankly no sense, they are kept in good order elsewere)
