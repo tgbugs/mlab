@@ -23,8 +23,10 @@ class Person(HasNotes, Base):
     #Role=Column(String,ForeignKey('role.id'))
     Role=Column(String)
     neurotree_id=Column(Integer,unique=True) #for shits and gigs
+
     experiments=relationship('Experiment',backref='investigator') #SOMETHING SOMETHING ACCESS CONTROL also in theory this might be m-m in some wierd situation where >1 person involved
-    projects=None #FIXME m-m
+    p2p_assoc=relationship('person_to_project',backref='people')
+    projects=association_proxy('p2p_assoc','projects')
     def __repr__(self):
         def xstr(string):
             return '' if string is None else str(string)

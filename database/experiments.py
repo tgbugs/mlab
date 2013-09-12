@@ -111,7 +111,7 @@ class Experiment(Base):
 
     id=Column(Integer,primary_key=True)
     project_id=Column(Integer,nullable=False) #FIXME I suppose in a strange world experiments can belong to two projects damn it...
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME add 'mouse experiment type for further inheritance???'
     #subject_id=Column(Integer,nullable=False)
     #ForeignKeyConstraint('Experiment.subject_id',['mouse.id','organism.id','cellCulture.id'])
     dateTime=Column(DateTime,nullable=False)

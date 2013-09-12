@@ -43,6 +43,9 @@ class TEST:
         self.session.add_all(self.records)
         self.session.commit()
 
+###--------
+###  people
+###--------
 
 class t_people(TEST):
     def make_name(self,names_per=1):
@@ -97,6 +100,10 @@ class t_people(TEST):
         #print([p.Gender for p in self.session.query(Person)])
         print([p for p in self.session.query(Person)])
 
+###------
+###  data
+###------
+
 class t_repo(TEST):
     def make_all(self):
         repolist=[
@@ -110,32 +117,61 @@ class t_repopath(TEST):
     def make_all(self):
         repo=t_repo(self.session)
         repo.commit()
-        paths=['/repotest/asdf'
+        paths=['/repotest/asdf' #FIXME these will error out like crazy
                ,'repotest/asdf'
                ,'repotest/asdf/'
               ]
         self.records=[]
         for r in repo.records:
-            self.records.append([RepoPath(Repository=r,path=path) for path in paths])
+            self.records+=([RepoPath(Repository=r,path=path) for path in paths])
 
-class t_data(TEST):
+class t_datafile(TEST):
     def make_all(self):
         repop=t_repopath(self.session)
         repop.commit()
-        for rp in repop.records:
-            pass
+        experiment=t_experiment(self.session)
+        experiment.commit()
+        data=[]
+        count=0
+        for exp in experiment.records:
+            count+=1
+            for rp in repop.records:
+                data+=[DataFile(RepoPath=rp,filename=str(fn)+'.data',exp) for fn in range(5*count)]
+        self.records=data
+            
+###-------------
+###  experiments
+###-------------
 
-        
+class t_project(TEST):
+    def make_all(self):
+        people=t_people(self.session,50)
+        people.commit()
+        #HRM only queries can leverage the power of .filter
+        pis=[pi for pi in session.query(Person).filter(Person.role='pi')]
+        pi_n=np.random.choice(len(pis),self.num)
+
+        protocol_number=None
+        blurb=None
+
+        self.recoreds=[Project(PI=PI[pi_n[n]],protocol_number=protocol_number,blurb=blurb) for n in range(self.num)]
+        count=0
+        def add_people(self): #has to be called after commit :/
+            people=[p for p in self.session.query(Person)]
+            people_n=[np.permutation(people)[:np.random.randint(1,20)] for i in range(self.num)]
+            for rec,people in zip(self.records,people_n):
+                for person in people:
+                    rec.people.append(person)
 
 
 class t_experiment(TEST):
-    def add_projects(self):
-        PI,People,protocol_number=None
-        pass
-    def add_experiments(self):
-        pass
-    def add_cells(self):
-        pass
+    def make_all(self):
+        projects=t_project(self.session,3)
+        projects.commit()
+        projects.add_people()
+
+
+
 
 
 

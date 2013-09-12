@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy                         import Float
 from sqlalchemy                         import Text
 from sqlalchemy                         import ForeignKeyConstraint
+from sqlalchemy.ext.associationproxy    import association_proxy
 
 from database.base import Base, HasNotes
 from database.standards import URL_STAND
@@ -76,12 +77,35 @@ class espCalibration(HasNotes, Base):
 ###  Doccuments
 ###------------
 
+class person_to_project(Base):
+    id=None
+    person_id=Column(Integer,ForeignKey('people.id'),primary_key=True)
+    project_id=Column(Integer,ForeignKey('project.id'),primary_key=True)
+    #TODO add some nice info about what the person is doing on the project or some shit
+    def __init__(self, Project=None, Person=None, project_id=None,person_id=None):
+        self.project_id=project_id
+        self.person_id=person_id
+        if Project:
+            if Project.id:
+                self.project_id=Project.id
+            else:
+                raise AttributeError
+        if Person:
+            if Person.id:
+                self.person_id=Person.id
+            else:
+                raise AttributeError
+
 class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a journal article
     #move to the 'data/docs' place?!??! because it is tehcnically a container for data not a table that will actively have data written to it, it is a one off reference
-    PI=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc...
-    people=relationship('Person',backref='projects') #FIXME m-m
+    #FIXME somehow experiment is dependent on this... which suggests that it doesn't quite belong in data
+    PI=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc... need a check constraint on people.role=='PI', or really current role... because those could change and violate certain checks/constraints...??? maybe better just to leave it as a person
     protocol_number=Column(Integer,ForeignKey('iacucprotocols.id'))
     blurb=Column(Text)
+
+    p2p_assoc=relationship('person_to_project',backref='projects')
+    #FIXME do we really want write access here? viewonly=True might be useful?
+    people=association_proxy('p2p_assoc','people') #people.append but make sure nothing wierd happends
 
 
 class IACUCProtocols(Base): #note: probs can't store them here, but just put a number and a link (frankly no sense, they are kept in good order elsewere)
@@ -145,7 +169,7 @@ class RepoPath(Base):
             if Repository.url:
                 self.repo_url=Repository.url
             else:
-                raise AttributeError('Repository has no url! Did you commit before referencing the instance directly?')
+                raise AttributeError('Repository has no url! Did you commit before referencing the instance directly?') #FIXME this should never trigger because url is a primary key and not an autoincrementing int...
 
 
 class DataFile(Base):
@@ -163,7 +187,7 @@ class DataFile(Base):
     repo_url=Column(Integer,ForeignKey('repository.url'),PrimaryKey=True)
     repo_path=Column(Integer, ForeignKey('repopaths.path'), PrimaryKey=True)
     filename=Column(String,PrimarKey=True)
-    experiment_id=Column(Integer,ForeignKey('experiments.id')) #FIXME WHEN DO WE LINK THIS??!?!?!?
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     #FIXME a bunch of these DateTimes should be TIMESTAMP? using the python implementation is more consistent?
     @property
@@ -173,7 +197,7 @@ class DataFile(Base):
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
     #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
-    def __init__(self,RepoPath=None,repo_url=None,repo_path=None,filename=None,experitment_id=None):
+    def __init__(self,RepoPath=None,Experiment=None,repo_url=None,repo_path=None,experitment_id=None,filename=None):
         self.repo_url=repo_url
         self.repo_path=repo_path
         self.filename=filename
@@ -182,5 +206,12 @@ class DataFile(Base):
         if RepoPath:
             if RepoPath.id:
                 self.repopath_id=RepoPath.id
+            else:
+                raise AttributeError('RepoPath has no id! Did you commit before referencing the instance directly?')
+        if Experiment:
+            if Experiment.id:
+                self.experiment_id=Experiment.id
+            else:
+                raise AttributeError('Experiment has no id! Did you commit before referencing the instance directly?')
 
 
