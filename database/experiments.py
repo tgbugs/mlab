@@ -121,7 +121,7 @@ class Experiment(Base):
     dateTime=Column(DateTime,nullable=False)
     protocol_id=Column(Integer,ForeignKey('protocols.id'))
 
-    datafiles=relationship('DataFile',backref=backref('experiment',uselist=False))
+    datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False)) #FIXME??? WTF???
     constants=None
     exp_type=Column(String,nullable=False)
     #nope, we're just going to have some data duplication, because each datafile will have to say 'ah yes, I was associated with this cell, this esp position etc'
@@ -131,9 +131,15 @@ class Experiment(Base):
         'polymorphic_identity':'experiment',
         #'with_polymorphic':'*'
     }
-    def __init__(self,Project=None,Experimenter=None,Mouse=None,**kwargs):
-        super.__init__()
+    def __init__(self,Project=None,Experimenter=None,Mouse=None,project_id=None,experimenter_id=None,mouse_id=None,protocol_id=None,dateTime=None):
+        #super.__init__() #:( doesnt work :(
         #self.dateTime=datetime.utcnow() #FIXME PLEASE COME UP WITH A STANDARD FOR THIS
+        self.project_id=project_id
+        self.experimenter_id=experimenter_id
+        self.mouse_id=mouse_id
+        self.protocol_id=protocol_id
+        self.experiment_type='base_experiment'
+        self.dateTime=dateTime
         if Project:
             if Project.id:
                 self.project_id=Project.id

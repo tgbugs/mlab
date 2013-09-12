@@ -29,7 +29,7 @@ class TEST:
         from datetime import datetime,timedelta
         if not num:
             num=self.num
-        seed=date.utcnow()
+        seed=datetime.utcnow()
         days=np.random.randint(0,365*5,num) #historical dates not supported in the test
         hours=np.random.randint(0,12,num) #historical dates not supported in the test
         deltas=[timedelta(days=int(d),hours=int(h)) for d,h in zip(days,hours)] #fortunately timedelta defaults to days so I dont have to read the doccumentation for map
@@ -235,11 +235,11 @@ class t_project(TEST):
         pi_n=np.random.choice(len(pis),self.num)
 
         #people=[p for p in self.session.query(Person)]
-        people_n=[np.random.permutation(people.records)[:np.random.randint(1,20)] for i in range(self.num)]
+        people_n=[np.random.permutation(people.records)[:np.random.randint(1,20)] for i in range(self.num)] #+pis[pi_n[i]] 
         assocs=[]
         count=0
         for rec,people in zip(self.records,people_n):
-            assocs.append(person_to_project(rec,pis[pi_n[count]]))
+            #assocs.append(person_to_project(rec,pis[pi_n[count]]))
             assocs+=[person_to_project(rec,person) for person in people]
             #[rec.people.append(person) for person in people] #FIXME somehow this no workey
             count+=1
@@ -262,11 +262,7 @@ class t_experiment(TEST):
             exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
             datetimes=self.make_datetime()
 
-            self.records+=[Experiment(Project=p,Experimenter=exps[i],Mouse=ms[i],dateTime=datetimes[i])]
-
-
-
-
+            self.records+=[Experiment(Project=p,Experimenter=exps[i],Mouse=ms[i],dateTime=datetimes[i]) for i in range(self.num)]
 
 
 def run_tests(session):
@@ -277,14 +273,14 @@ def run_tests(session):
     #repos=t_repo(session)
     #printD([r.url for r in repos.records])
 
-    ps=t_project(session,10)
-    ps.commit()
-    ps.add_people()
-    ps.commit()
-    printD([p.pi for p in ps.records])
+    #ps=t_project(session,10)
+    #ps.commit()
+    #ps.add_people()
+    #ps.commit()
+    #printD([[t for t in p.__dict__] for p in ps.records])
 
-    #d=t_datafile(session,100)
-    #d.commit()
+    d=t_datafile(session,100)
+    d.commit()
 
 
 
