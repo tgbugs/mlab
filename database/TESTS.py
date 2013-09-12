@@ -187,38 +187,71 @@ class t_people(TEST):
 ###------
 
 class t_dob(TEST):
+    def __init__(self,session,num=None,datetimes=None):
+        self.datetimes=datetimes
+        super().__init__(session,num)
     def make_all(self):
-        dts=self.make_datetime(years=2)
-        self.records=[DOB(d) for d in dts]
+        if not self.datetimes:
+            dts=self.make_datetime(years=2)
+            self.records=[DOB(d) for d in dts]
+        else:
+            self.records=[DOB(d) for d in self.datetimes]
 
-class t_litter(TEST):
-    def setup(self):
-        urdob=DOB(datetime.strptime('0001-1-1 00:00:00','%Y-%m-%d %H:%M:%S'))
-        self.session.add(urdob)
+class t_breeders(TEST):
+    """makes n pairs of breeders"""
+    def make_all(self):
+        mice=t_mice(self.session,3*self.num)
+        mice.commit()
+        sires=self.session.query(Mouse).filter(Mouse.sex=='m')
+        dams=self.session.query(Mouse).filter(Mouse.sex=='f')
+        self.records=[Sire(sire) for sire in sires[:self.num]]+[Dam(dam) for dam in dams[:self.num]]
+
+class t_mating_record(TEST):
+    def make_all(self):
+        from datetime import datetime,timedelta
+        breeders=t_breeders(self.session,int(self.num/6)+1)
+        breeders.commit()
+
+        sires=[s for s in self.session.query(Sire)]
+        dams=[d for d in self.session.query(Dam)]
+        sire_arr=np.random.choice(len(sires),self.num)
+        dam_arr=np.random.choice(len(sires),self.num)
+
+        
+        mins=np.random.randint(-60,60,self.num)
+        now=datetime.utcnow()
+
+        self.records=[MatingRecord(Sire=sires[sire_arr[i]],Dam=dams[dam_arr[i]],startDateTime=now+timedelta(hours=i),stopDateTime=now+timedelta(hours=int(i)+12,minutes=int(mins[i]))) for i in range(self.num)]
+
+class t_litters(TEST):
+    def make_all(self): #FIXME also need to test making without a MR
+        from datetime import timedelta
+        mrs=t_mating_record(self.session,self.num)
+        mrs.commit()
+
+        td=timedelta(days=19)
+        dts=[mr.est_e0+td for mr in mrs.records]
+        dobs=t_dob(self.session,datetimes=dts)
+        dobs.commit()
+        for mr,dob in zip(mrs.records,dobs.records):
+            mr.dob_id=dob.id 
+        mrs.commit()
+
+        self.records=[Litter(mr) for mr in mrs.records]
+    def add_members(self):
+        mice=[] #FIXME there has to be a better way
+        litter_sizes=np.random.randint(1,20,self.num) #randomize litter size
+        map(mice.extend,[self.records[i].make_members(litter_sizes[i]) for i in range(self.num)])
+        self.session.add_all(mice)
         self.session.commit()
-        self.session.add_all([Mouse(eartag=i+300,sex='f',DOB=urdob) for i in range(2)])
-        self.session.add_all([Mouse(eartag=i+200,sex='m',DOB=urdob) for i in range(2)])
-        self.session.commit()
-    def make_all(self):
-        self.records=
-
-class t_sire(TEST):
-    def make_all(self):
-        self.records=
-
-class t_dam(TEST):
-    def make_all(self):
-        self.records=
 
 class t_mice(TEST):
     def make_all(self):
         dobs=t_dob(self.session,self.num)
+        dobs.commit()
         tags=np.random.randint(0,1000,self.num)
-        sexes=self.make_sex(self.num)
-        self.records=[Mouse(eartag=tags[i],sex=sexes[i],DOB=dobs[i]) for i in range(self.num)]
-
-
-
+        sexes=self.make_sex()
+        self.records=[Mouse(eartag=tags[i],sex=sexes[i],DOB=dobs.records[i]) for i in range(self.num)]
 
 ###------
 ###  data
@@ -248,7 +281,7 @@ class t_repopath(TEST):
               )
         self.records=[]
         for r in repo.records:
-            printD(r)
+            printD(r.url)
             self.records+=([RepoPath(Repo=r,path=path) for path in paths])
 
 class t_datafile(TEST):
@@ -302,17 +335,23 @@ class t_experiment(TEST):
         projects=t_project(self.session,3)
         projects.commit()
         projects.add_people()
-        projects.commit() #FIXME do I need to readd? or can I just commit directly?
+        #projects.commit() #FIXME do I need to readd? or can I just commit directly?
+
+        lits=t_litters(self.session,50)
+        lits.commit()
+
+        mice=self.session.query(Mouse).filter(Mouse.breedingRec==None)
 
         self.records=[]
         for p in projects.records:
+            printD([t for t in p.__dict__])
             mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
             ms=[mice[i] for i in np.random.choice(len(mice),self.num)] #FIXME missing mouse
             #TODO need to test with bad inputs
             exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
             datetimes=self.make_datetime()
 
-            self.records+=[Experiment(Project=p,Experimenter=exps[i],Mouse=ms[i],dateTime=datetimes[i]) for i in range(self.num)]
+            self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],dateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
 
 def run_tests(session):
@@ -329,11 +368,15 @@ def run_tests(session):
     #ps.commit()
     #printD([[t for t in p.__dict__] for p in ps.records])
 
-    e=t_experiment(session,100):
-    e.commit()
+    #l=t_litters(session,20)
+    #l.commit()
+    #l.add_members()
 
-    #d=t_datafile(session,100)
-    #d.commit()
+    #e=t_experiment(session,100):
+    #e.commit()
+
+    d=t_datafile(session,100)
+    d.commit()
 
 
 

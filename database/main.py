@@ -74,7 +74,7 @@ tdboff=tdb.tdbOff
 ###  Test it!
 ###----------
 
-def makeObjects(session):
+def makeObjects(session): #OLD AND UNUSED
     import numpy as np
     sex_seed=np.random.choice(2,100,.52)
     sex_arr=np.array(list('m'*100))
@@ -111,7 +111,7 @@ def makeObjects(session):
     for i in range (n):
         #pick sire and dam at random
         now=datetime.utcnow()
-        mr=MatingRecord(Sire=sires[sire_arr[i]],Dam=dams[dam_arr[i]], startDateTime=now+timedelta(hours=i),stopTime=now+timedelta(hours=12))
+        mr=MatingRecord(Sire=sires[sire_arr[i]],Dam=dams[dam_arr[i]], startDateTime=now+timedelta(hours=i),stopTime=now+timedelta(hours=i+12))
         session.add(mr)
         session.commit() #FIXME problem here
 
@@ -142,8 +142,8 @@ def main():
         cursor.close()
 
     #setup the engine
-    echo=True
-    #echo=False
+    #echo=True
+    echo=False
     dbPath=':memory:'
     #dbPath='test2' #holy crap that is alow slower on the writes!
     #dbPath='C:\\toms_data\\db_test.db'
@@ -167,7 +167,7 @@ def main():
     #tests, in the order they need to be done, SHOULD fail if out of order
 
     #do some tests!
-    makeObjects(session)
+    #makeObjects(session)
 
     run_tests(session)
 

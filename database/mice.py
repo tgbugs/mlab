@@ -43,9 +43,7 @@ class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific
     absolute_error=Column(Float(precision=53)) #note: it is safe to store any timedelta less than a couple of years and still retain microseconds at full precision
     #estimated=Column(DateTime) #transaction thingy for later
 
-    printD('I get here')
     matingRecord=relationship('MatingRecord',primaryjoin='MatingRecord.dob_id==DOB.id',backref=backref('dob',uselist='False')) #FIXME need to force match litter/mr dob...
-    printD('I get here')
     litter=relationship('Litter',primaryjoin='Litter.dob_id==DOB.id',backref=backref('dob',uselist=False)) #attempt to enforce one litter per DOB?
     mice=relationship('Mouse',primaryjoin='Mouse.dob_id==DOB.id',backref=backref('dob',uselist=False))
 
@@ -82,8 +80,8 @@ class Mouse(HasNotes, Base):
 
     #geology
     litter_id=Column(Integer, ForeignKey('litter.id')) #mice dont HAVE to have litters
-    sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire')) #FIXME test the sire_id=0 hack may not work on all schemas?
-    dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'))
+    #sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire')) #FIXME test the sire_id=0 hack may not work on all schemas?
+    #dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam')) #FIXME delete these, they are not used anymore
 
 
     #dates and times
@@ -164,7 +162,7 @@ class Breeder(Base):
         'with_polymorphic':'*'
     }
 
-    def __init__(self,id=None,Mouse=None,sex=None,notes=[]):
+    def __init__(self,Mouse=None,sex=None,notes=[]):
         self.notes=notes
         self.id=id
         self.sex=sex
@@ -214,13 +212,13 @@ class MatingRecord(HasNotes, Base):
     sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'))#,primary_key=True) #backref
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'))#,primary_key=True) #backref
     startDateTime=Column(DateTime,nullable=False)#,primary_key=True) #FIXME fucking strings
-    stopTime=Column(DateTime)
+    stopDateTime=Column(DateTime)
     est_e0=Column(DateTime) #FIXME this shit will error
     e0_err=Column(Float(53))
 
     @property
     def e0_err(self):
-        return (self.stopTime-self.startDateTime)/2
+        return (self.stopDateTime-self.startDateTime)/2
     @e0_err.setter
     def e0_err(self):
         raise AttributeError('readonly attribute, set a stopTime if you want this')
@@ -237,10 +235,10 @@ class MatingRecord(HasNotes, Base):
     litter=relationship('Litter',primaryjoin='and_(MatingRecord.id==foreign(Litter.mr_id),MatingRecord.sire_id==foreign(Litter.sire_id),MatingRecord.dam_id==foreign(Litter.dam_id),MatingRecord.dob_id==foreign(Litter.dob_id))',uselist=False,backref=backref('matingRecord',uselist=False))
     #litter=relationship('Litter',primaryjoin='and_(MatingRecord.sire_id==foreign(Litter.sire_id),MatingRecord.dam_id==foreign(Litter.dam_id),MatingRecord.startDateTime==foreign(Litter.mr_sdt))',uselist=False,backref=backref('matingRecord',uselist=False)) FIXME this is where the dates being strings is a problem, REALLY can't use them as primary keys :(
     
-    def __init__(self,sire_id=None,Sire=None,dam_id=None,Dam=None,startDateTime=None,stopTime=None,notes=[]):
+    def __init__(self,sire_id=None,Sire=None,dam_id=None,Dam=None,startDateTime=None,stopDateTime=None,notes=[]):
         self.notes=notes
         self.startDateTime=startDateTime
-        self.stopTime=stopTime
+        self.stopDateTime=stopDateTime
 
         self.sire_id=sire_id
         self.dam_id=dam_id
@@ -310,7 +308,7 @@ class Litter(HasNotes, Base):
 
     members=relationship('Mouse',primaryjoin='Mouse.litter_id==Litter.id',backref=backref('litter',uselist=False)) #litter stores the members and starts out with ALL unknown each mouse has its own entry
 
-    def __init__(self, mr_id=None, MatingRecord=None, sire_id=None, Sire=None, dam_id=None, Dam=None, dob_id=None, DOB=None, name=None, cage_id=None, notes=[]):
+    def __init__(self, MatingRecord=None, mr_id=None, Sire=None, Dam=None, DOB=None, sire_id=None, dam_id=None, dob_id=None, name=None, cage_id=None, notes=[]):
         self.notes=notes
         self.dob_id=dob_id
         self.name=name

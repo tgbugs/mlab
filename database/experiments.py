@@ -113,7 +113,7 @@ class Experiment(Base):
 
     id=Column(Integer,primary_key=True)
     project_id=Column(Integer,nullable=False) #FIXME I suppose in a strange world experiments can belong to two projects damn it... since the interest is in searching for them from top down... data relevant to papers, just like papers relevant to papers
-    experimenter_id=Column(Integer,ForeignKey('people.id')) #FIXME problmes with corrispondence, make sure the person is on the project??? CHECK
+    person_id=Column(Integer,ForeignKey('people.id'),nullable=False) #FIXME problmes with corrispondence, make sure the person is on the project??? CHECK
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME there are too many subjects to keep them all in one table, could use a check to make sure that the subject id matches the experiment type? actually, joined table inheritance might work, but it adds another column to all the organisms ;_; derp, we'll worry about that when the time comes
     #FIXME terminal experiments should automatically add date of death, since for slice prep for example I do sort of record that
     #subject_id=Column(Integer,nullable=False)
@@ -121,7 +121,7 @@ class Experiment(Base):
     dateTime=Column(DateTime,nullable=False)
     protocol_id=Column(Integer,ForeignKey('protocols.id'))
 
-    datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False)) #FIXME??? WTF???
+    #datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False)) #FIXME??? WTF???
     constants=None
     exp_type=Column(String,nullable=False) #FIXME does this need to be nullable?
     #nope, we're just going to have some data duplication, because each datafile will have to say 'ah yes, I was associated with this cell, this esp position etc'
@@ -131,11 +131,11 @@ class Experiment(Base):
         'polymorphic_identity':'base_experiment',
         #'with_polymorphic':'*'
     }
-    def __init__(self,Project=None,Experimenter=None,Mouse=None,project_id=None,experimenter_id=None,mouse_id=None,protocol_id=None,dateTime=None):
+    def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,protocol_id=None,dateTime=None):
         #super.__init__() #:( doesnt work :(
         #self.dateTime=datetime.utcnow() #FIXME PLEASE COME UP WITH A STANDARD FOR THIS
         self.project_id=project_id
-        self.experimenter_id=experimenter_id
+        self.person_id=person_id
         self.mouse_id=mouse_id #FIXME somehow fails silently w/o mouse ID????
         self.protocol_id=protocol_id
         #self.exp_type='base_experiment'
@@ -145,14 +145,14 @@ class Experiment(Base):
                 self.project_id=Project.id
             else:
                 raise AttributeError
-        if Experimenter:
-            if Experimenter.id:
-                self.experimenter_id=Experimenter.id
+        if Person:
+            if Person.id:
+                self.person_id=Person.id
             else:
                 raise AttributeError
         if Mouse:
             if Mouse.id:
-                self.mouse_id=mouse_id
+                self.mouse_id=Mouse.id
             else:
                 raise AttributeError
 
