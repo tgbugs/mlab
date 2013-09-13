@@ -142,8 +142,8 @@ def main():
         cursor.close()
 
     #setup the engine
-    echo=True
-    #echo=False
+    #echo=True
+    echo=False
     dbPath=':memory:'
     #dbPath='test2' #holy crap that is alow slower on the writes!
     #dbPath='C:\\toms_data\\db_test.db'

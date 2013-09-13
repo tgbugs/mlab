@@ -13,12 +13,14 @@ from debug import ploc
 
 
 class TEST:
-    def __init__(self,session,num=None):
+    def __init__(self,session,num=None,autocommit=True):
         self.num=num
         self.session=session
         self.records=[] #this is the output
         self.setup()
         self.make_all()
+        if autocommit:
+            self.commit()
     def make_date(self):
         from datetime import date,timedelta
         num=self.num
@@ -227,12 +229,10 @@ class t_litters(TEST):
     def make_all(self): #FIXME also need to test making without a MR
         from datetime import timedelta
         mrs=t_mating_record(self.session,self.num)
-        mrs.commit()
 
         td=timedelta(days=19)
         dts=[mr.est_e0+td for mr in mrs.records]
         dobs=t_dob(self.session,datetimes=dts)
-        dobs.commit()
         for mr,dob in zip(mrs.records,dobs.records):
             mr.dob_id=dob.id 
         mrs.commit()
@@ -240,18 +240,76 @@ class t_litters(TEST):
         self.records=[Litter(mr) for mr in mrs.records]
     def add_members(self):
         mice=[] #FIXME there has to be a better way
-        litter_sizes=np.random.randint(1,20,self.num) #randomize litter size
+        litter_sizes=np.random.randint(6,20,self.num) #randomize litter size
         map(mice.extend,[self.records[i].make_members(litter_sizes[i]) for i in range(self.num)])
+        printD(mice)
         self.session.add_all(mice)
         self.session.commit()
 
 class t_mice(TEST):
     def make_all(self):
         dobs=t_dob(self.session,self.num)
-        dobs.commit()
         tags=np.random.randint(0,1000,self.num)
         sexes=self.make_sex()
         self.records=[Mouse(eartag=tags[i],sex=sexes[i],DOB=dobs.records[i]) for i in range(self.num)]
+
+###-------------
+###  experiments
+###-------------
+
+class t_project(TEST):
+    def make_all(self):
+        iacuc_protocol_id=None
+        blurb=None
+
+        self.records=[Project(lab='Scanziani',iacuc_protocol_id=iacuc_protocol_id,blurb=blurb) for n in range(self.num)]
+        count=0
+    def add_people(self): #has to be called after commit :/
+        people=t_people(self.session,100)
+        #HRM only queries can leverage the power of .filter
+        pis=[pi for pi in self.session.query(Person).filter(Person.Role=='pi')]
+        pi_n=np.random.choice(len(pis),self.num)
+
+        #people=[p for p in self.session.query(Person)]
+        people_n=[np.random.permutation(people.records)[:np.random.randint(1,20)] for i in range(self.num)] #+pis[pi_n[i]] 
+        assocs=[]
+        count=0
+        for rec,people in zip(self.records,people_n):
+            #assocs.append(person_to_project(rec,pis[pi_n[count]]))
+            assocs+=[person_to_project(rec,person) for person in people]
+            #[rec.people.append(person) for person in people] #FIXME somehow this no workey
+            count+=1
+        self.session.add_all(assocs)
+        self.session.commit()
+
+
+class t_experiment(TEST):
+    def __init__(self,session,num=None,num_projects=None):
+        self.num_projects=num_projects
+        super().__init__(session,num)
+    def make_all(self):
+        from time import sleep
+        projects=t_project(self.session,self.num_projects)
+        projects.add_people()
+        #projects.commit() #FIXME do I need to readd? or can I just commit directly?
+
+        lits=t_litters(self.session,50)
+        lits.add_members()
+        #lits.commit()
+
+        mice=[m for m in self.session.query(Mouse).filter(Mouse.breedingRec==None,Mouse.dod==None)]
+
+        #mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
+        self.records=[]
+        for p in projects.records:
+            #printD(p) #FIXME apparently p.__dict__ is not populated until AFTER you call the object...
+            #printD([t for t  in p.__dict__.items()]) #FIXME what the fuck, sometimes this catches nothing!?
+            ms=[mice[i] for i in np.random.choice(len(mice),self.num)] #FIXME missing mouse
+            #TODO need to test with bad inputs
+            exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
+            datetimes=self.make_datetime()
+
+            self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],dateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
 ###------
 ###  data
@@ -273,7 +331,6 @@ class t_repo(TEST):
 class t_repopath(TEST):
     def make_all(self):
         repo=t_repo(self.session)
-        repo.commit()
         paths=(
                 '/repotest/asdf1', #yep, it caught the similarity
                 'repotest/asdf2',
@@ -285,78 +342,26 @@ class t_repopath(TEST):
             self.records+=([RepoPath(Repo=r,path=path) for path in paths])
 
 class t_datafile(TEST):
+    def __init__(self,session,num=None,num_experiments=None,num_projects=None):
+        self.num_projects=num_projects
+        self.num_experiments=num_experiments
+        super().__init__(session,num)
     def make_all(self):
         repop=t_repopath(self.session)
-        repop.commit()
-        experiment=t_experiment(self.session,10) #I am getting  3x the number I request here, a yes, that is because I'm looking at 3 projects
-        experiment.commit()
+        experiment=t_experiment(self.session,self.num_experiments,self.num_projects) #I am getting  3x the number I request here, a yes, that is because I'm looking at 3 projects
         data=[]
         count=0
         for exp in experiment.records:
             for rp in repop.records:
-                data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),Experiment=exp) for df in range(self.num)]
+                data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),Experiment=exp) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
         self.records=data
             
 
-###-------------
-###  experiments
-###-------------
-
-class t_project(TEST):
-    def make_all(self):
-
-        iacuc_protocol_id=None
-        blurb=None
-
-        self.records=[Project(lab='Scanziani',iacuc_protocol_id=iacuc_protocol_id,blurb=blurb) for n in range(self.num)]
-        count=0
-    def add_people(self): #has to be called after commit :/
-        people=t_people(self.session,100)
-        people.commit()
-        #HRM only queries can leverage the power of .filter
-        pis=[pi for pi in self.session.query(Person).filter(Person.Role=='pi')]
-        pi_n=np.random.choice(len(pis),self.num)
-
-        #people=[p for p in self.session.query(Person)]
-        people_n=[np.random.permutation(people.records)[:np.random.randint(1,20)] for i in range(self.num)] #+pis[pi_n[i]] 
-        assocs=[]
-        count=0
-        for rec,people in zip(self.records,people_n):
-            #assocs.append(person_to_project(rec,pis[pi_n[count]]))
-            assocs+=[person_to_project(rec,person) for person in people]
-            #[rec.people.append(person) for person in people] #FIXME somehow this no workey
-            count+=1
-        self.session.add_all(assocs)
-        self.session.commit()
-
-
-class t_experiment(TEST):
-    def make_all(self):
-        from time import sleep
-        projects=t_project(self.session,3)
-        projects.commit()
-        projects.add_people()
-        #projects.commit() #FIXME do I need to readd? or can I just commit directly?
-
-        lits=t_litters(self.session,10)
-        lits.commit()
-
-        mice=[m for m in self.session.query(Mouse).filter(Mouse.breedingRec==None,Mouse.dod==None)]
-
-        #mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
-        self.records=[]
-        for p in projects.records:
-            #printD(p) #FIXME apparently p.__dict__ is not populated until AFTER you call the object...
-            #printD([t for t  in p.__dict__.items()]) #FIXME what the fuck, sometimes this catches nothing!?
-            ms=[mice[i] for i in np.random.choice(len(mice),self.num)] #FIXME missing mouse
-            #TODO need to test with bad inputs
-            exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
-            datetimes=self.make_datetime()
-
-            self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],dateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
-
 
 def run_tests(session):
+    #FIXME for some reason running these sequentially causes all sorts of problems...
+    #RESPONSE turns out it is because I'm trying to make EXACTLY the same tables again and an identical mapped instance already exists
+    #so it doesnt happen with people, but a collision *could* happen
     #people=t_people(session,10)
     #people.commit()
     #people.query()
@@ -375,10 +380,6 @@ def run_tests(session):
     #ps.commit()
     #printD([[t for t in p.__dict__] for p in ps.records])
 
-    #l=t_litters(session,20)
-    #l.commit()
-    #l.add_members()
-
     #p=t_project(session,3)
     #p.commit()
     #p.add_people()
@@ -387,8 +388,19 @@ def run_tests(session):
     #e=t_experiment(session,100)
     #e.commit()
 
-    d=t_datafile(session,10) #FIXME need num/experiment and num experiments, 100/100 experiments gets big fast and would require a rather different format, also num projects
-    d.commit()
+
+    #FIXME the real test will be to vary the number of projects, experiments and datafiles
+    #compare these two cases with profiler
+    #d=t_datafile(session,5000,2,4) #add 1000 datafiles to 3 projects each with 10 experiments takes about 16 seconds, I'd say we're ok here
+    #d=t_datafile(session,20,500,4) #add 1000 datafiles to 3 projects each with 10 experiments takes about 16 seconds, I'd say we're ok here
+
+    d=t_datafile(session,10,50,4) #add 1000 datafiles to 3 projects each with 10 experiments takes about 16 seconds, I'd say we're ok here
+
+
+    #l=t_litters(session,20) #FIXME another wierd error here... saying that I tried to add a mouse as a breeder twice... hrm...
+    #l.add_members()
+
+    printD([m for m in session.query(Mouse)]) #FIXME mice arent getting made?
 
 
 
