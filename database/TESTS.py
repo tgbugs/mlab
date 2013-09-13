@@ -240,11 +240,18 @@ class t_litters(TEST):
         self.records=[Litter(mr) for mr in mrs.records]
     def add_members(self):
         mice=[] #FIXME there has to be a better way
-        litter_sizes=np.random.randint(6,20,self.num) #randomize litter size
-        ms=[self.records[i].make_members(litter_sizes[i]) for i in range(self.num)]
-        [mice.extend(m) for m in ms]
+        #litter_sizes=np.random.randint(6,20,self.num) #randomize litter size
+        litter_sizes=np.int32(np.ones(self.num)*20)
 
-        self.session.add_all(mice)
+        #compare the two following methods: Second one seems faster, need to verify
+
+        #ms=[self.records[i].make_members(litter_sizes[i]) for i in range(self.num)]
+        #[mice.extend(m) for m in ms]
+        #self.session.add_all(mice)
+
+        #VS
+        [self.session.add_all(self.records[i].make_members(litter_sizes[i])) for i in range(self.num)]
+
         self.session.commit()
 
 class t_mice(TEST):
