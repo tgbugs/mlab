@@ -241,8 +241,9 @@ class t_litters(TEST):
     def add_members(self):
         mice=[] #FIXME there has to be a better way
         litter_sizes=np.random.randint(6,20,self.num) #randomize litter size
-        map(mice.extend,[self.records[i].make_members(litter_sizes[i]) for i in range(self.num)])
-        printD(mice)
+        ms=[self.records[i].make_members(litter_sizes[i]) for i in range(self.num)]
+        [mice.extend(m) for m in ms]
+
         self.session.add_all(mice)
         self.session.commit()
 
