@@ -319,6 +319,10 @@ class t_experiment(TEST):
 
             self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],dateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
+class t_cell(TEST):
+    def make_all(self):
+        self.records=None
+
 ###------
 ###  data
 ###------
