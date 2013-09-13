@@ -293,10 +293,8 @@ class t_datafile(TEST):
         data=[]
         count=0
         for exp in experiment.records:
-            count+=1
             for rp in repop.records:
-                #FIXME somehow repopath is not being inserted??!?!?!?
-                data+=[DataFile(RepoPath=rp,filename=str(fn)+'.data',Experiment=exp) for fn in range(count)]
+                data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),Experiment=exp) for df in range(self.num)]
         self.records=data
             
 

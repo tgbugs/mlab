@@ -201,7 +201,7 @@ class DataFile(Base):
     #repo_url=Column(Integer,ForeignKey('repository.url'),primary_key=True)
     #repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
     #with two above can direcly get the file from this record without having to do any cross table magic...
-    repopath_id=Column(Integer,ForeignKey('repopaths.id')) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
+    repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
     filename=Column(String,primary_key=True)
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
