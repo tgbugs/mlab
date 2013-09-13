@@ -8,12 +8,12 @@ from database.base      import Base
 #some global variables that are used here and there that would be magic otherwise
 #most of these need chcp 65001 on windows and that requires py33
 #FIXME ALL these things need to be converted to bytes :/
-_OMEGA='\u03A9'.encode('utf-8') #use this instead of 2126 which is for backward compatability 
-_degree='\u00B0'.encode('utf-8')
-_mu='\u03BC'.encode('utf-8')
-_male_symbol='\u2642'.encode('utf-8') #U+2642 #FIXME stupid windows console crashing symbol output >_<; in windows shell chcp 65001 #also unicode trouble with this one too what the hell
-_female_symbol='\u2640'.encode('utf-8') #U+2640
-_unknown_symbol='\u26AA'.encode('utf-8') #using unicode U+26AA for this #FIXME chcp 65001 doesn't work for displaying this one; also apparently lucidia console required? nope, didn't fix it #also apparently sqlalchemy doesnt like this
+_OMEGA='\u03A9'#.encode('utf-8') #use this instead of 2126 which is for backward compatability 
+_degree='\u00B0'#.encode('utf-8')
+_mu='\u03BC'#.encode('utf-8')
+_male_symbol='\u2642'#.encode('utf-8') #U+2642 #FIXME stupid windows console crashing symbol output >_<; in windows shell chcp 65001 #also unicode trouble with this one too what the hell
+_female_symbol='\u2640'#.encode('utf-8') #U+2640
+_unknown_symbol='\u26AA'#.encode('utf-8') #using unicode U+26AA for this #FIXME chcp 65001 doesn't work for displaying this one; also apparently lucidia console required? nope, didn't fix it #also apparently sqlalchemy doesnt like this
 
 ###----------------------------------------------------------------
 ###  Helper classes/tables for mice (normalization and constraints)
@@ -90,8 +90,8 @@ _SI_UNITS=(
 
     ('kelvin','K'),
 
-    ('degree Celcius',_degree+b'C'), #degrees = U+00B0
-    ('degrees Celcius',_degree+b'C'), #FIXME
+    ('degree Celcius',_degree+'C'), #degrees = U+00B0
+    ('degrees Celcius',_degree+'C'), #FIXME
     ('degree Celcius','~oC'), #Tom also accepts using the digraph for the degree symbol...
     ('degrees Celcius','~oC'),
 
@@ -222,6 +222,7 @@ _SEXES=(
         ('female',_female_symbol,'f'),
         ('unknown',_unknown_symbol,'u')
 )
+
 
 def populateConstraints(session):
     session.add_all([SI_PREFIX(prefix=prefix,symbol=symbol,E=E) for prefix,symbol,E in _SI_PREFIXES])

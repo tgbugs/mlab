@@ -349,6 +349,7 @@ class t_repopath(TEST):
             printD(r.url)
             self.records+=([RepoPath(Repo=r,path=path) for path in paths])
 
+
 class t_datafile(TEST):
     def __init__(self,session,num=None,num_experiments=None,num_projects=None):
         self.num_projects=num_projects
@@ -364,7 +365,6 @@ class t_datafile(TEST):
                 data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),Experiment=exp) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
         self.records=data
             
-
 
 def run_tests(session):
     #FIXME for some reason running these sequentially causes all sorts of problems...
@@ -402,13 +402,15 @@ def run_tests(session):
     #d=t_datafile(session,5000,2,4) #add 1000 datafiles to 3 projects each with 10 experiments takes about 16 seconds, I'd say we're ok here
     #d=t_datafile(session,20,500,4) #add 1000 datafiles to 3 projects each with 10 experiments takes about 16 seconds, I'd say we're ok here
 
-    d=t_datafile(session,10,50,4) #add 1000 datafiles to 3 projects each with 10 experiments takes about 16 seconds, I'd say we're ok here
+    d=t_datafile(session,10,50,4)
+    
+    [print(df.creation_DateTime) for df in session.query(DataFile)]
 
 
     #l=t_litters(session,20) #FIXME another wierd error here... saying that I tried to add a mouse as a breeder twice... hrm...
     #l.add_members()
 
-    printD([m for m in session.query(Mouse)]) #FIXME mice arent getting made?
+    #printD([m for m in session.query(Mouse)]) #FIXME mice arent getting made?
 
 
 
