@@ -162,9 +162,9 @@ class Repository(Base):
 class RepoPath(Base):
     __tablename__='repopaths'
     #Assumption: repository MUST be the full path to the data, so yes, a single 'repository' might have 10 entries, but that single repository is just a NAME and has not functional purpose for storing/retrieving data
-    id=Column(Integer,unique=True,autoincrement=True) #to simplify passing repos? is this reasonable?
-    repo_url=Column(String,ForeignKey('repository.url'),primary_key=True)
-    path=Column(String,primary_key=True) #make this explicitly relative path?
+    id=Column(Integer,primary_key=True,autoincrement=True) #to simplify passing repos? is this reasonable?
+    repo_url=Column(String,ForeignKey('repository.url'))#,primary_key=True) FIXME
+    path=Column(String)#,primary_key=True) #make this explicitly relative path?
     assoc_program=Column(String) #FIXME some of these should be automatically updated and check by the programs etc
     relationship('DataFile',backref='repository_path') #FIXME datafiles can be kept in multiple repos...
     #TODO how do we keep track of data duplication and backups!?!?!?
@@ -211,7 +211,7 @@ class DataFile(Base):
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
     #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
-    def __init__(self,RepoPath=None,Experiment=None,repo_url=None,repo_path=None,experitment_id=None,filename=None):
+    def __init__(self,RepoPath=None,Experiment=None,repo_url=None,repo_path=None,experiment_id=None,filename=None):
         self.repo_url=URL_STAND.baseClean(repo_url)
         self.repo_path=URL_STAND.pathClean(repo_path)
         self.filename=filename

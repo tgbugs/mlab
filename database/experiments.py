@@ -131,7 +131,7 @@ class Experiment(Base):
 
     __mapper_args__ = {
         'polymorphic_on':exp_type,
-        'polymorphic_identity':'base_experiment', #FIXME WTH THIS is causing problmes/?!??!
+        'polymorphic_identity':'experiment', #FIXME WTH THIS is causing problmes/?!??!
         'with_polymorphic':'*'
     }
     def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,protocol_id=None,dateTime=None):
@@ -141,7 +141,6 @@ class Experiment(Base):
         self.person_id=person_id
         self.mouse_id=mouse_id
         self.protocol_id=protocol_id
-        #self.exp_type='base_experiment'
         self.dateTime=dateTime
         if Project:
             if Project.id:
@@ -177,20 +176,17 @@ class SliceExperiment(Experiment):
 
     #abffile
 
-    #__table_args__ = {'extend_existing':True}
     __mapper_args__ = {'polymorphic_identity':'slice'}
 
 class HistologyExperiment(Experiment):
     __tablename__='histologyexperiment'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
-    #__table_args__ = {'extend_existing':True}
     __mapper_args__ = {'polymorphic_identity':'histology'}
 
 
 class IUEPExperiment(Experiment):
     __tablename__='iuepexperiment'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
-    #__table_args__ = {'extend_existing':True}
     __mapper_args__ = {'polymorphic_identity':'iuep'}
 
 #organism mixins??? no, bad way to do it, still haven't figured out the good way
