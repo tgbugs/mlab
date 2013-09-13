@@ -198,8 +198,10 @@ class DataFile(Base):
     #RESPONSE: this record cannot be created until the file itself exists
     id=None
     #Assumption: repository ID's refer to a single filesystem folder where there cannot be duplicate names
-    repo_url=Column(Integer,ForeignKey('repository.url'),primary_key=True)
-    repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
+    #repo_url=Column(Integer,ForeignKey('repository.url'),primary_key=True)
+    #repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
+    #with two above can direcly get the file from this record without having to do any cross table magic...
+    repopath_id=Column(Integer,ForeignKey('repopaths.id')) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
     filename=Column(String,primary_key=True)
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
@@ -211,19 +213,22 @@ class DataFile(Base):
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
     #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
-    def __init__(self,RepoPath=None,Experiment=None,repo_url=None,repo_path=None,experiment_id=None,filename=None):
-        self.repo_url=URL_STAND.baseClean(repo_url)
-        self.repo_path=URL_STAND.pathClean(repo_path)
+    def __init__(self,RepoPath=None,Experiment=None, repopath_id=None, repo_url=None,repo_path=None,experiment_id=None,filename=None):
+        #self.repo_url=URL_STAND.baseClean(repo_url)
+        #self.repo_path=URL_STAND.pathClean(repo_path)
+        self.repopath_id=repopath_id
         self.filename=filename
         self.experiment_id=experiment_id
         self.creation_DateTime=datetime.utcnow()
         if RepoPath:
             if RepoPath.id:
+                #printD(RepoPath.id)
                 self.repopath_id=RepoPath.id
             else:
                 raise AttributeError('RepoPath has no id! Did you commit before referencing the instance directly?')
         if Experiment:
             if Experiment.id:
+                #printD(Experiment.id)
                 self.experiment_id=Experiment.id
             else:
                 raise AttributeError('Experiment has no id! Did you commit before referencing the instance directly?')

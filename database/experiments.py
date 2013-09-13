@@ -111,7 +111,7 @@ class Experiment(Base):
     #this is the base table where each row is one experimental condition or data point, we could call it an experiment since 'Slice Experiment' would be a subtype with its own additional data
     __tablename__='experiments'
 
-    #id=Column(Integer,primary_key=True)
+    id=Column(Integer,primary_key=True)
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False) #FIXME I suppose in a strange world experiments can belong to two projects damn it... since the interest is in searching for them from top down... data relevant to papers, just like papers relevant to papers
     person_id=Column(Integer,ForeignKey('people.id'),nullable=False) #FIXME problmes with corrispondence, make sure the person is on the project??? CHECK
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME there are too many subjects to keep them all in one table, could use a check to make sure that the subject id matches the experiment type? actually, joined table inheritance might work, but it adds another column to all the organisms ;_; derp, we'll worry about that when the time comes
@@ -131,7 +131,7 @@ class Experiment(Base):
 
     __mapper_args__ = {
         'polymorphic_on':exp_type,
-        'polymorphic_identity':'experiment', #FIXME WTH THIS is causing problmes/?!??!
+        'polymorphic_identity':'experiment',
         #'with_polymorphic':'*' #FIXME we don't really need this on but it wasnt the source of the slowdown
     }
     def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,protocol_id=None,dateTime=None):

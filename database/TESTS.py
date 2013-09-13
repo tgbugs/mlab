@@ -295,6 +295,7 @@ class t_datafile(TEST):
         for exp in experiment.records:
             count+=1
             for rp in repop.records:
+                #FIXME somehow repopath is not being inserted??!?!?!?
                 data+=[DataFile(RepoPath=rp,filename=str(fn)+'.data',Experiment=exp) for fn in range(count)]
         self.records=data
             
@@ -363,7 +364,12 @@ def run_tests(session):
     #people.query()
 
     #repos=t_repo(session)
+    #repos.commit()
     #printD([r.url for r in repos.records])
+
+    #rps=t_repopath(session)
+    #rps.commit()
+    #printD([r.id for r in rps.records])
 
     #ps=t_project(session,10)
     #ps.commit()
