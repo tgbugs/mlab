@@ -288,16 +288,17 @@ class t_datafile(TEST):
     def make_all(self):
         repop=t_repopath(self.session)
         repop.commit()
-        experiment=t_experiment(self.session,100)
+        experiment=t_experiment(self.session,10) #I am getting  3x the number I request here, a yes, that is because I'm looking at 3 projects
         experiment.commit()
         data=[]
         count=0
         for exp in experiment.records:
             count+=1
             for rp in repop.records:
-                data+=[DataFile(RepoPath=rp,filename=str(fn)+'.data',Experiment=exp) for fn in range(5*count)]
+                data+=[DataFile(RepoPath=rp,filename=str(fn)+'.data',Experiment=exp) for fn in range(count)]
         self.records=data
             
+
 ###-------------
 ###  experiments
 ###-------------
@@ -338,16 +339,16 @@ class t_experiment(TEST):
         projects.add_people()
         #projects.commit() #FIXME do I need to readd? or can I just commit directly?
 
-        lits=t_litters(self.session,50)
+        lits=t_litters(self.session,10)
         lits.commit()
 
-        mice=self.session.query(Mouse).filter(Mouse.breedingRec==None)
+        mice=[m for m in self.session.query(Mouse).filter(Mouse.breedingRec==None,Mouse.dod==None)]
 
+        #mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
         self.records=[]
         for p in projects.records:
             #printD(p) #FIXME apparently p.__dict__ is not populated until AFTER you call the object...
             #printD([t for t  in p.__dict__.items()]) #FIXME what the fuck, sometimes this catches nothing!?
-            mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
             ms=[mice[i] for i in np.random.choice(len(mice),self.num)] #FIXME missing mouse
             #TODO need to test with bad inputs
             exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
@@ -382,7 +383,7 @@ def run_tests(session):
     #e=t_experiment(session,100)
     #e.commit()
 
-    d=t_datafile(session,100)
+    d=t_datafile(session,10) #FIXME need num/experiment and num experiments, 100/100 experiments gets big fast and would require a rather different format, also num projects
     d.commit()
 
 

@@ -123,7 +123,7 @@ class Experiment(Base):
     dateTime=Column(DateTime,nullable=False)
     protocol_id=Column(Integer,ForeignKey('protocols.id'))
 
-    #datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False)) #FIXME??? WTF???
+    datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False)) #FIXME??? WTF???
     constants=None
     exp_type=Column(String,nullable=False) #FIXME does this need to be nullable?
     #nope, we're just going to have some data duplication, because each datafile will have to say 'ah yes, I was associated with this cell, this esp position etc'
@@ -132,7 +132,7 @@ class Experiment(Base):
     __mapper_args__ = {
         'polymorphic_on':exp_type,
         'polymorphic_identity':'experiment', #FIXME WTH THIS is causing problmes/?!??!
-        'with_polymorphic':'*'
+        #'with_polymorphic':'*' #FIXME we don't really need this on but it wasnt the source of the slowdown
     }
     def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,protocol_id=None,dateTime=None):
         #super.__init__() #:( doesnt work :(
