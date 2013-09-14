@@ -27,14 +27,18 @@ class Result(HasNotes, Base):
     analysis_id=None
     output_id=None
 
-class Data1(Base): #TODO fuck me this will be COMPLETELY unmanagable for large datasets ;_; 
+class MetaData1(Base): #TODO fuck me this will be COMPLETELY unmanagable for large datasets ;_; 
     #RESPONSE: maybe I'm missing the point? the units should be stored as part of the inheriting table since that way it only has to be defined once! YAY :D, fuck, its not quite that simple
-    __tablename__='data1'
+    __tablename__='metadata1'
     dateTime=Column(DateTime,nullable=False)
-    source_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #backref FIXME
+    #source_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #backref FIXME
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #replace source_id w/ this???
+    #THOUGHT: this might mean that WaterRecords are actually experiments?!?! yeah, they have a responsible person, and they have subjects, and yes yes good (man I love how you can figure out what category things belong to by how they relate to other things, yeah math, I really need to read that book on category theory for scientists)
     value_dim1=Column(Float(53))
-    unit_dim1=Column
-    prefix_dim1=Column
+    #FIXME integers don't have units, which is why we shall not make units requried, but we sill constrain them if people want to put them in, and fuck it we are going to store everything as a float instead of ints for how many pups we have or something: ALTERNATELY, we could just define a whole bunch of metadata classes for each experiment, shit, going to have to decide which one is going to work better... table per metadata? do I really even need to be able to join between classes or do I just not want to type shit over and over again....
+    #this does mean that source_id is now rather...useslless...
+    unit_dim1=Column(String,ForeignKey('si_unit.symbol')) #FIXME THIS migth be done w/ CheckConstraint
+    prefix_dim1=Column(String,ForeignKey('si_prefix.symbol'))
 
 
 class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here without too much trouble, but keep it < 3d, stuff that is entered manually or is associated with an object
@@ -73,7 +77,7 @@ class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here
     def __repr__(self):
         return '\n%s %s%s collected %s from %s'%(self.value,self.prefix,self.units,frmtDT(self.dateTime),self.source.strHelper())
 
-class espPosition(OneDData):
+class espPosition(OneDData): #oh look, 2d metadata! just as planned
     """table to hold all the esp positions that I collect, they can be associated to a cell, or to a stimulation event or whatever"""
     id=Column(Integer,ForeignKey('oneddata.id'),primary_key=True)
     #this needs an association table or a mixin for HasPosition or some shit ;_; ?? or 'HasData' or something...
