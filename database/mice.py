@@ -4,6 +4,7 @@
 from database.imports import *
 from sqlalchemy                         import Float
 from sqlalchemy                         import ForeignKeyConstraint
+from sqlalchemy.ext.hybrid              import hybrid_property, hybrid_method
 
 from sqlalchemy.ext.declarative         import declared_attr #main mice notes
 
@@ -95,7 +96,13 @@ class Mouse(HasNotes, Base):
 
     #dates and times
     dob_id=Column(Integer, ForeignKey('dob.id'),nullable=False) #backref FIXME data integrity problem, dob_id and litter.dob_id may not match if entered manually...
-    dod=Column(DateTime)
+    @hybrid_property #TODO
+    def age(self):
+        pass
+    dod=Column(DateTime) #FIXME need to figure out how to directly link this to experiments eg, a setter for dod would just get current datetime and make the mouse dead instead of calling a completely separate killMouse method
+    @hybrid_property #TODO
+    def ageAtDeath(self):
+        pass
 
     #breeding records
     breedingRec=relationship('Breeder',primaryjoin='Mouse.id==Breeder.id',backref=backref('mouse',uselist=False),uselist=False)
@@ -166,6 +173,7 @@ class WaterRecord(Base): #FIXME this is really a transaction log for changing th
     id=None
     mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
     dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
+    weight=Column(
     
 
 
@@ -235,17 +243,17 @@ class MatingRecord(HasNotes, Base):
     est_e0=Column(DateTime) #FIXME this shit will error
     e0_err=Column(Float(53))
 
-    @property
+    @hybrid_property #FIXME http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/hybrid.html
     def e0_err(self):
         return (self.stopDateTime-self.startDateTime)/2
     @e0_err.setter
     def e0_err(self):
         raise AttributeError('readonly attribute, set a stopTime if you want this')
         
-    @property
+    @hybrid_property #FIXME HOLY SHIT HYBRID ATTRIBUTES!!!!!!
     def est_e0(self):
         return self.startDateTime+self.e0_err #standard: sticks this right in the middle of the interval
-    @est_e0.setter
+    @est_e0.setter #FIXME should be est_dob....
     def est_e0(self):
         raise AttributeError('readonly attribute, set a stopTime if you want this')
     

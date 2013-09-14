@@ -27,6 +27,15 @@ class Result(HasNotes, Base):
     analysis_id=None
     output_id=None
 
+class Data1(Base): #TODO fuck me this will be COMPLETELY unmanagable for large datasets ;_; 
+    #RESPONSE: maybe I'm missing the point? the units should be stored as part of the inheriting table since that way it only has to be defined once! YAY :D, fuck, its not quite that simple
+    __tablename__='data1'
+    dateTime=Column(DateTime,nullable=False)
+    source_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #backref FIXME
+    value_dim1=Column(Float(53))
+    unit_dim1=Column
+    prefix_dim1=Column
+
 
 class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here without too much trouble, but keep it < 3d, stuff that is entered manually or is associated with an object
     #id=None #FIXME for now we are just going to go with id as primary_key since we cannot gurantee atomicity for getting datetimes :/

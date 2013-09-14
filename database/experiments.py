@@ -105,7 +105,7 @@ class SlicePrep(HasNotes, Base):
     #sucrose reference to table of solutions
 
 
-class Experiment(Base):
+class Experiment(Base): #FIXME are experiments datasources? type experiment or something? or should the data from each experiment be IN the xperiment? ;_; I though we decided that the experiment points to all the data... and then the metadata is stored somehwere else again, such as a table inheriting from Data1 maybe? seems like a good idea
     """Base class to link all experiment metadata tables to DataFile tables"""
     #need this to group together the variables
     #this is the base table where each row is one experimental condition or data point, we could call it an experiment since 'Slice Experiment' would be a subtype with its own additional data
@@ -187,6 +187,9 @@ class HistologyExperiment(Experiment):
 class IUEPExperiment(Experiment):
     __tablename__='iuepexperiment'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
+    #dam=realationship('Mouse') #FIXME maybe don't need this, since the mouse will backprop anyway
+    matingrecord_id=Column(Integer,ForeignKey('matingrecord.id'))
+    mice=realationship('Mouse',primaryjoin='IUEPExperiment.mouse_id==Mouse.dam_id',backref=backref('iuep',uselist=False)) #FIXME somehow mouse could also have a @hybrid_property of 'est age at iuep...'
     __mapper_args__ = {'polymorphic_identity':'iuep'}
 
 #organism mixins??? no, bad way to do it, still haven't figured out the good way
