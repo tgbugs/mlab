@@ -32,6 +32,14 @@ class Cage(Base): #TODO this is a 'unit'
     mice=relationship('Mouse',primaryjoin='Mouse.cage_id==Cage.id',backref=backref('cage',uselist=False))
     litter=relationship('Litter',primaryjoin='Litter.cage_id==Cage.id',backref=backref('cage',uselist=False))
 
+class CageTransefer(Base):
+    #TODO
+    id=None
+    old_cage_id=Column(Integer, ForeignKey('cage.id'), primary_key=True)
+    new_cage_id=Column(Integer, ForeignKey('cage.id'), primary_key=True)
+    mouse_id=Column(Integer, ForeignKey('mouse.id'), primary_key=True)
+    dateTime=Column(DateTime, nullable=False)
+
 
 ###-----------------------------------------------------
 ###  MOUSE Defintions for mouse tables and relationships TODO this datamodel could be replicated for pretty much any model organism?
@@ -71,9 +79,7 @@ class Mouse(HasNotes, Base):
     #cage and location information
     cage_id=Column(Integer,ForeignKey('cage.id')) #the cage card number
 
-    #sex=Column(String,ForeignKey('sex.id'),nullable=False)
-    sex=Column(String,nullable=False)
-    ForeignKeyConstraint('Mouse.sex',['sex.name','sex.symbol','sex.abbrev'])
+    sex_id=Column(String(1),ForeignKey('sex.abbrev'),nullable=False)
     #relationship('Breeder',primaryjoin='',backref=backref())
     genotype=Column(String) #use the numbers that jax uses????
     strain_id=Column(String,ForeignKey('strain.id')) #FIXME populating the strain ID probably won't be done in table? but can set rules that force it to match the parents, use a query, or a match or a condition on a join to prevent accidents? well, mouse strains could change via mute
@@ -148,6 +154,13 @@ class Mouse(HasNotes, Base):
             breedingRec='\n\tBreedingRec None'
 
         return base+'%s %s %s'%(self.dob.strHelper(1),litter,breedingRec)
+
+class WaterRecord(Base): #FIXME this is really a transaction log for changing the weight of a mouse and whether/how much they are water restricted...
+    #TODO this does not need to be done right now, just make sure it will integrate easily
+    #do we keep weight's here or somehwere else, is there any other reason why a 'normal' mouse would need to be weighed? sure the mouse HAS a weight, but does that mean that the mouse table should be where we keep it? it changes too
+    #same argument applies to sex and how to deal with changes to that, and whether it is even worth noting
+    #somehow this reminds me that when weaning mice need to make sure that their cages get matched up properly... well, that's the users job
+    id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
 
 
 class Breeder(Base):
@@ -282,13 +295,33 @@ class Litter(HasNotes, Base):
     name=Column(String) #the name by which I shall write upon their cage cards!
 
     #FIXME use @declared_attr to define size, do not need a column for that...
+    #FIXME may need queries for this? ;_;
     @property
     def size(self):
-        return len(self.members.count)
+        return self.members.count()
     @property #you get the idea
     def males(self):
-        return len(self.members.male.count)
+        return self.members.filter(Mouse.sex_id=='m').count()
+    @property #you get the idea
+    def females(self):
+        return self.members.filter(Mouse.sex_id=='f').count()
+    @property #you get the idea
+    def unknowns(self):
+        return self.members.filter(Mouse.sex_id=='u').count()
+
+    #TODO verify that 'remaining males' and 'remaning females' won't accidentally be negative, I think the way I have it now works best, actual records for mice instead of just numbers could use an assert in python or maybe a check? nah
     
+    @property
+    def m_left(self):
+        return self.members.filter(Mouse.sex_id=='m',Mouse.dod=None).count()
+
+    @property
+    def u_left(self):
+        return self.members.filter(Mouse.sex_id=='f',Mouse.dod=None).count()
+
+    @property
+    def u_left(self):
+        return self.members.filter(Mouse.sex_id=='u',Mouse.dod=None).count()
 
             
     def make_members(self,number):

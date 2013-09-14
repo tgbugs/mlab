@@ -46,9 +46,9 @@ class SEX(Base):
     """Static table for sex"""
     id=None
     name=Column(String(14),primary_key=True) #'male','female','unknown' #FIXME do I need the autoincrement 
-    symbol=Column(Unicode(1),nullable=False) #the actual symbols
+    symbol=Column(Unicode(1),nullable=False,unique=True) #the actual symbols
     #symbol=Column(Unicode(1)) #the actual symbols
-    abbrev=Column(String(1),nullable=False) #'m','f','u'
+    abbrev=Column(String(1),nullable=False,unique=True) #'m','f','u'
     def __repr__(self):
         return '\n%s %s %s'%(self.name,self.abbrev,self.symbol) #FIXME somehow there are trailing chars here >_<
 
