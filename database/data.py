@@ -19,50 +19,21 @@ from database.standards import URL_STAND
 
         
 
-class Datasource(Base):
-    #table with following properties:
-    #a one to many with metadata, a single source produces lots of data
-    id=Column(Integer,primary_key=True)
-    metadata=relationship('MetaData',backref=backref('datasource',uselist=False))
-    #a many to one with multiple different tables
-    parent=association_proxy #add an outgoing datastream to an object not a source to a datasource
-    #but I dont need a many-many here...
-
-
-class Datasource(HasNotes, Base): #TODO note that we can define an equlivalent class for handling relations between data and results, we could reuse datasource directly but that would cause all kinds of circular problems
-    #FIXME maybe a better way to do this is to ADD a datasource ID to an object, just like you add a userid to a person even if they are already in your database ala facebook, this will require that user keeps datasources and the thing they are associated with aligned... fuck, back to the table per version and mm-o, maybe this can work..
-    #FIXME ahha! the Person is not the datasource, it is either thuem as a USER or them by some relation to it, so 'converstion' or some citable thing like that in fact 'class Citation' migth count
-    #single table inheritance?
+class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDataSource'?
+    """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
+    #definable by parent and having matching properties? nah, just keep it generic?
+    #might be able to cut this out entirely?
     __tablename__='datasources'
     id=Column(Integer,primary_key=True)
-    type=Column(String)
-    person_id=Column(S
+    #I mean, sure once 'source' back propagates down it will be ok but wtf
+    name=Column(String,nullable=False) #FIXME unforunately the one disadvantage of this setup is that there are no real constraints to prevent someone from forming an erroious link between types of data and where it comes from
+    #FIXME where do we keep the calibration data ;_;
+    #define some properties
+    prefix=Column(String,ForeignKey('si_prefix.symbol'),nullable=False)
+    unit=Column(String,ForeignKey('si_unit.symbol'),nullable=False)
+    ds_calibration_rec=Column(String,ForeignKey('calibrecs.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
     metadata=relationship('MetaData',backref=backref('datasource',uselist=False))
-    #source=relationship('DataSource',uselist=False) #see, this is the jti...
-    person=relationship('Person',uselist=False)
-    hardware=relationship('Hardware',uselist=False) #well, maybe combinations of all the sources count as a source? should be exclusive though... could us a check that something else isnt already attached to that id?
-    #FIXME the datasource probably should not be related directly to the experiment? well actually it will be (lol) because a person will be a datasource, so they, I suppose an experiment could be done by a computer, BUT the person relates to the DATA as a datasource while for the experiment they relate as the experimenter, which is to say that they introduce error, and in fact can probably be dropped entirely from the experiment since they would just go in the metadata table as another dimesion??? albiet not a numerical value... so no, they stay I do believe
-
-    #yeah, metadata with units goes in metadata, oranizational stuff and things for organisms and the like and cells could also go in a similar structure, but those are real objects in the world that have more specific non-numerical data (I think)
-    __mapper_args__ = {
-        'polymorphic_on':type,
-        'polymorphic_identity':'datasource',
-        #'with_polymorphic':'*' #could get really big as the database grows, but whatever
-    }
-
-    name=Column(String,primary_key=True) #FIXME no, not quite... the 700b is a datasource... so is clampex, well, all of those are... hardware... lead's to amusing things like 'tom's eyeballs' being put in the 'hardware' column :D and LOL yes, people are hardware, that solves the problem nicely hahahaha, well shit
-    source_type=Column(String,primary_key=True)
-    source_id=Column(Integer,primary_key=True) #FIXME this is looking like the borked note assoc
-    source_class=Column(String)
-    ForeignKeyConstraint('Datasource.source_class',['people.id','users.id','datafile.id'])
-    #FIXME how to label certain things like 'hardware' etc as a 'datasource'
-    #should datasource be a mixin? or should it be an association between an object and a metadata entry...
-    #how to handle that gracefully
-    #such an association could be extremely useful BUT it is not a m-m it is a mm-m and would requir a table per kind of deal, shit, well new problems to solve
-
-    metadata=relationship('MetaData',backref=backref('datasource',uselist=False))
-    experiments=relationship('Experiment',backref='datasources') #FIXME m-m
-    #FIXME 
+    datafiles=relationship('DataFile',backref=backref('datasource',uselist=False)) #FIXME urmmmmmm fuck? this here or make a different set of datasources for data not stored in the database? well datafiles are produced by camplex and I suppose at some point I might pull data direct from it too so sure, that works out
 
 class Result(HasNotes, Base):
     __tablename__='results'
@@ -79,9 +50,7 @@ class MetaData(Base):
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME, should this be a primary key? it would mean that espX and espY would have to be considered different datasources..., BUT it would mean that any/every metadata entry would be tagged with a datasource
     dateTime=Column(DateTime,nullable=False) #FIXME is this a good enough fail safe if we somehow lost the ds?
     value=Column(Float(53),nullable=False)
-    abs_error
-    prefix=Column(String,ForeignKey('si_prefix.symbol'),nullable=False)
-    unit=Column(String,ForeignKey('si_unit.symbol'),nullable=False)
+    #abs_error=Column(Float(53)) #FIXME does this go here, I think for some cases it does might want to qualify it with an 'estimated error' since some of this will be human entered data... but this makes things less rigorous so... damn it
 
 class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here without too much trouble, but keep it < 3d, stuff that is entered manually or is associated with an object
     #id=None #FIXME for now we are just going to go with id as primary_key since we cannot gurantee atomicity for getting datetimes :/

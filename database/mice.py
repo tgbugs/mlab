@@ -165,15 +165,6 @@ class Mouse(HasNotes, Base):
 
         return base+'%s %s %s'%(self.dob.strHelper(1),litter,breedingRec)
 
-class WaterRecord(Base): #FIXME this is really a transaction log for changing the weight of a mouse and whether/how much they are water restricted... #RESPONSE: no, water logs must have an entry every day with weight for everymouse
-    #TODO this does not need to be done right now, just make sure it will integrate easily
-    #do we keep weight's here or somehwere else, is there any other reason why a 'normal' mouse would need to be weighed? sure the mouse HAS a weight, but does that mean that the mouse table should be where we keep it? it changes too
-    #same argument applies to sex and how to deal with changes to that, and whether it is even worth noting
-    #somehow this reminds me that when weaning mice need to make sure that their cages get matched up properly... well, that's the users job
-    id=None
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
-    dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
-    weight=Column(
     
 
 

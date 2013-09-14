@@ -1,5 +1,6 @@
 from sqlalchemy                     import Column
 from sqlalchemy                     import Integer
+from sqlalchemy.orm                 import relationship, backref
 from sqlalchemy.ext.declarative     import declarative_base, declared_attr
 
 class HasNotes(object): #FIXME
@@ -24,7 +25,7 @@ class IsDataSource:
         datasource_association = Table('%s_datastreams'%cls.__tablename__, cls.metadata,
             Column('datasource_id', ForeignKey('datasources.id'), primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
-        return relationship(DataSource, secondary=datasource_association)
+        return relationship('DataSource', secondary=datasource_association,backref=backref('source',uselist=False))
 
 class Base(object):
     @declared_attr

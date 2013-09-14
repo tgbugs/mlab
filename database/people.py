@@ -49,7 +49,7 @@ class Person(HasNotes, Base):
         name,role,date,ntid=cols((name,role,date,ntid),(35,15,10,10))
         return '\n%s%s\t%s\t%s%s '%(name,xstr(self.Gender),date,role,ntid)
 
-class User(Base):
+class User(IsDataSource, Base):
     __tablename__='users'
     person_id=Column(Integer,ForeignKey('people.id'),unique=True) #not all users are people and not all people are users
     #BUT each person can only have ONE user associated, something something auditing? I'm sure this is super insecure
