@@ -27,19 +27,26 @@ class Result(HasNotes, Base):
     analysis_id=None
     output_id=None
 
-class MetaData1(Base): #TODO fuck me this will be COMPLETELY unmanagable for large datasets ;_; 
+class MetaData1(Base): #This is now a key-value store PER EXPERIMENT, matched to experiment_id, don't need jti for each bloody experiment type, just for the number of dimensions of data, which for some things, could be quite a few, but whatever
     #RESPONSE: maybe I'm missing the point? the units should be stored as part of the inheriting table since that way it only has to be defined once! YAY :D, fuck, its not quite that simple
     __tablename__='metadata1'
     dateTime=Column(DateTime,nullable=False)
     #source_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #backref FIXME
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #replace source_id w/ this???
     #THOUGHT: this might mean that WaterRecords are actually experiments?!?! yeah, they have a responsible person, and they have subjects, and yes yes good (man I love how you can figure out what category things belong to by how they relate to other things, yeah math, I really need to read that book on category theory for scientists)
-    value_dim1=Column(Float(53))
+    name_dim1=Column(String,nullable=False)
+    value_dim1=Column(Float(53),nullable=False) #FIXME 'value' is too generic, but a 'KEY' for that value, namely 'weight' or 'value description' will be more efficient than adding a whole new column every time? yeah, yeah, that will be better I think, yeah, this way we don't add a new column to the join and have overlapping columns for every fucking thing
+    prefix_dim1=Column(String,ForeignKey('si_prefix.symbol'),nullable=False) #FIXME, going to require units, adding number, also, do something about null for this one becasue '' is irritating to have to type in all the time
+    unit_dim1=Column(String,ForeignKey('si_unit.symbol'),nullable=False) #FIXME THIS migth be done w/ CheckConstraint
     #FIXME integers don't have units, which is why we shall not make units requried, but we sill constrain them if people want to put them in, and fuck it we are going to store everything as a float instead of ints for how many pups we have or something: ALTERNATELY, we could just define a whole bunch of metadata classes for each experiment, shit, going to have to decide which one is going to work better... table per metadata? do I really even need to be able to join between classes or do I just not want to type shit over and over again....
     #this does mean that source_id is now rather...useslless...
-    unit_dim1=Column(String,ForeignKey('si_unit.symbol')) #FIXME THIS migth be done w/ CheckConstraint
-    prefix_dim1=Column(String,ForeignKey('si_prefix.symbol'))
 
+class MetaData2(MetaData1): #FIXME we need a metadata maker??? also at some point isn't it going to be more efficient to just use column names?!??!
+    __tablename__='metadata2'
+    name_dim2=Column(String,nullable=False)
+    value_dim2=Column(Float(53),nullable=False)
+    prefix_dim2=Column(String,ForeignKey('si_prefix.symbol'),nullable=False)
+    unit_dim2=Column(String,ForeignKey('si_unit.symbol'),nullable=False)
 
 class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here without too much trouble, but keep it < 3d, stuff that is entered manually or is associated with an object
     #id=None #FIXME for now we are just going to go with id as primary_key since we cannot gurantee atomicity for getting datetimes :/

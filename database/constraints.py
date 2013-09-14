@@ -191,6 +191,7 @@ _NON_SI_UNITS=(
     ('degrees',_degree),
     ('degree','~o'), #also accepted
     ('degrees','~o')
+    ('number','num') #explicitly 'of something'
 )
 _SI_PREFIXES=(
                 #prefix, symbol, E
