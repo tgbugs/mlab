@@ -123,7 +123,8 @@ class Experiment(Base): #FIXME are experiments datasources? type experiment or s
     dateTime=Column(DateTime,nullable=False)
     protocol_id=Column(Integer,ForeignKey('protocols.id'))
 
-    datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False)) #FIXME??? WTF???
+    metadata=relationship('MetaData',primaryjoin='Experiment.id==MetaData.experiment_id') #no backref needed
+    datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False)) #may not need the backref now that I think about it? no, becasue they exist outside that database I might look at a folder and say 'oh hello, what are you doing here who do you belong to?'
     constants=None
     exp_type=Column(String,nullable=False) #FIXME does this need to be nullable?
     #nope, we're just going to have some data duplication, because each datafile will have to say 'ah yes, I was associated with this cell, this esp position etc'

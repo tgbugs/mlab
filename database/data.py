@@ -14,8 +14,25 @@ from database.standards import URL_STAND
 ###  Measurement tables, to enforce untils and things... it may look over normalized, but it means that every single measurement I take will have a datetime associated as well as units
 ###--------------------
 
-class Datasource(HasNotes, Base):
+class Datasource(HasNotes, Base): #TODO note that we can define an equlivalent class for handling relations between data and results, we could reuse datasource directly but that would cause all kinds of circular problems
+    #FIXME maybe a better way to do this is to ADD a datasource ID to an object, just like you add a userid to a person even if they are already in your database ala facebook, this will require that user keeps datasources and the thing they are associated with aligned... fuck, back to the table per version and mm-o, maybe this can work..
+    #FIXME ahha! the Person is not the datasource, it is either thuem as a USER or them by some relation to it, so 'converstion' or some citable thing like that in fact 'class Citation' migth count
     __tablename__='datasources'
+    id=Column(Integer,primary_key=True)
+    name=Column(String,nullable=False)
+    #source=relationship('DataSource',uselist=False) #see, this is the jti...
+    person=relationship('Person',uselist=False)
+    hardware=relationship('Hardware',uselist=False) #well, maybe combinations of all the sources count as a source? should be exclusive though... could us a check that something else isnt already attached to that id?
+    metadata=relationship('MetaData',backref=backref('datasource',uselist=False))
+    #FIXME the datasource probably should not be related directly to the experiment? well actually it will be (lol) because a person will be a datasource, so they, I suppose an experiment could be done by a computer, BUT the person relates to the DATA as a datasource while for the experiment they relate as the experimenter, which is to say that they introduce error, and in fact can probably be dropped entirely from the experiment since they would just go in the metadata table as another dimesion??? albiet not a numerical value... so no, they stay I do believe
+
+    #yeah, metadata with units goes in metadata, oranizational stuff and things for organisms and the like and cells could also go in a similar structure, but those are real objects in the world that have more specific non-numerical data (I think)
+    __mapper_args__ = {
+        'polymorphic_on':type,
+        'polymorphic_identity':'datasource',
+        #'with_polymorphic':'*' #could get really big as the database grows, but whatever
+    }
+
     name=Column(String,primary_key=True) #FIXME no, not quite... the 700b is a datasource... so is clampex, well, all of those are... hardware... lead's to amusing things like 'tom's eyeballs' being put in the 'hardware' column :D and LOL yes, people are hardware, that solves the problem nicely hahahaha, well shit
     source_type=Column(String,primary_key=True)
     source_id=Column(Integer,primary_key=True) #FIXME this is looking like the borked note assoc
@@ -38,6 +55,8 @@ class Result(HasNotes, Base):
 
 class MetaData(Base):
     """This table is now extensible and I can add new dimensions to the data for any experiment whenever the fuck I feel like it :D, I could make a constrain to make sure that the number of dimesions I enter for an experiment is correct, but frankly that adds a ton of work every time I want to add a new variable to an experiment or something, this way commits of ANY single datapoint will not depend on all the other data being there too, might want to add a source id????"""
+    #the reason we don't use this for everything is because adding slice and cell metadata as a new value is because those things are external objects that contain their OWN metadata
+    #metadata in this table should not then have its own metadata that could be in this table
     id=None
     experiment_id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME, should this be a primary key? it would mean that espX and espY would have to be considered different datasources..., BUT it would mean that any/every metadata entry would be tagged with a datasource
