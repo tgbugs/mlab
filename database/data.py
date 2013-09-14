@@ -16,9 +16,18 @@ from database.standards import URL_STAND
 
 class Datasource(HasNotes, Base):
     __tablename__='datasources'
+    name=Column(String,primary_key=True) #FIXME no, not quite... the 700b is a datasource... so is clampex, well, all of those are... hardware... lead's to amusing things like 'tom's eyeballs' being put in the 'hardware' column :D and LOL yes, people are hardware, that solves the problem nicely hahahaha, well shit
+    source_type=Column(String,primary_key=True)
+    source_id=Column(Integer,primary_key=True) #FIXME this is looking like the borked note assoc
     source_class=Column(String)
     ForeignKeyConstraint('Datasource.source_class',['people.id','users.id','datafile.id'])
-    data1=relationship('OneDData',backref=backref('source',uselist=False))
+    #FIXME how to label certain things like 'hardware' etc as a 'datasource'
+    #should datasource be a mixin? or should it be an association between an object and a metadata entry...
+    #how to handle that gracefully
+    #such an association could be extremely useful BUT it is not a m-m it is a mm-m and would requir a table per kind of deal, shit, well new problems to solve
+
+    metadata=relationship('MetaData',backref=backref('datasource',uselist=False))
+    experiments=relationship('Experiment',backref='datasources') #FIXME m-m
     #FIXME 
 
 class Result(HasNotes, Base):
@@ -27,26 +36,16 @@ class Result(HasNotes, Base):
     analysis_id=None
     output_id=None
 
-class MetaData1(Base): #This is now a key-value store PER EXPERIMENT, matched to experiment_id, don't need jti for each bloody experiment type, just for the number of dimensions of data, which for some things, could be quite a few, but whatever
-    #RESPONSE: maybe I'm missing the point? the units should be stored as part of the inheriting table since that way it only has to be defined once! YAY :D, fuck, its not quite that simple
-    __tablename__='metadata1'
-    dateTime=Column(DateTime,nullable=False)
-    #source_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #backref FIXME
-    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #replace source_id w/ this???
-    #THOUGHT: this might mean that WaterRecords are actually experiments?!?! yeah, they have a responsible person, and they have subjects, and yes yes good (man I love how you can figure out what category things belong to by how they relate to other things, yeah math, I really need to read that book on category theory for scientists)
-    name_dim1=Column(String,nullable=False)
-    value_dim1=Column(Float(53),nullable=False) #FIXME 'value' is too generic, but a 'KEY' for that value, namely 'weight' or 'value description' will be more efficient than adding a whole new column every time? yeah, yeah, that will be better I think, yeah, this way we don't add a new column to the join and have overlapping columns for every fucking thing
-    prefix_dim1=Column(String,ForeignKey('si_prefix.symbol'),nullable=False) #FIXME, going to require units, adding number, also, do something about null for this one becasue '' is irritating to have to type in all the time
-    unit_dim1=Column(String,ForeignKey('si_unit.symbol'),nullable=False) #FIXME THIS migth be done w/ CheckConstraint
-    #FIXME integers don't have units, which is why we shall not make units requried, but we sill constrain them if people want to put them in, and fuck it we are going to store everything as a float instead of ints for how many pups we have or something: ALTERNATELY, we could just define a whole bunch of metadata classes for each experiment, shit, going to have to decide which one is going to work better... table per metadata? do I really even need to be able to join between classes or do I just not want to type shit over and over again....
-    #this does mean that source_id is now rather...useslless...
-
-class MetaData2(MetaData1): #FIXME we need a metadata maker??? also at some point isn't it going to be more efficient to just use column names?!??!
-    __tablename__='metadata2'
-    name_dim2=Column(String,nullable=False)
-    value_dim2=Column(Float(53),nullable=False)
-    prefix_dim2=Column(String,ForeignKey('si_prefix.symbol'),nullable=False)
-    unit_dim2=Column(String,ForeignKey('si_unit.symbol'),nullable=False)
+class MetaData(Base):
+    """This table is now extensible and I can add new dimensions to the data for any experiment whenever the fuck I feel like it :D, I could make a constrain to make sure that the number of dimesions I enter for an experiment is correct, but frankly that adds a ton of work every time I want to add a new variable to an experiment or something, this way commits of ANY single datapoint will not depend on all the other data being there too, might want to add a source id????"""
+    id=None
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME, should this be a primary key? it would mean that espX and espY would have to be considered different datasources..., BUT it would mean that any/every metadata entry would be tagged with a datasource
+    dateTime=Column(DateTime,nullable=False) #FIXME is this a good enough fail safe if we somehow lost the ds?
+    value=Column(Float(53),nullable=False)
+    abs_error
+    prefix=Column(String,ForeignKey('si_prefix.symbol'),nullable=False)
+    unit=Column(String,ForeignKey('si_unit.symbol'),nullable=False)
 
 class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here without too much trouble, but keep it < 3d, stuff that is entered manually or is associated with an object
     #id=None #FIXME for now we are just going to go with id as primary_key since we cannot gurantee atomicity for getting datetimes :/
@@ -209,7 +208,7 @@ class RepoPath(Base):
         self.path=clean_path
 
 
-class DataFile(Base):
+class DataFile(Base): #FIXME make sure that this class looks a whole fucking lot like MetaData
     #TODO path, should the database maintain this???, yes
     #how to constrain/track files so they don't get lost??
     #well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
