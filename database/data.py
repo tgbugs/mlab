@@ -14,16 +14,33 @@ from database.standards import URL_STAND
 ###  Measurement tables, to enforce untils and things... it may look over normalized, but it means that every single measurement I take will have a datetime associated as well as units
 ###--------------------
 
+
+
+
+        
+
+class Datasource(Base):
+    #table with following properties:
+    #a one to many with metadata, a single source produces lots of data
+    id=Column(Integer,primary_key=True)
+    metadata=relationship('MetaData',backref=backref('datasource',uselist=False))
+    #a many to one with multiple different tables
+    parent=association_proxy #add an outgoing datastream to an object not a source to a datasource
+    #but I dont need a many-many here...
+
+
 class Datasource(HasNotes, Base): #TODO note that we can define an equlivalent class for handling relations between data and results, we could reuse datasource directly but that would cause all kinds of circular problems
     #FIXME maybe a better way to do this is to ADD a datasource ID to an object, just like you add a userid to a person even if they are already in your database ala facebook, this will require that user keeps datasources and the thing they are associated with aligned... fuck, back to the table per version and mm-o, maybe this can work..
     #FIXME ahha! the Person is not the datasource, it is either thuem as a USER or them by some relation to it, so 'converstion' or some citable thing like that in fact 'class Citation' migth count
+    #single table inheritance?
     __tablename__='datasources'
     id=Column(Integer,primary_key=True)
-    name=Column(String,nullable=False)
+    type=Column(String)
+    person_id=Column(S
+    metadata=relationship('MetaData',backref=backref('datasource',uselist=False))
     #source=relationship('DataSource',uselist=False) #see, this is the jti...
     person=relationship('Person',uselist=False)
     hardware=relationship('Hardware',uselist=False) #well, maybe combinations of all the sources count as a source? should be exclusive though... could us a check that something else isnt already attached to that id?
-    metadata=relationship('MetaData',backref=backref('datasource',uselist=False))
     #FIXME the datasource probably should not be related directly to the experiment? well actually it will be (lol) because a person will be a datasource, so they, I suppose an experiment could be done by a computer, BUT the person relates to the DATA as a datasource while for the experiment they relate as the experimenter, which is to say that they introduce error, and in fact can probably be dropped entirely from the experiment since they would just go in the metadata table as another dimesion??? albiet not a numerical value... so no, they stay I do believe
 
     #yeah, metadata with units goes in metadata, oranizational stuff and things for organisms and the like and cells could also go in a similar structure, but those are real objects in the world that have more specific non-numerical data (I think)

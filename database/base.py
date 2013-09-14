@@ -17,6 +17,15 @@ class HasNotes(object): #FIXME
     def addNote(string): #FIXME?
         pass
 
+class IsDataSource:
+    #users, citeables, hardware, NO PEOPLE
+    @declared_attr
+    def datastreams(cls):
+        datasource_association = Table('%s_datastreams'%cls.__tablename__, cls.metadata,
+            Column('datasource_id', ForeignKey('datasources.id'), primary_key=True),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
+        return relationship(DataSource, secondary=datasource_association)
+
 class Base(object):
     @declared_attr
     def __tablename__(cls):
