@@ -30,6 +30,9 @@ class Result(HasNotes, Base):
 
 class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here without too much trouble, but keep it < 3d, stuff that is entered manually or is associated with an object
     #id=None #FIXME for now we are just going to go with id as primary_key since we cannot gurantee atomicity for getting datetimes :/
+    #FIXME this should be a Base data class where each extra dimension adds another column
+    #FIXME THEN it can be inherited by specific object/table pairs that record that kind of data
+    #EXAMPLE: a WaterRecord row is a OneDData that also has a mouse_id and a type!
     dateTime=Column(DateTime,nullable=False) #FIXME tons of problems with using dateTime/TIMESTAMP for primary key :(
     #FIXME I am currently automatically generating datetime entries for this because I want the record of when it was put into the database, not when it was actually measured...
     #This behavior is more consistent and COULD maybe be used as a pk along with data source
