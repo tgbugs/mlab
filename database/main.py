@@ -52,7 +52,7 @@ from database.constraints       import *
 from database.experiments       import *
 from database.inventory         import *
 from database.people            import *
-from database.notes             import * #FIXME exceptionally broken at the moment
+#from database.notes             import * #FIXME exceptionally broken at the moment
 from database.mice              import *
 from database.data              import *
 
@@ -144,7 +144,7 @@ def main():
     #setup the engine
     echo=True
     #echo=False
-    dbPath=':memory:'
+    #dbPath=':memory:'
     #dbPath='test2' #holy crap that is alow slower on the writes!
     dbPath='T:\\databases\\db_test.db'
     engine = create_engine('sqlite:///%s'%(dbPath), echo=echo) #FIXME, check if the problems with datetime and DateTime on sqlite and sqlite3 modules are present!
