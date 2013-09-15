@@ -129,7 +129,7 @@ class Experiment(Base): #FIXME are experiments datasources? type experiment or s
 
     expmetadata=relationship('MetaData',primaryjoin='Experiment.id==MetaData.experiment_id')
     datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False))
-    exp_type=Column(String,nullable=False)
+    exp_type=Column(String(20),nullable=False)
 
     __mapper_args__ = {
         'polymorphic_on':exp_type,

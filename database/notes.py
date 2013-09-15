@@ -5,13 +5,14 @@ from sqlalchemy.ext.associationproxy    import association_proxy
 
 from database.dateTimeFuncs import *
 
-from database.base import Base
+#from database.base import Base
+Base=object
 #all I want is a many-many relationship between targets and notes but that doesn't quite work ;_; Association per tble maybe?? that way we don't need a mixin
 
 class NoteAssociation(Base): #turns out we want joined table inheritance... #I think I need multiple tables for this...
     __tablename__='note_association'
     id=Column(Integer, primary_key=True)
-    discriminator=Column(String) #there should now be a single row per discrminator
+    discriminator=Column(String(30)) #there should now be a single row per discrminator
 
     @classmethod
     def creator(cls, discriminator):

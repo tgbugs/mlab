@@ -28,12 +28,12 @@ class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDa
     __tablename__='datasources'
     id=Column(Integer,primary_key=True)
     #I mean, sure once 'source' back propagates down it will be ok but wtf
-    name=Column(String,nullable=False) #FIXME unforunately the one disadvantage of this setup is that there are no real constraints to prevent someone from forming an erroious link between types of data and where it comes from
+    name=Column(String(20),nullable=False) #FIXME unforunately the one disadvantage of this setup is that there are no real constraints to prevent someone from forming an erroious link between types of data and where it comes from
     #FIXME where do we keep the calibration data ;_;
     #define some properties
-    prefix=Column(String,ForeignKey('si_prefix.symbol'),nullable=False)
-    unit=Column(String,ForeignKey('si_unit.symbol'),nullable=False)
-    ds_calibration_rec=Column(String,ForeignKey('calibrationdata.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
+    prefix=Column(String(2),ForeignKey('si_prefix.symbol'),nullable=False)
+    unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
+    ds_calibration_rec=Column(Integer,ForeignKey('calibrationdata.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
     expmetadata=relationship('MetaData',backref=backref('datasource',uselist=False))
     datafiles=relationship('DataFile',backref=backref('datasource',uselist=False)) #FIXME urmmmmmm fuck? this here or make a different set of datasources for data not stored in the database? well datafiles are produced by camplex and I suppose at some point I might pull data direct from it too so sure, that works out
 
@@ -45,6 +45,7 @@ class Result(HasNotes, Base):
     output_id=None
 
 
+#FIXME it seems like what I really need here is MetaData linked to datafiles instead of experiments??? think about the best way to do this
 class MetaData(Base): #FIXME nasty overlap with mapper class metadata reserved name, rename this
     """This table is now extensible and I can add new dimensions to the data for any experiment whenever the fuck I feel like it :D, I could make a constrain to make sure that the number of dimesions I enter for an experiment is correct, but frankly that adds a ton of work every time I want to add a new variable to an experiment or something, this way commits of ANY single datapoint will not depend on all the other data being there too, might want to add a source id????"""
     #FIXME the proper way to interact with these tables for consistency is through another script that defines all the data that we are going to store
@@ -108,7 +109,7 @@ class person_to_project(Base):
 class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a journal article
     #move to the 'data/docs' place?!??! because it is tehcnically a container for data not a table that will actively have data written to it, it is a one off reference
     #FIXME somehow experiment is dependent on this... which suggests that it doesn't quite belong in data
-    lab=Column(String,nullable=False) #this is how we are going to replace the bloodly PI, and leave at the filter Role=='pi'
+    lab=Column(String(15),nullable=False) #this is how we are going to replace the bloodly PI, and leave at the filter Role=='pi'
     #pi_id=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc... need a check constraint on people.role=='PI', or really current role... because those could change and violate certain checks/constraints...??? maybe better just to leave it as a person
     #FIXME projects can have multiple PIs! damn it >_<, scaling this shit...
     iacuc_protocol_id=Column(Integer,ForeignKey('iacucprotocols.id'))
@@ -134,7 +135,7 @@ class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a jo
 class Citeable(Base):
     #TODO base class for all citable things, such as personal communications, journal articles, books
     __tablename___='citeable'
-    type=Column(String,nullable=False)
+    type=Column(String(15),nullable=False)
     __mapper_args__={
         'polymorphic_on':type,
         'polymorphic_identity':'citeable'
@@ -148,7 +149,7 @@ class Protocols(Base):
     pass
 
 class Recipe(HasNotes, Base):
-    id=Column(String,primary_key=True)
+    id=Column(Integer,primary_key=True)
     #acsf
     #internal
     #sucrose
@@ -163,7 +164,7 @@ class Repository(Base):
     #file:///C: #apparently chromium uses file:///C:
     #file:///D: are technically the base
     id=None
-    url=Column(String,primary_key=True) #use urllib.parse for this
+    url=Column(String(100),primary_key=True) #use urllib.parse for this #since these are base URLS len 100 ok
     credentials_id=Column(Integer,ForeignKey('credentials.id')) 
     blurb=Column(Text)
     paths=relationship('RepoPath',primaryjoin='RepoPath.repo_url==Repository.url')
@@ -180,9 +181,9 @@ class RepoPath(Base):
     __tablename__='repopaths'
     #Assumption: repository MUST be the full path to the data, so yes, a single 'repository' might have 10 entries, but that single repository is just a NAME and has not functional purpose for storing/retrieving data
     id=Column(Integer,primary_key=True,autoincrement=True) #to simplify passing repos? is this reasonable?
-    repo_url=Column(String,ForeignKey('repository.url'))#,primary_key=True) FIXME
-    path=Column(String)#,primary_key=True) #make this explicitly relative path?
-    assoc_program=Column(String) #FIXME some of these should be automatically updated and check by the programs etc
+    repo_url=Column(String(255),ForeignKey('repository.url'))#,primary_key=True) FIXME
+    path=Column(String(255))#,primary_key=True) #make this explicitly relative path?
+    assoc_program=Column(String(15)) #FIXME some of these should be automatically updated and check by the programs etc
     relationship('DataFile',backref='repository_path') #FIXME datafiles can be kept in multiple repos...
     #TODO how do we keep track of data duplication and backups!?!?!?
     blurb=Column(Text) #a little note saying what data is stored here, eg, abf files
@@ -219,7 +220,7 @@ class DataFile(Base): #FIXME make sure that this class looks a whole fucking lot
     #repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
     #with two above can direcly get the file from this record without having to do any cross table magic...
     repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
-    filename=Column(String,primary_key=True)
+    filename=Column(String(255),primary_key=True) #urp! on ext3 255 max for EACH /asdf/
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
     #creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?

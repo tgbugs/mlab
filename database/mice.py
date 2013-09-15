@@ -22,7 +22,7 @@ _plusMinus='\u00B1'
 class CageRack(Base): #TODO this a 'collection'
     id=Column(Integer,primary_key=True)
     row=Column(Integer,primary_key=True,autoincrement=False)
-    col=Column(String,primary_key=True,autoincrement=False)
+    col=Column(String(1),primary_key=True,autoincrement=False)
     cage_id=Column(Integer,ForeignKey('cage.id'))
 
 
@@ -78,15 +78,15 @@ class Mouse(HasNotes, Base):
     eartag=Column(Integer)
     tattoo=Column(Integer)
     num_in_lit=Column(Integer)  #for mice with no eartag or tattoo, numbered in litter, might replace this with mouse ID proper?
-    name=Column(String)  #words for mice
+    name=Column(String(20))  #words for mice
 
     #cage and location information
     cage_id=Column(Integer,ForeignKey('cage.id')) #the cage card number
 
     sex_id=Column(String(1),ForeignKey('sex.abbrev'),nullable=False)
     #relationship('Breeder',primaryjoin='',backref=backref())
-    genotype=Column(String) #use the numbers that jax uses????
-    strain_id=Column(String,ForeignKey('strain.id')) #FIXME populating the strain ID probably won't be done in table? but can set rules that force it to match the parents, use a query, or a match or a condition on a join to prevent accidents? well, mouse strains could change via mute
+    genotype_id=Column(Integer) #use the numbers that jax uses???? #TODO
+    strain_id=Column(String(20),ForeignKey('strain.id')) #FIXME populating the strain ID probably won't be done in table? but can set rules that force it to match the parents, use a query, or a match or a condition on a join to prevent accidents? well, mouse strains could change via mute TODO
 
     #geology
     litter_id=Column(Integer, ForeignKey('litter.id')) #mice dont HAVE to have litters
@@ -172,8 +172,7 @@ class Mouse(HasNotes, Base):
 class Breeder(Base):
     id=Column(Integer,ForeignKey('mouse.id'),primary_key=True,autoincrement=False)
     #sex=Column(String,ForeignKey('sex.id'),nullable=False) #FIXME ah balls, didn't workout...
-    sex=Column(String,nullable=False) #FIXME ah balls, didn't workout...
-    ForeignKeyConstraint('Breeder.sex',['SEX.name','SEX.abbrev','SEX.symbol'])
+    sex=Column(String(1),ForeignKey('sex.abbrev'),nullable=False) #FIXME ah balls, didn't workout...
 
     __mapper_args__ = {
         'polymorphic_on':sex,
@@ -298,7 +297,7 @@ class Litter(HasNotes, Base):
     cage_id=Column(Integer, ForeignKey('cage.id'))
 
 
-    name=Column(String) #the name by which I shall write upon their cage cards!
+    name=Column(String(20)) #the name by which I shall write upon their cage cards!
 
     #FIXME use @declared_attr to define size, do not need a column for that...
     #FIXME may need queries for this? ;_;

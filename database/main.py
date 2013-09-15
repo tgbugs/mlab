@@ -52,7 +52,7 @@ from database.constraints       import *
 from database.experiments       import *
 from database.inventory         import *
 from database.people            import *
-#from database.notes             import * #FIXME exceptionally broken at the moment
+#from database.notes             import * #FIXME exceptionally broken at the moment #FIXME why does this still import when commented out! maybe an artifact of having it linked to Base in base.py?!?!?
 from database.mice              import *
 from database.data              import *
 
@@ -131,24 +131,31 @@ def makeObjects(session): #OLD AND UNUSED
         session.commit()
 
 
+
 def main():
     #SQLite does not check foreign key constraints by default so we have to turn it on every time we connect to the database
     #the way I have things written at the moment this is ok, but it is why inserting an id=0 has been working
      
+    """
     @event.listens_for(Engine, 'connect') #FIXME NOT WORKING!
     def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor = dbapi_connection.cursor()
         cursor.execute('PRAGMA foreign_keys=ON')
         cursor.close()
+    """
+
+    #test globals
+    ploc(globals())
 
     #setup the engine
     echo=True
     #echo=False
     #dbPath=':memory:'
     #dbPath='test2' #holy crap that is alow slower on the writes!
-    dbPath='T:\\databases\\db_test.db'
-    engine = create_engine('sqlite:///%s'%(dbPath), echo=echo) #FIXME, check if the problems with datetime and DateTime on sqlite and sqlite3 modules are present!
-    event.listen(engine,'connect',set_sqlite_pragma)
+    #dbPath='T:\\databases\\db_test.db'
+    #engine = create_engine('sqlite:///%s'%(dbPath), echo=echo) #FIXME, check if the problems with datetime and DateTime on sqlite and sqlite3 modules are present!
+    engine = create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
+    #event.listen(engine,'connect',set_sqlite_pragma)
 
     #create metadata and session
     init_db(engine)
