@@ -15,9 +15,11 @@ from database.standards import URL_STAND
 ###--------------------
 
 
+#datasources:
+#espX, espY
+#NBQX_washin_start, concentration #by associating the data source with a reagent instead of a person... the data is there for both the acsf_id and all the drug information :), #FIXME unfortunately that leads to a massive proliferation of datasources :/, so we need to find a better way >_< since this is more along the lines of 'protocol metadata'
+#
 
-
-        
 
 class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDataSource'?
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
@@ -31,9 +33,10 @@ class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDa
     #define some properties
     prefix=Column(String,ForeignKey('si_prefix.symbol'),nullable=False)
     unit=Column(String,ForeignKey('si_unit.symbol'),nullable=False)
-    ds_calibration_rec=Column(String,ForeignKey('calibrecs.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
-    metadata=relationship('MetaData',backref=backref('datasource',uselist=False))
+    ds_calibration_rec=Column(String,ForeignKey('calibrationdata.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
+    expmetadata=relationship('MetaData',backref=backref('datasource',uselist=False))
     datafiles=relationship('DataFile',backref=backref('datasource',uselist=False)) #FIXME urmmmmmm fuck? this here or make a different set of datasources for data not stored in the database? well datafiles are produced by camplex and I suppose at some point I might pull data direct from it too so sure, that works out
+
 
 class Result(HasNotes, Base):
     __tablename__='results'
@@ -41,8 +44,10 @@ class Result(HasNotes, Base):
     analysis_id=None
     output_id=None
 
-class MetaData(Base):
+
+class MetaData(Base): #FIXME nasty overlap with mapper class metadata reserved name, rename this
     """This table is now extensible and I can add new dimensions to the data for any experiment whenever the fuck I feel like it :D, I could make a constrain to make sure that the number of dimesions I enter for an experiment is correct, but frankly that adds a ton of work every time I want to add a new variable to an experiment or something, this way commits of ANY single datapoint will not depend on all the other data being there too, might want to add a source id????"""
+    #FIXME the proper way to interact with these tables for consistency is through another script that defines all the data that we are going to store
     #the reason we don't use this for everything is because adding slice and cell metadata as a new value is because those things are external objects that contain their OWN metadata
     #metadata in this table should not then have its own metadata that could be in this table
     id=None
@@ -50,56 +55,32 @@ class MetaData(Base):
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME, should this be a primary key? it would mean that espX and espY would have to be considered different datasources..., BUT it would mean that any/every metadata entry would be tagged with a datasource
     dateTime=Column(DateTime,nullable=False) #FIXME is this a good enough fail safe if we somehow lost the ds?
     value=Column(Float(53),nullable=False)
-    #abs_error=Column(Float(53)) #FIXME does this go here, I think for some cases it does might want to qualify it with an 'estimated error' since some of this will be human entered data... but this makes things less rigorous so... damn it
+    sigfigs=Column(Integer) #FIXME how would these be used? enforce truncation?
+    #TODO need to find a way to standardize reporting uncertanity
+    abs_error=Column(Float(53)) #FIXME does this go here, I think for some cases it does might want to qualify it with an 'estimated error' since some of this will be human entered data... but this makes things less rigorous so... damn it
 
-class OneDData(HasNotes, Base): #FIXME should be possible to add dimensions here without too much trouble, but keep it < 3d, stuff that is entered manually or is associated with an object
-    #id=None #FIXME for now we are just going to go with id as primary_key since we cannot gurantee atomicity for getting datetimes :/
-    #FIXME this should be a Base data class where each extra dimension adds another column
-    #FIXME THEN it can be inherited by specific object/table pairs that record that kind of data
-    #EXAMPLE: a WaterRecord row is a OneDData that also has a mouse_id and a type!
-    dateTime=Column(DateTime,nullable=False) #FIXME tons of problems with using dateTime/TIMESTAMP for primary key :(
-    #FIXME I am currently automatically generating datetime entries for this because I want the record of when it was put into the database, not when it was actually measured...
-    #This behavior is more consistent and COULD maybe be used as a pk along with data source
 
-    #SI_unit_symbol=Column(String,ForeignKey('si_unit.symbol'),nullable=False)
-    #SI_unit_name=Column(String,ForeignKey('si_unit.name'),nullable=False) #FIXME damn it plurals fucking everything up, handle those elsewhere
-    #SI_prefix=Column(String,ForeignKey('si_unit.symbol'),nullable=False) #FIXME make sure this works with '' for no prefix or that that is handled as expected
-    #prefix=relationship('SI_PREFIX')
-    #units=relationship('SI_UNIT')
+class PharmacologyData(Base):
+    #consistency is achieve here by having another script that stores which drugs and the in and the out, maybe even another table??
+    id=None
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME, should this be a primary key? it would mean that espX and espY would have to be considered different datasources..., BUT it would mean that any/every metadata entry would be tagged with a datasource
+    drug_id=Column(Integer,ForeignKey('reagents.id'),primary_key=True)
+    solution_id=Column(Integer,ForeignKey('solutions.id'),nullable=False)
+    event_type=None
+    event_datetime=None
+    #FIXME pharmacology events and LED_stimulation are the same type of event/data, and the question is how and at what level we associate those...
 
-    #ieee double, numpy float64, 52bits of mantissa with precision of 53bits
-    source_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #backref FIXME
-    value1=Column(Float(53),nullable=False) #FIXME make sure this is right; FIXME should this be nullable, see if there are use cases where None for a value instead of zero is useful?
-    value2=Column(Float(53))
-    value3=Column(Float(53))
-    #somehow I think that there is a possibility that I will want to have a form of some kind where I have lots of measurements but 
-    def __init__(self,value,SI_prefix,SI_unit,Source=None,source_id=None):
-        self.dateTime=datetime.utcnow() #FIXME
-        self.value=value
-        self.SI_prefix=SI_prefix
-        self.SI_unit=SI_unit
-        self.source_id=source_id
 
-        if Source:
-            if Source.id:
-                self.source_id=Source.id
-            else:
-                raise AttributeError('Source has no id! Did you commit before referencing the instance directly?')
-    def __repr__(self):
-        return '\n%s %s%s collected %s from %s'%(self.value,self.prefix,self.units,frmtDT(self.dateTime),self.source.strHelper())
-
-class espPosition(OneDData): #oh look, 2d metadata! just as planned
-    """table to hold all the esp positions that I collect, they can be associated to a cell, or to a stimulation event or whatever"""
-    id=Column(Integer,ForeignKey('oneddata.id'),primary_key=True)
-    #this needs an association table or a mixin for HasPosition or some shit ;_; ?? or 'HasData' or something...
-    #x
-    #y
-    associated_object=Column(Integer) #bugger
+class CalibrationData(Base):
+    #TODO base class for storing calibration data
+    #examples:
+    #voltage response curve for LED
+    #esp grid calibration for esp300
+    #FIXME there should be a way to join these to experiments directly
+    #maybe with primaryjoin='and_(CalibrationData.datasource_id==MetaData.datasource_id,CalibrationData.dateTime < MetaData.dateTime, BUT only the most recent one of those...)' with a viewonly
     pass
 
-
-class espCalibration(HasNotes, Base):
-    pass
 ###------------
 ###  Doccuments
 ###------------
@@ -122,6 +103,7 @@ class person_to_project(Base):
                 self.person_id=Person.id
             else:
                 raise AttributeError
+
 
 class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a journal article
     #move to the 'data/docs' place?!??! because it is tehcnically a container for data not a table that will actively have data written to it, it is a one off reference
@@ -149,8 +131,18 @@ class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a jo
                 #raise AttributeError
 
 
+class Citeable(Base):
+    #TODO base class for all citable things, such as personal communications, journal articles, books
+    __tablename___='citeable'
+    type=Column(String,nullable=False)
+    __mapper_args__={
+        'polymorphic_on':type,
+        'polymorphic_identity':'citeable'
+    }
+
 class IACUCProtocols(Base): #note: probs can't store them here, but just put a number and a link (frankly no sense, they are kept in good order elsewere)
     pass
+
 
 class Protocols(Base):
     pass
@@ -164,8 +156,6 @@ class Recipe(HasNotes, Base):
 ###-------------
 ###  Datasources/Datasyncs
 ###-------------
-
-
 
 class Repository(Base):
     #TODO urllib parse, these will go elsewhere in the actual analysis code or something
@@ -231,6 +221,7 @@ class DataFile(Base): #FIXME make sure that this class looks a whole fucking lot
     repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
     filename=Column(String,primary_key=True)
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
     #creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     #analysis_DateTime

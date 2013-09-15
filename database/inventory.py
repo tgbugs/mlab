@@ -34,8 +34,8 @@ class LED(HasNotes, Base):
 ###-------------------
 
 class Reagent(Base): #TODO
+    __tablename__='reagents'
     """base table for all reagents, long run could probably could interface with and inventory, but we arent anywhere near there yet"""
-    pass
 
 
 class Stock(HasNotes, Base):
@@ -44,9 +44,11 @@ class Stock(HasNotes, Base):
     mix_dateTime=Column(DateTime,primary_key=True) #this is a mix date time so it will do for a primary key FIXME not if I make 5 stocks at once and try to enter them at the same time
 
 class Solution(HasNotes, Base): #using an id for the one since so much to pass along
+    __tablename__='solutions'
     recipe_id=Column(String,ForeignKey('recipe.id'),primary_key=True) #sometimes it is easier to have an ID column if other tables need access
     mix_dateTime=Column(DateTime,unique=True) #this is a mix date time so it will do for a primary key
-    osmolarity=Column(Integer,ForeignKey('oneddata.id'),unique=True) #FIXME NOW we need units :/ and HOW do we deal with THAT
+    #expmetadata=relationship('MetaData') #FIXME FUCK god damn it now we need a table per things tha thave md...
+    #osmolarity=Column(Integer,ForeignKey('metadata.id'),unique=True) #FIXME NOW we need units :/ and HOW do we deal with THAT
 
     stock_id=Column(Integer,ForeignKey('stock.mix_dateTime'))
 

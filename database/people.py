@@ -4,7 +4,7 @@ from sqlalchemy                         import ForeignKeyConstraint
 from sqlalchemy.ext.associationproxy    import association_proxy
 
 
-from database.base import Base, HasNotes
+from database.base import Base, HasNotes, IsDataSource
 #from notes import HasNotes
 
 ###---------------

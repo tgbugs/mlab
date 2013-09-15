@@ -190,7 +190,7 @@ _NON_SI_UNITS=(
     ('degree',_degree), #unicode for the symbol is U+00B0
     ('degrees',_degree),
     ('degree','~o'), #also accepted
-    ('degrees','~o')
+    ('degrees','~o'),
     ('number','num') #explicitly 'of something'
 )
 _SI_PREFIXES=(

@@ -146,7 +146,7 @@ def main():
     #echo=False
     dbPath=':memory:'
     #dbPath='test2' #holy crap that is alow slower on the writes!
-    #dbPath='C:\\toms_data\\db_test.db'
+    dbPath='T:\\databases\\db_test.db'
     engine = create_engine('sqlite:///%s'%(dbPath), echo=echo) #FIXME, check if the problems with datetime and DateTime on sqlite and sqlite3 modules are present!
     event.listen(engine,'connect',set_sqlite_pragma)
 
@@ -162,7 +162,7 @@ def main():
     populateConstraints(session)
 
     #do some tests!
-    run_tests(session)
+    #run_tests(session)
 
 
     if 0:

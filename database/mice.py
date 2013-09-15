@@ -90,8 +90,9 @@ class Mouse(HasNotes, Base):
 
     #geology
     litter_id=Column(Integer, ForeignKey('litter.id')) #mice dont HAVE to have litters
-    #sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire')) #FIXME test the sire_id=0 hack may not work on all schemas?
-    #dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam')) #FIXME delete these, they are not used anymore
+    #FIXME there may be a way to get these from litter_id???
+    sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire')) #FIXME test the sire_id=0 hack may not work on all schemas?
+    dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam')) #FIXME delete these, they are not used anymore
 
 
     #dates and times
@@ -318,15 +319,15 @@ class Litter(HasNotes, Base):
     
     @property
     def m_left(self):
-        return self.members.filter(Mouse.sex_id=='m',Mouse.dod=None).count()
+        return self.members.filter(Mouse.sex_id=='m',Mouse.dod==None).count()
 
     @property
     def u_left(self):
-        return self.members.filter(Mouse.sex_id=='f',Mouse.dod=None).count()
+        return self.members.filter(Mouse.sex_id=='f',Mouse.dod==None).count()
 
     @property
     def u_left(self):
-        return self.members.filter(Mouse.sex_id=='u',Mouse.dod=None).count()
+        return self.members.filter(Mouse.sex_id=='u',Mouse.dod==None).count()
 
             
     def make_members(self,number):

@@ -104,6 +104,12 @@ class SlicePrep(HasNotes, Base):
     #sucrose_id
     #sucrose reference to table of solutions
 
+class IsTerminal:
+    #TODO mixin for terminal experiments to automatically log data of death for a mouse
+    #@declared_attr
+    def dod(cls):
+        return  None
+
 
 class Experiment(Base): #FIXME are experiments datasources? type experiment or something? or should the data from each experiment be IN the xperiment? ;_; I though we decided that the experiment points to all the data... and then the metadata is stored somehwere else again, such as a table inheriting from Data1 maybe? seems like a good idea
     """Base class to link all experiment metadata tables to DataFile tables"""
@@ -112,23 +118,18 @@ class Experiment(Base): #FIXME are experiments datasources? type experiment or s
     __tablename__='experiments'
 
     id=Column(Integer,primary_key=True)
-    project_id=Column(Integer,ForeignKey('project.id'),nullable=False) #FIXME I suppose in a strange world experiments can belong to two projects damn it... since the interest is in searching for them from top down... data relevant to papers, just like papers relevant to papers
+    project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
     person_id=Column(Integer,ForeignKey('people.id'),nullable=False) #FIXME problmes with corrispondence, make sure the person is on the project??? CHECK
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME there are too many subjects to keep them all in one table, could use a check to make sure that the subject id matches the experiment type? actually, joined table inheritance might work, but it adds another column to all the organisms ;_; derp, we'll worry about that when the time comes
 
-    #FIXME terminal experiments should automatically add date of death, since for slice prep for example I do sort of record that
-    #subject_id=Column(Integer,nullable=False)
-    #ForeignKeyConstraint('Experiment.subject_id',['mouse.id','organism.id','cellCulture.id'])
+    #TODO terminal experiments should automatically add date of death, since for slice prep for example I do sort of record that
 
-    dateTime=Column(DateTime,nullable=False)
+    startDateTime=Column(DateTime,nullable=False)
     protocol_id=Column(Integer,ForeignKey('protocols.id'))
 
-    metadata=relationship('MetaData',primaryjoin='Experiment.id==MetaData.experiment_id') #no backref needed
-    datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False)) #may not need the backref now that I think about it? no, becasue they exist outside that database I might look at a folder and say 'oh hello, what are you doing here who do you belong to?'
-    constants=None
-    exp_type=Column(String,nullable=False) #FIXME does this need to be nullable?
-    #nope, we're just going to have some data duplication, because each datafile will have to say 'ah yes, I was associated with this cell, this esp position etc'
-    #variables=None #FIXME these go in metadata, unforunately there is something that varies every time, but THAT should be stored somewhere OTHER than the main unit of analysis on a set of datafiles???
+    expmetadata=relationship('MetaData',primaryjoin='Experiment.id==MetaData.experiment_id')
+    datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False))
+    exp_type=Column(String,nullable=False)
 
     __mapper_args__ = {
         'polymorphic_on':exp_type,
@@ -161,7 +162,6 @@ class Experiment(Base): #FIXME are experiments datasources? type experiment or s
 
     #TODO every time a collect an data file of any type and it is determined to be legit (by me) then it should all be stored
     #the experiment is basically the 'dataobject' that links the phenomena studied to the data about it(them)
-    #turns out that the 'datafile' IS the normalized place to link all these things together, 
 
 
 class SliceExperiment(Experiment):
@@ -174,10 +174,10 @@ class SliceExperiment(Experiment):
     #internal_id
 
     #pharmacology
-
-    #abffile
+    #TODO might should add a pharmacology data table similar to the metadata table but with times?
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
+
 
 class HistologyExperiment(Experiment):
     __tablename__='histologyexperiment'
@@ -190,17 +190,20 @@ class IUEPExperiment(Experiment):
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
     #dam=realationship('Mouse') #FIXME maybe don't need this, since the mouse will backprop anyway
     matingrecord_id=Column(Integer,ForeignKey('matingrecord.id'))
-    mice=realationship('Mouse',primaryjoin='IUEPExperiment.mouse_id==Mouse.dam_id',backref=backref('iuep',uselist=False)) #FIXME somehow mouse could also have a @hybrid_property of 'est age at iuep...'
+    mice=relationship('Mouse',primaryjoin='IUEPExperiment.mouse_id==foreign(Mouse.dam_id)',backref=backref('iuep',uselist=False)) #FIXME somehow mouse could also have a @hybrid_property of 'est age at iuep...'
     __mapper_args__ = {'polymorphic_identity':'iuep'}
 
-class WaterRecord(Base): #FIXME this is really a transaction log for changing the weight of a mouse and whether/how much they are water restricted... #RESPONSE: no, water logs must have an entry every day with weight for everymouse
+class WaterRecord(Experiment):
+    __tablename__='waterrecords'
+    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
     #TODO this does not need to be done right now, just make sure it will integrate easily
     #do we keep weight's here or somehwere else, is there any other reason why a 'normal' mouse would need to be weighed? sure the mouse HAS a weight, but does that mean that the mouse table should be where we keep it? it changes too
     #same argument applies to sex and how to deal with changes to that, and whether it is even worth noting
     #somehow this reminds me that when weaning mice need to make sure that their cages get matched up properly... well, that's the users job
-    id=None
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
-    dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
+    #id=None
+    #mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
+    #dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
+    #TODO lol the way this is set up now these classes should actually proabaly DEFINE metadata records at least for simple things like this where the only associated object is a mouse which by default experiment asssociates with, maybe I SHOULD move the mouse_id to class MouseExperiment?!?!?!
 
 #organism mixins??? no, bad way to do it, still haven't figured out the good way
 class MouseExperiment: 

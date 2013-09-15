@@ -1,5 +1,7 @@
+from sqlalchemy                     import Table
 from sqlalchemy                     import Column
 from sqlalchemy                     import Integer
+from sqlalchemy                     import ForeignKey
 from sqlalchemy.orm                 import relationship, backref
 from sqlalchemy.ext.declarative     import declarative_base, declared_attr
 
