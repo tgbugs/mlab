@@ -49,7 +49,7 @@ class ReagentInventory(Base): #TODO these seem almost like a constraint
     id=None
     name=Column(String,primary_key=True)
     #FIXME citeables need to be like notes...
-    document_id=Columnt(Integer,ForeignKey('citeable.id')) #recipe msds you name it
+    document_id=Column(Integer,ForeignKey('citeable.id')) #recipe msds you name it
     #these are basically recipes or references to things I buy instead of make
     current_ammount=relationship('ReagentLot') #FIXME this should give a count??? ala litter?
     #TODO reorder if current amount < x

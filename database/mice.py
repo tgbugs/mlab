@@ -109,7 +109,6 @@ class Mouse(HasNotes, Base):
     breedingRec=relationship('Breeder',primaryjoin='Mouse.id==Breeder.id',backref=backref('mouse',uselist=False),uselist=False)
 
     #things that not all mice will have but that are needed for data to work out
-    experiments=relationship('Experiment',backref=backref('mouse',uselist=False))
     slices=relationship('Slice',backref=backref('mouse',uselist=False))
     cells=relationship('Cell',backref=backref('mouse',uselist=False))
 

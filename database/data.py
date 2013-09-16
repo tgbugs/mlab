@@ -4,7 +4,6 @@ from datetime import datetime
 from sqlalchemy                         import Float
 from sqlalchemy                         import Text
 from sqlalchemy                         import ForeignKeyConstraint
-from sqlalchemy                         import UniqueConstraint
 from sqlalchemy.ext.associationproxy    import association_proxy
 
 from database.base import Base, HasNotes
@@ -75,7 +74,7 @@ class DFMetaData(Base): #FIXME this can just replace datafile!
     sigfigs=Column(Integer)
     abs_error=Column(Float(53))
     
-    __table_args__=(ForeignKeyConstraint([repoid,filename],[DataFile.repopath_id,DataFile.filename]), {})
+    __table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {})
 
 
 class CellMetaData(Base): #FIXME should this somehow be replaced by 'subjectMetaData'???
@@ -98,16 +97,18 @@ class HWMetaData(Base):
     abs_error=Column(Float(53))
 
 
-class _PharmacologyData(Base):
+"""
+class PharmacologyData(Base): #TODO
     #consistency is achieve here by having another script that stores which drugs and the in and the out, maybe even another table??
     id=None
     experiment_id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME, should this be a primary key? it would mean that espX and espY would have to be considered different datasources..., BUT it would mean that any/every metadata entry would be tagged with a datasource
-    drug_id=Column(Integer,ForeignKey('reagents.id'),primary_key=True)
+    drug_id=Column(Integer,ForeignKey('reagents.name'),primary_key=True)
     solution_id=Column(Integer,ForeignKey('solutions.id'),nullable=False)
     event_type=None
     event_datetime=None
     #FIXME pharmacology events and LED_stimulation are the same type of event/data, and the question is how and at what level we associate those...
+"""
 
 
 class CalibrationData(Base):

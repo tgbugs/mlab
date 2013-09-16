@@ -1,5 +1,6 @@
 from database.imports import *
 from sqlalchemy                         import Float
+from sqlalchemy                         import ForeignKeyConstraint
 
 from database.base import Base, HasNotes
 #from notes import HasNotes
@@ -18,6 +19,7 @@ class Slice(HasNotes, Base):
     id=None
     id=Column(Integer,primary_key=True)
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
+    prep_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO
     startDateTime=Column(DateTime,nullable=False,unique=True)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
     #hemisphere
     #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
@@ -26,6 +28,7 @@ class Slice(HasNotes, Base):
     cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
 
+"""
 class LED_stimulation(HasNotes, Base): #association linking an espPos to at Cell
     #id=None
     Column('esp_pos_id',Integer,ForeignKey('espposition.id'),primary_key=True) #from data.py
@@ -37,6 +40,7 @@ class LED_stimulation(HasNotes, Base): #association linking an espPos to at Cell
     dateTime=Column(DateTime,nullable=False)
 
     pos_z=None #from surface? standarize this please
+"""
 
 cell_to_cell=Table('cell_to_cell', Base.metadata, 
                    Column('cell_1_id',Integer,ForeignKey('cell.id'),primary_key=True),
@@ -57,7 +61,12 @@ class Cell(HasNotes, Base):
     #link to data
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
     hs_id=Column(Integer,ForeignKey('headstage.id'),nullable=False) #FIXME need mapping to channels in abffile so that we can link the analysis results directly back to the cell, it really does feel like I should be putting cell id's into experiments rather than the ohter way around thought.... wait fuck damn it
-    datafile_id=Column(Integer,ForeignKey('datafile.id'),nullable=False)
+
+    #datafile_id=Column(Integer,ForeignKey('datafile.id'),nullable=False)
+    repoid=Column(Integer)
+    filename=Column(String)
+    __table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {}) #FIXME somehow this doesn't deal with the posibility of backups... which would be really, really good to keep track of at the same time so if there is a crash there can be instant failover
+
     #TODO we might be able to link cells to headstages and all that other shit more easily, keeping the data on the cell itself in the cell, tl;dr NORMALIZE!
     #hs_amp_serial=Column(Integer,ForeignKey('headstage.amp_serial'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
 
@@ -92,12 +101,13 @@ class Cell(HasNotes, Base):
     #analysis_id=None #put the analysis in another table that will backprop here
 
 
-class SlicePrep(HasNotes, Base):
+class SlicePrep(HasNotes, Base): #TODO this is probably an experiment...
     """ Notes on the dissection and slice prep"""
     id=Column(Integer,ForeignKey('mouse.id'),primary_key=True) #works with backref from mouse
     #chamber_type
     #sucrose_id
     #sucrose reference to table of solutions
+
 
 class IsTerminal:
     #TODO mixin for terminal experiments to automatically log data of death for a mouse
@@ -117,9 +127,25 @@ class Experiment(Base):
         'polymorphic_on':exp_type,
         'polymorphic_identity':'experiment',
     }
+    def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,protocol_id=None,startDateTime=None):
+        self.project_id=project_id
+        self.person_id=person_id
+        self.protocol_id=protocol_id
+        self.startDateTime=startDateTime
+        if Project:
+            if Project.id:
+                self.project_id=Project.id
+            else:
+                raise AttributeError
+        if Person:
+            if Person.id:
+                self.person_id=Person.id
+            else:
+                raise AttributeError
 #INSIGHT! things that are needed to make query structure work, eg acsf_id and the like do not go in metadata, metadata is really the api for analysis, so anything not direcly used in analysis should not go in metadata
 
-class _Experiment(Base): #FIXME are experiments datasources? type experiment or something? or should the data from each experiment be IN the xperiment? ;_; I though we decided that the experiment points to all the data... and then the metadata is stored somehwere else again, such as a table inheriting from Data1 maybe? seems like a good idea
+'''
+class Experiment(Base): #FIXME are experiments datasources? type experiment or something? or should the data from each experiment be IN the xperiment? ;_; I though we decided that the experiment points to all the data... and then the metadata is stored somehwere else again, such as a table inheriting from Data1 maybe? seems like a good idea
     """Base class to link all experiment metadata tables to DataFile tables"""
     #need this to group together the variables
     #this is the base table where each row is one experimental condition or data point, we could call it an experiment since 'Slice Experiment' would be a subtype with its own additional data
@@ -171,7 +197,7 @@ class _Experiment(Base): #FIXME are experiments datasources? type experiment or 
 
     #TODO every time a collect an data file of any type and it is determined to be legit (by me) then it should all be stored
     #the experiment is basically the 'dataobject' that links the phenomena studied to the data about it(them)
-
+'''
 
 #FIXME do not add new experiments until you know what their parameters will be
 #furthermore, I may try to get away with just using expmetadata and df metadata for everything
@@ -185,15 +211,15 @@ class _Experiment(Base): #FIXME are experiments datasources? type experiment or 
 #TODO FIXME need to dissociate PROCEDURE from DATA, the CONDITIONS for that day are DIFFERENT from the actual individual experimetns
 class Patch(Experiment):
     """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
-    __tablename__='sliceexperiment'
+    __tablename__='patch'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
 
     #experimental conditions
     #TODO transition these to refer to the individual lot
-    acsf_id=Column(Integer,ForeignKey('reagent.name'),nullable=False) #need to come up with a way to constrain
-    internal_id=Column(Integer,ForeignKey('reagent.name'),nullable=False) #FIXME hopefully I won't run out of internal or have to switch batches!???! well, that suggests that the exact batch might not be releveant here but instead could be check by date some other way
+    acsf_id=Column(String,ForeignKey('reagents.name'),nullable=False) #need to come up with a way to constrain
+    internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME hopefully I won't run out of internal or have to switch batches!???! well, that suggests that the exact batch might not be releveant here but instead could be check by date some other way
 
-    cells=relationship('Cell',primaryjoin='Experiment.id==Cell.experiment_id',backref=backre('experiment',uselist=False))
+    cells=relationship('Cell',primaryjoin='Experiment.id==Cell.experiment_id',backref=backref('experiment',uselist=False))
 
     #pharmacology
     #TODO might should add a pharmacology data table similar to the metadata table but with times?
@@ -201,13 +227,13 @@ class Patch(Experiment):
     __mapper_args__ = {'polymorphic_identity':'slice'}
 
 
-class ChrSomWholeCell(PatchExperiment): #FIXME could do a 'HasLedStim' or something?
+class ChrSomWholeCell(Patch): #FIXME could do a 'HasLedStim' or something?
     __tablename__='chrsomsliceexperiment'
-    id=Column(Integer,ForeignKey('sliceexperiment.id'),primary_key=True,autoincrement=False)
+    id=Column(Integer,ForeignKey('patch.id'),primary_key=True,autoincrement=False)
     led_id=Column(Integer,ForeignKey('hardware.id'))
     __mapper_args__ = {'polymorphic_identity':'chr_som_slice'}
 
-
+"""
 class _HistologyExperiment(Experiment):
     __tablename__='histologyexperiment'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
@@ -236,3 +262,4 @@ class _WaterRecord(Experiment):
 
 #
 #organism mixins??? no, bad way to do it, still haven't figured out the good way
+"""
