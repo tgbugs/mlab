@@ -504,7 +504,7 @@
             <column ascending="true" name="neurotree_id"/>
          </index>
       </table>
-      <table name="person_to_project" numRows="32" remarks="" schema="public" type="TABLE">
+      <table name="person_to_project" numRows="44" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="person_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="person_to_project_person_id_fkey" implied="false" onDeleteCascade="false" table="people"/>
          </column>

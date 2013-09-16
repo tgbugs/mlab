@@ -210,7 +210,7 @@ class SlicePrep(Experiment): #TODO this is probably an experiment...
     chamber_id=Column(Integer,ForeignKey('hardware.id'))
     sucrose_id=Column(String,ForeignKey('reagents.name'),nullable=False)
     #expmetadata=relationship('ExpMetaData') #FIXME For stuff like 'ketxyl volume'? vs explicit columns?!?!
-    slices=relationship('Slice',primaryjoin='SlicePrep.id==Slice.prep_id',backref=backref('prep',uselist=False))
+    slices=relationship('Slice',primaryjoin='SlicePrep.id==foreign(Slice.prep_id)',backref=backref('prep',uselist=False))
 
 
 #TODO FIXME need to dissociate PROCEDURE from DATA, the CONDITIONS for that day are DIFFERENT from the actual individual experimetns
@@ -224,7 +224,7 @@ class Patch(Experiment):
     acsf_id=Column(String,ForeignKey('reagents.name'),nullable=False) #need to come up with a way to constrain
     internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME hopefully I won't run out of internal or have to switch batches!???! well, that suggests that the exact batch might not be releveant here but instead could be check by date some other way
 
-    cells=relationship('Cell',primaryjoin='Patch.id==Cell.experiment_id',backref=backref('experiment',uselist=False))
+    cells=relationship('Cell',primaryjoin='Patch.id==foreign(Cell.experiment_id)',backref=backref('experiment',uselist=False))
 
     #pharmacology
     #TODO might should add a pharmacology data table similar to the metadata table but with times?
