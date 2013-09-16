@@ -43,11 +43,29 @@ class LED(HasNotes, Base):
 ###  Reagent inventory
 ###-------------------
 
-class Reagent(Base): #TODO
+class ReagentInventory(Base): #TODO these seem almost like a constraint
     __tablename__='reagents'
     """base table for all reagents, long run could probably could interface with and inventory, but we arent anywhere near there yet"""
+    id=None
+    name=Column(String,primary_key=True)
+    #FIXME citeables need to be like notes...
+    document_id=Columnt(Integer,ForeignKey('citeable.id')) #recipe msds you name it
+    #these are basically recipes or references to things I buy instead of make
+    current_ammount=relationship('ReagentLot') #FIXME this should give a count??? ala litter?
+    #TODO reorder if current amount < x
 
 
+
+class ReagentLot(Base): #These are instances of reagents.... nope, just use a metadata table to store creation dates and shit like that?
+    """actual instances of reagents that are made"""
+    id=None
+    reagent_id=Column(String,ForeignKey('reagents.name'),primary_key=True)
+    creation_dateTime=Column(DateTime,primary_key=True) #FIXME this fucking problem again
+    done_dateTime=Column(DateTime) #FIXME this fucking problem again
+    #reagentmetadata=relationship('ReaMetaData',primaryjoin='ReagentLot.id==ReaMetaData.reagent_id',backref='reagent') #FIXME make this a m-m self referential association ? this won't let me keep track of the individual lots of stuff I use to make a solution or a stock though... think about that
+
+
+"""
 class Stock(HasNotes, Base):
     #id=None
     id=Column(Integer,primary_key=True)
@@ -61,6 +79,7 @@ class Solution(HasNotes, Base): #using an id for the one since so much to pass a
     mix_dateTime=Column(DateTime,nullable=False) #this is a mix date time so it will do for a primary key
     #expmetadata=relationship('MetaData') #FIXME FUCK god damn it now we need a table per things tha thave md...
     #osmolarity=Column(Integer,ForeignKey('metadata.id'),unique=True) #FIXME NOW we need units :/ and HOW do we deal with THAT
+"""
 
 
 

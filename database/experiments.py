@@ -105,8 +105,8 @@ class IsTerminal:
     def dod(cls):
         return  None
 
-class ExperimentalConditions(Base):
-    __tablename__='expcond'
+class Experiment(Base):
+    __tablename__='experiments'
     id=Column(Integer,primary_key=True)
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
     person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
@@ -119,7 +119,7 @@ class ExperimentalConditions(Base):
     }
 #INSIGHT! things that are needed to make query structure work, eg acsf_id and the like do not go in metadata, metadata is really the api for analysis, so anything not direcly used in analysis should not go in metadata
 
-class Experiment(Base): #FIXME are experiments datasources? type experiment or something? or should the data from each experiment be IN the xperiment? ;_; I though we decided that the experiment points to all the data... and then the metadata is stored somehwere else again, such as a table inheriting from Data1 maybe? seems like a good idea
+class _Experiment(Base): #FIXME are experiments datasources? type experiment or something? or should the data from each experiment be IN the xperiment? ;_; I though we decided that the experiment points to all the data... and then the metadata is stored somehwere else again, such as a table inheriting from Data1 maybe? seems like a good idea
     """Base class to link all experiment metadata tables to DataFile tables"""
     #need this to group together the variables
     #this is the base table where each row is one experimental condition or data point, we could call it an experiment since 'Slice Experiment' would be a subtype with its own additional data
@@ -189,11 +189,9 @@ class Patch(Experiment):
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
 
     #experimental conditions
-    acsf_id=Column(Integer,ForeignKey('solutions.id'),nullable=False) #need to come up with a way to constrain
-    internal_id=Column(Integer,ForeignKey('solutions.id'),nullable=False)
-
-    #subject identification, because we are adding cells to an experiment, so they exp needs to have the context
-    slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False)
+    #TODO transition these to refer to the individual lot
+    acsf_id=Column(Integer,ForeignKey('reagent.name'),nullable=False) #need to come up with a way to constrain
+    internal_id=Column(Integer,ForeignKey('reagent.name'),nullable=False) #FIXME hopefully I won't run out of internal or have to switch batches!???! well, that suggests that the exact batch might not be releveant here but instead could be check by date some other way
 
     cells=relationship('Cell',primaryjoin='Experiment.id==Cell.experiment_id',backref=backre('experiment',uselist=False))
 
@@ -202,13 +200,11 @@ class Patch(Experiment):
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
 
-    def __init__(self,Cells=list)
-
-
 
 class ChrSomWholeCell(PatchExperiment): #FIXME could do a 'HasLedStim' or something?
     __tablename__='chrsomsliceexperiment'
-    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
+    id=Column(Integer,ForeignKey('sliceexperiment.id'),primary_key=True,autoincrement=False)
+    led_id=Column(Integer,ForeignKey('hardware.id'))
     __mapper_args__ = {'polymorphic_identity':'chr_som_slice'}
 
 
