@@ -39,17 +39,18 @@ class Reagent(Base): #TODO
 
 
 class Stock(HasNotes, Base):
-    id=None
-    recipe_id=Column(Integer,ForeignKey('recipe.id'),primary_key=True)
-    mix_dateTime=Column(DateTime,primary_key=True) #this is a mix date time so it will do for a primary key FIXME not if I make 5 stocks at once and try to enter them at the same time
+    #id=None
+    id=Column(Integer,primary_key=True)
+    recipe_id=Column(Integer,ForeignKey('recipe.id'),nullable=False)#,primary_key=True)
+    mix_dateTime=Column(DateTime,nullable=False)#,primary_key=True) #this is a mix date time so it will do for a primary key FIXME not if I make 5 stocks at once and try to enter them at the same time
 
 class Solution(HasNotes, Base): #using an id for the one since so much to pass along
     __tablename__='solutions'
-    recipe_id=Column(Integer,ForeignKey('recipe.id'),primary_key=True) #sometimes it is easier to have an ID column if other tables need access
-    mix_dateTime=Column(DateTime,unique=True) #this is a mix date time so it will do for a primary key
+    recipe_id=Column(Integer,ForeignKey('recipe.id'),nullable=False) #sometimes it is easier to have an ID column if other tables need access
+    #stock_id=Column(Integer,ForeignKey('stock.id'),unique=True)
+    mix_dateTime=Column(DateTime,nullable=False) #this is a mix date time so it will do for a primary key
     #expmetadata=relationship('MetaData') #FIXME FUCK god damn it now we need a table per things tha thave md...
     #osmolarity=Column(Integer,ForeignKey('metadata.id'),unique=True) #FIXME NOW we need units :/ and HOW do we deal with THAT
 
-    stock_id=Column(Integer,ForeignKey('stock.mix_dateTime'))
 
 

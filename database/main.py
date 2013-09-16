@@ -47,7 +47,6 @@ from sqlalchemy                 import create_engine
 from sqlalchemy.orm             import Session #scoped_session, sessionmaker
 from sqlalchemy.engine          import Engine
 
-from database.base              import init_db
 from database.constraints       import *
 from database.experiments       import *
 from database.inventory         import *
@@ -57,6 +56,7 @@ from database.mice              import *
 from database.data              import *
 
 from database.TESTS             import run_tests
+from database.base              import Base #FIXME this has to go last!???! so that all the rest are attached?
 
 try:
     import rpdb2
@@ -145,7 +145,7 @@ def main():
     """
 
     #test globals
-    ploc(globals())
+    #ploc(globals())
 
     #setup the engine
     echo=True
@@ -158,7 +158,10 @@ def main():
     #event.listen(engine,'connect',set_sqlite_pragma)
 
     #create metadata and session
-    init_db(engine)
+    printD(Base.metadata)
+    Base.metadata.create_all(engine)
+
+    #init_db(engine)
     #session = scoped_session(sessionmaker())
     #session.configure(bind=engine)
     #Session=sessionmaker(bind=engine)

@@ -37,8 +37,6 @@ class SI_UNIT(Base):
     id=None
     symbol=Column(String(3),primary_key=True)
     name=Column(String(15),nullable=False) #this is also a pk so we can accept plurals :)
-    #conversion??
-    #relationship('OneDData',backref='units') #FIXME make sure this doen't add a column
     def __repr__(self):
         return '%s'%(self.symbol)
 
@@ -56,7 +54,8 @@ class Strain(Base): #TODO
     #FIXME class for strain IDs pair up with the shorthand names that I use and make sure mappings are one to one
     #will be VERY useful when converting for real things
     #FIXME: by reflection from jax??? probably not
-    pass
+    id=None
+    id=Column(String(20),primary_key=True,autoincrement=False)
 
 ###----------------------------
 ###  Populate Constraint tables
@@ -80,9 +79,9 @@ _SI_UNITS=(
     ('mole','mol'),
 
     ('molarity','M'),
-    ('molar','M'),
+    #('molar','M'),
     ('molality','_m'), #FIXME
-    ('molal','_m'), #FIXME
+    #('molal','_m'), #FIXME
 
     ('kelvin','K'),
 

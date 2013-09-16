@@ -19,14 +19,14 @@ class ExperimentVariable(Base):
 
 class Slice(HasNotes, Base):
     id=None
-    #id=Column(Integer,primary_key=True,autoincrement=False)
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True) #works with backref from mouse
-    startDateTime=Column(DateTime,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
+    id=Column(Integer,primary_key=True)
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
+    startDateTime=Column(DateTime,nullable=False,unique=True)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
     #hemisphere
     #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
     #positionAP
 
-    cells=relationship('Cell',primaryjoin='Cell.slice_sdt==Slice.startDateTime',backref=backref('slice',uselist=False))
+    cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
 
 class StimulusEvent(HasNotes, Base): #VARIABLE
@@ -58,7 +58,7 @@ class Cell(HasNotes, Base):
     #probably should use inheritance
     #id=None #FIXME fuck it dude, wouldn't it be easier to just give them unqiue ids so we don't have to worry about datetime? or is it the stupid sqlite problem?
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)
-    slice_sdt=Column(Integer,ForeignKey('slice.startDateTime'),nullable=False) #FIXME NO DATETIME PRIMARY KEYS
+    slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False) #FIXME NO DATETIME PRIMARY KEYS
     hs_id=Column(Integer,ForeignKey('headstage.id'),nullable=False)#,ForeignKey('headstages.id')) #FIXME critical
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO we might be able to link cells to headstages and all that other shit more easily, keeping the data on the cell itself in the cell, tl;dr NORMALIZE!
     #hs_id=Column(Integer,ForeignKey('headstage.channel'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical

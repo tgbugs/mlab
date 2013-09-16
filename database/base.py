@@ -29,7 +29,7 @@ class IsDataSource:
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
         return relationship('DataSource', secondary=datasource_association,backref=backref('source',uselist=False))
 
-class Base(object):
+class DefaultBase(object):
     @declared_attr
     def __tablename__(cls):
         return cls.__name__.lower()
@@ -41,8 +41,8 @@ class Base(object):
     def __repr__(self,attr='id'):
         return '\n%s %s'%(self.__class__.__name__,getattr(self,attr))
 
-Base=declarative_base(cls=Base)
+Base=declarative_base(cls=DefaultBase)
 
-def init_db(engine):
-    Base.metadata.create_all(engine, checkfirst=True)
+#def init_db(engine):
+    #Base.metadata.create_all(engine)#, checkfirst=True)
     
