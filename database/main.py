@@ -163,14 +163,11 @@ def main():
     #event.listen(engine,'connect',set_sqlite_pragma)
 
     #create metadata and session
-    #Base.metadata.drop_all(engine)
-    Base.metadata.drop_all(engine)
-    Base.metadata.create_all(engine)
 
-    #init_db(engine)
-    #session = scoped_session(sessionmaker())
-    #session.configure(bind=engine)
-    #Session=sessionmaker(bind=engine)
+    #Base.metadata.drop_all(engine)
+    #TODO schema = option
+
+    Base.metadata.create_all(engine,checkfirst=True)
 
     session = Session(engine)
 
@@ -178,7 +175,7 @@ def main():
     populateConstraints(session)
 
     #do some tests!
-    #run_tests(session)
+    run_tests(session)
 
 
     if 0:

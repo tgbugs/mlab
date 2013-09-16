@@ -26,7 +26,7 @@ class File(Base): #FIXME reinventing the wheel here kids, detect ft don't constr
 
 class SI_PREFIX(Base): #Yes, these are a good idea because they are written once, and infact I can enforce viewonly=True OR even have non-root users see those tables as read only
     id=None
-    symbol=Column(String(2),primary_key=True)
+    symbol=Column(Unicode(2),primary_key=True)
     prefix=Column(String(5),nullable=False)
     E=Column(Integer,nullable=False)
     #relationship('OneDData',backref='prefix') #FIXME makesure this doesn't add a column!
@@ -35,7 +35,7 @@ class SI_PREFIX(Base): #Yes, these are a good idea because they are written once
     
 class SI_UNIT(Base):
     id=None
-    symbol=Column(String(3),primary_key=True)
+    symbol=Column(Unicode(3),primary_key=True)
     name=Column(String(15),nullable=False) #this is also a pk so we can accept plurals :)
     def __repr__(self):
         return '%s'%(self.symbol)
