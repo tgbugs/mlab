@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy                         import Float
 from sqlalchemy                         import Text
 from sqlalchemy                         import ForeignKeyConstraint
+from sqlalchemy                         import UniqueConstraint
 from sqlalchemy.ext.associationproxy    import association_proxy
 
 from database.base import Base, HasNotes
@@ -34,7 +35,7 @@ class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDa
     prefix=Column(String(2),ForeignKey('si_prefix.symbol'),nullable=False)#,unique=True)
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)#,unique=True)
     ds_calibration_rec=Column(Integer,ForeignKey('calibrationdata.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
-    expmetadata=relationship('MetaData',backref=backref('datasource',uselist=False))
+    expmetadata=relationship('ExpMetaData',backref=backref('datasource',uselist=False))
     datafiles=relationship('DataFile',backref=backref('datasource',uselist=False)) #FIXME urmmmmmm fuck? this here or make a different set of datasources for data not stored in the database? well datafiles are produced by camplex and I suppose at some point I might pull data direct from it too so sure, that works out
 
 
@@ -79,12 +80,13 @@ class DataFile(Base): #FIXME make sure that this class looks a whole fucking lot
     #repo_url=Column(Integer,ForeignKey('repository.url'),primary_key=True)
     #repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
     #with two above can direcly get the file from this record without having to do any cross table magic...
-    id=Column(Integer,primary_key=True)
-    repopath_id=Column(Integer,ForeignKey('repopaths.id'),nullable=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
-    filename=Column(String,unique=True,nullable=False) #urp! on ext3 255 max for EACH /asdf/
+    #id=Column(Integer,primary_key=True)
+    repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
+    filename=Column(String,primary_key=True,autoincrement=False) #urp! on ext3 255 max for EACH /asdf/
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
-    dfmetadata=relationship('DFMetaData',primaryjoin='DataFile.id==DFMetaData.df_id')
+    #dfmetadata=relationship('DFMetaData',primaryjoin='DataFile.id==DFMetaData.df_id')
+    dfmetadata=relationship('DFMetaData',primaryjoin='and_(DataFile.repopath_id==DFMetaData.repoid,DataFile.filename==DFMetaData.filename)')
     #creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     #analysis_DateTime
@@ -125,12 +127,16 @@ class DataFile(Base): #FIXME make sure that this class looks a whole fucking lot
 
 class DFMetaData(Base): #FIXME this can just replace datafile!
     id=None
-    df_id=Column(Integer,ForeignKey('datafile.id'),primary_key=True)
-    datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True) #FIXME in theory no datafile should have two entries from the same datasource how I have this set up
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True,autoincrement=False) #FIXME in theory no datafile should have two entries from the same datasource how I have this set up
+    repoid=Column(Integer,primary_key=True,autoincrement=False)
+    filename=Column(String,primary_key=True)
     dateTime=Column(DateTime,nullable=False)
     value=Column(Float(53),nullable=False)
     sigfigs=Column(Integer)
     abs_error=Column(Float(53))
+    
+    __table_args__=(ForeignKeyConstraint([repoid,filename],[DataFile.repopath_id,DataFile.filename]), {})
+
 
 
 class HWMetaData(Base):
@@ -263,8 +269,8 @@ class RepoPath(Base):
     __tablename__='repopaths'
     #Assumption: repository MUST be the full path to the data, so yes, a single 'repository' might have 10 entries, but that single repository is just a NAME and has not functional purpose for storing/retrieving data
     id=Column(Integer,primary_key=True,autoincrement=True) #to simplify passing repos? is this reasonable?
-    repo_url=Column(String(255),ForeignKey('repository.url'))#,primary_key=True) FIXME
-    path=Column(String(255))#,primary_key=True) #make this explicitly relative path?
+    repo_url=Column(String(255),ForeignKey('repository.url'),nullable=False)#,primary_key=True) FIXME
+    path=Column(String(255),nullable=False)#,primary_key=True) #make this explicitly relative path?
     assoc_program=Column(String(15)) #FIXME some of these should be automatically updated and check by the programs etc
     relationship('DataFile',backref='repository_path') #FIXME datafiles can be kept in multiple repos...
     #TODO how do we keep track of data duplication and backups!?!?!?

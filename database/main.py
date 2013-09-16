@@ -98,27 +98,28 @@ def main():
 
     #create metadata and session
 
-    Base.metadata.drop_all(engine,checkfirst=True)
+    #Base.metadata.drop_all(engine,checkfirst=True)
+    #return None
     #TODO schema option
     
-    Base.metadata.create_all(engine,checkfirst=True)
+    #Base.metadata.create_all(engine,checkfirst=True)
 
     session = Session(engine)
 
     #populate constraint tables
-    populateConstraints(session)
+    #populateConstraints(session)
 
     #do some tests!
-    run_tests(session)
+    #run_tests(session)
 
 
-    if 0:
+    if 1:
         print('\n###***constraints***')
         [printD(c,'\n') for c in session.query(SI_PREFIX)]
         [printD(c,'\n') for c in session.query(SI_UNIT)]
         [printD(c,'\n') for c in session.query(SEX)]
 
-    if 0:
+    if 1:
         print('\n###***mice***')
         for mouse in session.query(Mouse):
             print('\n',mouse)

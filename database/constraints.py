@@ -23,9 +23,8 @@ class HardwareType(Base):
     id=None
     type=Column(String,primary_key=True)
     things=relationship('Hardware',primaryjoin='HardwareType.type==Hardware.type')
-    def __init__(self,type):
-        self.type=type
-        printD(self.schema)
+#    def __init__(self,type):
+#        self.type=type
 
 
 class File(Base): #FIXME reinventing the wheel here kids, detect ft don't constraint it

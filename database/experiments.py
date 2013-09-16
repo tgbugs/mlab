@@ -168,6 +168,7 @@ class SliceExperiment(Experiment):
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
 
+"""
 class ChrSliceExp(SliceExperiment):
     __tablename__='chrsliceexp'
     id=Column(Integer,ForeignKey('sliceexperiment.id'),primary_key=True,autoincrement=False)
@@ -175,6 +176,7 @@ class ChrSliceExp(SliceExperiment):
     #led_id=Column(Integer,ForeignKey('hardware.id'),nullable=False)
 
     #__mapper_args__ = {'polymorphic_identity':'chr_slice'}
+"""
 
 
 
