@@ -154,17 +154,17 @@ def main():
     #dbPath='test2' #holy crap that is alow slower on the writes!
     #dbPath='T:\\databases\\db_test.db'
     #engine = create_engine('sqlite:///%s'%(dbPath), echo=echo) #FIXME, check if the problems with datetime and DateTime on sqlite and sqlite3 modules are present!
-    engine = create_engine('postgresql://sqla:asdf@localhost:54321/postgres',echo=echo)
-    con=engine.connect()
-    con.execute('commit')
-    con.execute('drop database if exists db_test')
-    con.execute('commit')
-    con.execute('create database db_test')
-    con.close()
+    engine = create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
+    #con=engine.connect()
+    #con.execute('commit')
+    #con.execute('drop database if exists db_test')
+    #con.execute('commit')
+    #con.execute('create database db_test')
     #event.listen(engine,'connect',set_sqlite_pragma)
 
     #create metadata and session
     #Base.metadata.drop_all(engine)
+    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
 
     #init_db(engine)

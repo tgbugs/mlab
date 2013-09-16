@@ -31,8 +31,8 @@ class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDa
     name=Column(String(20),nullable=False) #FIXME unforunately the one disadvantage of this setup is that there are no real constraints to prevent someone from forming an erroious link between types of data and where it comes from
     #FIXME where do we keep the calibration data ;_;
     #define some properties
-    prefix=Column(String(2),ForeignKey('si_prefix.symbol'),nullable=False,unique=True)
-    unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False,unique=True)
+    prefix=Column(String(2),ForeignKey('si_prefix.symbol'),nullable=False)#,unique=True)
+    unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)#,unique=True)
     ds_calibration_rec=Column(Integer,ForeignKey('calibrationdata.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
     expmetadata=relationship('MetaData',backref=backref('datasource',uselist=False))
     datafiles=relationship('DataFile',backref=backref('datasource',uselist=False)) #FIXME urmmmmmm fuck? this here or make a different set of datasources for data not stored in the database? well datafiles are produced by camplex and I suppose at some point I might pull data direct from it too so sure, that works out
