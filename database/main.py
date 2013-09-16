@@ -148,7 +148,7 @@ def main():
 
     #input('hit something to exit')
 
-    return engine,session
+    return session
     
 if __name__=='__main__':
     main()
