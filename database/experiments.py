@@ -116,6 +116,7 @@ class Experiment(Base):
     person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
     startDateTime=Column(DateTime,nullable=False)
     protocol_id=Column(Integer,ForeignKey('citeable.id'))
+    expmetadata=relationship('ExpMetaData',primaryjoin='Experiment.id==ExpMetaData.experiment_id') #this needs to be here for when there are things like slice experiments that have metadata instead of objects, you *could* put the metadata on the mouse and I will have to think about that, but it really seems like I am storing data on the experiment itself not on an object
     exp_type=Column(String(20),nullable=False)
     __mapper_args__ = {
         'polymorphic_on':exp_type,
@@ -208,6 +209,8 @@ class SlicePrep(Experiment): #TODO this is probably an experiment...
     mouse_id=Column(Integer,ForeignKey('mouse.id')) #works with backref from mouse
     chamber_id=Column(Integer,ForeignKey('hardware.id'))
     sucrose_id=Column(String,ForeignKey('reagents.name'),nullable=False)
+    #expmetadata=relationship('ExpMetaData') #FIXME For stuff like 'ketxyl volume'? vs explicit columns?!?!
+    slices=relationship('Slice',primaryjoin='SlicePrep.id==Slice.prep_id',backref=backref('prep',uselist=False))
 
 
 #TODO FIXME need to dissociate PROCEDURE from DATA, the CONDITIONS for that day are DIFFERENT from the actual individual experimetns
@@ -221,7 +224,7 @@ class Patch(Experiment):
     acsf_id=Column(String,ForeignKey('reagents.name'),nullable=False) #need to come up with a way to constrain
     internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME hopefully I won't run out of internal or have to switch batches!???! well, that suggests that the exact batch might not be releveant here but instead could be check by date some other way
 
-    cells=relationship('Cell',primaryjoin='Experiment.id==Cell.experiment_id',backref=backref('experiment',uselist=False))
+    cells=relationship('Cell',primaryjoin='Patch.id==Cell.experiment_id',backref=backref('experiment',uselist=False))
 
     #pharmacology
     #TODO might should add a pharmacology data table similar to the metadata table but with times?
