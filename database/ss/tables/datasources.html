@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,37 +110,37 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('datasources_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="datafile.datasource_id refs datasources.id via datafile_datasource_id_fkey"><a href='datafile.html'>datafile</a><span class='relatedKey'>.datasource_id</span>
     </td>
     <td class='constraint detail'>datafile_datasource_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="dfmetadata.datasource_id refs datasources.id via dfmetadata_datasource_id_fkey"><a href='dfmetadata.html'>dfmetadata</a><span class='relatedKey'>.datasource_id</span>
     </td>
     <td class='constraint detail'>dfmetadata_datasource_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="expmetadata.datasource_id refs datasources.id via expmetadata_datasource_id_fkey"><a href='expmetadata.html'>expmetadata</a><span class='relatedKey'>.datasource_id</span>
     </td>
     <td class='constraint detail'>expmetadata_datasource_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="hwmetadata.datasource_id refs datasources.id via hwmetadata_datasource_id_fkey"><a href='hwmetadata.html'>hwmetadata</a><span class='relatedKey'>.datasource_id</span>
     </td>
     <td class='constraint detail'>hwmetadata_datasource_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="pharmacologydata.datasource_id refs datasources.id via pharmacologydata_datasource_id_fkey"><a href='pharmacologydata.html'>pharmacologydata</a><span class='relatedKey'>.datasource_id</span>
     </td>
     <td class='constraint detail'>pharmacologydata_datasource_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="users_datastreams.datasource_id refs datasources.id via users_datastreams_datasource_id_fkey"><a href='users_datastreams.html'>users_datastreams</a><span class='relatedKey'>.datasource_id</span>
     </td>
     <td class='constraint detail'>users_datastreams_datasource_id_fkey<span title='Restrict delete:
@@ -151,7 +151,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>name</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>20</td>
@@ -162,7 +162,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>prefix</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2</td>
@@ -172,7 +172,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="datasources.prefix refs si_prefix.symbol via datasources_prefix_fkey"><a href='si_prefix.html'>si_prefix</a><span class='relatedKey'>.symbol</span>
     </td>
     <td class='constraint detail'>datasources_prefix_fkey<span title='Restrict delete:
@@ -182,7 +182,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>unit</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>3</td>
@@ -192,7 +192,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="datasources.unit refs si_unit.symbol via datasources_unit_fkey"><a href='si_unit.html'>si_unit</a><span class='relatedKey'>.symbol</span>
     </td>
     <td class='constraint detail'>datasources_unit_fkey<span title='Restrict delete:
@@ -202,7 +202,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>ds_calibration_rec</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -212,7 +212,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="datasources.ds_calibration_rec refs calibrationdata.id via datasources_ds_calibration_rec_fkey"><a href='calibrationdata.html'>calibrationdata</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>datasources_ds_calibration_rec_fkey<span title='Restrict delete:
@@ -223,7 +223,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='5 columns'>Table contained 0 rows at Sun Sep 15 22:58 PDT 2013<p/>
+<p title='5 columns'>Table contained 1 rows at Mon Sep 16 00:30 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -249,35 +249,35 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from datasources'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="478,5,645,198">
-<area shape="rect" id="node2" href="datasources.html" title="datasources" alt="" coords="196,379,433,555">
-<area shape="rect" id="node3" href="calibrationdata.html" title="calibrationdata" alt="" coords="6,571,151,651">
-<area shape="rect" id="node4" href="si_prefix.html" title="si_prefix" alt="" coords="15,307,142,432">
-<area shape="rect" id="node5" href="si_unit.html" title="si_unit" alt="" coords="17,450,141,553">
-<area shape="rect" id="node6" href="dfmetadata.html" title="dfmetadata" alt="" coords="690,83,835,277">
-<area shape="rect" id="node7" href="expmetadata.html" title="expmetadata" alt="" coords="489,253,634,446">
-<area shape="rect" id="node8" href="hwmetadata.html" title="hwmetadata" alt="" coords="489,463,634,657">
-<area shape="rect" id="node9" href="pharmacologydata.html" title="pharmacologydata" alt="" coords="479,674,643,822">
-<area shape="rect" id="node10" href="users_datastreams.html" title="users_datastreams" alt="" coords="478,839,645,942">
+<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="478,41,645,211">
+<area shape="rect" id="node2" href="datasources.html" title="datasources" alt="" coords="196,355,433,531">
+<area shape="rect" id="node3" href="calibrationdata.html" title="calibrationdata" alt="" coords="6,547,151,627">
+<area shape="rect" id="node4" href="si_prefix.html" title="si_prefix" alt="" coords="11,283,146,409">
+<area shape="rect" id="node5" href="si_unit.html" title="si_unit" alt="" coords="13,427,145,529">
+<area shape="rect" id="node6" href="dfmetadata.html" title="dfmetadata" alt="" coords="690,18,835,234">
+<area shape="rect" id="node7" href="expmetadata.html" title="expmetadata" alt="" coords="489,229,634,423">
+<area shape="rect" id="node8" href="hwmetadata.html" title="hwmetadata" alt="" coords="489,440,634,633">
+<area shape="rect" id="node9" href="pharmacologydata.html" title="pharmacologydata" alt="" coords="479,651,643,799">
+<area shape="rect" id="node10" href="users_datastreams.html" title="users_datastreams" alt="" coords="478,816,645,919">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/datasources.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="478,5,645,198">
-<area shape="rect" id="node2" href="datasources.html" title="datasources" alt="" coords="196,316,433,492">
-<area shape="rect" id="node3" href="experiments.html" title="experiments" alt="" coords="246,215,383,295">
+<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="478,28,645,199">
+<area shape="rect" id="node2" href="datasources.html" title="datasources" alt="" coords="196,317,433,493">
+<area shape="rect" id="node3" href="experiments.html" title="experiments" alt="" coords="238,216,391,296">
 <area shape="rect" id="node4" href="repopaths.html" title="repopaths" alt="" coords="247,27,382,107">
-<area shape="rect" id="node5" href="calibrationdata.html" title="calibrationdata" alt="" coords="6,508,151,588">
-<area shape="rect" id="node6" href="si_prefix.html" title="si_prefix" alt="" coords="15,244,142,369">
-<area shape="rect" id="node7" href="si_unit.html" title="si_unit" alt="" coords="17,387,141,490">
-<area shape="rect" id="node8" href="dfmetadata.html" title="dfmetadata" alt="" coords="690,189,835,382">
-<area shape="rect" id="node9" href="expmetadata.html" title="expmetadata" alt="" coords="489,215,634,409">
-<area shape="rect" id="node10" href="hwmetadata.html" title="hwmetadata" alt="" coords="489,629,634,822">
-<area shape="rect" id="node11" href="hardware.html" title="hardware" alt="" coords="247,704,382,784">
-<area shape="rect" id="node12" href="pharmacologydata.html" title="pharmacologydata" alt="" coords="479,463,643,611">
-<area shape="rect" id="node13" href="reagents.html" title="reagents" alt="" coords="251,509,379,589">
-<area shape="rect" id="node14" href="solutions.html" title="solutions" alt="" coords="247,607,382,687">
-<area shape="rect" id="node15" href="users_datastreams.html" title="users_datastreams" alt="" coords="478,839,645,942">
-<area shape="rect" id="node16" href="users.html" title="users" alt="" coords="247,863,382,943">
+<area shape="rect" id="node5" href="calibrationdata.html" title="calibrationdata" alt="" coords="6,509,151,589">
+<area shape="rect" id="node6" href="si_prefix.html" title="si_prefix" alt="" coords="11,245,146,371">
+<area shape="rect" id="node7" href="si_unit.html" title="si_unit" alt="" coords="13,389,145,491">
+<area shape="rect" id="node8" href="dfmetadata.html" title="dfmetadata" alt="" coords="690,5,835,221">
+<area shape="rect" id="node9" href="expmetadata.html" title="expmetadata" alt="" coords="489,217,634,410">
+<area shape="rect" id="node10" href="hwmetadata.html" title="hwmetadata" alt="" coords="489,630,634,823">
+<area shape="rect" id="node11" href="hardware.html" title="hardware" alt="" coords="247,705,382,785">
+<area shape="rect" id="node12" href="pharmacologydata.html" title="pharmacologydata" alt="" coords="479,465,643,613">
+<area shape="rect" id="node13" href="reagents.html" title="reagents" alt="" coords="251,511,379,591">
+<area shape="rect" id="node14" href="solutions.html" title="solutions" alt="" coords="247,608,382,688">
+<area shape="rect" id="node15" href="users_datastreams.html" title="users_datastreams" alt="" coords="478,841,645,943">
+<area shape="rect" id="node16" href="users.html" title="users" alt="" coords="247,864,382,944">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/datasources.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

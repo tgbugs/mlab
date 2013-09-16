@@ -17,8 +17,8 @@ class Person(HasNotes, Base):
     FirstName=Column(String(50))
     MiddleName=Column(String(50))
     LastName=Column(String(50))
-    #Gender=Column(String,ForeignKey('sex.id')) #LOL
-    Gender=Column(String(1),nullable=True) #FIXME tests will fail as soon as I add a real foreign key >_<
+    Gender=Column(String(1),ForeignKey('sex.abbrev')) #LOL
+    #Gender=Column(String(1),nullable=True) #FIXME tests will fail as soon as I add a real foreign key >_<
     #ForeignKeyConstraint('Person.Gender',['sex.name','sex.symbol','sex.abbrev'])
     Birthdate=Column(Date) #this is here to match the odML, I actually think it is stupid to have, but whatever
     #Role=Column(String,ForeignKey('role.id'))

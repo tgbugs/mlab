@@ -50,7 +50,7 @@ class Result(HasNotes, Base):
 
 #FIXME need to come up with all my metadata classes, this one is really 'experiment metadata' I do NOT think that these need to have inheritance structures becasue the only thing that is similar is datetime
 #FIXME in theory we *could* use a HasMetaData mixin ?
-class ExpMetaData(Base): #FIXME nasty overlap with mapper class metadata reserved name, rename this
+class ExpMetaData(Base): #FIXME we may not need this since 'Experiment' can directly link to other tables and it needs to be able to do this, I think it is worth the table proliferation, we may still want to use this for stuff like pharmacology???
     """This table is now extensible and I can add new dimensions to the data for any experiment whenever the fuck I feel like it :D, I could make a constrain to make sure that the number of dimesions I enter for an experiment is correct, but frankly that adds a ton of work every time I want to add a new variable to an experiment or something, this way commits of ANY single datapoint will not depend on all the other data being there too, might want to add a source id????"""
     #FIXME the proper way to interact with these tables for consistency is through another script that defines all the data that we are going to store
     #the reason we don't use this for everything is because adding slice and cell metadata as a new value is because those things are external objects that contain their OWN metadata

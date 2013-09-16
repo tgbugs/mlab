@@ -44,24 +44,29 @@ cell_to_cell=Table('cell_to_cell', Base.metadata,
                   )
 
 class Cell(HasNotes, Base):
+    #TODO link this as m-m to datafiles and bam many problems solved
+    #TODO cells are really the atomic 'subject' for this experiment... think about that
     #FIXME this Cell class is NOT extensible
     #probably should use inheritance
     #id=None #FIXME fuck it dude, wouldn't it be easier to just give them unqiue ids so we don't have to worry about datetime? or is it the stupid sqlite problem?
+
+    #link to subject
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)
     slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False) #FIXME NO DATETIME PRIMARY KEYS
-    hs_id=Column(Integer,ForeignKey('headstage.id'),nullable=False)#,ForeignKey('headstages.id')) #FIXME critical
-    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO we might be able to link cells to headstages and all that other shit more easily, keeping the data on the cell itself in the cell, tl;dr NORMALIZE!
-    #hs_id=Column(Integer,ForeignKey('headstage.channel'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
+
+    #link to data
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
+    hs_id=Column(Integer,ForeignKey('headstage.id'),nullable=False) #FIXME need mapping to channels in abffile so that we can link the analysis results directly back to the cell, it really does feel like I should be putting cell id's into experiments rather than the ohter way around thought.... wait fuck damn it
+    datafile_id=Column(Integer,ForeignKey('datafile.id'),nullable=False)
+    #TODO we might be able to link cells to headstages and all that other shit more easily, keeping the data on the cell itself in the cell, tl;dr NORMALIZE!
     #hs_amp_serial=Column(Integer,ForeignKey('headstage.amp_serial'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
+
     startDateTime=Column(DateTime,nullable=False)
+    cellmetadata=relationship()
 
     wholeCell=None #FIXME these might should go in analysis??? no...
     loosePatch=None
 
-    #mark=Column(String(1)) #marks are VERY unlikely to be reused, do not store in the database direcly handle getting cell position via them elsewhere
-    esp_x=Column(Float) #FIXME positions need
-    esp_y=Column(Float)
-    pos_z_rel=Column(Float)
 
     #TODO abfFiles are going to be a many-many relationship here....
     abfFile_channel=None #FIXME this nd the headstage serials seems redundant but... wtf? I have to link them somehow
@@ -100,22 +105,36 @@ class IsTerminal:
     def dod(cls):
         return  None
 
+class ExperimentalConditions(Base):
+    __tablename__='expcond'
+    id=Column(Integer,primary_key=True)
+    project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
+    person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
+    startDateTime=Column(DateTime,nullable=False)
+    protocol_id=Column(Integer,ForeignKey('citeable.id'))
+    exp_type=Column(String(20),nullable=False)
+    __mapper_args__ = {
+        'polymorphic_on':exp_type,
+        'polymorphic_identity':'experiment',
+    }
+#INSIGHT! things that are needed to make query structure work, eg acsf_id and the like do not go in metadata, metadata is really the api for analysis, so anything not direcly used in analysis should not go in metadata
 
 class Experiment(Base): #FIXME are experiments datasources? type experiment or something? or should the data from each experiment be IN the xperiment? ;_; I though we decided that the experiment points to all the data... and then the metadata is stored somehwere else again, such as a table inheriting from Data1 maybe? seems like a good idea
     """Base class to link all experiment metadata tables to DataFile tables"""
     #need this to group together the variables
     #this is the base table where each row is one experimental condition or data point, we could call it an experiment since 'Slice Experiment' would be a subtype with its own additional data
     __tablename__='experiments'
+    #FIXME shitfuck, I want this to be metadata but that means I need a new unit for each new cell/pair of cells because they are the subjects in this case ;_;
 
     id=Column(Integer,primary_key=True)
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
     person_id=Column(Integer,ForeignKey('people.id'),nullable=False) #FIXME problmes with corrispondence, make sure the person is on the project??? CHECK
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME there are too many subjects to keep them all in one table, could use a check to make sure that the subject id matches the experiment type? actually, joined table inheritance might work, but it adds another column to all the organisms ;_; derp, we'll worry about that when the time comes
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #this is here to provide context for the exp
 
     #TODO terminal experiments should automatically add date of death, since for slice prep for example I do sort of record that
 
     startDateTime=Column(DateTime,nullable=False)
-    protocol_id=Column(Integer,ForeignKey('protocols.id'))
+    protocol_id=Column(Integer,ForeignKey('citeable.id'))
 
     expmetadata=relationship('ExpMetaData',primaryjoin='Experiment.id==ExpMetaData.experiment_id')
     datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False))
@@ -154,39 +173,52 @@ class Experiment(Base): #FIXME are experiments datasources? type experiment or s
     #the experiment is basically the 'dataobject' that links the phenomena studied to the data about it(them)
 
 
-class SliceExperiment(Experiment):
+#FIXME do not add new experiments until you know what their parameters will be
+#furthermore, I may try to get away with just using expmetadata and df metadata for everything
+#using externally defined templates that know all the dimesions of the experiment
+#the only thing I might need to add is calibraiton, but I think I can control THAT at the datasource
+#ah balls, still have to have some way to track slices and cells :(
+#WAIT! TODO just make it so we can add experiments to slices and /or cells! :D yay!
+
+
+
+#TODO FIXME need to dissociate PROCEDURE from DATA, the CONDITIONS for that day are DIFFERENT from the actual individual experimetns
+class Patch(Experiment):
     """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
     __tablename__='sliceexperiment'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
 
+    #experimental conditions
     acsf_id=Column(Integer,ForeignKey('solutions.id'),nullable=False) #need to come up with a way to constrain
     internal_id=Column(Integer,ForeignKey('solutions.id'),nullable=False)
 
+    #subject identification, because we are adding cells to an experiment, so they exp needs to have the context
+    slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False)
+
+    cells=relationship('Cell',primaryjoin='Experiment.id==Cell.experiment_id',backref=backre('experiment',uselist=False))
 
     #pharmacology
     #TODO might should add a pharmacology data table similar to the metadata table but with times?
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
 
-"""
-class ChrSliceExp(SliceExperiment):
-    __tablename__='chrsliceexp'
-    id=Column(Integer,ForeignKey('sliceexperiment.id'),primary_key=True,autoincrement=False)
-
-    #led_id=Column(Integer,ForeignKey('hardware.id'),nullable=False)
-
-    #__mapper_args__ = {'polymorphic_identity':'chr_slice'}
-"""
+    def __init__(self,Cells=list)
 
 
 
-class HistologyExperiment(Experiment):
+class ChrSomWholeCell(PatchExperiment): #FIXME could do a 'HasLedStim' or something?
+    __tablename__='chrsomsliceexperiment'
+    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
+    __mapper_args__ = {'polymorphic_identity':'chr_som_slice'}
+
+
+class _HistologyExperiment(Experiment):
     __tablename__='histologyexperiment'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
     __mapper_args__ = {'polymorphic_identity':'histology'}
 
 
-class IUEPExperiment(Experiment):
+class _IUEPExperiment(Experiment):
     __tablename__='iuepexperiment'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
     #dam=realationship('Mouse') #FIXME maybe don't need this, since the mouse will backprop anyway
@@ -194,7 +226,7 @@ class IUEPExperiment(Experiment):
     mice=relationship('Mouse',primaryjoin='IUEPExperiment.mouse_id==foreign(Mouse.dam_id)',backref=backref('iuep',uselist=False)) #FIXME somehow mouse could also have a @hybrid_property of 'est age at iuep...'
     __mapper_args__ = {'polymorphic_identity':'iuep'}
 
-class WaterRecord(Experiment):
+class _WaterRecord(Experiment):
     __tablename__='waterrecords'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
     #TODO this does not need to be done right now, just make sure it will integrate easily
@@ -206,7 +238,5 @@ class WaterRecord(Experiment):
     #dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
     #TODO lol the way this is set up now these classes should actually proabaly DEFINE metadata records at least for simple things like this where the only associated object is a mouse which by default experiment asssociates with, maybe I SHOULD move the mouse_id to class MouseExperiment?!?!?!
 
+#
 #organism mixins??? no, bad way to do it, still haven't figured out the good way
-class MouseExperiment: 
-    #@declared_attr
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME add 'mouse experiment type for further inheritance???'

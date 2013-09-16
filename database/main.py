@@ -98,19 +98,19 @@ def main():
 
     #create metadata and session
 
-    #Base.metadata.drop_all(engine,checkfirst=True)
+    Base.metadata.drop_all(engine,checkfirst=True)
     #return None
     #TODO schema option
     
-    #Base.metadata.create_all(engine,checkfirst=True)
+    Base.metadata.create_all(engine,checkfirst=True)
 
     session = Session(engine)
 
     #populate constraint tables
-    #populateConstraints(session)
+    populateConstraints(session)
 
     #do some tests!
-    #run_tests(session)
+    run_tests(session)
 
 
     if 1:

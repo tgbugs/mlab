@@ -30,6 +30,7 @@ class Headstage(HasNotes,Base): #used for enforcing data integrity for cells
     #channel=Column(Integer,primary_key=True)
     amp_serial=Column(Integer,ForeignKey('amplifiers.serial'),unique=True,nullable=False)
     relationship('Cell',backref=backref('headstage',uselist=False))
+    #relationship('DataFile',backref='channel') #TODO FIXME need a way to consistently link these... maybe via the metadata?
 
 class LED(HasNotes, Base):
     #wavelength=Column(Float(53),nullable=False) #FIXME this should be unit contrained???! #FIXME THIS is hardware metadata, ideally we would like to use a constraint, but that leads to a proliferation of tables >_<

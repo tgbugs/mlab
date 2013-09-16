@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,13 +110,13 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('matingrecord_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="iuepexperiment.matingrecord_id refs matingrecord.id via iuepexperiment_matingrecord_id_fkey"><a href='iuepexperiment.html'>iuepexperiment</a><span class='relatedKey'>.matingrecord_id</span>
     </td>
     <td class='constraint detail'>iuepexperiment_matingrecord_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="litter.mr_id refs matingrecord.id via litter_mr_id_fkey"><a href='litter.html'>litter</a><span class='relatedKey'>.mr_id</span>
     </td>
     <td class='constraint detail'>litter_mr_id_fkey<span title='Restrict delete:
@@ -127,7 +127,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>sire_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -137,7 +137,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="matingrecord.sire_id refs sire.id via fk_sire"><a href='sire.html'>sire</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>fk_sire<span title='Restrict delete:
@@ -147,7 +147,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>dam_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -157,7 +157,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="matingrecord.dam_id refs dam.id via fk_dam"><a href='dam.html'>dam</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>fk_dam<span title='Restrict delete:
@@ -167,7 +167,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>startDateTime</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -178,7 +178,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>stopDateTime</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -189,7 +189,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>dob_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -199,7 +199,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="matingrecord.dob_id refs dob.id via matingrecord_dob_id_fkey"><a href='dob.html'>dob</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>matingrecord_dob_id_fkey<span title='Restrict delete:
@@ -210,7 +210,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='6 columns'>Table contained 0 rows at Sun Sep 15 22:58 PDT 2013<p/>
+<p title='6 columns'>Table contained 50 rows at Mon Sep 16 00:30 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -236,25 +236,25 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from matingrecord'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="iuepexperiment.html" title="iuepexperiment" alt="" coords="486,239,639,342">
-<area shape="rect" id="node2" href="matingrecord.html" title="matingrecord" alt="" coords="196,118,441,317">
-<area shape="rect" id="node4" href="dam.html" title="dam" alt="" coords="11,152,146,232">
-<area shape="rect" id="node5" href="dob.html" title="dob" alt="" coords="6,284,151,409">
-<area shape="rect" id="node6" href="sire.html" title="sire" alt="" coords="11,28,146,108">
-<area shape="rect" id="node3" href="litter.html" title="litter" alt="" coords="495,5,630,221">
+<area shape="rect" id="node1" href="iuepexperiment.html" title="iuepexperiment" alt="" coords="502,239,655,342">
+<area shape="rect" id="node2" href="matingrecord.html" title="matingrecord" alt="" coords="204,118,457,317">
+<area shape="rect" id="node4" href="dam.html" title="dam" alt="" coords="15,152,150,232">
+<area shape="rect" id="node5" href="dob.html" title="dob" alt="" coords="6,284,159,409">
+<area shape="rect" id="node6" href="sire.html" title="sire" alt="" coords="15,28,150,108">
+<area shape="rect" id="node3" href="litter.html" title="litter" alt="" coords="507,5,650,221">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/matingrecord.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="847,74,982,154">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="666,468,801,548">
-<area shape="rect" id="node3" href="dam.html" title="dam" alt="" coords="11,262,146,342">
-<area shape="rect" id="node7" href="litter.html" title="litter" alt="" coords="486,225,621,441">
-<area shape="rect" id="node8" href="cage.html" title="cage" alt="" coords="257,468,380,548">
-<area shape="rect" id="node9" href="dob.html" title="dob" alt="" coords="6,570,151,696">
-<area shape="rect" id="node10" href="sire.html" title="sire" alt="" coords="11,129,146,209">
-<area shape="rect" id="node4" href="experiments.html" title="experiments" alt="" coords="846,522,983,602">
-<area shape="rect" id="node5" href="iuepexperiment.html" title="iuepexperiment" alt="" coords="1029,571,1182,674">
-<area shape="rect" id="node6" href="matingrecord.html" title="matingrecord" alt="" coords="196,251,441,450">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="902,78,1045,158">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="689,471,852,551">
+<area shape="rect" id="node3" href="dam.html" title="dam" alt="" coords="15,266,150,346">
+<area shape="rect" id="node7" href="litter.html" title="litter" alt="" coords="502,229,645,445">
+<area shape="rect" id="node8" href="cage.html" title="cage" alt="" coords="269,471,392,551">
+<area shape="rect" id="node9" href="dob.html" title="dob" alt="" coords="6,574,159,699">
+<area shape="rect" id="node10" href="sire.html" title="sire" alt="" coords="15,133,150,213">
+<area shape="rect" id="node4" href="experiments.html" title="experiments" alt="" coords="897,526,1050,606">
+<area shape="rect" id="node5" href="iuepexperiment.html" title="iuepexperiment" alt="" coords="1095,575,1249,677">
+<area shape="rect" id="node6" href="matingrecord.html" title="matingrecord" alt="" coords="204,255,457,453">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/matingrecord.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
