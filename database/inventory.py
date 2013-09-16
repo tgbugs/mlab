@@ -19,6 +19,7 @@ class Amplifier(Base): #used for enforcing data integrity for cells
 
 class Headstage(HasNotes,Base): #used for enforcing data integrity for cells
     #using the id here because it actually requires fewer columns it seems? also adding the serial every time can be a bitch... need a way to double check to make sure though
+    id=None
     channel=Column(Integer,primary_key=True)
     amp_serial=Column(Integer,ForeignKey('amplifiers.serial'),primary_key=True)
     relationship('Cell',backref=backref('headstage',uselist=False))
