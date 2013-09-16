@@ -79,8 +79,8 @@ def main():
     #ploc(globals())
 
     #setup the engine
-    echo=True
-    #echo=False
+    #echo=True
+    echo=False
     engine = create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
     #con=engine.connect()
     #con.execute('commit')
@@ -93,7 +93,7 @@ def main():
 
     #create metadata and session
 
-    Base.metadata.drop_all(engine,checkfirst=True)
+    #Base.metadata.drop_all(engine,checkfirst=True)
     #TODO schema = option
 
     Base.metadata.create_all(engine,checkfirst=True)
@@ -129,8 +129,13 @@ def main():
         print('\n###***Litters***')
         for lit in session.query(Litter):
             print('\n',lit)
-        for note in session.query(Note):
-            print('\n',note)
+    if 0:
+        for d in session.query(DataFile):
+            #print('\n',[t for t in d.__dict__.values()])
+            print('\n',[t for t in d.experiment.person.__dict__.values()])
+
+        #for note in session.query(Note):
+            #print('\n',note)
 
     #input('hit something to exit')
     

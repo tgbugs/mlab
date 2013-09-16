@@ -13,9 +13,6 @@ from database.base import Base, HasNotes
 ###  Experiment tables
 ###-------------------
 
-class ExperimentVariable(Base):
-    pass
-
 
 class Slice(HasNotes, Base):
     id=None
@@ -28,13 +25,6 @@ class Slice(HasNotes, Base):
 
     cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
-
-class StimulusEvent(HasNotes, Base): #VARIABLE
-    #id=None
-    mouse_id=None
-    slice_id=None
-    cell_id=None
-    #this is part of the DATAFILE metadata because it is a variable in the experiment
 
 class LED_stimulation(HasNotes, Base): #association linking an espPos to at Cell
     #id=None
@@ -127,7 +117,7 @@ class Experiment(Base): #FIXME are experiments datasources? type experiment or s
     startDateTime=Column(DateTime,nullable=False)
     protocol_id=Column(Integer,ForeignKey('protocols.id'))
 
-    expmetadata=relationship('MetaData',primaryjoin='Experiment.id==MetaData.experiment_id')
+    expmetadata=relationship('ExpMetaData',primaryjoin='Experiment.id==ExpMetaData.experiment_id')
     datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False))
     exp_type=Column(String(20),nullable=False)
 
@@ -169,14 +159,23 @@ class SliceExperiment(Experiment):
     __tablename__='sliceexperiment'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
 
-    #acsf_id=Column(Integer,ForeignKey('solution.id'),nullable=False) #need to come up with a way to constrain
-    #acsf_id #to prevent accidents split teh acsf and internal into different tables to allow for proper fk constraints? NO, not flexible enough
-    #internal_id
+    acsf_id=Column(Integer,ForeignKey('solutions.id'),nullable=False) #need to come up with a way to constrain
+    internal_id=Column(Integer,ForeignKey('solutions.id'),nullable=False)
+
 
     #pharmacology
     #TODO might should add a pharmacology data table similar to the metadata table but with times?
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
+
+class ChrSliceExp(SliceExperiment):
+    __tablename__='chrsliceexp'
+    id=Column(Integer,ForeignKey('sliceexperiment.id'),primary_key=True,autoincrement=False)
+
+    led_id=Column(Integer,ForeignKey('hardware.id'),nullable=False)
+
+    __mapper_args__ = {'polymorphic_identity':'chr_slice'}
+
 
 
 class HistologyExperiment(Experiment):

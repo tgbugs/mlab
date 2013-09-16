@@ -9,6 +9,13 @@ from database.base import Base, HasNotes
 ###--------------------
 ###  Hardware inventory
 ###--------------------
+class Hardware(Base):
+    __tablename__='hardware'
+    type=Column(String,ForeignKey('hardwaretype.type'),nullable=False)
+    unique_id=Column(String,nullable=False)
+    sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=id))
+    parent_id=Column(Integer,ForeignKey('hardware.id'))
+    hwmetadata=relationship('HWMetaData',primaryjoin='Hardware.id==HWMetaData.hw_id') #FIXME should these just be blobs or what??? maybe by using a datatype column!??! that would mean I could just have a single metadata table per class...
 
 class Amplifier(Base): #used for enforcing data integrity for cells
     __tablename__='amplifiers'
@@ -21,11 +28,12 @@ class Headstage(HasNotes,Base): #used for enforcing data integrity for cells
     #using the id here because it actually requires fewer columns it seems? also adding the serial every time can be a bitch... need a way to double check to make sure though
     #id=None
     #channel=Column(Integer,primary_key=True)
-    amp_serial=Column(Integer,ForeignKey('amplifiers.serial'),unique=True,nullable=True)
+    amp_serial=Column(Integer,ForeignKey('amplifiers.serial'),unique=True,nullable=False)
     relationship('Cell',backref=backref('headstage',uselist=False))
 
 class LED(HasNotes, Base):
-    wavelength=None
+    #wavelength=Column(Float(53),nullable=False) #FIXME this should be unit contrained???! #FIXME THIS is hardware metadata, ideally we would like to use a constraint, but that leads to a proliferation of tables >_<
+    #this is to EASE record keeping not constrain it
     test_DateTime=None
     voltage_intensity_plot=None
 

@@ -19,6 +19,12 @@ _unknown_symbol='\u26AA'#.encode('utf-8') #using unicode U+26AA for this #FIXME 
 ###  Helper classes/tables for mice (normalization and constraints)
 ###----------------------------------------------------------------
 
+class HardwareType(Base):
+    id=None
+    type=Column(String,primary_key=True)
+    things=relationship('Hardware',primaryjoin='HardwareType.type=Hardware.type')
+
+
 class File(Base): #FIXME reinventing the wheel here kids, detect ft don't constraint it
     id=None
     type=Column(String(3),primary_key=True)
@@ -187,12 +193,26 @@ _SEXES=(
         ('unknown',_unknown_symbol,'u')
 )
 
+_HWTYPES=(
+    ('amplifier'),
+    ('headstage'),
+    ('computer'),
+    ('manipulator'),
+    ('motion controller/driver'),
+    ('led'),
+    ('filter'),
+    ('microscope'),
+    ('signal generator'),
+    ('pipette'), #FIXME is this a reagent?@??@?
+    ('pipette puller')
+)
 
 def populateConstraints(session):
     session.add_all([SI_PREFIX(prefix=prefix,symbol=symbol,E=E) for prefix,symbol,E in _SI_PREFIXES])
     session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in _SI_UNITS])
     session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in _NON_SI_UNITS])
     session.add_all([SEX(name=name,abbrev=abbrev,symbol=symbol) for name,symbol,abbrev in _SEXES])
+    session.add_all([HardwareType(type=type[0]) for type in _HWTYPES])
     return session.commit()
 
 if __name__=='__main__':

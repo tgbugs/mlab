@@ -46,20 +46,102 @@ class Result(HasNotes, Base):
 
 
 #FIXME it seems like what I really need here is MetaData linked to datafiles instead of experiments??? think about the best way to do this
-class MetaData(Base): #FIXME nasty overlap with mapper class metadata reserved name, rename this
+
+#FIXME need to come up with all my metadata classes, this one is really 'experiment metadata' I do NOT think that these need to have inheritance structures becasue the only thing that is similar is datetime
+#FIXME in theory we *could* use a HasMetaData mixin ?
+class ExpMetaData(Base): #FIXME nasty overlap with mapper class metadata reserved name, rename this
     """This table is now extensible and I can add new dimensions to the data for any experiment whenever the fuck I feel like it :D, I could make a constrain to make sure that the number of dimesions I enter for an experiment is correct, but frankly that adds a ton of work every time I want to add a new variable to an experiment or something, this way commits of ANY single datapoint will not depend on all the other data being there too, might want to add a source id????"""
     #FIXME the proper way to interact with these tables for consistency is through another script that defines all the data that we are going to store
     #the reason we don't use this for everything is because adding slice and cell metadata as a new value is because those things are external objects that contain their OWN metadata
     #metadata in this table should not then have its own metadata that could be in this table
     id=None
     experiment_id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
-    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME, should this be a primary key? it would mean that espX and espY would have to be considered different datasources..., BUT it would mean that any/every metadata entry would be tagged with a datasource
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True) #each datasource is a dimesion and each dimesion should be unique and identify the value
     dateTime=Column(DateTime,nullable=False) #FIXME is this a good enough fail safe if we somehow lost the ds?
     value=Column(Float(53),nullable=False)
     sigfigs=Column(Integer) #FIXME how would these be used? enforce truncation?
     #TODO need to find a way to standardize reporting uncertanity
     abs_error=Column(Float(53)) #FIXME does this go here, I think for some cases it does might want to qualify it with an 'estimated error' since some of this will be human entered data... but this makes things less rigorous so... damn it
 
+
+class DataFile(Base): #FIXME make sure that this class looks a whole fucking lot like MetaData
+    #TODO path, should the database maintain this???, yes
+    #how to constrain/track files so they don't get lost??
+    #well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
+    #and the constraint will be populated by the DataPath table, if I have 10,000 datafiles though, that could become a NASTY change
+    #ideally we want this to be dynamic so that the DataPath can change and all the DataFile entries will learn about it
+    #it might just be better to do it by hand so UPDATE doesn't swamp everything
+    #the path cannot be the primary key of the datapath table AND accomodate path changes
+    #TODO next problem: when do we actually CREATE the DataFile and how to we get the number right even if we discard the trial? well, we DONT discard the file, we just keep it, but we need to gracefully deal with deletions/renumbering so that if something goes wrong it will alert to user
+    #RESPONSE: this record cannot be created until the file itself exists
+    id=None
+    #Assumption: repository ID's refer to a single filesystem folder where there cannot be duplicate names
+    #repo_url=Column(Integer,ForeignKey('repository.url'),primary_key=True)
+    #repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
+    #with two above can direcly get the file from this record without having to do any cross table magic...
+    id=Column(Integer,primary_key=True)
+    repopath_id=Column(Integer,ForeignKey('repopaths.id'),nullable=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
+    filename=Column(String,unique=True,nullable=False) #urp! on ext3 255 max for EACH /asdf/
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
+    dfmetadata=relationship('DFMetaData',primaryjoin='DataFile.id==DFMetaData.df_id')
+    #creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
+    creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
+    #analysis_DateTime
+    #FIXME a bunch of these DateTimes should be TIMESTAMP? using the python implementation is more consistent?
+    @property
+    def filetype(self):
+        return self.filename.split('.')[-1]
+    @filetype.setter
+    def filetype(self):
+        raise AttributeError('readonly attribute, there should be a file name associate with this record?')
+    #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
+    def __init__(self,RepoPath=None,Experiment=None, repopath_id=None, repo_url=None,repo_path=None,experiment_id=None,filename=None,DataSource=None,datasource_id=None):
+        #self.repo_url=URL_STAND.baseClean(repo_url)
+        #self.repo_path=URL_STAND.pathClean(repo_path)
+        self.repopath_id=repopath_id
+        self.filename=filename
+        self.experiment_id=experiment_id
+        self.creation_DateTime=datetime.utcnow()
+        self.datasource_id=datasource_id
+        if RepoPath:
+            if RepoPath.id:
+                #printD(RepoPath.id)
+                self.repopath_id=RepoPath.id
+            else:
+                raise AttributeError('RepoPath has no id! Did you commit before referencing the instance directly?')
+        if Experiment:
+            if Experiment.id:
+                #printD(Experiment.id)
+                self.experiment_id=Experiment.id
+            else:
+                raise AttributeError('Experiment has no id! Did you commit before referencing the instance directly?')
+        if DataSource:
+            if DataSource.id:
+                self.datasource_id=DataSource.id
+            else:
+                raise AttributeError('DataSource has no id! Did you commit before referencing the instance directly?')
+
+
+class DFMetaData(Base): #FIXME this can just replace datafile!
+    id=None
+    df_id=Column(Integer,ForeignKey('datafile.id'),primary_key=True)
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True) #FIXME in theory no datafile should have two entries from the same datasource how I have this set up
+    dateTime=Column(DateTime,nullable=False)
+    value=Column(Float(53),nullable=False)
+    sigfigs=Column(Integer)
+    abs_error=Column(Float(53))
+
+
+class HWMetaData(Base):
+    #we could* store calibration files here???
+    id=None
+    hw_id=Column(Integer,ForeignKey('datafile.id'),primary_key=True)
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True)
+    dateTime=Column(DateTime,nullable=False)
+    value=Column(Float(53),nullable=False)
+    sigfigs=Column(Integer)
+    abs_error=Column(Float(53))
 
 class PharmacologyData(Base):
     #consistency is achieve here by having another script that stores which drugs and the in and the out, maybe even another table??
@@ -202,62 +284,4 @@ class RepoPath(Base):
         #test to make sure the directory exists
         URL_STAND.test_url(self.repo_url+clean_path) #FIXME may need a try in here
         self.path=clean_path
-
-
-class DataFile(Base): #FIXME make sure that this class looks a whole fucking lot like MetaData
-    #TODO path, should the database maintain this???, yes
-    #how to constrain/track files so they don't get lost??
-    #well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
-    #and the constraint will be populated by the DataPath table, if I have 10,000 datafiles though, that could become a NASTY change
-    #ideally we want this to be dynamic so that the DataPath can change and all the DataFile entries will learn about it
-    #it might just be better to do it by hand so UPDATE doesn't swamp everything
-    #the path cannot be the primary key of the datapath table AND accomodate path changes
-    #TODO next problem: when do we actually CREATE the DataFile and how to we get the number right even if we discard the trial? well, we DONT discard the file, we just keep it, but we need to gracefully deal with deletions/renumbering so that if something goes wrong it will alert to user
-    #RESPONSE: this record cannot be created until the file itself exists
-    id=None
-    #Assumption: repository ID's refer to a single filesystem folder where there cannot be duplicate names
-    #repo_url=Column(Integer,ForeignKey('repository.url'),primary_key=True)
-    #repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
-    #with two above can direcly get the file from this record without having to do any cross table magic...
-    repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
-    filename=Column(String(255),primary_key=True) #urp! on ext3 255 max for EACH /asdf/
-    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
-    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
-    #creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
-    creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
-    #analysis_DateTime
-    #FIXME a bunch of these DateTimes should be TIMESTAMP? using the python implementation is more consistent?
-    @property
-    def filetype(self):
-        return self.filename.split('.')[-1]
-    @filetype.setter
-    def filetype(self):
-        raise AttributeError('readonly attribute, there should be a file name associate with this record?')
-    #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
-    def __init__(self,RepoPath=None,Experiment=None, repopath_id=None, repo_url=None,repo_path=None,experiment_id=None,filename=None,DataSource=None,datasource_id=None):
-        #self.repo_url=URL_STAND.baseClean(repo_url)
-        #self.repo_path=URL_STAND.pathClean(repo_path)
-        self.repopath_id=repopath_id
-        self.filename=filename
-        self.experiment_id=experiment_id
-        self.creation_DateTime=datetime.utcnow()
-        self.datasource_id=datasource_id
-        if RepoPath:
-            if RepoPath.id:
-                #printD(RepoPath.id)
-                self.repopath_id=RepoPath.id
-            else:
-                raise AttributeError('RepoPath has no id! Did you commit before referencing the instance directly?')
-        if Experiment:
-            if Experiment.id:
-                #printD(Experiment.id)
-                self.experiment_id=Experiment.id
-            else:
-                raise AttributeError('Experiment has no id! Did you commit before referencing the instance directly?')
-        if DataSource:
-            if DataSource.id:
-                self.datasource_id=DataSource.id
-            else:
-                raise AttributeError('DataSource has no id! Did you commit before referencing the instance directly?')
-
 
