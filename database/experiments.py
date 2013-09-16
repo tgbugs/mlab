@@ -62,7 +62,7 @@ class Cell(HasNotes, Base):
     #hs_amp_serial=Column(Integer,ForeignKey('headstage.amp_serial'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
 
     startDateTime=Column(DateTime,nullable=False)
-    cellmetadata=relationship()
+    cellmetadata=relationship('CellMetaData') #TODO
 
     wholeCell=None #FIXME these might should go in analysis??? no...
     loosePatch=None

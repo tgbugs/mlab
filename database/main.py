@@ -113,13 +113,13 @@ def main():
     run_tests(session)
 
 
-    if 1:
+    if 0:
         print('\n###***constraints***')
         [printD(c,'\n') for c in session.query(SI_PREFIX)]
         [printD(c,'\n') for c in session.query(SI_UNIT)]
         [printD(c,'\n') for c in session.query(SEX)]
 
-    if 1:
+    if 0:
         print('\n###***mice***')
         for mouse in session.query(Mouse):
             print('\n',mouse)
