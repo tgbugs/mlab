@@ -22,16 +22,19 @@ digraph "oneDegreeRelationshipsDiagram" {
   "datafile":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafile":"experiment_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafile":"repopath_id":w -> "repopaths":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "dfmetadata":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "dfmetadata":"df_id":w -> "datafile":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafile" [
     label=<
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datafile</TD></TR>
-      <TR><TD PORT="repopath_id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">repopath_id</TD><TD PORT="repopath_id.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD PORT="filename" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">filename</TD><TD PORT="filename.type" ALIGN="LEFT">varchar[255]</TD></TR>
+      <TR><TD PORT="id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD><TD PORT="id.type" ALIGN="LEFT">serial[10]</TD></TR>
+      <TR><TD PORT="repopath_id" COLSPAN="2" ALIGN="LEFT">repopath_id</TD><TD PORT="repopath_id.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD PORT="filename" COLSPAN="2" BGCOLOR="#f4f7da" ALIGN="LEFT">filename</TD><TD PORT="filename.type" ALIGN="LEFT">varchar[2147483647]</TD></TR>
       <TR><TD PORT="experiment_id" COLSPAN="2" ALIGN="LEFT">experiment_id</TD><TD PORT="experiment_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="datasource_id" COLSPAN="2" ALIGN="LEFT">datasource_id</TD><TD PORT="datasource_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="creation_DateTime" COLSPAN="2" ALIGN="LEFT">creation_DateTime</TD><TD PORT="creation_DateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">18,000 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="datafile.html"
     tooltip="datafile"
@@ -45,10 +48,25 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="prefix" COLSPAN="3" ALIGN="LEFT">prefix</TD></TR>
       <TR><TD PORT="unit" COLSPAN="3" ALIGN="LEFT">unit</TD></TR>
       <TR><TD PORT="ds_calibration_rec" COLSPAN="3" ALIGN="LEFT">ds_calibration_rec</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
     </TABLE>>
     URL="datasources.html"
     tooltip="datasources"
+  ];
+  "dfmetadata" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">dfmetadata</TD></TR>
+      <TR><TD PORT="df_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">df_id</TD></TR>
+      <TR><TD PORT="datasource_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
+      <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
+      <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="dfmetadata.html"
+    tooltip="dfmetadata"
   ];
   "experiments" [
     label=<
@@ -61,7 +79,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
       <TR><TD PORT="protocol_id" COLSPAN="3" ALIGN="LEFT">protocol_id</TD></TR>
       <TR><TD PORT="exp_type" COLSPAN="3" ALIGN="LEFT">exp_type</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">200 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">8 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">8 &gt;</TD></TR>
     </TABLE>>
     URL="experiments.html"
     tooltip="experiments"
@@ -75,7 +93,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="path" COLSPAN="3" ALIGN="LEFT">path</TD></TR>
       <TR><TD PORT="assoc_program" COLSPAN="3" ALIGN="LEFT">assoc_program</TD></TR>
       <TR><TD PORT="blurb" COLSPAN="3" ALIGN="LEFT">blurb</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="repopaths.html"
     tooltip="repopaths"

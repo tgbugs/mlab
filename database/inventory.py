@@ -13,8 +13,8 @@ class Hardware(Base):
     __tablename__='hardware'
     type=Column(String,ForeignKey('hardwaretype.type'),nullable=False)
     unique_id=Column(String,nullable=False)
-    sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=id))
-    parent_id=Column(Integer,ForeignKey('hardware.id'))
+    #sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=id))
+    #parent_id=Column(Integer,ForeignKey('hardware.id'))
     hwmetadata=relationship('HWMetaData',primaryjoin='Hardware.id==HWMetaData.hw_id') #FIXME should these just be blobs or what??? maybe by using a datatype column!??! that would mean I could just have a single metadata table per class...
 
 class Amplifier(Base): #used for enforcing data integrity for cells

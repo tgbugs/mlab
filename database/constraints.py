@@ -22,7 +22,7 @@ _unknown_symbol='\u26AA'#.encode('utf-8') #using unicode U+26AA for this #FIXME 
 class HardwareType(Base):
     id=None
     type=Column(String,primary_key=True)
-    things=relationship('Hardware',primaryjoin='HardwareType.type=Hardware.type')
+    things=relationship('Hardware',primaryjoin='HardwareType.type==Hardware.type')
     def __init__(self,type):
         self.type=type
         printD(self.schema)
@@ -215,7 +215,7 @@ def populateConstraints(session):
     session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in _SI_UNITS])
     session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in _NON_SI_UNITS])
     session.add_all([SEX(name=name,abbrev=abbrev,symbol=symbol) for name,symbol,abbrev in _SEXES])
-    session.add_all([HardwareType(type=type[0]) for type in _HWTYPES])
+    session.add_all([HardwareType(type=t) for t in _HWTYPES])
     return session.commit()
 
 if __name__=='__main__':

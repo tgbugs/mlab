@@ -136,7 +136,7 @@ class DFMetaData(Base): #FIXME this can just replace datafile!
 class HWMetaData(Base):
     #we could* store calibration files here???
     id=None
-    hw_id=Column(Integer,ForeignKey('datafile.id'),primary_key=True)
+    hw_id=Column(Integer,ForeignKey('hardware.id'),primary_key=True)
     datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True)
     dateTime=Column(DateTime,nullable=False)
     value=Column(Float(53),nullable=False)

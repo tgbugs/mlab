@@ -19,6 +19,7 @@ class NoteAssociation(Base): #turns out we want joined table inheritance... #I t
         return lambda notes:NoteAssociation(notes=notes,discriminator=discriminator)
     #parents backref from HasNotes but we don't have... any... HasNotes_id to link these things..., may need a primary join
     #FIXME this needs to become 'table per' for the association part I think :/ check the examples
+    #__table_args__['extend_existing']=True
     __table_args__ = {'extend_existing':True}
 
 
@@ -33,6 +34,7 @@ class Note(Base):
     association=relationship('NoteAssociation',backref='notes')
     parents=association_proxy('association','parents')
     __table_args__ = {'extend_existing':True}
+    #__table_args__['extend_existing']=True
 
     def __init__(self,text):
         self.text=text

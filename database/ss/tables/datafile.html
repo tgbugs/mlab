@@ -101,8 +101,28 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
+<tr class='even'>
+ <td class='primaryKey' title='Primary Key'>id</td>
+ <td class='detail'>serial</td>
+ <td class='detail' align='right'>10</td>
+ <td class='detail' align='center'></td>
+ <td class='detail' align='center' title='Automatically updated by the database'>&nbsp;&radic;&nbsp;</td>
+ <td class='detail' align='right'>nextval('datafile_id_seq'::regclass)</td>
+ <td class='detail'>
+  <table border='0' width='100%' cellspacing='0' cellpadding='0'>
+   <tr class='relative even' valign='top'>
+    <td class='relatedTable detail' title="dfmetadata.df_id refs datafile.id via dfmetadata_df_id_fkey"><a href='dfmetadata.html'>dfmetadata</a><span class='relatedKey'>.df_id</span>
+    </td>
+    <td class='constraint detail'>dfmetadata_df_id_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+  </table>
+</td>
+ <td class='detail'> </td>
+ <td class='comment detail'></td>
+</tr>
 <tr class='odd'>
- <td class='primaryKey' title='Primary Key'>repopath_id</td>
+ <td class='detail'>repopath_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
  <td class='detail' align='center'></td>
@@ -122,9 +142,9 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 <tr class='even'>
- <td class='primaryKey' title='Primary Key'>filename</td>
+ <td class='indexedColumn' title='Indexed'>filename</td>
  <td class='detail'>varchar</td>
- <td class='detail' align='right'>255</td>
+ <td class='detail' align='right'>2147483647</td>
  <td class='detail' align='center'></td>
  <td class='detail' align='center'></td>
  <td class='detail'></td>
@@ -184,7 +204,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='5 columns'>Table contained 18,000 rows at Sun Sep 15 20:44 PDT 2013<p/>
+<p title='6 columns'>Table contained 0 rows at Sun Sep 15 22:58 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -199,10 +219,16 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </thead>
 <tbody>
  <tr>
-  <td class='primaryKey'>repopath_id + filename</td>
+  <td class='primaryKey'>id</td>
   <td class='detail'>Primary key</td>
-  <td class='detail' style='text-align:left;'><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+  <td class='detail' style='text-align:left;'><span title='Ascending'>Asc</span></td>
   <td class='constraint' style='text-align:left;'>datafile_pkey</td>
+ </tr>
+ <tr>
+  <td class='indexedColumn'>filename</td>
+  <td class='detail'>Must be unique</td>
+  <td class='detail' style='text-align:left;'><span title='Ascending'>Asc</span></td>
+  <td class='constraint' style='text-align:left;'>datafile_filename_key</td>
  </tr>
 </table>
 </div>
@@ -210,33 +236,36 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from datafile'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="213,144,510,320">
-<area shape="rect" id="node2" href="datasources.html" title="datasources" alt="" coords="10,427,163,597">
-<area shape="rect" id="node3" href="experiments.html" title="experiments" alt="" coords="6,193,167,409">
+<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="212,151,519,350">
+<area shape="rect" id="node2" href="datasources.html" title="datasources" alt="" coords="6,427,167,597">
+<area shape="rect" id="node3" href="experiments.html" title="experiments" alt="" coords="14,193,159,409">
 <area shape="rect" id="node4" href="repopaths.html" title="repopaths" alt="" coords="11,5,162,176">
+<area shape="rect" id="node5" href="dfmetadata.html" title="dfmetadata" alt="" coords="563,294,709,487">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/datafile.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="cell.html" title="cell" alt="" coords="501,5,635,85">
-<area shape="rect" id="node2" href="experiments.html" title="experiments" alt="" coords="213,299,374,515">
-<area shape="rect" id="node3" href="mouse.html" title="mouse" alt="" coords="5,367,168,447">
-<area shape="rect" id="node10" href="people.html" title="people" alt="" coords="17,269,156,349">
-<area shape="rect" id="node11" href="project.html" title="project" alt="" coords="19,172,154,252">
-<area shape="rect" id="node12" href="protocols.html" title="protocols" alt="" coords="22,464,151,544">
-<area shape="rect" id="node4" href="datafile.html" title="datafile" alt="" coords="419,589,717,765">
-<area shape="rect" id="node5" href="datasources.html" title="datasources" alt="" coords="217,781,370,952">
-<area shape="rect" id="node6" href="repopaths.html" title="repopaths" alt="" coords="218,592,369,763">
-<area shape="rect" id="node7" href="calibrationdata.html" title="calibrationdata" alt="" coords="14,947,159,1027">
-<area shape="rect" id="node8" href="si_prefix.html" title="si_prefix" alt="" coords="19,752,154,832">
-<area shape="rect" id="node9" href="si_unit.html" title="si_unit" alt="" coords="21,849,152,929">
-<area shape="rect" id="node17" href="repository.html" title="repository" alt="" coords="19,613,154,693">
-<area shape="rect" id="node13" href="histologyexperiment.html" title="histologyexperiment" alt="" coords="483,395,653,475">
-<area shape="rect" id="node14" href="iuepexperiment.html" title="iuepexperiment" alt="" coords="494,103,642,183">
-<area shape="rect" id="node15" href="metadata.html" title="metadata" alt="" coords="503,783,633,863">
-<area shape="rect" id="node16" href="pharmacologydata.html" title="pharmacologydata" alt="" coords="486,492,650,572">
-<area shape="rect" id="node18" href="sliceexperiment.html" title="sliceexperiment" alt="" coords="493,200,643,280">
-<area shape="rect" id="node19" href="users_datastreams.html" title="users_datastreams" alt="" coords="485,880,651,960">
-<area shape="rect" id="node20" href="waterrecords.html" title="waterrecords" alt="" coords="498,297,638,377">
+<area shape="rect" id="node1" href="cell.html" title="cell" alt="" coords="489,5,623,85">
+<area shape="rect" id="node2" href="experiments.html" title="experiments" alt="" coords="205,299,350,515">
+<area shape="rect" id="node3" href="mouse.html" title="mouse" alt="" coords="11,367,146,447">
+<area shape="rect" id="node11" href="people.html" title="people" alt="" coords="17,269,140,349">
+<area shape="rect" id="node12" href="project.html" title="project" alt="" coords="11,172,146,252">
+<area shape="rect" id="node13" href="protocols.html" title="protocols" alt="" coords="14,464,143,544">
+<area shape="rect" id="node4" href="datafile.html" title="datafile" alt="" coords="403,590,709,789">
+<area shape="rect" id="node5" href="datasources.html" title="datasources" alt="" coords="197,841,358,1012">
+<area shape="rect" id="node6" href="repopaths.html" title="repopaths" alt="" coords="202,616,353,787">
+<area shape="rect" id="node7" href="calibrationdata.html" title="calibrationdata" alt="" coords="6,1007,151,1087">
+<area shape="rect" id="node8" href="si_prefix.html" title="si_prefix" alt="" coords="15,812,142,892">
+<area shape="rect" id="node9" href="si_unit.html" title="si_unit" alt="" coords="17,909,140,989">
+<area shape="rect" id="node19" href="repository.html" title="repository" alt="" coords="11,637,146,717">
+<area shape="rect" id="node10" href="dfmetadata.html" title="dfmetadata" alt="" coords="754,722,899,915">
+<area shape="rect" id="node14" href="expmetadata.html" title="expmetadata" alt="" coords="486,807,626,887">
+<area shape="rect" id="node15" href="histologyexperiment.html" title="histologyexperiment" alt="" coords="471,200,641,280">
+<area shape="rect" id="node16" href="hwmetadata.html" title="hwmetadata" alt="" coords="487,940,625,1020">
+<area shape="rect" id="node17" href="iuepexperiment.html" title="iuepexperiment" alt="" coords="482,297,630,377">
+<area shape="rect" id="node18" href="pharmacologydata.html" title="pharmacologydata" alt="" coords="474,492,638,572">
+<area shape="rect" id="node20" href="sliceexperiment.html" title="sliceexperiment" alt="" coords="481,395,631,475">
+<area shape="rect" id="node21" href="users_datastreams.html" title="users_datastreams" alt="" coords="473,1037,639,1117">
+<area shape="rect" id="node22" href="waterrecords.html" title="waterrecords" alt="" coords="486,103,626,183">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/datafile.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

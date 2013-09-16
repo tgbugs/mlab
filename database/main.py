@@ -82,7 +82,8 @@ def main():
     #setup the engine
     echo=True
     #echo=False
-    engine = create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
+
+    #engine = create_engine('postgresql://sqla:asdf@localhost:54321/postgres',echo=echo)
     #con=engine.connect()
     #con.execute('commit')
     #con.execute('drop database if exists db_test')
@@ -90,14 +91,15 @@ def main():
     #con.execute('create database db_test')
     #con.execute('commit')
     #con.close()
+    #del(engine)
+
+    engine = create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
     #event.listen(engine,'connect',set_sqlite_pragma)
 
     #create metadata and session
 
-    #Base.metadata.drop_all(engine,checkfirst=True)
-    #TODO schema = option
-
-    meta=MetaData(schema='public')
+    Base.metadata.drop_all(engine,checkfirst=True)
+    #TODO schema option
     
     Base.metadata.create_all(engine,checkfirst=True)
 

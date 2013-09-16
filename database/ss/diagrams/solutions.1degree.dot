@@ -20,6 +20,8 @@ digraph "oneDegreeRelationshipsDiagram" {
     arrowsize="0.8"
   ];
   "pharmacologydata":"solution_id":w -> "solutions":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sliceexperiment":"acsf_id":w -> "solutions":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sliceexperiment":"internal_id":w -> "solutions":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "solutions":"recipe_id":w -> "recipe":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "pharmacologydata" [
     label=<
@@ -44,6 +46,18 @@ digraph "oneDegreeRelationshipsDiagram" {
     URL="recipe.html"
     tooltip="recipe"
   ];
+  "sliceexperiment" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">sliceexperiment</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="acsf_id" COLSPAN="3" ALIGN="LEFT">acsf_id</TD></TR>
+      <TR><TD PORT="internal_id" COLSPAN="3" ALIGN="LEFT">internal_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="sliceexperiment.html"
+    tooltip="sliceexperiment"
+  ];
   "solutions" [
     label=<
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -51,7 +65,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD><TD PORT="id.type" ALIGN="LEFT">serial[10]</TD></TR>
       <TR><TD PORT="recipe_id" COLSPAN="2" ALIGN="LEFT">recipe_id</TD><TD PORT="recipe_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="mix_dateTime" COLSPAN="2" ALIGN="LEFT">mix_dateTime</TD><TD PORT="mix_dateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
     </TABLE>>
     URL="solutions.html"
     tooltip="solutions"

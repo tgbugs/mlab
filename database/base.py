@@ -34,6 +34,8 @@ class DefaultBase(object):
     def __tablename__(cls):
         return cls.__name__.lower()
     id=Column(Integer, primary_key=True)
+    #__table_args__={'schema':'public'}
+    #__table_args__={}
 
 
     def strHelper(self,depth=0,attr='id'):

@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,10 +110,22 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('solutions_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="pharmacologydata.solution_id refs solutions.id via pharmacologydata_solution_id_fkey"><a href='pharmacologydata.html'>pharmacologydata</a><span class='relatedKey'>.solution_id</span>
     </td>
     <td class='constraint detail'>pharmacologydata_solution_id_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+   <tr class='relative even' valign='top'>
+    <td class='relatedTable detail' title="sliceexperiment.acsf_id refs solutions.id via sliceexperiment_acsf_id_fkey"><a href='sliceexperiment.html'>sliceexperiment</a><span class='relatedKey'>.acsf_id</span>
+    </td>
+    <td class='constraint detail'>sliceexperiment_acsf_id_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+   <tr class='relative even' valign='top'>
+    <td class='relatedTable detail' title="sliceexperiment.internal_id refs solutions.id via sliceexperiment_internal_id_fkey"><a href='sliceexperiment.html'>sliceexperiment</a><span class='relatedKey'>.internal_id</span>
+    </td>
+    <td class='constraint detail'>sliceexperiment_internal_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
   </table>
@@ -121,7 +133,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>recipe_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -131,7 +143,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="solutions.recipe_id refs recipe.id via solutions_recipe_id_fkey"><a href='recipe.html'>recipe</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>solutions_recipe_id_fkey<span title='Restrict delete:
@@ -141,7 +153,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>mix_dateTime</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -153,7 +165,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='3 columns'>Table contained 0 rows at Sun Sep 15 20:44 PDT 2013<p/>
+<p title='3 columns'>Table contained 0 rows at Sun Sep 15 22:58 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -180,18 +192,21 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="pharmacologydata.html" title="pharmacologydata" alt="" coords="462,5,626,153">
-<area shape="rect" id="node2" href="solutions.html" title="solutions" alt="" coords="172,72,417,203">
-<area shape="rect" id="node3" href="recipe.html" title="recipe" alt="" coords="5,97,128,177">
+<area shape="rect" id="node2" href="solutions.html" title="solutions" alt="" coords="172,192,417,323">
+<area shape="rect" id="node4" href="recipe.html" title="recipe" alt="" coords="5,217,128,297">
+<area shape="rect" id="node3" href="sliceexperiment.html" title="sliceexperiment" alt="" coords="469,171,619,296">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/solutions.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="pharmacologydata.html" title="pharmacologydata" alt="" coords="462,118,626,266">
-<area shape="rect" id="node2" href="datasources.html" title="datasources" alt="" coords="230,103,359,183">
-<area shape="rect" id="node3" href="reagents.html" title="reagents" alt="" coords="231,200,359,280">
-<area shape="rect" id="node4" href="experiments.html" title="experiments" alt="" coords="218,5,371,85">
-<area shape="rect" id="node5" href="solutions.html" title="solutions" alt="" coords="172,297,417,428">
-<area shape="rect" id="node6" href="recipe.html" title="recipe" alt="" coords="5,384,128,464">
-<area shape="rect" id="node7" href="stock.html" title="stock" alt="" coords="233,445,356,525">
+<area shape="rect" id="node1" href="chrsliceexp.html" title="chrsliceexp" alt="" coords="671,349,804,429">
+<area shape="rect" id="node2" href="sliceexperiment.html" title="sliceexperiment" alt="" coords="469,351,619,476">
+<area shape="rect" id="node6" href="experiments.html" title="experiments" alt="" coords="226,103,363,183">
+<area shape="rect" id="node7" href="solutions.html" title="solutions" alt="" coords="172,395,417,525">
+<area shape="rect" id="node3" href="pharmacologydata.html" title="pharmacologydata" alt="" coords="462,129,626,277">
+<area shape="rect" id="node4" href="datasources.html" title="datasources" alt="" coords="226,5,363,85">
+<area shape="rect" id="node5" href="reagents.html" title="reagents" alt="" coords="231,200,359,280">
+<area shape="rect" id="node8" href="recipe.html" title="recipe" alt="" coords="5,359,128,439">
+<area shape="rect" id="node9" href="stock.html" title="stock" alt="" coords="233,297,356,377">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/solutions.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
