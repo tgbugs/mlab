@@ -35,8 +35,8 @@ class SI_PREFIX(Base): #Yes, these are a good idea because they are written once
     
 class SI_UNIT(Base):
     id=None
-    symbol=Column(String(3),primary_key=True) #FIXME varchar may not work
-    name=Column(String(15),primary_key=True) #this is also a pk so we can accept plurals :)
+    symbol=Column(String(3),primary_key=True)
+    name=Column(String(15),nullable=False) #this is also a pk so we can accept plurals :)
     #conversion??
     #relationship('OneDData',backref='units') #FIXME make sure this doen't add a column
     def __repr__(self):
@@ -72,16 +72,12 @@ class Strain(Base): #TODO
 _SI_UNITS=(
     #name, symbol
     ('meter','m'),
-    ('meters','m'),
 
     ('gram','g'), #and now I see why they have kg as the base...
-    ('grams','g'),
 
     ('liter','L'),
-    ('liters','L'),
 
     ('mole','mol'),
-    ('moles','mol'),
 
     ('molarity','M'),
     ('molar','M'),
@@ -91,106 +87,74 @@ _SI_UNITS=(
     ('kelvin','K'),
 
     ('degree Celcius',_degree+'C'), #degrees = U+00B0
-    ('degrees Celcius',_degree+'C'), #FIXME
     ('degree Celcius','~oC'), #Tom also accepts using the digraph for the degree symbol...
-    ('degrees Celcius','~oC'),
 
     ('candela','ca'),
-    ('candelas','ca'),
 
     ('lumen','lm'),
-    ('lumens','lm'),
 
     ('lux','lx'),
 
     ('second','s'),
-    ('seconds','s'),
 
     ('hertz','Hz'),
 
     ('minute','min'),
-    ('minutes','min'),
 
     ('hour','h'),
-    ('hours','h'),
 
     ('day','d'),
-    ('days','d'),
 
     ('radian','rad'),
-    ('radians','rad'),
 
     ('steradian','sr'),
-    ('steradians','sr'),
 
     ('newton','N'),
-    ('newtons','N'),
 
     ('pascal','Pa'),
-    ('pascals','Pa'),
 
     ('joule','J'),
-    ('joules','J'),
 
     ('watt','W'),
-    ('watts','W'),
 
     ('ampere','A'),
-    ('amperes','A'),
-    ('amp','A'),
-    ('amps','A'),
+    #('amp','A'),
 
     ('coulomb','C'),
-    ('coulombs','C'),
 
     ('volt','V'),
-    ('volts','V'),
 
     ('farad','F'),
-    ('farads','F'),
 
     ('ohm',_OMEGA), #unicode=U+03A9, this is upper case greek and should be used instead of 2126
-    ('ohms',_OMEGA),
 
     ('ohm','R'), #R also accepted as per the note on wikipedia and some brit standard
-    ('ohms','R'),
 
     ('siemens','S'),
 
     ('weber','Wb'),
-    ('webers','Wb'),
 
     ('tesla','T'),
-    ('teslas','T'),
 
     ('henry','H'),
-    ('henrys','H'),
 
 
     ('becquerel','Bq'),
-    ('becquerels','Bq'),
 
     ('gray','Gy'),
-    ('grays','Gy'),
 
     ('sievert','Sv'),
-    ('sieverts','Sv'),
 
     ('katal','kat'),
-    ('katals','kat'),
     
     ('decibel','dB'),
-    ('decibels','dB')
 )
 _NON_SI_UNITS=(
     #name, symbol
     ('osmole','Osm'), #total moles of solute contributing to osmotic pressure
-    ('osmoles','Osm'),
 
     ('degree',_degree), #unicode for the symbol is U+00B0
-    ('degrees',_degree),
     ('degree','~o'), #also accepted
-    ('degrees','~o'),
     ('number','num') #explicitly 'of something'
 )
 _SI_PREFIXES=(
