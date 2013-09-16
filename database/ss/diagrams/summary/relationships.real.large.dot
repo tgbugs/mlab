@@ -81,13 +81,12 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
       <TR><TD PORT="slice_id" COLSPAN="3" ALIGN="LEFT">slice_id</TD></TR>
-      <TR><TD PORT="hs_id" COLSPAN="3" ALIGN="LEFT">hs_id</TD></TR>
       <TR><TD PORT="experiment_id" COLSPAN="3" ALIGN="LEFT">experiment_id</TD></TR>
+      <TR><TD PORT="hs_id" COLSPAN="3" ALIGN="LEFT">hs_id</TD></TR>
+      <TR><TD PORT="repoid" COLSPAN="3" ALIGN="LEFT">repoid</TD></TR>
+      <TR><TD PORT="filename" COLSPAN="3" ALIGN="LEFT">filename</TD></TR>
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
-      <TR><TD PORT="esp_x" COLSPAN="3" ALIGN="LEFT">esp_x</TD></TR>
-      <TR><TD PORT="esp_y" COLSPAN="3" ALIGN="LEFT">esp_y</TD></TR>
-      <TR><TD PORT="pos_z_rel" COLSPAN="3" ALIGN="LEFT">pos_z_rel</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
     </TABLE>>
     URL="tables/cell.html"
     tooltip="cell"
@@ -102,6 +101,42 @@ digraph "largeRelationshipsDiagram" {
     </TABLE>>
     URL="tables/cell_to_cell.html"
     tooltip="cell_to_cell"
+  ];
+  "cellmetadata" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cellmetadata</TD></TR>
+      <TR><TD PORT="cell_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">cell_id</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
+      <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
+      <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="tables/cellmetadata.html"
+    tooltip="cellmetadata"
+  ];
+  "chrsomsliceexperiment" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">chrsomsliceexperiment</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="led_id" COLSPAN="3" ALIGN="LEFT">led_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="tables/chrsomsliceexperiment.html"
+    tooltip="chrsomsliceexperiment"
+  ];
+  "citeable" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">citeable</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="type" COLSPAN="3" ALIGN="LEFT">type</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
+    </TABLE>>
+    URL="tables/citeable.html"
+    tooltip="citeable"
   ];
   "credentials" [
     label=<
@@ -133,7 +168,7 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="experiment_id" COLSPAN="3" ALIGN="LEFT">experiment_id</TD></TR>
       <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
       <TR><TD PORT="creation_DateTime" COLSPAN="3" ALIGN="LEFT">creation_DateTime</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">18,000 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
     </TABLE>>
     URL="tables/datafile.html"
     tooltip="datafile"
@@ -147,7 +182,7 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="prefix" COLSPAN="3" ALIGN="LEFT">prefix</TD></TR>
       <TR><TD PORT="unit" COLSPAN="3" ALIGN="LEFT">unit</TD></TR>
       <TR><TD PORT="ds_calibration_rec" COLSPAN="3" ALIGN="LEFT">ds_calibration_rec</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
     </TABLE>>
     URL="tables/datasources.html"
     tooltip="datasources"
@@ -187,11 +222,10 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT">project_id</TD></TR>
       <TR><TD PORT="person_id" COLSPAN="3" ALIGN="LEFT">person_id</TD></TR>
-      <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
       <TR><TD PORT="protocol_id" COLSPAN="3" ALIGN="LEFT">protocol_id</TD></TR>
       <TR><TD PORT="exp_type" COLSPAN="3" ALIGN="LEFT">exp_type</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">200 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">8 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">200 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
     </TABLE>>
     URL="tables/experiments.html"
     tooltip="experiments"
@@ -218,7 +252,7 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="type" COLSPAN="3" ALIGN="LEFT">type</TD></TR>
       <TR><TD PORT="unique_id" COLSPAN="3" ALIGN="LEFT">unique_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
     </TABLE>>
     URL="tables/hardware.html"
     tooltip="hardware"
@@ -244,16 +278,6 @@ digraph "largeRelationshipsDiagram" {
     URL="tables/headstage.html"
     tooltip="headstage"
   ];
-  "histologyexperiment" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">histologyexperiment</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="tables/histologyexperiment.html"
-    tooltip="histologyexperiment"
-  ];
   "hwmetadata" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -278,17 +302,6 @@ digraph "largeRelationshipsDiagram" {
     </TABLE>>
     URL="tables/iacucprotocols.html"
     tooltip="iacucprotocols"
-  ];
-  "iuepexperiment" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">iuepexperiment</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD PORT="matingrecord_id" COLSPAN="3" ALIGN="LEFT">matingrecord_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="tables/iuepexperiment.html"
-    tooltip="iuepexperiment"
   ];
   "litter" [
     label=<
@@ -316,7 +329,7 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
       <TR><TD PORT="stopDateTime" COLSPAN="3" ALIGN="LEFT">stopDateTime</TD></TR>
       <TR><TD PORT="dob_id" COLSPAN="3" ALIGN="LEFT">dob_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">50 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">50 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="tables/matingrecord.html"
     tooltip="matingrecord"
@@ -339,10 +352,22 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD PORT="dam_id" COLSPAN="3" ALIGN="LEFT">dam_id</TD></TR>
       <TR><TD PORT="dob_id" COLSPAN="3" ALIGN="LEFT">dob_id</TD></TR>
       <TR><TD PORT="dod" COLSPAN="3" ALIGN="LEFT">dod</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
     </TABLE>>
     URL="tables/mouse.html"
     tooltip="mouse"
+  ];
+  "patch" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">patch</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="acsf_id" COLSPAN="3" ALIGN="LEFT">acsf_id</TD></TR>
+      <TR><TD PORT="internal_id" COLSPAN="3" ALIGN="LEFT">internal_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="tables/patch.html"
+    tooltip="patch"
   ];
   "people" [
     label=<
@@ -368,23 +393,10 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">person_to_project</TD></TR>
       <TR><TD PORT="person_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">person_id</TD></TR>
       <TR><TD PORT="project_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">project_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">41 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">32 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="tables/person_to_project.html"
     tooltip="person_to_project"
-  ];
-  "pharmacologydata" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">pharmacologydata</TD></TR>
-      <TR><TD PORT="experiment_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">experiment_id</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
-      <TR><TD PORT="drug_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">drug_id</TD></TR>
-      <TR><TD PORT="solution_id" COLSPAN="3" ALIGN="LEFT">solution_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="tables/pharmacologydata.html"
-    tooltip="pharmacologydata"
   ];
   "project" [
     label=<
@@ -399,35 +411,28 @@ digraph "largeRelationshipsDiagram" {
     URL="tables/project.html"
     tooltip="project"
   ];
-  "protocols" [
+  "reagentlot" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">protocols</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">reagentlot</TD></TR>
+      <TR><TD PORT="reagent_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">reagent_id</TD></TR>
+      <TR><TD PORT="creation_dateTime" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">creation_dateTime</TD></TR>
+      <TR><TD PORT="done_dateTime" COLSPAN="3" ALIGN="LEFT">done_dateTime</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
-    URL="tables/protocols.html"
-    tooltip="protocols"
+    URL="tables/reagentlot.html"
+    tooltip="reagentlot"
   ];
   "reagents" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">reagents</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD PORT="name" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">name</TD></TR>
+      <TR><TD PORT="document_id" COLSPAN="3" ALIGN="LEFT">document_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
     </TABLE>>
     URL="tables/reagents.html"
     tooltip="reagents"
-  ];
-  "recipe" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">recipe</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
-    </TABLE>>
-    URL="tables/recipe.html"
-    tooltip="recipe"
   ];
   "repopaths" [
     label=<
@@ -506,57 +511,25 @@ digraph "largeRelationshipsDiagram" {
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">slice</TD></TR>
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
+      <TR><TD PORT="prep_id" COLSPAN="3" ALIGN="LEFT">prep_id</TD></TR>
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="tables/slice.html"
     tooltip="slice"
-  ];
-  "sliceexperiment" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">sliceexperiment</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD PORT="acsf_id" COLSPAN="3" ALIGN="LEFT">acsf_id</TD></TR>
-      <TR><TD PORT="internal_id" COLSPAN="3" ALIGN="LEFT">internal_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="tables/sliceexperiment.html"
-    tooltip="sliceexperiment"
   ];
   "sliceprep" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">sliceprep</TD></TR>
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
+      <TR><TD PORT="chamber_id" COLSPAN="3" ALIGN="LEFT">chamber_id</TD></TR>
+      <TR><TD PORT="sucrose_id" COLSPAN="3" ALIGN="LEFT">sucrose_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="tables/sliceprep.html"
     tooltip="sliceprep"
-  ];
-  "solutions" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">solutions</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD PORT="recipe_id" COLSPAN="3" ALIGN="LEFT">recipe_id</TD></TR>
-      <TR><TD PORT="mix_dateTime" COLSPAN="3" ALIGN="LEFT">mix_dateTime</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
-    </TABLE>>
-    URL="tables/solutions.html"
-    tooltip="solutions"
-  ];
-  "stock" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">stock</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD PORT="recipe_id" COLSPAN="3" ALIGN="LEFT">recipe_id</TD></TR>
-      <TR><TD PORT="mix_dateTime" COLSPAN="3" ALIGN="LEFT">mix_dateTime</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="tables/stock.html"
-    tooltip="stock"
   ];
   "strain" [
     label=<
@@ -590,25 +563,20 @@ digraph "largeRelationshipsDiagram" {
     URL="tables/users_datastreams.html"
     tooltip="users_datastreams"
   ];
-  "waterrecords" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">waterrecords</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="tables/waterrecords.html"
-    tooltip="waterrecords"
-  ];
   "breeder":"id":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "breeder":"sex_id":w -> "sex":"abbrev":e [arrowhead=none dir=back arrowtail=crowodot];
   "cagerack":"cage_id":w -> "cage":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"experiment_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cell":"filename":w -> "datafile":"filename":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"hs_id":w -> "headstage":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"mouse_id":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cell":"repoid":w -> "datafile":"repopath_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"slice_id":w -> "slice":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell_to_cell":"cell_1_id":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell_to_cell":"cell_2_id":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cellmetadata":"cell_id":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "chrsomsliceexperiment":"id":w -> "patch":"id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "chrsomsliceexperiment":"led_id":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "credentials":"user_id":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "dam":"id":w -> "breeder":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "datafile":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -620,19 +588,15 @@ digraph "largeRelationshipsDiagram" {
   "dfmetadata":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "dfmetadata":"filename":w -> "datafile":"filename":e [arrowhead=none dir=back arrowtail=crowodot];
   "dfmetadata":"repoid":w -> "datafile":"repopath_id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "experiments":"mouse_id":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "experiments":"person_id":w -> "people":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "experiments":"project_id":w -> "project":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "experiments":"protocol_id":w -> "protocols":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments":"protocol_id":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "expmetadata":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "expmetadata":"experiment_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware":"type":w -> "hardwaretype":"type":e [arrowhead=none dir=back arrowtail=crowodot];
   "headstage":"amp_serial":w -> "amplifiers":"serial":e [arrowhead=none dir=back arrowtail=teeodot];
-  "histologyexperiment":"id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "hwmetadata":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "hwmetadata":"hw_id":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "iuepexperiment":"id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=teeodot];
-  "iuepexperiment":"matingrecord_id":w -> "matingrecord":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"cage_id":w -> "cage":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"dam_id":w -> "dam":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"dob_id":w -> "dob":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -648,26 +612,25 @@ digraph "largeRelationshipsDiagram" {
   "mouse":"sex_id":w -> "sex":"abbrev":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse":"sire_id":w -> "sire":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse":"strain_id":w -> "strain":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "patch":"acsf_id":w -> "reagents":"name":e [arrowhead=none dir=back arrowtail=crowodot];
+  "patch":"id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "patch":"internal_id":w -> "reagents":"name":e [arrowhead=none dir=back arrowtail=crowodot];
   "people":"Gender":w -> "sex":"abbrev":e [arrowhead=none dir=back arrowtail=crowodot];
   "person_to_project":"person_id":w -> "people":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "person_to_project":"project_id":w -> "project":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "pharmacologydata":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "pharmacologydata":"drug_id":w -> "reagents":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "pharmacologydata":"experiment_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "pharmacologydata":"solution_id":w -> "solutions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project":"iacuc_protocol_id":w -> "iacucprotocols":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "reagentlot":"reagent_id":w -> "reagents":"name":e [arrowhead=none dir=back arrowtail=teeodot];
+  "reagents":"document_id":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "repopaths":"repo_url":w -> "repository":"url":e [arrowhead=none dir=back arrowtail=crowodot];
   "repository":"credentials_id":w -> "credentials":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "sire":"id":w -> "breeder":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "slice":"mouse_id":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "sliceexperiment":"acsf_id":w -> "solutions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "sliceexperiment":"id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=teeodot];
-  "sliceexperiment":"internal_id":w -> "solutions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "sliceprep":"id":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=teeodot];
-  "solutions":"recipe_id":w -> "recipe":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "stock":"recipe_id":w -> "recipe":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "slice":"prep_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sliceprep":"chamber_id":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sliceprep":"id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "sliceprep":"mouse_id":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sliceprep":"sucrose_id":w -> "reagents":"name":e [arrowhead=none dir=back arrowtail=crowodot];
   "users":"person_id":w -> "people":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "users_datastreams":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "users_datastreams":"users_id":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "waterrecords":"id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=teeodot];
 }

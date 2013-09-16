@@ -19,61 +19,115 @@ digraph "twoDegreesRelationshipsDiagram" {
   edge [
     arrowsize="0.8"
   ];
-  "pharmacologydata":"datasource_id":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "pharmacologydata":"drug_id":w -> "reagents":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "pharmacologydata":"experiment_id":w -> "experiments":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "pharmacologydata":"solution_id":w -> "solutions":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "datasources" [
+  "chrsomsliceexperiment":"elipses":w -> "patch":"id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "chrsomsliceexperiment":"elipses":w -> "hardware":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments":"elipses":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "patch":"acsf_id":w -> "reagents":"name.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "patch":"id":w -> "experiments":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
+  "patch":"internal_id":w -> "reagents":"name.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "reagentlot":"reagent_id":w -> "reagents":"name.type":e [arrowhead=none dir=back arrowtail=teeodot];
+  "reagents":"document_id":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sliceprep":"chamber_id":w -> "hardware":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sliceprep":"id":w -> "experiments":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
+  "sliceprep":"mouse_id":w -> "mouse":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sliceprep":"sucrose_id":w -> "reagents":"name.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "chrsomsliceexperiment" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datasources</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">chrsomsliceexperiment</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
-    URL="datasources.html"
-    tooltip="datasources"
+    URL="chrsomsliceexperiment.html"
+    tooltip="chrsomsliceexperiment"
+  ];
+  "citeable" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">citeable</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="type" COLSPAN="3" ALIGN="LEFT">type</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
+    </TABLE>>
+    URL="citeable.html"
+    tooltip="citeable"
   ];
   "experiments" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">200 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">8 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">200 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
     </TABLE>>
     URL="experiments.html"
     tooltip="experiments"
   ];
-  "pharmacologydata" [
+  "hardware" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">pharmacologydata</TD></TR>
-      <TR><TD PORT="experiment_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">experiment_id</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
-      <TR><TD PORT="drug_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">drug_id</TD></TR>
-      <TR><TD PORT="solution_id" COLSPAN="3" ALIGN="LEFT">solution_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hardware</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
     </TABLE>>
-    URL="pharmacologydata.html"
-    tooltip="pharmacologydata"
+    URL="hardware.html"
+    tooltip="hardware"
+  ];
+  "mouse" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">mouse</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+    </TABLE>>
+    URL="mouse.html"
+    tooltip="mouse"
+  ];
+  "patch" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">patch</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="acsf_id" COLSPAN="3" ALIGN="LEFT">acsf_id</TD></TR>
+      <TR><TD PORT="internal_id" COLSPAN="3" ALIGN="LEFT">internal_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="patch.html"
+    tooltip="patch"
+  ];
+  "reagentlot" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">reagentlot</TD></TR>
+      <TR><TD PORT="reagent_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">reagent_id</TD></TR>
+      <TR><TD PORT="creation_dateTime" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">creation_dateTime</TD></TR>
+      <TR><TD PORT="done_dateTime" COLSPAN="3" ALIGN="LEFT">done_dateTime</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="reagentlot.html"
+    tooltip="reagentlot"
   ];
   "reagents" [
     label=<
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">reagents</TD></TR>
-      <TR><TD PORT="id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD><TD PORT="id.type" ALIGN="LEFT">serial[10]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 0</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD PORT="name" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">name</TD><TD PORT="name.type" ALIGN="LEFT">varchar[2147483647]</TD></TR>
+      <TR><TD PORT="document_id" COLSPAN="2" ALIGN="LEFT">document_id</TD><TD PORT="document_id.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
     </TABLE>>
     URL="reagents.html"
     tooltip="reagents"
   ];
-  "solutions" [
+  "sliceprep" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">solutions</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">sliceprep</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
+      <TR><TD PORT="chamber_id" COLSPAN="3" ALIGN="LEFT">chamber_id</TD></TR>
+      <TR><TD PORT="sucrose_id" COLSPAN="3" ALIGN="LEFT">sucrose_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
-    URL="solutions.html"
-    tooltip="solutions"
+    URL="sliceprep.html"
+    tooltip="sliceprep"
   ];
 }

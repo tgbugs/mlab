@@ -21,9 +21,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   ];
   "breeder":"elipses":w -> "mouse":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "dam":"id":w -> "breeder":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
-  "experiments":"elipses":w -> "mouse":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "iuepexperiment":"id":w -> "experiments":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
-  "iuepexperiment":"matingrecord_id":w -> "matingrecord":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"cage_id":w -> "cage":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"dam_id":w -> "dam":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"dob_id":w -> "dob":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -80,27 +77,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="dob.html"
     tooltip="dob"
   ];
-  "experiments" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">200 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">8 &gt;</TD></TR>
-    </TABLE>>
-    URL="experiments.html"
-    tooltip="experiments"
-  ];
-  "iuepexperiment" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">iuepexperiment</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD PORT="matingrecord_id" COLSPAN="3" ALIGN="LEFT">matingrecord_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="iuepexperiment.html"
-    tooltip="iuepexperiment"
-  ];
   "litter" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -127,7 +103,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="startDateTime" COLSPAN="2" ALIGN="LEFT">startDateTime</TD><TD PORT="startDateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
       <TR><TD PORT="stopDateTime" COLSPAN="2" ALIGN="LEFT">stopDateTime</TD><TD PORT="stopDateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
       <TR><TD PORT="dob_id" COLSPAN="2" ALIGN="LEFT">dob_id</TD><TD PORT="dob_id.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">50 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">50 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="matingrecord.html"
     tooltip="matingrecord"
@@ -137,7 +113,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">mouse</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
     </TABLE>>
     URL="mouse.html"
     tooltip="mouse"

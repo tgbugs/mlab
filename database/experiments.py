@@ -85,6 +85,8 @@ class Cell(HasNotes, Base):
     rheobase=None
 
     #exp_parts=relationship('Cell',primaryjoin='Cell.experiment_id==remote(Cell.experiment_id)',back_populates='exp_parts') #FIXME consider remote_side, sqlalchemy is schitzo, it wants remote or foreign
+
+    #NOTE: this table is now CRITICAL for maintaining a record of who was patched with whom
     cell_1=relationship('Cell',
                         secondary=cell_to_cell,
                         primaryjoin='Cell.id==cell_to_cell.c.cell_2_id',
@@ -99,14 +101,6 @@ class Cell(HasNotes, Base):
     #FIXME how to do led stim linkage properly :/ it is a many to many... association??? or table? association between cell and stim position is probably best?
     
     #analysis_id=None #put the analysis in another table that will backprop here
-
-
-class SlicePrep(HasNotes, Base): #TODO this is probably an experiment...
-    """ Notes on the dissection and slice prep"""
-    id=Column(Integer,ForeignKey('mouse.id'),primary_key=True) #works with backref from mouse
-    #chamber_type
-    #sucrose_id
-    #sucrose reference to table of solutions
 
 
 class IsTerminal:
@@ -206,6 +200,14 @@ class Experiment(Base): #FIXME are experiments datasources? type experiment or s
 #ah balls, still have to have some way to track slices and cells :(
 #WAIT! TODO just make it so we can add experiments to slices and /or cells! :D yay!
 
+
+class SlicePrep(Experiment): #TODO this is probably an experiment...
+    """ Notes on the dissection and slice prep"""
+    __tablename__='sliceprep'
+    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
+    mouse_id=Column(Integer,ForeignKey('mouse.id')) #works with backref from mouse
+    chamber_id=Column(Integer,ForeignKey('hardware.id'))
+    sucrose_id=Column(String,ForeignKey('reagents.name'),nullable=False)
 
 
 #TODO FIXME need to dissociate PROCEDURE from DATA, the CONDITIONS for that day are DIFFERENT from the actual individual experimetns
