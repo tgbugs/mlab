@@ -11,11 +11,29 @@ from database.base import Base, HasNotes
 ###--------------------
 class Hardware(Base):
     __tablename__='hardware'
+    id=Column(Integer,primary_key=True) #FIXME should sub under type?
     type=Column(String,ForeignKey('hardwaretype.type'),nullable=False)
-    unique_id=Column(String,nullable=False)
-    #sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=id))
-    #parent_id=Column(Integer,ForeignKey('hardware.id'))
+    name=Column(String)
+    parent_id=Column(Integer,ForeignKey('hardware.id'))
+    unique_id=Column(String,nullable=False) #FIXME
+    sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
     hwmetadata=relationship('HWMetaData',primaryjoin='Hardware.id==HWMetaData.hw_id') #FIXME should these just be blobs or what??? maybe by using a datatype column!??! that would mean I could just have a single metadata table per class...
+    def __init__(self,Type=None,Parent=None,type=None,parent_id=None,unique_id=None):
+        self.type=type
+        self.parent_id=parent_id
+        self.unique_id=unique_id
+        if Type:
+            if Type.name:
+                self.type=Type.name
+            else:
+                raise AttributeError
+
+        if Parent:
+            if Parent.id:
+                self.parent_id=Parent.id
+            else:
+                raise AttributeError
+
 
 class Amplifier(Base): #used for enforcing data integrity for cells
     __tablename__='amplifiers'
@@ -31,6 +49,7 @@ class Headstage(HasNotes,Base): #used for enforcing data integrity for cells
     amp_serial=Column(Integer,ForeignKey('amplifiers.serial'),unique=True,nullable=False)
     relationship('Cell',backref=backref('headstage',uselist=False))
     #relationship('DataFile',backref='channel') #TODO FIXME need a way to consistently link these... maybe via the metadata?
+
 
 class LED(HasNotes, Base):
     #wavelength=Column(Float(53),nullable=False) #FIXME this should be unit contrained???! #FIXME THIS is hardware metadata, ideally we would like to use a constraint, but that leads to a proliferation of tables >_<
@@ -53,7 +72,6 @@ class ReagentInventory(Base): #TODO these seem almost like a constraint
     #these are basically recipes or references to things I buy instead of make
     current_ammount=relationship('ReagentLot') #FIXME this should give a count??? ala litter?
     #TODO reorder if current amount < x
-
 
 
 class ReagentLot(Base): #These are instances of reagents.... nope, just use a metadata table to store creation dates and shit like that?

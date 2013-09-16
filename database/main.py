@@ -83,6 +83,7 @@ def main():
     echo=True
     #echo=False
 
+    """
     engine = create_engine('postgresql://sqla:asdf@localhost:54321/postgres',echo=echo)
     con=engine.connect()
     con.execute('commit')
@@ -92,9 +93,11 @@ def main():
     con.execute('commit')
     con.close()
     del(engine)
+    """
 
-    engine = create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
+    #engine = create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
     #event.listen(engine,'connect',set_sqlite_pragma)
+    engine= create_engine('sqlite:///:memory:',echo=echo)
 
     #create metadata and session
 

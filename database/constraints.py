@@ -204,6 +204,7 @@ _HWTYPES=(
     ('led'),
     ('filter'),
     ('microscope'),
+    ('digitizer'),
     ('signal generator'),
     ('pipette'), #FIXME is this a reagent?@??@?
     ('pipette puller')
