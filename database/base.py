@@ -35,6 +35,7 @@ class DefaultBase(object):
         return cls.__name__.lower()
     id=Column(Integer, primary_key=True)
 
+
     def strHelper(self,depth=0,attr='id'):
         tabs='\t'*depth
         return '\n%s%s %s'%(tabs,self.__class__.__name__,getattr(self,attr))

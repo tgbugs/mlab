@@ -43,6 +43,7 @@
 from datetime import datetime
 
 from sqlalchemy                 import event
+from sqlalchemy                 import MetaData
 from sqlalchemy                 import create_engine
 from sqlalchemy.orm             import Session #scoped_session, sessionmaker
 from sqlalchemy.engine          import Engine
@@ -79,8 +80,8 @@ def main():
     #ploc(globals())
 
     #setup the engine
-    #echo=True
-    echo=False
+    echo=True
+    #echo=False
     engine = create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
     #con=engine.connect()
     #con.execute('commit')
@@ -96,6 +97,8 @@ def main():
     #Base.metadata.drop_all(engine,checkfirst=True)
     #TODO schema = option
 
+    meta=MetaData(schema='public')
+    
     Base.metadata.create_all(engine,checkfirst=True)
 
     session = Session(engine)
