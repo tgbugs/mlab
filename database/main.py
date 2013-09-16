@@ -74,97 +74,26 @@ tdboff=tdb.tdbOff
 ###  Test it!
 ###----------
 
-def makeObjects(session): #OLD AND UNUSED
-    import numpy as np
-    sex_seed=np.random.choice(2,100,.52)
-    sex_arr=np.array(list('m'*100))
-    sex_arr[sex_seed==0]='f' #FIXME not used and IN PLACE YOU TARD
-    
-    #make some notes
-    notes=map(str,range(50))
-
-    urdob=DOB(datetime.strptime('0001-1-1 00:00:00','%Y-%m-%d %H:%M:%S'))
-    session.add(urdob)
-    session.commit()
-
-    #make mice to be sires and dams
-    session.add_all([Mouse(eartag=i+300,sex='f',DOB=urdob) for i in range(2)])
-    session.add_all([Mouse(eartag=i+200,sex='m',DOB=urdob) for i in range(2)])
-    session.commit()
-
-    #session.add_all([[m.notes.append(note) for m in session.query(Mouse)] for note in notes]) #notes.append call should return m? fingers crossed FIXME
-
-    session.add_all([Sire(Mouse=m) for m in session.query(Mouse).filter(200 <= Mouse.eartag, Mouse.eartag < 300)])
-    session.add_all([Dam(Mouse=m) for m in session.query(Mouse).filter(300 <= Mouse.eartag, Mouse.eartag < 400)])
-    session.commit()
-
-    #make mating records and litters
-    mrs=[]
-    lits=[]
-    n=10
-    #make random pairings
-    sires=[s for s in session.query(Sire)]
-    dams=[d for d in session.query(Dam)]
-    sire_arr=np.random.choice(len(sires),n)
-    dam_arr=np.random.choice(len(sires),n)
-    litter_sizes=np.random.randint(0,20,n) #randomize litter size
-    for i in range (n):
-        #pick sire and dam at random
-        now=datetime.utcnow()
-        mr=MatingRecord(Sire=sires[sire_arr[i]],Dam=dams[dam_arr[i]], startDateTime=now+timedelta(hours=i),stopTime=now+timedelta(hours=i+12))
-        session.add(mr)
-        session.commit() #FIXME problem here
-
-        dob1=DOB(mr.est_e0+timedelta(days=19))
-        session.add(dob1)
-        session.commit()
-
-        mr.dob_id=dob1.id
-        session.add(mr)
-        session.commit()
-
-        lit=Litter(MatingRecord=mr,DOB=dob1) #FIXME there is a problem comparing datetimes because they are strings on they way back out >_<
-        session.add(lit)
-        session.commit()
-
-        session.add_all(lit.make_members(litter_sizes[i]))
-        session.commit()
-
-
-
 def main():
-    #SQLite does not check foreign key constraints by default so we have to turn it on every time we connect to the database
-    #the way I have things written at the moment this is ok, but it is why inserting an id=0 has been working
-     
-    """
-    @event.listens_for(Engine, 'connect') #FIXME NOT WORKING!
-    def set_sqlite_pragma(dbapi_connection, connection_record):
-        cursor = dbapi_connection.cursor()
-        cursor.execute('PRAGMA foreign_keys=ON')
-        cursor.close()
-    """
-
     #test globals
     #ploc(globals())
 
     #setup the engine
     echo=True
     #echo=False
-    #dbPath=':memory:'
-    #dbPath='test2' #holy crap that is alow slower on the writes!
-    #dbPath='T:\\databases\\db_test.db'
-    #engine = create_engine('sqlite:///%s'%(dbPath), echo=echo) #FIXME, check if the problems with datetime and DateTime on sqlite and sqlite3 modules are present!
     engine = create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
     #con=engine.connect()
     #con.execute('commit')
     #con.execute('drop database if exists db_test')
     #con.execute('commit')
     #con.execute('create database db_test')
+    #con.execute('commit')
+    #con.close()
     #event.listen(engine,'connect',set_sqlite_pragma)
 
     #create metadata and session
 
-    #Base.metadata.drop_all(engine)
+    Base.metadata.drop_all(engine,checkfirst=True)
     #TODO schema = option
 
     Base.metadata.create_all(engine,checkfirst=True)

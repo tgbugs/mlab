@@ -107,9 +107,10 @@ class t_people(TEST):
         #print(genders)
         birthdates=self.make_date()
         roles=self.make_role()
-        ntids=np.int32(np.int32(np.random.sample(num)*100000)/2) #still broken
+        ntids=np.unique(np.int32(np.random.sample(num*2)*50000))[:num] #still broken
         #ntids=np.random.randint(0,99999,num) #test for non unique
-        ntids=list(ntids)
+        #ntids=list(ntids)
+        ntids=[int(n) for n in ntids]
 
 
         #self.make_NONE(pfns,fns,mns,lns,genders,birthdates,roles,ntids) #BROKEN
@@ -202,10 +203,10 @@ class t_dob(TEST):
 class t_breeders(TEST):
     """makes n pairs of breeders"""
     def make_all(self):
-        mice=t_mice(self.session,3*self.num)
+        mice=t_mice(self.session,4*self.num)
         mice.commit()
-        sires=self.session.query(Mouse).filter(Mouse.sex=='m')
-        dams=self.session.query(Mouse).filter(Mouse.sex=='f')
+        sires=self.session.query(Mouse).filter(Mouse.sex_id=='m')
+        dams=self.session.query(Mouse).filter(Mouse.sex_id=='f')
         self.records=[Sire(sire) for sire in sires[:self.num]]+[Dam(dam) for dam in dams[:self.num]]
 
 class t_mating_record(TEST):
@@ -259,7 +260,7 @@ class t_mice(TEST):
         dobs=t_dob(self.session,self.num)
         tags=np.random.randint(0,1000,self.num)
         sexes=self.make_sex()
-        self.records=[Mouse(eartag=tags[i],sex=sexes[i],DOB=dobs.records[i]) for i in range(self.num)]
+        self.records=[Mouse(eartag=int(tags[i]),sex_id=sexes[i],DOB=dobs.records[i]) for i in range(self.num)]
 
 ###-------------
 ###  experiments
@@ -317,7 +318,7 @@ class t_experiment(TEST):
             exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
             datetimes=self.make_datetime()
 
-            self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],dateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
+            self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],startDateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
 class t_cell(TEST):
     def make_all(self):
@@ -354,6 +355,11 @@ class t_repopath(TEST):
             self.records+=([RepoPath(Repo=r,path=path) for path in paths])
 
 
+class t_datasource(TEST):
+    def make_all(self):
+        self.records=[DataSource(name='tom',prefix='u',unit='F')]
+
+
 class t_datafile(TEST):
     def __init__(self,session,num=None,num_experiments=None,num_projects=None):
         self.num_projects=num_projects
@@ -363,10 +369,11 @@ class t_datafile(TEST):
         repop=t_repopath(self.session)
         experiment=t_experiment(self.session,self.num_experiments,self.num_projects) #I am getting  3x the number I request here, a yes, that is because I'm looking at 3 projects
         data=[]
+        ds=t_datasource(self.session)
         count=0
         for exp in experiment.records:
             for rp in repop.records:
-                data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),Experiment=exp) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
+                data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),Experiment=exp,DataSource=ds.records[0]) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
         self.records=data
             
 
@@ -408,7 +415,7 @@ def run_tests(session):
 
     d=t_datafile(session,10,50,4)
     
-    [print(df.creation_DateTime) for df in session.query(DataFile)]
+    #[print(df.creation_DateTime) for df in session.query(DataFile)]
 
 
     #l=t_litters(session,20) #FIXME another wierd error here... saying that I tried to add a mouse as a breeder twice... hrm...

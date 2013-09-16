@@ -114,7 +114,7 @@ class Mouse(HasNotes, Base):
     cells=relationship('Cell',backref=backref('mouse',uselist=False))
 
 
-    def __init__(self,Litter=None, litter_id=None,sire_id=None,dam_id=None, dob_id=None,DOB=None, eartag=None,tattoo=None,num=None,name=None, sex=None,genotype=None,strain_id=None, cage_id=None, dod=None, notes=[]):
+    def __init__(self,Litter=None, litter_id=None,sire_id=None,dam_id=None, dob_id=None,DOB=None, eartag=None,tattoo=None,num=None,name=None, sex_id=None,genotype=None,strain_id=None, cage_id=None, dod=None, notes=[]):
         self.notes=notes
 
         self.eartag=eartag
@@ -124,7 +124,7 @@ class Mouse(HasNotes, Base):
 
         self.cage_id=cage_id
 
-        self.sex=sex
+        self.sex_id=sex_id
         self.genotype=genotype #FIXME this is a bit more complicated :/ needs +/- etc
         self.strain_id=strain_id
 
@@ -172,22 +172,22 @@ class Mouse(HasNotes, Base):
 class Breeder(Base):
     id=Column(Integer,ForeignKey('mouse.id'),primary_key=True,autoincrement=False)
     #sex=Column(String,ForeignKey('sex.id'),nullable=False) #FIXME ah balls, didn't workout...
-    sex=Column(String(1),ForeignKey('sex.abbrev'),nullable=False) #FIXME ah balls, didn't workout...
+    sex_id=Column(String(1),ForeignKey('sex.abbrev'),nullable=False) #FIXME ah balls, didn't workout...
 
     __mapper_args__ = {
-        'polymorphic_on':sex,
+        'polymorphic_on':sex_id,
         'polymorphic_identity':'breeder',
         'with_polymorphic':'*'
     }
 
-    def __init__(self,Mouse=None,sex=None,notes=[]):
+    def __init__(self,Mouse=None,sex_id=None,notes=[]):
         self.notes=notes
         self.id=id
-        self.sex=sex
+        self.sex_id=sex_id
         if Mouse:
             if Mouse.id:
                 self.id=Mouse.id
-                self.sex=Mouse.sex
+                self.sex_id=Mouse.sex_id
             else:
                 raise AttributeError('Mouse has no id! Did you commit before referencing the instance directly?')
 
@@ -331,7 +331,7 @@ class Litter(HasNotes, Base):
             
     def make_members(self,number):
         """Method to generate new members of a given litter that can then be added to the database"""
-        return [Mouse(Litter=self,sex='u') for i in range(number)]
+        return [Mouse(Litter=self,sex_id='u') for i in range(number)]
 
     #FIXME generate these from a query/select on _mouse.litter_id==self.id??
     #pupps=Column(Integer) #aka total at first count

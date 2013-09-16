@@ -234,13 +234,14 @@ class DataFile(Base): #FIXME make sure that this class looks a whole fucking lot
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
     #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
-    def __init__(self,RepoPath=None,Experiment=None, repopath_id=None, repo_url=None,repo_path=None,experiment_id=None,filename=None):
+    def __init__(self,RepoPath=None,Experiment=None, repopath_id=None, repo_url=None,repo_path=None,experiment_id=None,filename=None,DataSource=None,datasource_id=None):
         #self.repo_url=URL_STAND.baseClean(repo_url)
         #self.repo_path=URL_STAND.pathClean(repo_path)
         self.repopath_id=repopath_id
         self.filename=filename
         self.experiment_id=experiment_id
         self.creation_DateTime=datetime.utcnow()
+        self.datasource_id=datasource_id
         if RepoPath:
             if RepoPath.id:
                 #printD(RepoPath.id)
@@ -253,5 +254,10 @@ class DataFile(Base): #FIXME make sure that this class looks a whole fucking lot
                 self.experiment_id=Experiment.id
             else:
                 raise AttributeError('Experiment has no id! Did you commit before referencing the instance directly?')
+        if DataSource:
+            if DataSource.id:
+                self.datasource_id=DataSource.id
+            else:
+                raise AttributeError('DataSource has no id! Did you commit before referencing the instance directly?')
 
 
