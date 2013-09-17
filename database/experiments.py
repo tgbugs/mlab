@@ -15,7 +15,7 @@ from database.base import Base, HasNotes
 ###-------------------
 
 
-class Slice(HasNotes, Base):
+class Slice(HasNotes, Base): #FIXME move to subjects
     id=None
     id=Column(Integer,primary_key=True)
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
@@ -55,7 +55,7 @@ cell_to_cell=Table('cell_to_cell', Base.metadata,
                    Column('cell_2_id',Integer,ForeignKey('cell.id'),primary_key=True)
                   )
 
-class Cell(HasNotes, Base):
+class Cell(HasNotes, Base): #FIXME move to subjects
     #TODO link this as m-m to datafiles and bam many problems solved
     #TODO cells are really the atomic 'subject' for this experiment... think about that
     #FIXME this Cell class is NOT extensible

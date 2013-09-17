@@ -11,9 +11,13 @@ import numpy as np
 
 from debug import ploc
 
+#FIXME TODO, make all these things use queries instead of generating you nub
+#and failover to create if absent
+
 
 class TEST:
-    def __init__(self,session,num=None,autocommit=True):
+    def __init__(self,session,num=None,autocommit=True,Thing=None):
+        self.Thing=Thing
         self.num=num
         self.session=session
         self.records=[] #this is the output
@@ -59,9 +63,10 @@ class TEST:
 
     #methods every class should have
     def setup(self):
-        #self.records+=[] #add something to records and commit it here
-        #self.session.commit() #should go here
-        pass
+        self.Thing
+        query=self.session.query(Mouse)
+        if not query.count():
+            pass
 
     def make_all(self):
         pass
@@ -266,6 +271,22 @@ class t_mice(TEST):
         sexes=self.make_sex()
         self.records=[Mouse(eartag=int(tags[i]),sex_id=sexes[i],DOB=dobs.records[i]) for i in range(self.num)]
 
+###--------------------
+###  subjects continued
+###--------------------
+
+class t_slice(TEST):
+    def make_all(TEST):
+        mice=session.query(Mouse).filter_by(sex='u')[:5]
+        Slice(Mouse=None)
+        self.records=None
+
+
+class t_cell(TEST):
+    def make_all(self):
+        Cell(Cell=None)
+        self.records=None
+
 ###-------------
 ###  experiments
 ###-------------
@@ -325,15 +346,8 @@ class t_experiment(TEST):
             self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],startDateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
 
-class t_slice(TEST):
-    def make_all(TEST):
-        Slice(mouse_id=)
-        self.records=None
-
-
-class t_cell(TEST):
-    def make_all(self):
-        self.records=None
+class t_sliceprep(TEST):
+    pass
 
 ###------
 ###  data
