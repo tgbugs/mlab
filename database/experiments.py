@@ -27,6 +27,14 @@ class Slice(HasNotes, Base):
 
     cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
+    def __init__(self,Mouse=None,Prep=None,mouse_id=None,prep_id=None):
+        self.startDateTime=datetime.utcnow()
+        self.mouse_id=mouse_id
+        self.prep_id=prep_id
+
+        self.AssignID(Mouse)
+        self.AssignID(Prep)
+
 
 """
 class LED_stimulation(HasNotes, Base): #association linking an espPos to at Cell
@@ -127,6 +135,10 @@ class Experiment(Base):
         self.person_id=person_id
         self.protocol_id=protocol_id
         self.startDateTime=startDateTime
+
+        self.AssignID(Project)
+        self.AssignID(Person)
+        """
         if Project:
             if Project.id:
                 self.project_id=Project.id
@@ -137,6 +149,7 @@ class Experiment(Base):
                 self.person_id=Person.id
             else:
                 raise AttributeError
+        """
 #INSIGHT! things that are needed to make query structure work, eg acsf_id and the like do not go in metadata, metadata is really the api for analysis, so anything not direcly used in analysis should not go in metadata
 
 '''

@@ -200,6 +200,7 @@ class t_dob(TEST):
         else:
             self.records=[DOB(d) for d in self.datetimes]
 
+
 class t_breeders(TEST):
     """makes n pairs of breeders"""
     def make_all(self):
@@ -208,6 +209,7 @@ class t_breeders(TEST):
         sires=self.session.query(Mouse).filter(Mouse.sex_id=='m')
         dams=self.session.query(Mouse).filter(Mouse.sex_id=='f')
         self.records=[Sire(sire) for sire in sires[:self.num]]+[Dam(dam) for dam in dams[:self.num]]
+
 
 class t_mating_record(TEST):
     def make_all(self):
@@ -225,6 +227,7 @@ class t_mating_record(TEST):
         now=datetime.utcnow()
 
         self.records=[MatingRecord(Sire=sires[sire_arr[i]],Dam=dams[dam_arr[i]],startDateTime=now+timedelta(hours=i),stopDateTime=now+timedelta(hours=int(i)+12,minutes=int(mins[i]))) for i in range(self.num)]
+
 
 class t_litters(TEST):
     def make_all(self): #FIXME also need to test making without a MR
@@ -254,6 +257,7 @@ class t_litters(TEST):
         [self.session.add_all(self.records[i].make_members(litter_sizes[i])) for i in range(self.num)]
 
         self.session.commit()
+
 
 class t_mice(TEST):
     def make_all(self):
@@ -320,6 +324,13 @@ class t_experiment(TEST):
 
             self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],startDateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
+
+class t_slice(TEST):
+    def make_all(TEST):
+        Slice(mouse_id=)
+        self.records=None
+
+
 class t_cell(TEST):
     def make_all(self):
         self.records=None
@@ -376,6 +387,7 @@ class t_datafile(TEST):
                 data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),Experiment=exp,DataSource=ds.records[0]) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
         self.records=data
             
+
 class t_hardware(TEST):
     def setup(self):
         self.amps=[Hardware(type='amplifier',unique_id='0012312'),Hardware(type='amplifier',unique_id='bob')]
@@ -386,7 +398,6 @@ class t_hardware(TEST):
         self.records=[]
         [[self.records.append(Hardware(type='headstage',unique_id='%s'%i, Parent=amp)) for i in range(2)] for amp in self.amps]
         printD(self.records)
-
 
 
 def run_tests(session):
@@ -437,7 +448,6 @@ def run_tests(session):
     #l.add_members()
 
     #printD([m for m in session.query(Mouse)]) #FIXME mice arent getting made?
-
 
 
 def main():
