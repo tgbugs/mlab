@@ -2,33 +2,23 @@ from database.imports import *
 from database.base import Base
 from database.mixins import HasNotes
 
-#experiment variables that are sub mouse, everything at and above the level of the mouse is also an experimental variable that I want to keep track of independently if possible
-#this means that I MIGHT want to make them experimental variables so that I can automatically tag them with the experiment/s any one of them has been involved in? viewonly
-
-#XXX I can turn this into a webapp really fucking easily, and all i need for paper/notetaking integration is the MOTHER FUCKING RAW XML YOU FUCKS
-
 ###-------------------
 ###  Experiment tables
 ###-------------------
 
-"""
-class LED_stimulation(HasNotes, Base): #association linking an espPos to at Cell
-    #id=None
-    Column('esp_pos_id',Integer,ForeignKey('espposition.id'),primary_key=True) #from data.py
-    Column('cell_id',Integer,ForeignKey('cell.id'),primary_key=True)
-    
-    LED_id=None #TODO table of LED types WITH CALIBRATION??
-    stim_id=None
+#experiments are things done on subjects (cells, mice, slices) they are referenced by the row containing the subjects, thus subject-exp is many-one, HOWEVER, for NON TERMINAL experiments the relationship could be many-many :/ #TODO
 
-    dateTime=Column(DateTime,nullable=False)
+#FIXME do not add new experiments until you know what their parameters will be
+#furthermore, I may try to get away with just using expmetadata and df metadata for everything
+#using externally defined templates that know all the dimesions of the experiment
+#the only thing I might need to add is calibraiton, but I think I can control THAT at the datasource
+#ah balls, still have to have some way to track slices and cells :(
+#WAIT! TODO just make it so we can add experiments to slices and /or cells! :D yay!
 
-    pos_z=None #from surface? standarize this please
-"""
-class IsTerminal:
-    #TODO mixin for terminal experiments to automatically log data of death for a mouse
-    #@declared_attr
-    def dod(cls):
-        return  None
+#INSIGHT! things that are needed to make query structure work, eg acsf_id and the like do not go in metadata, metadata is really the api for analysis, so anything not direcly used in analysis should not go in metadata
+
+#TODO FIXME need to dissociate PROCEDURE from DATA, the CONDITIONS for that day are DIFFERENT from the actual individual experimetns
+#TODO handling multiple subjects is NOT handled EXPLICITLY here, links between methods and subject type are probably probably not in the domain of things we should enforce
 
 class Experiment(Base): #FIXME there is in fact a o-m on subject-experiment, better fix that, lol jk, it is fixed ish :)
     __tablename__='experiments'
@@ -63,69 +53,6 @@ class Experiment(Base): #FIXME there is in fact a o-m on subject-experiment, bet
             else:
                 raise AttributeError
         """
-#INSIGHT! things that are needed to make query structure work, eg acsf_id and the like do not go in metadata, metadata is really the api for analysis, so anything not direcly used in analysis should not go in metadata
-
-'''
-class Experiment(Base): #FIXME are experiments datasources? type experiment or something? or should the data from each experiment be IN the xperiment? ;_; I though we decided that the experiment points to all the data... and then the metadata is stored somehwere else again, such as a table inheriting from Data1 maybe? seems like a good idea
-    """Base class to link all experiment metadata tables to DataFile tables"""
-    #need this to group together the variables
-    #this is the base table where each row is one experimental condition or data point, we could call it an experiment since 'Slice Experiment' would be a subtype with its own additional data
-    __tablename__='experiments'
-    #FIXME shitfuck, I want this to be metadata but that means I need a new unit for each new cell/pair of cells because they are the subjects in this case ;_;
-
-    id=Column(Integer,primary_key=True)
-    project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
-    person_id=Column(Integer,ForeignKey('people.id'),nullable=False) #FIXME problmes with corrispondence, make sure the person is on the project??? CHECK
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #this is here to provide context for the exp
-
-    #TODO terminal experiments should automatically add date of death, since for slice prep for example I do sort of record that
-
-    startDateTime=Column(DateTime,nullable=False)
-    protocol_id=Column(Integer,ForeignKey('citeable.id'))
-
-    expmetadata=relationship('ExpMetaData',primaryjoin='Experiment.id==ExpMetaData.experiment_id')
-    datafiles=relationship('DataFile',primaryjoin='Experiment.id==DataFile.experiment_id',backref=backref('experiment',uselist=False))
-    exp_type=Column(String(20),nullable=False)
-
-    __mapper_args__ = {
-        'polymorphic_on':exp_type,
-        'polymorphic_identity':'experiment',
-        #'with_polymorphic':'*' #FIXME we don't really need this on but it wasnt the source of the slowdown
-    }
-    def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,protocol_id=None,startDateTime=None):
-        #super.__init__() #:( doesnt work :(
-        #self.dateTime=datetime.utcnow() #FIXME PLEASE COME UP WITH A STANDARD FOR THIS
-        self.project_id=project_id
-        self.person_id=person_id
-        self.mouse_id=mouse_id
-        self.protocol_id=protocol_id
-        self.startDateTime=startDateTime
-        if Project:
-            if Project.id:
-                self.project_id=Project.id
-            else:
-                raise AttributeError
-        if Person:
-            if Person.id:
-                self.person_id=Person.id
-            else:
-                raise AttributeError
-        if Mouse:
-            if Mouse.id:
-                self.mouse_id=Mouse.id
-            else:
-                raise AttributeError
-
-    #TODO every time a collect an data file of any type and it is determined to be legit (by me) then it should all be stored
-    #the experiment is basically the 'dataobject' that links the phenomena studied to the data about it(them)
-'''
-
-#FIXME do not add new experiments until you know what their parameters will be
-#furthermore, I may try to get away with just using expmetadata and df metadata for everything
-#using externally defined templates that know all the dimesions of the experiment
-#the only thing I might need to add is calibraiton, but I think I can control THAT at the datasource
-#ah balls, still have to have some way to track slices and cells :(
-#WAIT! TODO just make it so we can add experiments to slices and /or cells! :D yay!
 
 
 class SlicePrep(Experiment): #TODO this is probably an experiment...
@@ -153,9 +80,7 @@ class SlicePrep(Experiment): #TODO this is probably an experiment...
         self.AssignID(Person)
         self.AssignID(Mouse)
 
-#INSIGHT! things that are needed to make query structure work, eg acsf_id and the like do not go in metadata, metadata is really the api for analysis, so anything not direcly used in analysis should not go in metadata
 
-#TODO FIXME need to dissociate PROCEDURE from DATA, the CONDITIONS for that day are DIFFERENT from the actual individual experimetns
 class Patch(Experiment):
     """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
     __tablename__='patch'
@@ -207,6 +132,4 @@ class _WaterRecord(Experiment):
     #dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
     #TODO lol the way this is set up now these classes should actually proabaly DEFINE metadata records at least for simple things like this where the only associated object is a mouse which by default experiment asssociates with, maybe I SHOULD move the mouse_id to class MouseExperiment?!?!?!
 
-#
-#organism mixins??? no, bad way to do it, still haven't figured out the good way
 """

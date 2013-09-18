@@ -1,5 +1,9 @@
 from database.imports import *
 
+###--------------
+###  notes mixins
+###--------------
+
 class HasNotes: #FIXME
     @declared_attr
     def note_association_id(cls):
@@ -15,6 +19,10 @@ class HasNotes: #FIXME
     def addNote(string): #FIXME?
         pass
 
+###-------------
+###  data mixins
+###-------------
+
 class IsDataSource:
     #users, citeables, hardware, NO PEOPLE
     @declared_attr
@@ -24,4 +32,13 @@ class IsDataSource:
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
         return relationship('DataSource', secondary=datasource_association,backref=backref('source',uselist=False))
 
+###--------------------
+###  experiments mixins
+###--------------------
+
+class IsTerminal:
+    #TODO mixin for terminal experiments to automatically log data of death for a mouse
+    #@declared_attr
+    def dod(cls):
+        return  None
 
