@@ -37,7 +37,7 @@ class DefaultBase(object):
     #__table_args__={'schema':'public'}
     #__table_args__={}
 
-    def AssignID(self,cls): #FIXME does this go here
+    def AssignID(self,cls): #FIXME does this go here?
         if cls:
             if cls.id:
                 setattr(self,'%s_id'%cls.__class__.__name__.lower(),cls.id)
