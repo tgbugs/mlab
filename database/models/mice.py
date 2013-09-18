@@ -8,7 +8,7 @@ from sqlalchemy.ext.hybrid              import hybrid_property, hybrid_method
 
 from sqlalchemy.ext.declarative         import declared_attr #main mice notes
 
-from database.dateTimeFuncs import *
+from database.standards import frmtDT, timeDeltaIO
 
 from database.base import Base, HasNotes
 
