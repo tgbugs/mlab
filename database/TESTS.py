@@ -14,6 +14,9 @@ from debug import ploc
 #FIXME TODO, make all these things use queries instead of generating you nub
 #and failover to create if absent
 
+#creation order
+order=(Person,Project,Experiment,SlicePrep,Repository,RepoPath,Dob,Mouse,Sire,Dam,MatingRecord,Litter) #TODO
+order=(t_people,t_dob)# you get the idea... maybe make a tree in a dict or something?
 
 class TEST:
     def __init__(self,session,num=None,autocommit=True,Thing=None):
@@ -277,9 +280,9 @@ class t_mice(TEST):
 
 class t_slice(TEST):
     def make_all(TEST):
-        mice=session.query(Mouse).filter_by(sex='u')[:5]
-        Slice(Mouse=None)
-        self.records=None
+        preps=t_sliceprep(5)
+        
+        self.records=[Slice(Prep=mouse.prep,datetime.utcnow()+timedelta(hours=i)) for prep,i in zip(preps,range(len(preps)))]
 
 
 class t_cell(TEST):
@@ -347,7 +350,10 @@ class t_experiment(TEST):
 
 
 class t_sliceprep(TEST):
-    pass
+    def make_all(self):
+        mice=self.session.query(Mouse).filter_by(sex_id='u')[:5]
+        self.records=[Slice(mouse_id=mouse.id,sucrose_id='poop') for mouse in mice]
+
 
 ###------
 ###  data

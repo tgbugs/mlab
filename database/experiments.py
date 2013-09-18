@@ -27,13 +27,25 @@ class Slice(HasNotes, Base): #FIXME move to subjects
 
     cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
-    def __init__(self,Mouse=None,Prep=None,mouse_id=None,prep_id=None):
+    def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None):
         self.startDateTime=datetime.utcnow()
         self.mouse_id=mouse_id
         self.prep_id=prep_id
 
         self.AssignID(Mouse)
         self.AssignID(Prep)
+
+        if Prep:
+            if Prep.id:
+                self.prep_id=Prep.id
+                self.mouse_id=Prep.mouse_id #FIXME ask aleks about this
+            else:
+                raise AttributeError
+        elif Mouse:
+            if Mouse.id:
+                self.mouse_id=Mouse.id
+            else:
+                raise AttributeError
 
 
 """
