@@ -232,9 +232,11 @@ class Cell(HasNotes, Base): #FIXME how to add markers? metadata? #FIXME move to 
     #hs_amp_serial=Column(Integer,ForeignKey('headstage.amp_serial'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
 
     startDateTime=Column(DateTime,nullable=False)
-    cellmetadata=relationship('CellMetaData') #TODO
 
-    wholeCell=None #FIXME these might should go in analysis??? no...
+    cellmetadata=relationship('CellMetaData',primaryjoin='CellMetaData.cell_id==Cell.id') #TODO
+
+    #these should probably go in metadata which can be configged per experiment
+    wholeCell=None
     loosePatch=None
 
 
@@ -245,23 +247,16 @@ class Cell(HasNotes, Base): #FIXME how to add markers? metadata? #FIXME move to 
 
     rheobase=None
 
-    #exp_parts=relationship('Cell',primaryjoin='Cell.experiment_id==remote(Cell.experiment_id)',back_populates='exp_parts') #FIXME consider remote_side, sqlalchemy is schitzo, it wants remote or foreign
-
     #NOTE: this table is now CRITICAL for maintaining a record of who was patched with whom
     cell_1=relationship('Cell',
                         secondary=cell_to_cell,
                         primaryjoin='Cell.id==cell_to_cell.c.cell_2_id',
                         secondaryjoin='Cell.id==cell_to_cell.c.cell_1_id',
                         backref='cell_2',
-                        #viewonly=True #FIXME this shouldn't be needed, I follo the example exactly
                        )
 
-
-    #exp_parts=relationship('Cell',backref=backref('exp_parts',remote_side[id]),back_populates='exp_parts') #FIXME consider remote_side, sqlalchemy is schitzo, it wants remote or foreign
-
-    #FIXME how to do led stim linkage properly :/ it is a many to many... association??? or table? association between cell and stim position is probably best?
     
-    #analysis_id=None #put the analysis in another table that will backprop here
+    #TODO analysis should probably reference the objects not the other way around
 
 
 

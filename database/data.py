@@ -77,6 +77,8 @@ class DFMetaData(Base): #FIXME this can just replace datafile!
     __table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {})
 
 
+#TODO ideally it should be possible to use the experiment id or something to know what the metadata looks like, if not the experiment ID then SOME datasource profile or something
+#AHHA! TODO datasource profiles are how we can make metadata rigorous or at least quickly parse metadata in the event that we did not keep the records
 class CellMetaData(Base): #FIXME should this somehow be replaced by 'subjectMetaData'???
     id=None
     cell_id=Column(Integer,ForeignKey('cell.id'),primary_key=True,autoincrement=False) #FIXME in theory no datafile should have two entries from the same datasource how I have this set up
