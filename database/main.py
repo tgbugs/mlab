@@ -34,11 +34,11 @@
 from datetime import datetime
 
 from sqlalchemy                 import create_engine
-from sqlalchemy.orm             import Session #scoped_session, sessionmaker
+from sqlalchemy.orm             import Session
 from sqlalchemy.engine          import Engine
 
 from database.models            import *
-from database.base              import Base #FIXME this has to go last!???! so that all the rest are attached?
+from database.base              import Base
 from database.standards         import populatConstraints
 from database.TESTS             import run_tests
 
@@ -54,8 +54,8 @@ printD=tdb.printD
 printFD=tdb.printFuncDict
 tdboff=tdb.tdbOff
 
-#some useful swtiches
-def postgres(wipe_db=False):
+#start up engines
+def postgresEng(echo=False,wipe_db=False):
     if wipe_db:
         engine = create_engine('postgresql://sqla:asdf@localhost:54321/postgres',echo=echo)
         con=engine.connect()
@@ -67,48 +67,31 @@ def postgres(wipe_db=False):
         con.close()
         del(engine)
     return create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
-def sqlite():
-    engine= create_engine('sqlite:///:memory:',echo=echo)
 
-###----------
-###  Test it!
-###----------
+def sqliteEng(echo=False):
+    from sqlalchemy import event
+    @event.listens_for(Engine, 'connect')
+    def set_sqlite_pragma(dbapi_connection, connection record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute('PRAGMA foreign_keys=ON')
+        cursor.close()
+    engine = create_engine('sqlite:///:memory:',echo=echo)
+    event.listen(engine,'connect',set_sqlite_pragma)
+    return engine
 
-def main():
-    #test globals
-    #ploc(globals())
+###-------------
+###  print stuff
+###-------------
 
-    #setup the engine
-    echo=True
-    #echo=False
-
-
-    #event.listen(engine,'connect',set_sqlite_pragma)
-
-    #create metadata and session
-
-    Base.metadata.drop_all(engine,checkfirst=True)
-    #return None
-    #TODO schema option
-    
-    Base.metadata.create_all(engine,checkfirst=True)
-
-    session = Session(engine)
-
-    #populate constraint tables
-    populateConstraints(session)
-
-    #do some tests!
-    run_tests(session)
-
-
-    if 0:
+def printStuff(cons=True,mice=True,data=True,notes=True):
+    if cons:
         print('\n###***constraints***')
         [printD(c,'\n') for c in session.query(SI_PREFIX)]
         [printD(c,'\n') for c in session.query(SI_UNIT)]
         [printD(c,'\n') for c in session.query(SEX)]
+        [printD(c,'\n') for c in session.query(HardwareType)]
 
-    if 0:
+    if mice:
         print('\n###***mice***')
         for mouse in session.query(Mouse):
             print('\n',mouse)
@@ -124,15 +107,42 @@ def main():
         print('\n###***Litters***')
         for lit in session.query(Litter):
             print('\n',lit)
-    if 0:
+    if data:
         for d in session.query(DataFile):
             #print('\n',[t for t in d.__dict__.values()])
             print('\n',[t for t in d.experiment.person.__dict__.values()])
 
-        #for note in session.query(Note):
-            #print('\n',note)
+    if notes:
+        for note in session.query(Note):
+            print('\n',note)
 
-    #input('hit something to exit')
+
+###----------
+###  Test it!
+###----------
+
+def main():
+    #create engine
+    echo=True
+    #echo=False
+    #engine=postgresEng(echo=echo)
+    engine=sqliteEng(echo=echo)
+
+    #create metadata
+    #Base.metadata.drop_all(engine,checkfirst=True)
+    Base.metadata.create_all(engine,checkfirst=True)
+
+    #create session
+    session = Session(engine)
+
+    #populate constraint tables
+    populateConstraints(session)
+
+    #do some tests!
+    run_tests(session)
+
+    #print stuff!
+    printStuff(cons=0,mice=0,data=0,notes=0)
 
     return session
     
