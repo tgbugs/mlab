@@ -33,6 +33,7 @@ class Cage(Base): #TODO this is a 'unit'
     mice=relationship('Mouse',primaryjoin='Mouse.cage_id==Cage.id',backref=backref('cage',uselist=False))
     litter=relationship('Litter',primaryjoin='Litter.cage_id==Cage.id',backref=backref('cage',uselist=False))
 
+
 class CageTransefer(Base):
     #TODO this is a transaction record for when someone changes the cage_id on a mouse
     #or does a cage.mice.append(mouse) (im not even sure that actually works???)
@@ -165,8 +166,108 @@ class Mouse(HasNotes, Base):
 
         return base+'%s %s %s'%(self.dob.strHelper(1),litter,breedingRec)
 
-    
+###-----------------------
+###  Subjects beyond mouse
+###-----------------------
 
+class Slice(HasNotes, Base): #FIXME move to subjects
+    id=None
+    id=Column(Integer,primary_key=True) #FIXME
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
+    prep_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO this should really refer to slice prep, but suggests that this class should be 'acute slice'
+    startDateTime=Column(DateTime,nullable=False)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
+    #hemisphere
+    #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
+    #positionAP
+
+    cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
+
+    def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None,startDateTime=None):
+        self.startDateTime=startDateTime #datetime.utcnow() #FIXME
+        self.mouse_id=mouse_id
+        self.prep_id=prep_id
+
+        self.AssignID(Mouse)
+        self.AssignID(Prep)
+
+        if Prep:
+            if Prep.id:
+                self.prep_id=Prep.id
+                self.mouse_id=Prep.mouse_id #FIXME ask aleks about this
+            else:
+                raise AttributeError
+        elif Mouse:
+            if Mouse.id:
+                self.mouse_id=Mouse.id
+            else:
+                raise AttributeError
+
+
+cell_to_cell=Table('cell_to_cell', Base.metadata, 
+                   Column('cell_1_id',Integer,ForeignKey('cell.id'),primary_key=True),
+                   Column('cell_2_id',Integer,ForeignKey('cell.id'),primary_key=True)
+                  )
+
+class Cell(HasNotes, Base): #FIXME how to add markers? metadata? #FIXME move to subjects
+    #TODO link this as m-m to datafiles and bam many problems solved
+    #TODO cells are really the atomic 'subject' for this experiment... think about that
+    #FIXME this Cell class is NOT extensible
+    #probably should use inheritance
+    #id=None #FIXME fuck it dude, wouldn't it be easier to just give them unqiue ids so we don't have to worry about datetime? or is it the stupid sqlite problem?
+
+    #link to subject
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)
+    slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False) #FIXME NO DATETIME PRIMARY KEYS
+
+    #link to data
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
+    hs_id=Column(Integer,ForeignKey('headstage.id'),nullable=False) #FIXME need mapping to channels in abffile so that we can link the analysis results directly back to the cell, it really does feel like I should be putting cell id's into experiments rather than the ohter way around thought.... wait fuck damn it
+
+    #datafile_id=Column(Integer,ForeignKey('datafile.id'),nullable=False)
+    repoid=Column(Integer)
+    filename=Column(String)
+    __table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {}) #FIXME somehow this doesn't deal with the posibility of backups... which would be really, really good to keep track of at the same time so if there is a crash there can be instant failover
+
+    #TODO we might be able to link cells to headstages and all that other shit more easily, keeping the data on the cell itself in the cell, tl;dr NORMALIZE!
+    #hs_amp_serial=Column(Integer,ForeignKey('headstage.amp_serial'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
+
+    startDateTime=Column(DateTime,nullable=False)
+    cellmetadata=relationship('CellMetaData') #TODO
+
+    wholeCell=None #FIXME these might should go in analysis??? no...
+    loosePatch=None
+
+
+    #TODO abfFiles are going to be a many-many relationship here....
+    abfFile_channel=None #FIXME this nd the headstage serials seems redundant but... wtf? I have to link them somehow
+
+    breakInTime=None
+
+    rheobase=None
+
+    #exp_parts=relationship('Cell',primaryjoin='Cell.experiment_id==remote(Cell.experiment_id)',back_populates='exp_parts') #FIXME consider remote_side, sqlalchemy is schitzo, it wants remote or foreign
+
+    #NOTE: this table is now CRITICAL for maintaining a record of who was patched with whom
+    cell_1=relationship('Cell',
+                        secondary=cell_to_cell,
+                        primaryjoin='Cell.id==cell_to_cell.c.cell_2_id',
+                        secondaryjoin='Cell.id==cell_to_cell.c.cell_1_id',
+                        backref='cell_2',
+                        #viewonly=True #FIXME this shouldn't be needed, I follo the example exactly
+                       )
+
+
+    #exp_parts=relationship('Cell',backref=backref('exp_parts',remote_side[id]),back_populates='exp_parts') #FIXME consider remote_side, sqlalchemy is schitzo, it wants remote or foreign
+
+    #FIXME how to do led stim linkage properly :/ it is a many to many... association??? or table? association between cell and stim position is probably best?
+    
+    #analysis_id=None #put the analysis in another table that will backprop here
+
+
+
+###----------------
+###  Mouse breeding
+###----------------
 
 class Breeder(Base):
     id=Column(Integer,ForeignKey('mouse.id'),primary_key=True,autoincrement=False)
