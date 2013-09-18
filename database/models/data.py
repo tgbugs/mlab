@@ -1,12 +1,6 @@
 from database.imports import *
-from datetime import datetime
-
-from sqlalchemy                         import Float
-from sqlalchemy                         import Text
-from sqlalchemy                         import ForeignKeyConstraint
-from sqlalchemy.ext.associationproxy    import association_proxy
-
-from database.base import Base, HasNotes
+from database.base import Base
+from database.mixins import HasNotes
 from database.standards import URL_STAND
 #from notes import HasNotes
 

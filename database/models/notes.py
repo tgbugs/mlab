@@ -1,8 +1,4 @@
 from database.imports import *
-from sqlalchemy                         import Text
-from sqlalchemy.ext.declarative         import declared_attr
-from sqlalchemy.ext.associationproxy    import association_proxy
-
 from database.standards import frmtDT
 
 #from database.base import Base
