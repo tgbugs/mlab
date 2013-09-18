@@ -17,10 +17,10 @@ from database.base import Base, HasNotes
 
 class Slice(HasNotes, Base): #FIXME move to subjects
     id=None
-    id=Column(Integer,primary_key=True)
+    id=Column(Integer,primary_key=True) #FIXME
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
-    prep_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO
-    startDateTime=Column(DateTime,nullable=False,unique=True)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
+    prep_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO this should really refer to slice prep, but suggests that this class should be 'acute slice'
+    startDateTime=Column(DateTime,nullable=False)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
     #hemisphere
     #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
     #positionAP
@@ -129,7 +129,7 @@ class IsTerminal:
     def dod(cls):
         return  None
 
-class Experiment(Base):
+class Experiment(Base): #FIXME there is in fact a o-m on subject-experiment, better fix that, lol jk, it is fixed ish :)
     __tablename__='experiments'
     id=Column(Integer,primary_key=True)
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
@@ -236,6 +236,7 @@ class SlicePrep(Experiment): #TODO this is probably an experiment...
     sucrose_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME metadata??!
     #expmetadata=relationship('ExpMetaData') #FIXME For stuff like 'ketxyl volume'? vs explicit columns?!?!
     slices=relationship('Slice',primaryjoin='SlicePrep.id==foreign(Slice.prep_id)',backref=backref('prep',uselist=False))
+    mouse=relationship('Mouse',primaryjoin='SlicePrep.mouse_id==Mouse.id',backref=backref('prep',uselist=False))
 
     __mapper_args__={'polymorphic_identity':'slice prep'}
 

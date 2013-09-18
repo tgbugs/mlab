@@ -280,10 +280,10 @@ class t_mice(TEST):
 
 class t_slice(TEST):
     def make_all(self):
-        preps=t_sliceprep(self.session,5*self.num)
+        preps=t_sliceprep(self.session, int(self.num/6)) #8 being the average number of slices per mouse
         
         self.records=[]
-        [[self.records.append(Slice(Prep=prep,startDateTime=datetime.utcnow()+timedelta(hours=i))) for i in range(self.num)] for prep in preps.records]
+        [[self.records.append(Slice(Prep=prep,startDateTime=datetime.utcnow()+timedelta(hours=i))) for i in range(self.num)] for prep in preps.records] #FIXME amplification of numbers
 
 
 class t_cell(TEST):
