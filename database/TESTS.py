@@ -1,13 +1,3 @@
-#FIXME these imports should really go in a models subfolder to simplify everything :/
-"""
-from database.constraints       import *
-from database.experiments       import *
-from database.inventory         import *
-from database.people            import *
-from database.notes             import *
-from database.mice              import *
-from database.data              import *
-"""
 from database.models import *
 
 import numpy as np

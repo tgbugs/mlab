@@ -1,14 +1,5 @@
 #Base file for creating the tables that I will use to store all my (meta)data
 
-#__table_args__ = {'extend_existing':True} #XXX useful!
-#FIXME somehow still circular deps here...
-#from database.constraints import *
-#from database.notes import *
-#from database.experiments import *
-#from database.inventory import *
-#from database.people import *
-#from database.mice import *
-
 #TODO therefore we need a 'convert local to utc for storage'
 #TODO start moving stuff out of here that we don't use to define the tables
 #TODO watch out for sqlite_autoincriment=True needed when using composite keys!
@@ -42,22 +33,14 @@
 
 from datetime import datetime
 
-from sqlalchemy                 import event
-from sqlalchemy                 import MetaData
 from sqlalchemy                 import create_engine
 from sqlalchemy.orm             import Session #scoped_session, sessionmaker
 from sqlalchemy.engine          import Engine
 
-from database.constraints       import *
-from database.experiments       import *
-from database.inventory         import *
-from database.people            import *
-#from database.notes             import * #FIXME exceptionally broken at the moment #FIXME why does this still import when commented out! maybe an artifact of having it linked to Base in base.py?!?!?
-from database.mice              import *
-from database.data              import *
-
-from database.TESTS             import run_tests
+from database.models            import *
 from database.base              import Base #FIXME this has to go last!???! so that all the rest are attached?
+from database.standards         import populatConstraints
+from database.TESTS             import run_tests
 
 try:
     import rpdb2
@@ -71,6 +54,22 @@ printD=tdb.printD
 printFD=tdb.printFuncDict
 tdboff=tdb.tdbOff
 
+#some useful swtiches
+def postgres(wipe_db=False):
+    if wipe_db:
+        engine = create_engine('postgresql://sqla:asdf@localhost:54321/postgres',echo=echo)
+        con=engine.connect()
+        con.execute('commit')
+        con.execute('drop database if exists db_test')
+        con.execute('commit')
+        con.execute('create database db_test')
+        con.execute('commit')
+        con.close()
+        del(engine)
+    return create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
+def sqlite():
+    engine= create_engine('sqlite:///:memory:',echo=echo)
+
 ###----------
 ###  Test it!
 ###----------
@@ -83,21 +82,8 @@ def main():
     echo=True
     #echo=False
 
-    """
-    engine = create_engine('postgresql://sqla:asdf@localhost:54321/postgres',echo=echo)
-    con=engine.connect()
-    con.execute('commit')
-    con.execute('drop database if exists db_test')
-    con.execute('commit')
-    con.execute('create database db_test')
-    con.execute('commit')
-    con.close()
-    del(engine)
-    """
 
-    #engine = create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
     #event.listen(engine,'connect',set_sqlite_pragma)
-    engine= create_engine('sqlite:///:memory:',echo=echo)
 
     #create metadata and session
 
