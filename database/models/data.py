@@ -2,18 +2,14 @@ from database.imports import *
 from database.base import Base
 from database.mixins import HasNotes
 from database.standards import URL_STAND
-#from notes import HasNotes
 
-###--------------------
-###  Measurement tables, to enforce untils and things... it may look over normalized, but it means that every single measurement I take will have a datetime associated as well as units
-###--------------------
+###-------------
+###  DataSources
+###-------------
 
-
-#datasources:
+#datasource examples:
 #espX, espY
 #NBQX_washin_start, concentration #by associating the data source with a reagent instead of a person... the data is there for both the acsf_id and all the drug information :), #FIXME unfortunately that leads to a massive proliferation of datasources :/, so we need to find a better way >_< since this is more along the lines of 'protocol metadata'
-#
-
 
 class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDataSource'?
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
@@ -31,18 +27,17 @@ class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDa
     expmetadata=relationship('ExpMetaData',backref=backref('datasource',uselist=False))
     datafiles=relationship('DataFile',backref=backref('datasource',uselist=False)) #FIXME urmmmmmm fuck? this here or make a different set of datasources for data not stored in the database? well datafiles are produced by camplex and I suppose at some point I might pull data direct from it too so sure, that works out
 
-
-class _Result(HasNotes, Base):
-    __tablename__='results'
-    datasource_id=None
-    analysis_id=None
-    output_id=None
-
+###-----------------------------------------------
+###  MetaData tables (for stuff stored internally)
+###-----------------------------------------------
 
 #FIXME it seems like what I really need here is MetaData linked to datafiles instead of experiments??? think about the best way to do this
-
 #FIXME need to come up with all my metadata classes, this one is really 'experiment metadata' I do NOT think that these need to have inheritance structures becasue the only thing that is similar is datetime
 #FIXME in theory we *could* use a HasMetaData mixin ?
+#TODO ideally it should be possible to use the experiment id or something to know what the metadata looks like, if not the experiment ID then SOME datasource profile or something
+#AHHA! TODO datasource profiles are how we can make metadata rigorous or at least quickly parse metadata in the event that we did not keep the records
+
+
 class ExpMetaData(Base): #FIXME we may not need this since 'Experiment' can directly link to other tables and it needs to be able to do this, I think it is worth the table proliferation, we may still want to use this for stuff like pharmacology???
     """This table is now extensible and I can add new dimensions to the data for any experiment whenever the fuck I feel like it :D, I could make a constrain to make sure that the number of dimesions I enter for an experiment is correct, but frankly that adds a ton of work every time I want to add a new variable to an experiment or something, this way commits of ANY single datapoint will not depend on all the other data being there too, might want to add a source id????"""
     #FIXME the proper way to interact with these tables for consistency is through another script that defines all the data that we are going to store
@@ -57,7 +52,6 @@ class ExpMetaData(Base): #FIXME we may not need this since 'Experiment' can dire
     #TODO need to find a way to standardize reporting uncertanity
     abs_error=Column(Float(53)) #FIXME does this go here, I think for some cases it does might want to qualify it with an 'estimated error' since some of this will be human entered data... but this makes things less rigorous so... damn it
 
-
 class DFMetaData(Base): #FIXME this can just replace datafile!
     id=None
     datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True,autoincrement=False) #FIXME in theory no datafile should have two entries from the same datasource how I have this set up
@@ -71,8 +65,6 @@ class DFMetaData(Base): #FIXME this can just replace datafile!
     __table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {})
 
 
-#TODO ideally it should be possible to use the experiment id or something to know what the metadata looks like, if not the experiment ID then SOME datasource profile or something
-#AHHA! TODO datasource profiles are how we can make metadata rigorous or at least quickly parse metadata in the event that we did not keep the records
 class CellMetaData(Base): #FIXME should this somehow be replaced by 'subjectMetaData'???
     id=None
     cell_id=Column(Integer,ForeignKey('cell.id'),primary_key=True,autoincrement=False) #FIXME in theory no datafile should have two entries from the same datasource how I have this set up
@@ -92,7 +84,6 @@ class HWMetaData(Base):
     sigfigs=Column(Integer)
     abs_error=Column(Float(53))
 
-
 """
 class PharmacologyData(Base): #TODO
     #consistency is achieve here by having another script that stores which drugs and the in and the out, maybe even another table??
@@ -106,7 +97,7 @@ class PharmacologyData(Base): #TODO
     #FIXME pharmacology events and LED_stimulation are the same type of event/data, and the question is how and at what level we associate those...
 """
 
-
+"""
 class CalibrationData(Base):
     #TODO base class for storing calibration data
     #examples:
@@ -115,82 +106,11 @@ class CalibrationData(Base):
     #FIXME there should be a way to join these to experiments directly
     #maybe with primaryjoin='and_(CalibrationData.datasource_id==MetaData.datasource_id,CalibrationData.dateTime < MetaData.dateTime, BUT only the most recent one of those...)' with a viewonly
     pass
+"""
 
-###------------
-###  Doccuments
-###------------
-
-class person_to_project(Base):
-    id=None
-    person_id=Column(Integer,ForeignKey('people.id'),primary_key=True)
-    project_id=Column(Integer,ForeignKey('project.id'),primary_key=True)
-    #TODO add some nice info about what the person is doing on the project or some shit
-    def __init__(self, Project=None, Person=None, project_id=None,person_id=None):
-        self.project_id=project_id
-        self.person_id=person_id
-        if Project:
-            if Project.id:
-                self.project_id=Project.id
-            else:
-                raise AttributeError
-        if Person:
-            if Person.id:
-                self.person_id=Person.id
-            else:
-                raise AttributeError
-
-
-class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a journal article
-    #move to the 'data/docs' place?!??! because it is tehcnically a container for data not a table that will actively have data written to it, it is a one off reference
-    #FIXME somehow experiment is dependent on this... which suggests that it doesn't quite belong in data
-    lab=Column(String(15),nullable=False) #this is how we are going to replace the bloodly PI, and leave at the filter Role=='pi'
-    #pi_id=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc... need a check constraint on people.role=='PI', or really current role... because those could change and violate certain checks/constraints...??? maybe better just to leave it as a person
-    #FIXME projects can have multiple PIs! damn it >_<, scaling this shit...
-    iacuc_protocol_id=Column(Integer,ForeignKey('iacucprotocols.id'))
-    blurb=Column(Text)
-
-    #PI=relationship('Person',primaryjoin='and_(Project.pi_id==Person.id,Person.Rold=="pi")') #FIXME pi should also be in people list :/
-    p2p_assoc=relationship('person_to_project',backref='projects')
-    #FIXME do we really want write access here? viewonly=True might be useful?
-    people=association_proxy('p2p_assoc','people') #people.append but make sure nothing wierd happends
-    relationship
-    def __init__(self,lab=None,iacuc_protocol_id=None,blurb=None):
-        #self.pi_id=pi_id
-        self.lab=lab
-        self.iacuc_protocol_id=iacuc_protocol_id
-        self.blurb=blurb
-        #if PI:
-            #if PI.id:
-                #pi_id=PI.id
-            #else:
-                #raise AttributeError
-
-
-class Citeable(Base):
-    #TODO base class for all citable things, such as personal communications, journal articles, books
-    __tablename___='citeable'
-    type=Column(String(15),nullable=False)
-    __mapper_args__={
-        'polymorphic_on':type,
-        'polymorphic_identity':'citeable'
-    }
-
-class IACUCProtocols(Base): #note: probs can't store them here, but just put a number and a link (frankly no sense, they are kept in good order elsewere)
-    pass
-
-
-class Protocols(Base):
-    pass
-
-class Recipe(HasNotes, Base):
-    id=Column(Integer,primary_key=True)
-    #acsf
-    #internal
-    #sucrose
-
-###-------------
-###  Datasources/Datasyncs
-###-------------
+###-----------------------------------------------------------------------
+###  DataFiles and repositories for data stored externally (ie filesystem)
+###-----------------------------------------------------------------------
 
 class Repository(Base):
     #TODO urllib parse, these will go elsewhere in the actual analysis code or something
