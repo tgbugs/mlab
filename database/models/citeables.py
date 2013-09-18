@@ -72,7 +72,7 @@ class Methods(Base):
     pass
 
 
-class Recipe(HasNotes, Base):
+class Recipe(Base):
     id=Column(Integer,primary_key=True)
     #acsf
     #internal

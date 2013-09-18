@@ -26,17 +26,17 @@ class Experiment(Base): #FIXME there is in fact a o-m on subject-experiment, bet
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
     person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
     startDateTime=Column(DateTime,nullable=False)
-    protocol_id=Column(Integer,ForeignKey('citeable.id'))
+    methods_id=Column(Integer,ForeignKey('citeable.id'))
     expmetadata=relationship('ExpMetaData',primaryjoin='Experiment.id==ExpMetaData.experiment_id') #this needs to be here for when there are things like slice experiments that have metadata instead of objects, you *could* put the metadata on the mouse and I will have to think about that, but it really seems like I am storing data on the experiment itself not on an object
     exp_type=Column(String(20),nullable=False)
     __mapper_args__ = {
         'polymorphic_on':exp_type,
         'polymorphic_identity':'experiment',
     }
-    def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,protocol_id=None,startDateTime=None):
+    def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,methods_id=None,startDateTime=None):
         self.project_id=project_id
         self.person_id=person_id
-        self.protocol_id=protocol_id
+        self.methods_id=methods_id
         self.startDateTime=startDateTime
 
         self.AssignID(Project)
@@ -68,10 +68,10 @@ class SlicePrep(Experiment): #TODO this is probably an experiment...
 
     __mapper_args__={'polymorphic_identity':'slice prep'}
 
-    def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,protocol_id=None,startDateTime=None,sucrose_id=None): #FIXME
+    def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,methods_id=None,startDateTime=None,sucrose_id=None): #FIXME
         self.project_id=project_id
         self.person_id=person_id
-        self.protocol_id=protocol_id
+        self.methods_id=methods_id
         self.startDateTime=startDateTime
         self.sucrose_id=sucrose_id
         self.mouse_id=mouse_id

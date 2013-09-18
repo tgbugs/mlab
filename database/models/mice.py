@@ -29,7 +29,7 @@ class Cage(Base): #TODO this is a 'unit'
     litter=relationship('Litter',primaryjoin='Litter.cage_id==Cage.id',backref=backref('cage',uselist=False))
 
 
-class CageTransefer(Base):
+class CageTransfer(Base):
     #TODO this is a transaction record for when someone changes the cage_id on a mouse
     #or does a cage.mice.append(mouse) (im not even sure that actually works???)
     #FIXME this HAS to be implemented as an event trigger!!!!
