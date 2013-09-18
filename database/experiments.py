@@ -27,8 +27,8 @@ class Slice(HasNotes, Base): #FIXME move to subjects
 
     cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
-    def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None):
-        self.startDateTime=datetime.utcnow()
+    def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None,startDateTime=None):
+        self.startDateTime=startDateTime #datetime.utcnow() #FIXME
         self.mouse_id=mouse_id
         self.prep_id=prep_id
 
@@ -233,10 +233,25 @@ class SlicePrep(Experiment): #TODO this is probably an experiment...
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
     mouse_id=Column(Integer,ForeignKey('mouse.id')) #works with backref from mouse
     chamber_id=Column(Integer,ForeignKey('hardware.id'))
-    sucrose_id=Column(String,ForeignKey('reagents.name'),nullable=False)
+    sucrose_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME metadata??!
     #expmetadata=relationship('ExpMetaData') #FIXME For stuff like 'ketxyl volume'? vs explicit columns?!?!
     slices=relationship('Slice',primaryjoin='SlicePrep.id==foreign(Slice.prep_id)',backref=backref('prep',uselist=False))
 
+    __mapper_args__={'polymorphic_identity':'slice prep'}
+
+    def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,protocol_id=None,startDateTime=None,sucrose_id=None): #FIXME
+        self.project_id=project_id
+        self.person_id=person_id
+        self.protocol_id=protocol_id
+        self.startDateTime=startDateTime
+        self.sucrose_id=sucrose_id
+        self.mouse_id=mouse_id
+
+        self.AssignID(Project)
+        self.AssignID(Person)
+        self.AssignID(Mouse)
+
+#INSIGHT! things that are needed to make query structure work, eg acsf_id and the like do not go in metadata, metadata is really the api for analysis, so anything not direcly used in analysis should not go in metadata
 
 #TODO FIXME need to dissociate PROCEDURE from DATA, the CONDITIONS for that day are DIFFERENT from the actual individual experimetns
 class Patch(Experiment):

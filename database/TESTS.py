@@ -15,8 +15,8 @@ from debug import ploc
 #and failover to create if absent
 
 #creation order
-order=(Person,Project,Experiment,SlicePrep,Repository,RepoPath,Dob,Mouse,Sire,Dam,MatingRecord,Litter) #TODO
-order=(t_people,t_dob)# you get the idea... maybe make a tree in a dict or something?
+#order=(Person,Project,Experiment,SlicePrep,Repository,RepoPath,DOB,Mouse,Sire,Dam,MatingRecord,Litter) #TODO
+#order=(t_people,t_dob)# you get the idea... maybe make a tree in a dict or something?
 
 class TEST:
     def __init__(self,session,num=None,autocommit=True,Thing=None):
@@ -279,10 +279,11 @@ class t_mice(TEST):
 ###--------------------
 
 class t_slice(TEST):
-    def make_all(TEST):
-        preps=t_sliceprep(5)
+    def make_all(self):
+        preps=t_sliceprep(self.session,5*self.num)
         
-        self.records=[Slice(Prep=mouse.prep,datetime.utcnow()+timedelta(hours=i)) for prep,i in zip(preps,range(len(preps)))]
+        self.records=[]
+        [[self.records.append(Slice(Prep=prep,startDateTime=datetime.utcnow()+timedelta(hours=i))) for i in range(self.num)] for prep in preps.records]
 
 
 class t_cell(TEST):
@@ -351,8 +352,10 @@ class t_experiment(TEST):
 
 class t_sliceprep(TEST):
     def make_all(self):
+        project=self.session.query(Project)[0]
+        person=self.session.query(Person)[0]
         mice=self.session.query(Mouse).filter_by(sex_id='u')[:5]
-        self.records=[Slice(mouse_id=mouse.id,sucrose_id='poop') for mouse in mice]
+        self.records=[SlicePrep(Project=project,Person=person,startDateTime=datetime.utcnow()-timedelta(int(np.random.randint(1))),mouse_id=mouse.id,sucrose_id='poop') for mouse in mice]
 
 
 ###------
@@ -462,6 +465,8 @@ def run_tests(session):
     #[print(df.creation_DateTime) for df in session.query(DataFile)]
 
     h=t_hardware(session)
+
+    s=t_slice(session,100)
 
 
     #l=t_litters(session,20) #FIXME another wierd error here... saying that I tried to add a mouse as a breeder twice... hrm...
