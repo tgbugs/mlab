@@ -15,6 +15,8 @@ from sqlalchemy                         import ForeignKeyConstraint
 
 from sqlalchemy.orm                     import relationship, backref
 
+from sqlalchemy.ext.hybrid              import hybrid_property, hybrid_method
+
 from sqlalchemy.ext.declarative         import declared_attr
 
 from sqlalchemy.ext.associationproxy    import association_proxy
@@ -22,5 +24,5 @@ from sqlalchemy.ext.associationproxy    import association_proxy
 from debug                              import TDB
 
 _tdb=TDB()
-printD=tdb.printD
-printFD=tdb.printFuncDict
+printD=_tdb.printD
+printFD=_tdb.printFuncDict

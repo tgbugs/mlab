@@ -1,4 +1,4 @@
-from database.imports               import Column, declared_attr
+from database.imports               import Column, Integer, declared_attr
 from sqlalchemy.ext.declarative     import declarative_base
 
 class DefaultBase:
