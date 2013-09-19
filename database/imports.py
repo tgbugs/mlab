@@ -10,6 +10,7 @@ from sqlalchemy                         import Unicode
 from sqlalchemy                         import Text
 from sqlalchemy                         import Date
 from sqlalchemy                         import DateTime
+from sqlalchemy                         import Interval
 from sqlalchemy                         import ForeignKey
 from sqlalchemy                         import ForeignKeyConstraint
 

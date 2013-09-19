@@ -48,7 +48,7 @@ class CageTransfer(Base):
 class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific 
     """Clean way to propagate dobs to litters and mice"""
     dateTime=Column(DateTime,nullable=False) #on my core i7 4770k I get a mean of 1996 sdt of 329 calls of datetime.utcnow() with a unique timestamp, heavy rightward skew
-    absolute_error=Column(Float(precision=53)) #note: it is safe to store any timedelta less than a couple of years and still retain microseconds at full precision
+    absolute_error=Column(Interval) #TODO read the doccumentation on this one to make sure it is ok
     #estimated=Column(DateTime) #transaction thingy for later
 
     matingRecord=relationship('MatingRecord',primaryjoin='MatingRecord.dob_id==DOB.id',backref=backref('dob',uselist='False')) #FIXME need to force match litter/mr dob...
@@ -58,7 +58,7 @@ class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific
     def __init__(self,dateTime,absolute_error=None):
         self.dateTime=dateTime
         try:
-            self.absolute_error=timeDeltaIO(timedelta)
+            self.absolute_error=absolute_error #FIXME with interval, should be timedelta type
         except:
             self.absolute_error=None
 
@@ -321,8 +321,8 @@ class MatingRecord(HasNotes, Base):
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'))#,primary_key=True) #backref
     startDateTime=Column(DateTime,nullable=False)#,primary_key=True) #FIXME fucking strings
     stopDateTime=Column(DateTime)
-    est_e0=Column(DateTime) #FIXME this shit will error
-    e0_err=Column(Float(53))
+    est_p0=Column(DateTime) #FIXME this shit will error
+    e0_err=Column(Interval) #FIXME test this!
 
     @hybrid_property #FIXME http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/hybrid.html
     def e0_err(self):
@@ -332,9 +332,9 @@ class MatingRecord(HasNotes, Base):
         raise AttributeError('readonly attribute, set a stopTime if you want this')
         
     @hybrid_property #FIXME HOLY SHIT HYBRID ATTRIBUTES!!!!!!
-    def est_e0(self):
+    def est_p0(self):
         return self.startDateTime+self.e0_err #standard: sticks this right in the middle of the interval
-    @est_e0.setter #FIXME should be est_dob....
+    @est_p0.setter #FIXME should be est_dob....
     def est_e0(self):
         raise AttributeError('readonly attribute, set a stopTime if you want this')
     
