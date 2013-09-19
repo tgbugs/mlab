@@ -32,7 +32,7 @@
 <div class='indent'>
 <table width='100%'>
 <tr><td class='container' valign='bottom'><b>
-64 Foreign Key Constraints:</b>
+66 Foreign Key Constraints:</b>
 </td><td class='container' align='right'>
 <table>
   <tr><td class='container' align='right' valign='top'><a href='http://sourceforge.net' target='_blank'><img src='http://sourceforge.net/sflogo.php?group_id=137197&amp;type=1' alt='SourceForge.net' border='0' height='31' width='88'></a></td></tr>
@@ -102,7 +102,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
   <tr class='even'>
   <td class='detail'>cell_hs_id_fkey</td>
   <td class='detail'><a href='tables/cell.html'>cell</a>.hs_id</td>
-  <td class='detail'><a href='tables/headstage.html'>headstage</a>.id</td>
+  <td class='detail'><a href='tables/hardware.html'>hardware</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
@@ -233,23 +233,23 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
   <tr class='odd'>
+  <td class='detail'>experiments_methods_id_fkey</td>
+  <td class='detail'><a href='tables/experiments.html'>experiments</a>.methods_id</td>
+  <td class='detail'><a href='tables/citeable.html'>citeable</a>.id</td>
+  <td class='detail'><span title='Restrict delete:
+ Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
+ </tr>
+  <tr class='even'>
   <td class='detail'>experiments_person_id_fkey</td>
   <td class='detail'><a href='tables/experiments.html'>experiments</a>.person_id</td>
   <td class='detail'><a href='tables/people.html'>people</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
-  <tr class='even'>
+  <tr class='odd'>
   <td class='detail'>experiments_project_id_fkey</td>
   <td class='detail'><a href='tables/experiments.html'>experiments</a>.project_id</td>
   <td class='detail'><a href='tables/project.html'>project</a>.id</td>
-  <td class='detail'><span title='Restrict delete:
- Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
- </tr>
-  <tr class='odd'>
-  <td class='detail'>experiments_protocol_id_fkey</td>
-  <td class='detail'><a href='tables/experiments.html'>experiments</a>.protocol_id</td>
-  <td class='detail'><a href='tables/citeable.html'>citeable</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
@@ -269,29 +269,43 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </tr>
   <tr class='even'>
   <td class='detail'>fk_dam</td>
-  <td class='detail'><a href='tables/litter.html'>litter</a>.dam_id</td>
+  <td class='detail'><a href='tables/mouse.html'>mouse</a>.dam_id</td>
   <td class='detail'><a href='tables/dam.html'>dam</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
   <tr class='odd'>
   <td class='detail'>fk_sire</td>
-  <td class='detail'><a href='tables/litter.html'>litter</a>.sire_id</td>
+  <td class='detail'><a href='tables/mouse.html'>mouse</a>.sire_id</td>
   <td class='detail'><a href='tables/sire.html'>sire</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
   <tr class='even'>
-  <td class='detail'>hardware_type_fkey</td>
-  <td class='detail'><a href='tables/hardware.html'>hardware</a>.type</td>
-  <td class='detail'><a href='tables/hardwaretype.html'>hardwaretype</a>.type</td>
+  <td class='detail'>hardware_datastreams_datasource_id_fkey</td>
+  <td class='detail'><a href='tables/hardware_datastreams.html'>hardware_datastreams</a>.datasource_id</td>
+  <td class='detail'><a href='tables/datasources.html'>datasources</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
   <tr class='odd'>
-  <td class='detail'>headstage_amp_serial_fkey</td>
-  <td class='detail'><a href='tables/headstage.html'>headstage</a>.amp_serial</td>
-  <td class='detail'><a href='tables/amplifiers.html'>amplifiers</a>.serial</td>
+  <td class='detail'>hardware_datastreams_hardware_id_fkey</td>
+  <td class='detail'><a href='tables/hardware_datastreams.html'>hardware_datastreams</a>.hardware_id</td>
+  <td class='detail'><a href='tables/hardware.html'>hardware</a>.id</td>
+  <td class='detail'><span title='Restrict delete:
+ Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
+ </tr>
+  <tr class='even'>
+  <td class='detail'>hardware_parent_id_fkey</td>
+  <td class='detail'><a href='tables/hardware.html'>hardware</a>.parent_id</td>
+  <td class='detail'><a href='tables/hardware.html'>hardware</a>.id</td>
+  <td class='detail'><span title='Restrict delete:
+ Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
+ </tr>
+  <tr class='odd'>
+  <td class='detail'>hardware_type_fkey</td>
+  <td class='detail'><a href='tables/hardware.html'>hardware</a>.type</td>
+  <td class='detail'><a href='tables/hardwaretype.html'>hardwaretype</a>.type</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>

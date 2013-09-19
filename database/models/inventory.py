@@ -5,22 +5,23 @@ from database.mixins import HasNotes, IsDataSource
 #TODO could just make this a hardware table and maybe CHECK that the type matches?
 #then just have another table for any specifics on that, could do the same for the reagents, since most of them are going to have links to urls and msdses or whatever the fuck
 
-###--------------------
-###  Hardware inventory
-###--------------------
+###-----------------------------------
+###  Hardware inventory, aka rig parts
+###-----------------------------------
 
 class Hardware(IsDataSource, Base):
     __tablename__='hardware'
     id=Column(Integer,primary_key=True)     #this is going to be a hierarchical structure
-    parent_id=Column(Integer,ForeignKey('hardware.id'))
+    parent_id=Column(Integer,ForeignKey('hardware.id')) #sadly we can't make this nullable :( :( can still suggest sr
     type=Column(String,ForeignKey('hardwaretype.type'),nullable=False)
     name=Column(String)
-    unique_id=Column(String,unique=True) #FIXME fuck
+    unique_id=Column(String) #FIXME fuck
     sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
     hwmetadata=relationship('HWMetaData',primaryjoin='Hardware.id==HWMetaData.hw_id') #FIXME should these just be blobs or what??? maybe by using a datatype column!??! that would mean I could just have a single metadata table per class...
-    def __init__(self,Type=None,Parent=None,type=None,parent_id=None,unique_id=None):
+    def __init__(self,Type=None,Parent=None,type=None,parent_id=None,name=None,unique_id=None):
         self.type=type
         self.parent_id=parent_id
+        self.name=name
         self.unique_id=unique_id
         if Type:
             if Type.name:
@@ -34,30 +35,25 @@ class Hardware(IsDataSource, Base):
             else:
                 raise AttributeError
 
+    def strHelper(self):
+        return '%s '%(self.name)
 
-class Amplifier(Base): #used for enforcing data integrity for cells
-    __tablename__='amplifiers'
-    id=None
-    type=Column(String(20))
-    serial=Column(Integer,primary_key=True) #this should be sufficient for everything I need
-    headstages=relationship('Headstage',primaryjoin='Amplifier.serial==Headstage.amp_serial',backref=backref('amp',uselist=False))
-
-class Headstage(HasNotes,Base): #used for enforcing data integrity for cells
-    #using the id here because it actually requires fewer columns it seems? also adding the serial every time can be a bitch... need a way to double check to make sure though
-    #id=None
-    #channel=Column(Integer,primary_key=True)
-    amp_serial=Column(Integer,ForeignKey('amplifiers.serial'),unique=True,nullable=False)
-    relationship('Cell',backref=backref('headstage',uselist=False))
-    #relationship('DataFile',backref='channel') #TODO FIXME need a way to consistently link these... maybe via the metadata?
-
-
-
-class LED(HasNotes, Base):
-    #wavelength=Column(Float(53),nullable=False) #FIXME this should be unit contrained???! #FIXME THIS is hardware metadata, ideally we would like to use a constraint, but that leads to a proliferation of tables >_<
-    #this is to EASE record keeping not constrain it
-    test_DateTime=None
-    voltage_intensity_plot=None
-
+    def __repr__(self):
+        name=None
+        uid=''
+        parent=None
+        children=None
+        try: name=self.name
+        except: pass
+        try:
+            if self.unique_id:
+                uid=self.unique_id
+        except: pass
+        try: parent=self.parent.strHelper()
+        except: pass
+        try: children=''.join([s.strHelper() for s in self.sub_components])
+        except: pass
+        return '\n%s %s %s son of %s father to %s with MetaData %s'%(self.type.capitalize(),name,uid,parent,children,self.hwmetadata)
 
 ###-------------------
 ###  Reagent inventory

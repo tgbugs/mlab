@@ -1,4 +1,5 @@
-from models import SI_PREFIX, SI_UNIT, SEX, HardwareType
+from models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware
+from imports import printD
 
 ###----------------------------
 ###  Populate Constraint tables
@@ -172,31 +173,40 @@ def popHardwareType(session):
     session.add_all([HardwareType(type=t) for t in _HWTYPES])
 
 def popHardware(session): #FIXME
-    root=Harware(type='rig',name='Tom\'s Rig')
+    root=Hardware(type='rig',name='Tom\'s Rig',parent_id=1)
     session.add(root)
     session.commit()
 
-    session.add(Hardware(Parent=root,type='amplifer',name='Multiclamp 700B',unique_id='seria1'))
-    session.add(Hardware(Parent=root,type='amplifer',name='Multiclamp 700B',unique_id='seria2'))
+    session.add(Hardware(Parent=root,type='amplifier',name='Multiclamp 700B',unique_id='serial1'))
+    session.add(Hardware(Parent=root,type='amplifier',name='Multiclamp 700B',unique_id='serial2'))
     session.add(Hardware(Parent=root,type='motion controller/driver',name='ESP300'))
     session.add(Hardware(Parent=root,type='digitizer',name='Digidata 1200A'))
-    session.add(Hardware(Parent=root,type='digitizer',name='nidqa 1'))
-    session.commit()
-    amp1=session.query(Hardware).filter_by(unique_id='serial1')[0]
-    session.add(Harware(Parent=amp1,type='headstage',name='hs 0', unqiue_id='hs0'))
-    session.add(Harware(Parent=amp1,type='headstage',name='hs 1', unqiue_id='hs1'))
+    session.add(Hardware(Parent=root,type='digitizer',name='nidaq 1'))
     session.commit()
 
+    amp1=session.query(Hardware).filter_by(unique_id='serial1')[0]
+    session.add(Hardware(Parent=amp1,type='headstage',name='hs 0', unique_id='hs0')) #FIXME needs to go via bnc, there has GOT to be a better way?
+    session.add(Hardware(Parent=amp1,type='headstage',name='hs 1', unique_id='hs1')) #so the bnc doesn't add anything because it doesn't propagate or constrain pysical reality
+    session.commit()
+    #basically, make sure reality matches what the computer thinks it is, could make a self test for that asking user to hit 0 and then hit 1?
+    #good old corrispondence problems
+
+    nidaq=session.query(Hardware).filter_by(name='nidaq 1')[0]
+    session.add(Hardware(Parent=nidaq,type='led',name='led 470'))
+    session.commit()
 
 def populateConstraints(session):
+    """Populate the tables used to constrain datatypes"""
     popSIUnit(session)
     popNonSIUnit(session)
     popSIPrefix(session)
     popSex(session)
     popHardwareType(session)
-    popHardware(session)
     return session.commit()
 
+def populateTables(session):
+    """A run once to load current data (not existing elsewhere into the database (ie may use google docs as a web interface for entering/viewing certain types of data eg mice)"""
+    popHardware(session)
 if __name__=='__main__':
     import re
     printT=lambda tup:print(re.sub('\), ','),\r\n',str(tup)))

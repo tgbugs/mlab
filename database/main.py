@@ -39,7 +39,7 @@ from sqlalchemy.engine          import Engine
 
 from models                     import *
 from database.base              import Base
-from setupDB                    import populateConstraints
+from setupDB                    import populateConstraints, populateTables
 from TESTS                      import run_tests
 
 try:
@@ -125,7 +125,7 @@ def main():
     #create engine
     echo=True
     #echo=False
-    #engine=postgresEng(echo=echo)
+    #engine=postgresEng(echo=echo,wipe_db=False)
     engine=sqliteEng(echo=echo)
 
     #create metadata
@@ -137,6 +137,7 @@ def main():
 
     #populate constraint tables
     populateConstraints(session)
+    populateTables(session)
 
     #do some tests!
     try:

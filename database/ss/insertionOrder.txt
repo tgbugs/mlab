@@ -2,7 +2,6 @@ cage
 dob
 sex
 citeable
-amplifiers
 calibrationdata
 hardwaretype
 iacucprotocols
@@ -13,7 +12,6 @@ datasources
 reagents
 people
 project
-headstage
 experiments
 users
 credentials
@@ -23,11 +21,11 @@ matingrecord
 litter
 mouse
 breeder
+hardware
 repository
 repopaths
 datafile
 slice
-hardware
 cell
 patch
 cagerack
@@ -36,14 +34,13 @@ reagentlot
 cell_to_cell
 chrsomsliceexperiment
 expmetadata
+hardware_datastreams
 hwmetadata
 person_to_project
 users_datastreams
 dfmetadata
 sliceprep
-cagetransefer
+cagetransfer
 file
-led
-protocols
+methods
 recipe
-results

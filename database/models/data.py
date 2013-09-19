@@ -70,6 +70,7 @@ class CellMetaData(Base): #FIXME should this somehow be replaced by 'subjectMeta
     cell_id=Column(Integer,ForeignKey('cell.id'),primary_key=True,autoincrement=False) #FIXME in theory no datafile should have two entries from the same datasource how I have this set up
     dateTime=Column(DateTime,nullable=False)
     value=Column(Float(53),nullable=False) #FIXME I wish this could be a mutable type?!?!!
+    #TODO XXX GOOD NEWS! :D turns out for gfp +/- AND for genotypes on mice those are just boolean you turd, 0/1 in the float field and you are done
     sigfigs=Column(Integer)
     abs_error=Column(Float(53))
 

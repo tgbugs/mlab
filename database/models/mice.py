@@ -216,7 +216,7 @@ class Cell(HasNotes, Base): #FIXME how to add markers? metadata? #FIXME move to 
 
     #link to data
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
-    hs_id=Column(Integer,ForeignKey('headstage.id'),nullable=False) #FIXME need mapping to channels in abffile so that we can link the analysis results directly back to the cell, it really does feel like I should be putting cell id's into experiments rather than the ohter way around thought.... wait fuck damn it
+    hs_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #FIXME need mapping to channels in abffile so that we can link the analysis results directly back to the cell, it really does feel like I should be putting cell id's into experiments rather than the ohter way around thought.... wait fuck damn it
 
     #datafile_id=Column(Integer,ForeignKey('datafile.id'),nullable=False)
     repoid=Column(Integer)

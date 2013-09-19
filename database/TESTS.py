@@ -416,7 +416,7 @@ class t_hardware(TEST):
     def make_all(self):
         self.records=[]
         [[self.records.append(Hardware(type='headstage',unique_id='%s'%i, Parent=amp)) for i in range(2)] for amp in self.amps]
-        printD(self.records)
+        #printD(self.records) #FIXME this whole make all is broken
 
 class t_reagent(TEST):
     def make_all(self):

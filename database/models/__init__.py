@@ -54,9 +54,6 @@ from database.models.inventory import *
 __all__.extend([
         'person_to_project',
         'Hardware',
-        #'Headstage',
-        #'Amplifier',
-        #'LED',
         'ReagentInventory',
         'ReagentLot'
         #'Stock',

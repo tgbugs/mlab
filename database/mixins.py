@@ -30,7 +30,7 @@ class IsDataSource:
         datasource_association = Table('%s_datastreams'%cls.__tablename__, cls.metadata,
             Column('datasource_id', ForeignKey('datasources.id'), primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
-        return relationship('DataSource', secondary=datasource_association,backref=backref('source',uselist=False))
+        return relationship('DataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
 
 ###--------------------
 ###  experiments mixins

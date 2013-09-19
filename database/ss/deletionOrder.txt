@@ -1,14 +1,13 @@
-results
 recipe
-protocols
-led
+methods
 file
-cagetransefer
+cagetransfer
 sliceprep
 dfmetadata
 users_datastreams
 person_to_project
 hwmetadata
+hardware_datastreams
 expmetadata
 chrsomsliceexperiment
 cell_to_cell
@@ -17,11 +16,11 @@ cellmetadata
 cagerack
 patch
 cell
-hardware
 slice
 datafile
 repopaths
 repository
+hardware
 breeder
 mouse
 litter
@@ -31,7 +30,6 @@ dam
 credentials
 users
 experiments
-headstage
 project
 people
 reagents
@@ -42,7 +40,6 @@ si_prefix
 iacucprotocols
 hardwaretype
 calibrationdata
-amplifiers
 citeable
 sex
 dob

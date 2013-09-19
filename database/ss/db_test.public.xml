@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <database name="db_test" schema="public" type="PostgreSQL - 9.3.0">
    <tables>
-      <table name="amplifiers" numRows="0" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" digits="0" id="0" name="type" nullable="true" remarks="" size="20" type="varchar"/>
-         <column autoUpdated="true" defaultValue="nextval('amplifiers_serial_seq'::regclass)" digits="0" id="1" name="serial" nullable="false" remarks="" size="10" type="serial">
-            <child column="amp_serial" foreignKey="headstage_amp_serial_fkey" implied="false" onDeleteCascade="false" table="headstage"/>
-         </column>
-         <primaryKey column="serial" sequenceNumberInPK="1"/>
-         <index name="amplifiers_pkey" unique="true">
-            <column ascending="true" name="serial"/>
-         </index>
-      </table>
       <table name="breeder" numRows="18" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4">
             <child column="id" foreignKey="dam_id_fkey" implied="false" onDeleteCascade="false" table="dam"/>
@@ -51,10 +41,10 @@
             <column ascending="true" name="col"/>
          </index>
       </table>
-      <table name="cagetransefer" numRows="0" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="nextval('cagetransefer_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial"/>
+      <table name="cagetransfer" numRows="0" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('cagetransfer_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="cagetransefer_pkey" unique="true">
+         <index name="cagetransfer_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
@@ -83,7 +73,7 @@
             <parent column="id" foreignKey="cell_experiment_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
          </column>
          <column autoUpdated="false" digits="0" id="4" name="hs_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="cell_hs_id_fkey" implied="false" onDeleteCascade="false" table="headstage"/>
+            <parent column="id" foreignKey="cell_hs_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
          </column>
          <column autoUpdated="false" digits="0" id="5" name="repoid" nullable="true" remarks="" size="10" type="int4">
             <parent column="repopath_id" foreignKey="cell_repoid_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
@@ -138,7 +128,7 @@
       </table>
       <table name="citeable" numRows="0" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('citeable_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
-            <child column="protocol_id" foreignKey="experiments_protocol_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
+            <child column="methods_id" foreignKey="experiments_methods_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
             <child column="document_id" foreignKey="reagents_document_id_fkey" implied="false" onDeleteCascade="false" table="reagents"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="type" nullable="false" remarks="" size="15" type="varchar"/>
@@ -171,7 +161,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="datafile" numRows="18000" remarks="" schema="public" type="TABLE">
+      <table name="datafile" numRows="9" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="repopath_id" nullable="false" remarks="" size="10" type="int4">
             <child column="repoid" foreignKey="cell_repoid_fkey" implied="false" onDeleteCascade="false" table="cell"/>
             <child column="repoid" foreignKey="dfmetadata_repoid_fkey" implied="false" onDeleteCascade="false" table="dfmetadata"/>
@@ -200,6 +190,7 @@
             <child column="datasource_id" foreignKey="datafile_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
             <child column="datasource_id" foreignKey="dfmetadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="dfmetadata"/>
             <child column="datasource_id" foreignKey="expmetadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="expmetadata"/>
+            <child column="datasource_id" foreignKey="hardware_datastreams_datasource_id_fkey" implied="false" onDeleteCascade="false" table="hardware_datastreams"/>
             <child column="datasource_id" foreignKey="hwmetadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="hwmetadata"/>
             <child column="datasource_id" foreignKey="users_datastreams_datasource_id_fkey" implied="false" onDeleteCascade="false" table="users_datastreams"/>
          </column>
@@ -248,13 +239,13 @@
             <child column="dob_id" foreignKey="mouse_dob_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
          </column>
          <column autoUpdated="false" digits="6" id="1" name="dateTime" nullable="false" remarks="" size="29" type="timestamp"/>
-         <column autoUpdated="false" digits="17" id="2" name="absolute_error" nullable="true" remarks="" size="17" type="float8"/>
+         <column autoUpdated="false" digits="6" id="2" name="absolute_error" nullable="true" remarks="" size="49" type="interval"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="dob_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="experiments" numRows="200" remarks="" schema="public" type="TABLE">
+      <table name="experiments" numRows="6" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('experiments_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="experiment_id" foreignKey="cell_experiment_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
             <child column="experiment_id" foreignKey="datafile_experiment_id_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
@@ -270,8 +261,8 @@
             <parent column="id" foreignKey="experiments_person_id_fkey" implied="false" onDeleteCascade="false" table="people"/>
          </column>
          <column autoUpdated="false" digits="6" id="3" name="startDateTime" nullable="false" remarks="" size="29" type="timestamp"/>
-         <column autoUpdated="false" digits="0" id="4" name="protocol_id" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="experiments_protocol_id_fkey" implied="false" onDeleteCascade="false" table="citeable"/>
+         <column autoUpdated="false" digits="0" id="4" name="methods_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="experiments_methods_id_fkey" implied="false" onDeleteCascade="false" table="citeable"/>
          </column>
          <column autoUpdated="false" digits="0" id="5" name="exp_type" nullable="false" remarks="" size="20" type="varchar"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -304,43 +295,49 @@
             <column ascending="true" name="type"/>
          </index>
       </table>
-      <table name="hardware" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="hardware" numRows="15" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('hardware_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
+            <child column="hs_id" foreignKey="cell_hs_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
             <child column="led_id" foreignKey="chrsomsliceexperiment_led_id_fkey" implied="false" onDeleteCascade="false" table="chrsomsliceexperiment"/>
+            <child column="parent_id" foreignKey="hardware_parent_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
+            <child column="hardware_id" foreignKey="hardware_datastreams_hardware_id_fkey" implied="false" onDeleteCascade="false" table="hardware_datastreams"/>
             <child column="hw_id" foreignKey="hwmetadata_hw_id_fkey" implied="false" onDeleteCascade="false" table="hwmetadata"/>
             <child column="chamber_id" foreignKey="sliceprep_chamber_id_fkey" implied="false" onDeleteCascade="false" table="sliceprep"/>
          </column>
-         <column autoUpdated="false" digits="0" id="1" name="type" nullable="false" remarks="" size="2147483647" type="varchar">
+         <column autoUpdated="false" digits="0" id="1" name="parent_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="hardware_parent_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="2" name="type" nullable="false" remarks="" size="2147483647" type="varchar">
             <parent column="type" foreignKey="hardware_type_fkey" implied="false" onDeleteCascade="false" table="hardwaretype"/>
          </column>
-         <column autoUpdated="false" digits="0" id="2" name="unique_id" nullable="false" remarks="" size="2147483647" type="varchar"/>
+         <column autoUpdated="false" digits="0" id="3" name="name" nullable="true" remarks="" size="2147483647" type="varchar"/>
+         <column autoUpdated="false" digits="0" id="4" name="unique_id" nullable="true" remarks="" size="2147483647" type="varchar"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="hardware_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="hardwaretype" numRows="11" remarks="" schema="public" type="TABLE">
+      <table name="hardware_datastreams" numRows="0" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="datasource_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="hardware_datastreams_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="hardware_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="hardware_datastreams_hardware_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
+         </column>
+         <primaryKey column="datasource_id" sequenceNumberInPK="1"/>
+         <primaryKey column="hardware_id" sequenceNumberInPK="2"/>
+         <index name="hardware_datastreams_pkey" unique="true">
+            <column ascending="true" name="datasource_id"/>
+            <column ascending="true" name="hardware_id"/>
+         </index>
+      </table>
+      <table name="hardwaretype" numRows="14" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="type" nullable="false" remarks="" size="2147483647" type="varchar">
             <child column="type" foreignKey="hardware_type_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
          </column>
          <primaryKey column="type" sequenceNumberInPK="1"/>
          <index name="hardwaretype_pkey" unique="true">
             <column ascending="true" name="type"/>
-         </index>
-      </table>
-      <table name="headstage" numRows="0" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="nextval('headstage_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
-            <child column="hs_id" foreignKey="cell_hs_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="1" name="amp_serial" nullable="false" remarks="" size="10" type="int4">
-            <parent column="serial" foreignKey="headstage_amp_serial_fkey" implied="false" onDeleteCascade="false" table="amplifiers"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="headstage_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="headstage_amp_serial_key" unique="true">
-            <column ascending="true" name="amp_serial"/>
          </index>
       </table>
       <table name="hwmetadata" numRows="0" remarks="" schema="public" type="TABLE">
@@ -367,13 +364,6 @@
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="iacucprotocols_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="led" numRows="0" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="nextval('led_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="led_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
@@ -422,6 +412,13 @@
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="matingrecord_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="methods" numRows="0" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('methods_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="methods_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
@@ -504,7 +501,7 @@
             <column ascending="true" name="neurotree_id"/>
          </index>
       </table>
-      <table name="person_to_project" numRows="44" remarks="" schema="public" type="TABLE">
+      <table name="person_to_project" numRows="4" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="person_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="person_to_project_person_id_fkey" implied="false" onDeleteCascade="false" table="people"/>
          </column>
@@ -518,7 +515,7 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="project" numRows="4" remarks="" schema="public" type="TABLE">
+      <table name="project" numRows="1" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('project_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="project_id" foreignKey="experiments_project_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
             <child column="project_id" foreignKey="person_to_project_project_id_fkey" implied="false" onDeleteCascade="false" table="person_to_project"/>
@@ -530,13 +527,6 @@
          <column autoUpdated="false" digits="0" id="3" name="blurb" nullable="true" remarks="" size="2147483647" type="text"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="project_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="protocols" numRows="0" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="nextval('protocols_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="protocols_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
@@ -552,7 +542,7 @@
             <column ascending="true" name="reagent_id"/>
          </index>
       </table>
-      <table name="reagents" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="reagents" numRows="1" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="name" nullable="false" remarks="" size="2147483647" type="varchar">
             <child column="acsf_id" foreignKey="patch_acsf_id_fkey" implied="false" onDeleteCascade="false" table="patch"/>
             <child column="internal_id" foreignKey="patch_internal_id_fkey" implied="false" onDeleteCascade="false" table="patch"/>
@@ -600,13 +590,6 @@
          <primaryKey column="url" sequenceNumberInPK="1"/>
          <index name="repository_pkey" unique="true">
             <column ascending="true" name="url"/>
-         </index>
-      </table>
-      <table name="results" numRows="0" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="nextval('results_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="results_pkey" unique="true">
-            <column ascending="true" name="id"/>
          </index>
       </table>
       <table name="sex" numRows="3" remarks="" schema="public" type="TABLE">
@@ -661,7 +644,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="slice" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="slice" numRows="500" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('slice_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="slice_id" foreignKey="cell_slice_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
          </column>
@@ -676,9 +659,8 @@
          <index name="slice_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="slice_startDateTime_key" unique="true"/>
       </table>
-      <table name="sliceprep" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="sliceprep" numRows="5" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="sliceprep_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
          </column>
