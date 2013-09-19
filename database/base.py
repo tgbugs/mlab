@@ -16,11 +16,11 @@ class DefaultBase:
             else:
                 raise AttributeError('%s has no id! Did you commit before referencing the instance directly?'*cls.__class__.__name__)
 
-        def strHelper(self,depth=0,attr='id'):
-            tabs='\t'*depth
-            return '\n%s%s %s'%(tabs,self.__class__.__name__,getattr(self,attr))
-        def __repr__(self,attr='id'):
-            return '\n%s %s'%(self.__class__.__name__,getattr(self,attr))
+    def strHelper(self,depth=0,attr='id'):
+        tabs='\t'*depth
+        return '\n%s%s %s'%(tabs,self.__class__.__name__,getattr(self,attr))
+    def __repr__(self,attr='id'):
+        return '\n%s %s'%(self.__class__.__name__,getattr(self,attr))
 
 Base=declarative_base(cls=DefaultBase)
 

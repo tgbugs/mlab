@@ -139,7 +139,11 @@ def main():
     populateConstraints(session)
 
     #do some tests!
-    run_tests(session)
+    try:
+        run_tests(session)
+    except:
+        raise
+        print('tests failed')
 
     #print stuff!
     printStuff(cons=0,mice=0,data=0,notes=0)
