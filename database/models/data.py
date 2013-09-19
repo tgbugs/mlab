@@ -1,6 +1,6 @@
 from database.imports import *
 from database.base import Base
-from database.mixins import HasNotes
+from database.mixins import HasNotes, HasMetaData
 from database.standards import URL_STAND
 
 ###-------------
@@ -13,6 +13,7 @@ from database.standards import URL_STAND
 
 class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDataSource'?
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
+    #lol this might also have metadata fuck, ie the calibrations might go here???!
     #definable by parent and having matching properties? nah, just keep it generic?
     #might be able to cut this out entirely?
     __tablename__='datasources'
@@ -24,8 +25,9 @@ class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDa
     prefix=Column(String(2),ForeignKey('si_prefix.symbol'),nullable=False)#,unique=True)
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)#,unique=True)
     ds_calibration_rec=Column(Integer,ForeignKey('calibrationdata.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
-    expmetadata=relationship('ExpMetaData',backref=backref('datasource',uselist=False))
+    #expmetadata=relationship('ExpMetaData',backref=backref('datasource',uselist=False))
     datafiles=relationship('DataFile',backref=backref('datasource',uselist=False)) #FIXME urmmmmmm fuck? this here or make a different set of datasources for data not stored in the database? well datafiles are produced by camplex and I suppose at some point I might pull data direct from it too so sure, that works out
+
 
 ###-----------------------------------------------
 ###  MetaData tables (for stuff stored internally)
@@ -37,26 +39,7 @@ class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDa
 #TODO ideally it should be possible to use the experiment id or something to know what the metadata looks like, if not the experiment ID then SOME datasource profile or something
 #AHHA! TODO datasource profiles are how we can make metadata rigorous or at least quickly parse metadata in the event that we did not keep the records
 
-class MetaData(Base):
-    datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True,autoincrement=False)
-    dateTime=Column(DateTime,nullable=False)
-    value=Column(Float(53),nullable=False)
-    sigfigs=Column(Integer)
-    abs_error=Column(Float(53))
-    def __init__(self,Parent=None,DataSource=None,parent_id=None,datasource_id=None,value=None,sigfigs=None,abs_error=None):
-        self.parent_id=parent_id
-        self.datasource_id=datasource_id
-        self.dateTime=datetime.utcnow() #FIXME this logs when the md was entered
-        self.value=value
-        self.sigfigs=sigfigs
-        self.abs_error=abs_error
-        self.AssignID(Parent)
-        self.AssignID(DataSource)
-    def repr(self):
-        return '%s %s %s %s %s %s'%(self.parent_id,self.dateTime,self.value,self.datasource,self.sigfigs,self.abs_error)
-
-
-"""
+'''
 class ExpMetaData(Base): #FIXME we may not need this since 'Experiment' can directly link to other tables and it needs to be able to do this, I think it is worth the table proliferation, we may still want to use this for stuff like pharmacology???
     """This table is now extensible and I can add new dimensions to the data for any experiment whenever the fuck I feel like it :D, I could make a constrain to make sure that the number of dimesions I enter for an experiment is correct, but frankly that adds a ton of work every time I want to add a new variable to an experiment or something, this way commits of ANY single datapoint will not depend on all the other data being there too, might want to add a source id????"""
     #FIXME the proper way to interact with these tables for consistency is through another script that defines all the data that we are going to store
@@ -115,7 +98,7 @@ class PharmacologyData(Base): #TODO
     event_type=None
     event_datetime=None
     #FIXME pharmacology events and LED_stimulation are the same type of event/data, and the question is how and at what level we associate those...
-"""
+'''
 
 
 class CalibrationData(Base):
@@ -193,7 +176,7 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
     #repo_url=Column(Integer,ForeignKey('repository.url'),primary_key=True)
     #repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
     #with two above can direcly get the file from this record without having to do any cross table magic...
-    #id=Column(Integer,primary_key=True)
+    id=Column(Integer,autoincrement=True,unique=True) #FIXME used to link against MD consistently :/ fkkkk, might be worth writing this one explicity
     repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
     filename=Column(String,primary_key=True,autoincrement=False) #urp! on ext3 255 max for EACH /asdf/
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment

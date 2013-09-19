@@ -1,5 +1,5 @@
 from database.imports import *
-from database.models import MetaData
+from database.base import Base
 
 ###--------------
 ###  notes mixins
@@ -34,17 +34,40 @@ class IsDataSource:
         return relationship('DataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
 
 
+class MetaData: #damnit I want this in data, oh well
+    dateTime=Column(DateTime,nullable=False)
+    value=Column(Float(53),nullable=False)
+    sigfigs=Column(Integer)
+    abs_error=Column(Float(53))
+    def __init__(self,Parent=None,DataSource=None,parent_id=None,datasource_id=None,value=None,sigfigs=None,abs_error=None):
+        self.parent_id=parent_id
+        self.datasource_id=datasource_id
+        self.dateTime=datetime.utcnow() #FIXME this logs when the md was entered
+        self.value=value
+        self.sigfigs=sigfigs
+        self.abs_error=abs_error
+        self.AssignID(Parent)
+        self.AssignID(DataSource)
+    def repr(self):
+        return '%s %s %s %s %s %s'%(self.parent_id,self.dateTime,self.value,self.datasource,self.sigfigs,self.abs_error)
+
+
 class HasMetaData: #looks like we want this to be table per related
     @declared_attr
     def metadata_(cls): #FIXME naming...
         cls.MetaData = type(
                 '%sMetaData'%cls.__name__,
-                (MetaData),
+                (MetaData, Base,),
                 {   '__tablename__':'%s_metadata'%cls.__tablename__,
                     'id':None,
                     '%s_id'%'parent' : Column(Integer, #fuck :(
                         ForeignKey('%s.id'%cls.__tablename__),
-                        primary_key=True,autoincrement=False)
+                        primary_key=True,autoincrement=False),
+                    'datasource_id':Column(Integer,
+                        ForeignKey('datasources.id'),
+                        primary_key=True,autoincrement=False),
+                    'datasource':relationship('DataSource',
+                        backref=backref('%s_metadata'%cls.__tablename__))
                 }
         )
         return relationship(cls.MetaData) #FIXME may need a primaryjoin on this

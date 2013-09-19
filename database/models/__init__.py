@@ -29,11 +29,12 @@ __all__.extend([
 from database.models.data import *
 __all__.extend([
         'person_to_project',
-        'DataSource',
-        'CellMetaData',
-        'DFMetaData',
-        'ExpMetaData',
-        'HWMetaData',
+        'DataSource', #FIXME
+        #'MetaData',
+        #'CellMetaData',
+        #'DFMetaData',
+        #'ExpMetaData',
+        #'HWMetaData',
         #'CalibrationData',
         #'PharmacologyData',
         'Repository',

@@ -228,7 +228,7 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
 
     startDateTime=Column(DateTime,nullable=False)
 
-    cellmetadata=relationship('CellMetaData',primaryjoin='CellMetaData.cell_id==Cell.id') #TODO
+    #cellmetadata=relationship('CellMetaData',primaryjoin='CellMetaData.cell_id==Cell.id') #TODO
 
     #these should probably go in metadata which can be configged per experiment
     wholeCell=None
