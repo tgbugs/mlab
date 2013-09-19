@@ -1,6 +1,6 @@
 from database.imports import *
 from database.base import Base
-from database.mixins import HasNotes, IsDataSource
+from database.mixins import HasNotes, IsDataSource, HasMetaData
 
 #TODO could just make this a hardware table and maybe CHECK that the type matches?
 #then just have another table for any specifics on that, could do the same for the reagents, since most of them are going to have links to urls and msdses or whatever the fuck
@@ -9,7 +9,7 @@ from database.mixins import HasNotes, IsDataSource
 ###  Hardware inventory, aka rig parts
 ###-----------------------------------
 
-class Hardware(IsDataSource, Base):
+class Hardware(HasMetaData, IsDataSource, Base):
     __tablename__='hardware'
     id=Column(Integer,primary_key=True)     #this is going to be a hierarchical structure
     parent_id=Column(Integer,ForeignKey('hardware.id')) #sadly we can't make this nullable :( :( can still suggest sr
@@ -17,7 +17,7 @@ class Hardware(IsDataSource, Base):
     name=Column(String)
     unique_id=Column(String) #FIXME fuck
     sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
-    hwmetadata=relationship('HWMetaData',primaryjoin='Hardware.id==HWMetaData.hw_id') #FIXME should these just be blobs or what??? maybe by using a datatype column!??! that would mean I could just have a single metadata table per class...
+    #hwmetadata=relationship('HWMetaData',primaryjoin='Hardware.id==HWMetaData.hw_id') #FIXME should these just be blobs or what??? maybe by using a datatype column!??! that would mean I could just have a single metadata table per class...
     def __init__(self,Type=None,Parent=None,type=None,parent_id=None,name=None,unique_id=None):
         self.type=type
         self.parent_id=parent_id

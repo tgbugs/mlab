@@ -1,4 +1,5 @@
 from database.imports import *
+from database.models import MetaData
 
 ###--------------
 ###  notes mixins
@@ -32,6 +33,24 @@ class IsDataSource:
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
         return relationship('DataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
 
+
+class HasMetaData: #looks like we want this to be table per related
+    @declared_attr
+    def metadata_(cls): #FIXME naming...
+        cls.MetaData = type(
+                '%sMetaData'%cls.__name__,
+                (MetaData),
+                {   '__tablename__':'%s_metadata'%cls.__tablename__,
+                    'id':None,
+                    '%s_id'%'parent' : Column(Integer, #fuck :(
+                        ForeignKey('%s.id'%cls.__tablename__),
+                        primary_key=True,autoincrement=False)
+                }
+        )
+        return relationship(cls.MetaData) #FIXME may need a primaryjoin on this
+
+
+        
 ###--------------------
 ###  experiments mixins
 ###--------------------

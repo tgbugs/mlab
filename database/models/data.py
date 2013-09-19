@@ -37,7 +37,26 @@ class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDa
 #TODO ideally it should be possible to use the experiment id or something to know what the metadata looks like, if not the experiment ID then SOME datasource profile or something
 #AHHA! TODO datasource profiles are how we can make metadata rigorous or at least quickly parse metadata in the event that we did not keep the records
 
+class MetaData(Base):
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True,autoincrement=False)
+    dateTime=Column(DateTime,nullable=False)
+    value=Column(Float(53),nullable=False)
+    sigfigs=Column(Integer)
+    abs_error=Column(Float(53))
+    def __init__(self,Parent=None,DataSource=None,parent_id=None,datasource_id=None,value=None,sigfigs=None,abs_error=None):
+        self.parent_id=parent_id
+        self.datasource_id=datasource_id
+        self.dateTime=datetime.utcnow() #FIXME this logs when the md was entered
+        self.value=value
+        self.sigfigs=sigfigs
+        self.abs_error=abs_error
+        self.AssignID(Parent)
+        self.AssignID(DataSource)
+    def repr(self):
+        return '%s %s %s %s %s %s'%(self.parent_id,self.dateTime,self.value,self.datasource,self.sigfigs,self.abs_error)
 
+
+"""
 class ExpMetaData(Base): #FIXME we may not need this since 'Experiment' can directly link to other tables and it needs to be able to do this, I think it is worth the table proliferation, we may still want to use this for stuff like pharmacology???
     """This table is now extensible and I can add new dimensions to the data for any experiment whenever the fuck I feel like it :D, I could make a constrain to make sure that the number of dimesions I enter for an experiment is correct, but frankly that adds a ton of work every time I want to add a new variable to an experiment or something, this way commits of ANY single datapoint will not depend on all the other data being there too, might want to add a source id????"""
     #FIXME the proper way to interact with these tables for consistency is through another script that defines all the data that we are going to store
@@ -68,6 +87,7 @@ class DFMetaData(Base): #FIXME this can just replace datafile!
 class CellMetaData(Base): #FIXME should this somehow be replaced by 'subjectMetaData'???
     id=None
     cell_id=Column(Integer,ForeignKey('cell.id'),primary_key=True,autoincrement=False) #FIXME in theory no datafile should have two entries from the same datasource how I have this set up
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True,autoincrement=False) #FIXME in theory no datafile should have two entries from the same datasource how I have this set up
     dateTime=Column(DateTime,nullable=False)
     value=Column(Float(53),nullable=False) #FIXME I wish this could be a mutable type?!?!!
     #TODO XXX GOOD NEWS! :D turns out for gfp +/- AND for genotypes on mice those are just boolean you turd, 0/1 in the float field and you are done
@@ -85,7 +105,6 @@ class HWMetaData(Base):
     sigfigs=Column(Integer)
     abs_error=Column(Float(53))
 
-"""
 class PharmacologyData(Base): #TODO
     #consistency is achieve here by having another script that stores which drugs and the in and the out, maybe even another table??
     id=None
@@ -159,7 +178,7 @@ class RepoPath(Base):
         self.path=clean_path
 
 
-class DataFile(Base): #FIXME make sure that this class looks a whole fucking lot like MetaData
+class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whole fucking lot like MetaData
     #TODO path, should the database maintain this???, yes
     #how to constrain/track files so they don't get lost??
     #well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
@@ -180,7 +199,7 @@ class DataFile(Base): #FIXME make sure that this class looks a whole fucking lot
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
     #dfmetadata=relationship('DFMetaData',primaryjoin='DataFile.id==DFMetaData.df_id')
-    dfmetadata=relationship('DFMetaData',primaryjoin='and_(DataFile.repopath_id==DFMetaData.repoid,DataFile.filename==DFMetaData.filename)')
+    #dfmetadata=relationship('DFMetaData',primaryjoin='and_(DataFile.repopath_id==DFMetaData.repoid,DataFile.filename==DFMetaData.filename)')
     #creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     #analysis_DateTime

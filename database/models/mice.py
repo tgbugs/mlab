@@ -4,7 +4,7 @@
 
 from database.imports import *
 from database.base import Base
-from database.mixins import HasNotes
+from database.mixins import HasNotes, HasMetaData
 from database.standards import frmtDT, timeDeltaIO
 
 #some global variables that are used here and there that would be magic otherwise
@@ -165,7 +165,7 @@ class Mouse(HasNotes, Base):
 ###  Subjects beyond mouse
 ###-----------------------
 
-class Slice(HasNotes, Base): #FIXME move to subjects
+class Slice(HasMetaData, HasNotes, Base):
     id=None
     id=Column(Integer,primary_key=True) #FIXME
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
@@ -173,7 +173,7 @@ class Slice(HasNotes, Base): #FIXME move to subjects
     startDateTime=Column(DateTime,nullable=False)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
     #hemisphere
     #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
-    #positionAP
+    #positionAP #this is metadata
 
     cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
@@ -203,7 +203,7 @@ cell_to_cell=Table('cell_to_cell', Base.metadata,
                    Column('cell_2_id',Integer,ForeignKey('cell.id'),primary_key=True)
                   )
 
-class Cell(HasNotes, Base): #FIXME how to add markers? metadata? #FIXME move to subjects
+class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #FIXME move to subjects
     #TODO link this as m-m to datafiles and bam many problems solved
     #TODO cells are really the atomic 'subject' for this experiment... think about that
     #FIXME this Cell class is NOT extensible
