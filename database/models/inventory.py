@@ -1,6 +1,6 @@
 from database.imports import *
 from database.base import Base
-from database.mixins import HasNotes
+from database.mixins import HasNotes, IsDataSource
 
 #TODO could just make this a hardware table and maybe CHECK that the type matches?
 #then just have another table for any specifics on that, could do the same for the reagents, since most of them are going to have links to urls and msdses or whatever the fuck
@@ -8,13 +8,14 @@ from database.mixins import HasNotes
 ###--------------------
 ###  Hardware inventory
 ###--------------------
-class Hardware(Base):
+
+class Hardware(IsDataSource, Base):
     __tablename__='hardware'
-    id=Column(Integer,primary_key=True) #FIXME should sub under type?
+    id=Column(Integer,primary_key=True)     #this is going to be a hierarchical structure
+    parent_id=Column(Integer,ForeignKey('hardware.id'))
     type=Column(String,ForeignKey('hardwaretype.type'),nullable=False)
     name=Column(String)
-    parent_id=Column(Integer,ForeignKey('hardware.id'))
-    unique_id=Column(String,nullable=False) #FIXME
+    unique_id=Column(String,unique=True) #FIXME fuck
     sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
     hwmetadata=relationship('HWMetaData',primaryjoin='Hardware.id==HWMetaData.hw_id') #FIXME should these just be blobs or what??? maybe by using a datatype column!??! that would mean I could just have a single metadata table per class...
     def __init__(self,Type=None,Parent=None,type=None,parent_id=None,unique_id=None):
@@ -48,6 +49,7 @@ class Headstage(HasNotes,Base): #used for enforcing data integrity for cells
     amp_serial=Column(Integer,ForeignKey('amplifiers.serial'),unique=True,nullable=False)
     relationship('Cell',backref=backref('headstage',uselist=False))
     #relationship('DataFile',backref='channel') #TODO FIXME need a way to consistently link these... maybe via the metadata?
+
 
 
 class LED(HasNotes, Base):

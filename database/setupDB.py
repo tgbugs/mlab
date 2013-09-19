@@ -21,6 +21,7 @@ _unknown_symbol='\u26AA'
 #TODO make auto unit conversions for DA?
 #TODO need some way to implement sets of units? bugger
 
+
 def popSIUnit(session):
     _SI_UNITS=(
         #name, symbol
@@ -151,9 +152,11 @@ def popSex(session):
     )
     session.add_all([SEX(name=name,abbrev=abbrev,symbol=symbol) for name,symbol,abbrev in _SEXES])
 
-def popHardware(session):
+def popHardwareType(session):
     _HWTYPES=(
+        ('rig'), #FIXME want to go ahead and make this whole thing hierarchical? yes
         ('amplifier'),
+        ('bnc'),
         ('headstage'),
         ('computer'),
         ('manipulator'),
@@ -168,11 +171,29 @@ def popHardware(session):
     )
     session.add_all([HardwareType(type=t) for t in _HWTYPES])
 
+def popHardware(session): #FIXME
+    root=Harware(type='rig',name='Tom\'s Rig')
+    session.add(root)
+    session.commit()
+
+    session.add(Hardware(Parent=root,type='amplifer',name='Multiclamp 700B',unique_id='seria1'))
+    session.add(Hardware(Parent=root,type='amplifer',name='Multiclamp 700B',unique_id='seria2'))
+    session.add(Hardware(Parent=root,type='motion controller/driver',name='ESP300'))
+    session.add(Hardware(Parent=root,type='digitizer',name='Digidata 1200A'))
+    session.add(Hardware(Parent=root,type='digitizer',name='nidqa 1'))
+    session.commit()
+    amp1=session.query(Hardware).filter_by(unique_id='serial1')[0]
+    session.add(Harware(Parent=amp1,type='headstage',name='hs 0', unqiue_id='hs0'))
+    session.add(Harware(Parent=amp1,type='headstage',name='hs 1', unqiue_id='hs1'))
+    session.commit()
+
+
 def populateConstraints(session):
     popSIUnit(session)
     popNonSIUnit(session)
     popSIPrefix(session)
     popSex(session)
+    popHardwareType(session)
     popHardware(session)
     return session.commit()
 
