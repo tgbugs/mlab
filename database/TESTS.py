@@ -2,7 +2,7 @@ from database.models import *
 
 import numpy as np
 
-from debug import ploc
+from imports import printD,ploc,datetime,timedelta
 
 #FIXME TODO, make all these things use queries instead of generating you nub
 #and failover to create if absent

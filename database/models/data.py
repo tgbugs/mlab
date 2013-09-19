@@ -97,7 +97,7 @@ class PharmacologyData(Base): #TODO
     #FIXME pharmacology events and LED_stimulation are the same type of event/data, and the question is how and at what level we associate those...
 """
 
-"""
+
 class CalibrationData(Base):
     #TODO base class for storing calibration data
     #examples:
@@ -106,7 +106,7 @@ class CalibrationData(Base):
     #FIXME there should be a way to join these to experiments directly
     #maybe with primaryjoin='and_(CalibrationData.datasource_id==MetaData.datasource_id,CalibrationData.dateTime < MetaData.dateTime, BUT only the most recent one of those...)' with a viewonly
     pass
-"""
+
 
 ###-----------------------------------------------------------------------
 ###  DataFiles and repositories for data stored externally (ie filesystem)

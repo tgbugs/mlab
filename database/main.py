@@ -37,10 +37,10 @@ from sqlalchemy                 import create_engine
 from sqlalchemy.orm             import Session
 from sqlalchemy.engine          import Engine
 
-from database.models            import *
+from models                     import *
 from database.base              import Base
-from database.standards         import populatConstraints
-from database.TESTS             import run_tests
+from setupDB                    import populateConstraints
+from TESTS                      import run_tests
 
 try:
     import rpdb2
@@ -71,7 +71,7 @@ def postgresEng(echo=False,wipe_db=False):
 def sqliteEng(echo=False):
     from sqlalchemy import event
     @event.listens_for(Engine, 'connect')
-    def set_sqlite_pragma(dbapi_connection, connection record):
+    def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor = dbapi_connection.cursor()
         cursor.execute('PRAGMA foreign_keys=ON')
         cursor.close()

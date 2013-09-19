@@ -21,7 +21,7 @@ from sqlalchemy.ext.declarative         import declared_attr
 
 from sqlalchemy.ext.associationproxy    import association_proxy
 
-from debug                              import TDB
+from debug                              import TDB,ploc
 
 _tdb=TDB()
 printD=_tdb.printD
