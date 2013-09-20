@@ -101,9 +101,6 @@ class Mouse(HasNotes, Base): #TODO species metadata???
             return datetime.utcnow()-self.dob.dateTime
         
     dod=Column(DateTime) #FIXME need to figure out how to directly link this to experiments eg, a setter for dod would just get current datetime and make the mouse dead instead of calling a completely separate killMouse method
-    @hybrid_property #TODO
-    def ageAtDeath(self):
-        return self.dod=self.dob.dateTime #FIXME add plusMinus
 
     #breeding records
     breedingRec=relationship('Breeder',primaryjoin='Mouse.id==Breeder.id',backref=backref('mouse',uselist=False),uselist=False)
@@ -190,13 +187,13 @@ class Slice(HasMetaData, HasNotes, Base):
         self.mouse_id=mouse_id
         self.prep_id=prep_id
 
-        self.AssignID(Mouse)
-        self.AssignID(Prep)
+        #self.AssignID(Mouse)
+        #self.AssignID(Prep)
 
         if Prep:
             if Prep.id:
                 self.prep_id=Prep.id
-                self.mouse_id=Prep.mouse_id #FIXME ask aleks about this
+                self.mouse_id=Prep.mouse.id #FIXME ask aleks about this
             else:
                 raise AttributeError
         elif Mouse:

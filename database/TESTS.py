@@ -368,7 +368,7 @@ class t_sliceprep(TEST):
         project=self.session.query(Project)[0]
         person=self.session.query(Person)[0]
         mice=self.session.query(Mouse).filter_by(sex_id='u')[:5]
-        self.records=[SlicePrep(Project=project,Person=person,startDateTime=datetime.utcnow()-timedelta(int(np.random.randint(1))),mouse_id=mouse.id,sucrose_id='poop') for mouse in mice]
+        self.records=[SlicePrep(Project=project,Person=person,startDateTime=datetime.utcnow()-timedelta(int(np.random.randint(1))),sucrose_id='poop') for mouse in mice] #FIXME need to find a way to propagate mouse w/ RI
 
 
 ###------
