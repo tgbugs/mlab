@@ -402,7 +402,13 @@ class t_datafile(TEST):
             for rp in repop.records:
                 data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),Experiment=exp,DataSource=ds.records[0]) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
         self.records=data
-            
+
+class t_hwmetadata(TEST):
+    def make_all(self):
+        ds=self.session.query(DataSource)[0]
+        self.records=[]
+        [self.records.extend([h.MetaData(i,Parent=h,datasource_id=ds.id) for i in range(self.num)]) for h in self.session.query(Hardware)]
+        
 ###-----------
 ###  inventory
 ###-----------
@@ -465,6 +471,7 @@ def run_tests(session):
     #[print(df.creation_DateTime) for df in session.query(DataFile)]
 
     h=t_hardware(session)
+    hwmd=t_hwmetadata(session,20)
 
     i=t_reagent(session)
 

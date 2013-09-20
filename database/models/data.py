@@ -185,6 +185,35 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
     #dfmetadata=relationship('DFMetaData',primaryjoin='and_(DataFile.repopath_id==DFMetaData.repoid,DataFile.filename==DFMetaData.filename)')
     #creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
+    @declared_attr
+    def metadata_(cls): #FIXME naming...
+        class MetaData(Base):
+            repoid=Column(Integer,primary_key=True,autoincrement=False)
+            filename=Column(String,primary_key=True)
+            dateTime=Column(DateTime,primary_key=True)
+            value=Column(Float(53),nullable=False)
+            sigfigs=Column(Integer)
+            abs_error=Column(Float(53))
+            __table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {})
+            def __init__(self,value,DataFile=None,DataSource=None,datasource_id=None,repoid=None,filename=None,sigfigs=None,abs_error=None):
+                self.repoid=repoid
+                self.filename=filename
+                self.datasource_id=datasource_id
+                self.dateTime=datetime.utcnow() #FIXME this logs when the md was entered
+                self.value=value
+                self.sigfigs=sigfigs
+                self.abs_error=abs_error
+                if DataFile:
+                    if DataFile.repoid:
+                        self.repoid=DataFile.repopath_id
+                        self.filename=DataFile.filename
+                    else:
+                        raise AttributeError
+                self.AssignID(DataSource)
+
+        cls.MetaData=MetaData
+        return relationship(cls.MetaData)
+
     #analysis_DateTime
     #FIXME a bunch of these DateTimes should be TIMESTAMP? using the python implementation is more consistent?
     @property
@@ -199,25 +228,25 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
         #self.repo_path=URL_STAND.pathClean(repo_path)
         self.repopath_id=repopath_id
         self.filename=filename
-        self.experiment_id=experiment_id
-        self.creation_DateTime=datetime.utcnow()
-        self.datasource_id=datasource_id
-        if RepoPath:
-            if RepoPath.id:
-                #printD(RepoPath.id)
-                self.repopath_id=RepoPath.id
-            else:
-                raise AttributeError('RepoPath has no id! Did you commit before referencing the instance directly?')
-        if Experiment:
-            if Experiment.id:
-                #printD(Experiment.id)
-                self.experiment_id=Experiment.id
-            else:
-                raise AttributeError('Experiment has no id! Did you commit before referencing the instance directly?')
-        if DataSource:
-            if DataSource.id:
-                self.datasource_id=DataSource.id
-            else:
-                raise AttributeError('DataSource has no id! Did you commit before referencing the instance directly?')
+            self.experiment_id=experiment_id
+            self.creation_DateTime=datetime.utcnow()
+            self.datasource_id=datasource_id
+            if RepoPath:
+                if RepoPath.id:
+                    #printD(RepoPath.id)
+                    self.repopath_id=RepoPath.id
+                else:
+                    raise AttributeError('RepoPath has no id! Did you commit before referencing the instance directly?')
+            if Experiment:
+                if Experiment.id:
+                    #printD(Experiment.id)
+                    self.experiment_id=Experiment.id
+                else:
+                    raise AttributeError('Experiment has no id! Did you commit before referencing the instance directly?')
+            if DataSource:
+                if DataSource.id:
+                    self.datasource_id=DataSource.id
+                else:
+                    raise AttributeError('DataSource has no id! Did you commit before referencing the instance directly?')
 
 
