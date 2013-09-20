@@ -184,7 +184,6 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
     #repo_url=Column(Integer,ForeignKey('repository.url'),primary_key=True)
     #repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
     #with two above can direcly get the file from this record without having to do any cross table magic...
-    id=Column(Integer,autoincrement=True,unique=True) #FIXME used to link against MD consistently :/ fkkkk, might be worth writing this one explicity
     repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
     filename=Column(String,primary_key=True,autoincrement=False) #urp! on ext3 255 max for EACH /asdf/
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
