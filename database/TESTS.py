@@ -4,6 +4,8 @@ import numpy as np
 
 from imports import printD,ploc,datetime,timedelta
 
+#FIXME flush instead of commit will populate primary keys!
+
 #FIXME TODO, make all these things use queries instead of generating you nub
 #and failover to create if absent
 
