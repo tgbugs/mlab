@@ -4,7 +4,6 @@ import numpy as np
 
 from imports import printD,ploc,datetime,timedelta
 
-#AWEYISS [s.query(models.__dict__[a]).all() for a in models.__all__]
 
 #FIXME flush instead of commit will populate primary keys!
 
