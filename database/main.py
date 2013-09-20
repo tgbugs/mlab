@@ -138,7 +138,7 @@ def main():
     #create engine
     echo=True
     #echo=False
-    engine=postgresEng(echo=echo,wipe_db=False)
+    engine=postgresEng(echo=echo,wipe_db=True)
     #engine=sqliteEng(echo=echo)
 
     #create metadata

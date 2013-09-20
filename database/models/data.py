@@ -1,4 +1,3 @@
-from time import sleep #FIXME
 from database.imports import *
 from database.base import Base
 from database.mixins import HasNotes, HasMetaData
@@ -196,11 +195,11 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
     def metadata_(cls): #FIXME naming...
         class DataFileMetaData(Base):
             __tablename__='datafiles_metadata'
-            id=None
-            repoid=Column(Integer,primary_key=True,autoincrement=False)
-            filename=Column(String,primary_key=True)
-            datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True,autoincrement=False)
-            dateTime=Column(DateTime,primary_key=True) #FIXME
+            id=Column(Integer,primary_key=True)
+            repoid=Column(Integer,nullable=False)
+            filename=Column(String,nullable=False)
+            datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
+            dateTime=Column(DateTime,nullable=False)
             value=Column(Float(53),nullable=False)
             sigfigs=Column(Integer)
             abs_error=Column(Float(53))
@@ -211,7 +210,6 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
                 self.filename=filename
                 self.datasource_id=datasource_id
                 self.dateTime=datetime.utcnow() #FIXME this logs when the md was entered
-                sleep(.001) #FIXME
                 self.value=value
                 self.sigfigs=sigfigs
                 self.abs_error=abs_error

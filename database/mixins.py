@@ -1,4 +1,3 @@
-from time import sleep #FIXME
 from database.imports import *
 from database.base import Base
 
@@ -39,14 +38,13 @@ class IsDataSource:
 
 
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
-    dateTime=Column(DateTime,primary_key=True)
+    dateTime=Column(DateTime,nullable=False)
     value=Column(Float(53),nullable=False)
     sigfigs=Column(Integer)
     abs_error=Column(Float(53))
     def __init__(self,value,Parent=None,DataSource=None,datasource_id=None,sigfigs=None,abs_error=None):
         self.datasource_id=datasource_id
         self.dateTime=datetime.utcnow() #FIXME this logs when the md was entered
-        sleep(.001)
         self.value=value
         self.sigfigs=sigfigs
         self.abs_error=abs_error
@@ -66,13 +64,11 @@ class HasMetaData: #looks like we want this to be table per related
                 '%sMetaData'%cls.__name__,
                 (MetaData, Base,),
                 {   '__tablename__':'%s_metadata'%cls.__tablename__,
-                    'id':None,
+                    'id':Column(Integer,primary_key=True),
                     '%s_id'%cls.__tablename__:Column(Integer, #FIXME nasty errors inbound
-                        ForeignKey('%s.id'%cls.__tablename__),
-                        primary_key=True,autoincrement=False),
+                        ForeignKey('%s.id'%cls.__tablename__)),
                     'datasource_id':Column(Integer,
-                        ForeignKey('datasources.id'),
-                        primary_key=True,autoincrement=False),
+                        ForeignKey('datasources.id')),
                     'datasource':relationship('DataSource'), #keep it one way
                 }
         )
