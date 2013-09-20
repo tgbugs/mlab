@@ -1,5 +1,9 @@
+from time import sleep #FIXME
 from database.imports import *
 from database.base import Base
+
+#some global variables that are used here and there that would be magic otherwise
+_plusMinus='\u00B1'
 
 ###--------------
 ###  notes mixins
@@ -42,13 +46,18 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
     def __init__(self,value,Parent=None,DataSource=None,datasource_id=None,sigfigs=None,abs_error=None):
         self.datasource_id=datasource_id
         self.dateTime=datetime.utcnow() #FIXME this logs when the md was entered
+        sleep(.001)
         self.value=value
         self.sigfigs=sigfigs
         self.abs_error=abs_error
         self.AssignID(Parent) #FIXME
         self.AssignID(DataSource)
-    def repr(self):
-        return '%s %s %s %s %s %s'%(getattr(self,'%s_id'),self.dateTime,self.value,self.datasource,self.sigfigs,self.abs_error)
+    def __repr__(self):
+        sigfigs=''
+        error=''
+        if self.sigfigs: sigfigs=self.sigfigs
+        if self.abs_error != None: error='%s %s'%(_plusMinus,self.abs_error)
+        return '\n%s %s %s %s %s'%(self.dateTime,self.value,self.datasource.strHelper(),sigfigs,error)
 
 class HasMetaData: #looks like we want this to be table per related
     @declared_attr

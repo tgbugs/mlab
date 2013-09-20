@@ -3,6 +3,9 @@ from database.base import Base
 from database.mixins import HasNotes, HasMetaData
 from database.standards import URL_STAND
 
+#some global variables that are used here and there that would be magic otherwise
+_plusMinus='\u00B1'
+
 ###-------------
 ###  DataSources
 ###-------------
@@ -26,7 +29,11 @@ class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDa
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)#,unique=True)
     ds_calibration_rec=Column(Integer,ForeignKey('calibrationdata.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
     #expmetadata=relationship('ExpMetaData',backref=backref('datasource',uselist=False))
-    datafiles=relationship('DataFile',backref=backref('datasource',uselist=False)) #FIXME urmmmmmm fuck? this here or make a different set of datasources for data not stored in the database? well datafiles are produced by camplex and I suppose at some point I might pull data direct from it too so sure, that works out
+    #datafiles=relationship('DataFile',backref=backref('datasource',uselist=False)) #FIXME urmmmmmm fuck? this here or make a different set of datasources for data not stored in the database? well datafiles are produced by camplex and I suppose at some point I might pull data direct from it too so sure, that works out
+    def strHelper(self):
+        return '%s%s'%(self.prefix,self.unit)
+    def __repr__(self):
+        return '\n%s units %s%s'%(self.name,self.prefix,self.unit)
 
 
 ###-----------------------------------------------
@@ -210,6 +217,12 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
                     else:
                         raise AttributeError
                 self.AssignID(DataSource)
+            def __repr__(self):
+                sigfigs=''
+                error=''
+                if self.sigfigs: sigfigs=self.sigfigs
+                if self.abs_error != None: error='%s %s'%(_plusMinus,self.abs_error)
+                return '%s %s %s %s %s'%(self.dateTime,self.value,self.datasource.strHelper(),sigfigs,error)
 
         cls.MetaData=MetaData
         return relationship(cls.MetaData)
@@ -228,25 +241,30 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
         #self.repo_path=URL_STAND.pathClean(repo_path)
         self.repopath_id=repopath_id
         self.filename=filename
-            self.experiment_id=experiment_id
-            self.creation_DateTime=datetime.utcnow()
-            self.datasource_id=datasource_id
-            if RepoPath:
-                if RepoPath.id:
-                    #printD(RepoPath.id)
-                    self.repopath_id=RepoPath.id
-                else:
-                    raise AttributeError('RepoPath has no id! Did you commit before referencing the instance directly?')
-            if Experiment:
-                if Experiment.id:
-                    #printD(Experiment.id)
-                    self.experiment_id=Experiment.id
-                else:
-                    raise AttributeError('Experiment has no id! Did you commit before referencing the instance directly?')
-            if DataSource:
-                if DataSource.id:
-                    self.datasource_id=DataSource.id
-                else:
-                    raise AttributeError('DataSource has no id! Did you commit before referencing the instance directly?')
+        self.experiment_id=experiment_id
+        self.creation_DateTime=datetime.utcnow() #FIXME
+        self.datasource_id=datasource_id
+        self.AssignID(RepoPath)
+        self.AssignID(Experiment) #FIXME should be subject instead?!?!
+        self.AssignID(DataSource)
+        """
+        if RepoPath:
+            if RepoPath.id:
+                #printD(RepoPath.id)
+                self.repopath_id=RepoPath.id
+            else:
+                raise AttributeError('RepoPath has no id! Did you commit before referencing the instance directly?')
+        if Experiment:
+            if Experiment.id:
+                #printD(Experiment.id)
+                self.experiment_id=Experiment.id
+            else:
+                raise AttributeError('Experiment has no id! Did you commit before referencing the instance directly?')
+        if DataSource:
+            if DataSource.id:
+                self.datasource_id=DataSource.id
+            else:
+                raise AttributeError('DataSource has no id! Did you commit before referencing the instance directly?')
+                """
 
 
