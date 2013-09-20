@@ -349,32 +349,17 @@ class t_experiment(TEST):
             self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],startDateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
 class t_patch(TEST):
-    def __init__(self,session,num=None,num_projects=None):
-        self.num_projects=num_projects
-        super().__init__(session,num)
     def make_all(self):
-        from time import sleep
-        projects=t_project(self.session,self.num_projects)
-        projects.add_people()
-        #projects.commit() #FIXME do I need to readd? or can I just commit directly?
-
-        lits=t_litters(self.session,50)
-        lits.add_members()
-        #lits.commit()
-
-        mice=[m for m in self.session.query(Mouse).filter(Mouse.breedingRec==None,Mouse.dod==None)]
-
         #mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
-        self.records=[]
-        for p in projects.records:
-            #printD(p) #FIXME apparently p.__dict__ is not populated until AFTER you call the object...
-            #printD([t for t  in p.__dict__.items()]) #FIXME what the fuck, sometimes this catches nothing!?
-            ms=[mice[i] for i in np.random.choice(len(mice),self.num)] #FIXME missing mouse
-            #TODO need to test with bad inputs
-            exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
-            datetimes=self.make_datetime()
+        preps=[p for p in self.sesison.query(SlicePrep)]
+        acsf=ReagentInventory('poop1')
+        internal=ReagentInventory('poop1')
+        session.add_all([acsf,internal])
+        session.flush()
 
-            self.records+=[Patch(Project=p,Person=exps[i],Mouse=ms[i],startDateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
+        self.records=[]
+        datetimes=self.make_datetime()
+        [[self.records.extend(Patch(Prep=p,acsf=acsf,Internal=internal,startDateTime=self.datetimes[i])) for i in range(self.num)] for p in preps] #FIXME classic mouse not born yet problem
 
 
 class t_sliceprep(TEST):
@@ -510,6 +495,9 @@ def run_tests(session):
     hwmd=t_hwmetadata(session,20)
 
     i=t_reagent(session)
+
+    sp=t_sliceprep(session,20)
+    p=t_patch(session,1)
 
     s=t_slice(session,100)
     c=t_cell(session,10)

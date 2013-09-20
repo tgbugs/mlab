@@ -249,7 +249,7 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
                         secondaryjoin='Cell.id==cell_to_cell.c.cell_1_id',
                         backref='cell_2',
                        )
-    def __init__(self,Slice=None,Patch=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None):
+    def __init__(self,Slice=None,Experiment=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None):
         self.startDateTime=datetime.utcnow() #FIXME
         self.slice_id=slice_id
         self.mouse_id=mouse_id
@@ -261,9 +261,9 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
                 self.mouse_id=Slice.mouse_id
             else:
                 raise AttributeError
-        if Patch:
-            if Patch.id:
-                self.experiment_id=Patch.id
+        if Experiment:
+            if Experiment.id:
+                self.experiment_id=Experiment.id
         if Headstage:
             if Headstage.id:
                 self.hs_id=Headstage.id

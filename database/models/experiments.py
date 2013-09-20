@@ -69,7 +69,7 @@ class SlicePrep(Experiment): #TODO this is probably an experiment...
         self.AssignID(Mouse)
 
 
-class Patch(Experiment):
+class Patch(Experiment): #FIXME should this be a o-o with slice prep???
     """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
     __tablename__='patch'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
@@ -88,8 +88,8 @@ class Patch(Experiment):
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
     
-    def __init__(self,Project=None,Person=None,Prep=None,acsf=None,Internal=None,Methods=None,project_id=None,person_id=None,prep_id=None,mouse_id=None,acsf_id=None,internal_id=None,methods_id=None,startDateTime=None):
-        super().__init__(Project=Project,Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime):
+    def __init__(self,Prep=None,acsf=None,Internal=None,Methods=None,Project=None,Person=None,project_id=None,person_id=None,prep_id=None,mouse_id=None,acsf_id=None,internal_id=None,methods_id=None,startDateTime=None):
+        super().__init__(Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime):
         self.prep_id=prep_id
         self.mouse_id=mouse_id
         self.acsf_id=acsf_id
@@ -98,6 +98,8 @@ class Patch(Experiment):
             if Prep.id:
                 self.prep_id=Prep.id
                 self.mouse_id=Prep.mouse_id
+                self.project_id=Prep.project_id
+                self.person_id=Prep.person_id #FIXME in THEORY a different person could do prep vs patch...
             else:
                 raise AttributeError
         if acsf:
