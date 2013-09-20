@@ -40,6 +40,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "mouse":"sex_id":w -> "sex":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse":"sire_id":w -> "sire":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse":"strain_id":w -> "strain":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "patch":"elipses":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "patch":"elipses":w -> "sliceprep":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "sire":"elipses":w -> "breeder":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "slice":"elipses":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "sliceprep":"elipses":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -81,7 +83,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cell</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">150,000 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
     </TABLE>>
     URL="cell.html"
     tooltip="cell"
@@ -150,10 +152,20 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="dam_id" COLSPAN="3" ALIGN="LEFT">dam_id</TD></TR>
       <TR><TD PORT="dob_id" COLSPAN="3" ALIGN="LEFT">dob_id</TD></TR>
       <TR><TD PORT="dod" COLSPAN="3" ALIGN="LEFT">dod</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
     </TABLE>>
     URL="mouse.html"
     tooltip="mouse"
+  ];
+  "patch" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">patch</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="patch.html"
+    tooltip="patch"
   ];
   "sex" [
     label=<
@@ -190,7 +202,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">sliceprep</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">10 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="sliceprep.html"
     tooltip="sliceprep"

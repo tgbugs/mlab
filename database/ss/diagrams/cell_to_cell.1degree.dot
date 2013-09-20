@@ -30,10 +30,8 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="slice_id" COLSPAN="3" ALIGN="LEFT">slice_id</TD></TR>
       <TR><TD PORT="experiment_id" COLSPAN="3" ALIGN="LEFT">experiment_id</TD></TR>
       <TR><TD PORT="hs_id" COLSPAN="3" ALIGN="LEFT">hs_id</TD></TR>
-      <TR><TD PORT="repoid" COLSPAN="3" ALIGN="LEFT">repoid</TD></TR>
-      <TR><TD PORT="filename" COLSPAN="3" ALIGN="LEFT">filename</TD></TR>
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">150,000 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
     </TABLE>>
     URL="cell.html"
     tooltip="cell"

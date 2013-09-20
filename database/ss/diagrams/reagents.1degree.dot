@@ -21,6 +21,7 @@ digraph "oneDegreeRelationshipsDiagram" {
   ];
   "patch":"acsf_id":w -> "reagents":"name.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "patch":"internal_id":w -> "reagents":"name.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "patch":"prep_id":w -> "sliceprep":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "reagentlot":"reagent_id":w -> "reagents":"name.type":e [arrowhead=none dir=back arrowtail=teeodot];
   "reagents":"document_id":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "sliceprep":"sucrose_id":w -> "reagents":"name.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -40,9 +41,11 @@ digraph "oneDegreeRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">patch</TD></TR>
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
       <TR><TD PORT="acsf_id" COLSPAN="3" ALIGN="LEFT">acsf_id</TD></TR>
       <TR><TD PORT="internal_id" COLSPAN="3" ALIGN="LEFT">internal_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD PORT="prep_id" COLSPAN="3" ALIGN="LEFT">prep_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="patch.html"
     tooltip="patch"
@@ -65,7 +68,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">reagents</TD></TR>
       <TR><TD PORT="name" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">name</TD><TD PORT="name.type" ALIGN="LEFT">varchar[2147483647]</TD></TR>
       <TR><TD PORT="document_id" COLSPAN="2" ALIGN="LEFT">document_id</TD><TD PORT="document_id.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
     </TABLE>>
     URL="reagents.html"
     tooltip="reagents"
@@ -78,7 +81,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
       <TR><TD PORT="chamber_id" COLSPAN="3" ALIGN="LEFT">chamber_id</TD></TR>
       <TR><TD PORT="sucrose_id" COLSPAN="3" ALIGN="LEFT">sucrose_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">10 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="sliceprep.html"
     tooltip="sliceprep"

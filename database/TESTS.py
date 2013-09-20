@@ -5,7 +5,7 @@ import numpy as np
 from imports import printD,ploc,datetime,timedelta
 
 
-#FIXME flush instead of commit will populate primary keys!
+#FIXME flush instead of commit will populate primary keys! for some reason this isn't working...
 
 #FIXME TODO, make all these things use queries instead of generating you nub
 #and failover to create if absent
@@ -15,15 +15,15 @@ from imports import printD,ploc,datetime,timedelta
 #order=(t_people,t_dob)# you get the idea... maybe make a tree in a dict or something?
 
 class TEST:
-    def __init__(self,session,num=None,autoflush=True,Thing=None):
+    def __init__(self,session,num=None,autocommit=True,Thing=None):
         self.Thing=Thing
         self.num=num
         self.session=session
         self.records=[] #this is the output
         self.setup()
         self.make_all()
-        if autoflush:
-            self.flush()
+        if autocommit:
+            self.commit()
     def make_date(self):
         from datetime import date,timedelta
         num=self.num
@@ -70,9 +70,9 @@ class TEST:
     def make_all(self):
         pass
 
-    def flush(self):
+    def commit(self):
         self.session.add_all(self.records)
-        self.session.flush()
+        self.session.commit()
 
 
 ###--------
@@ -257,7 +257,7 @@ class t_litters(TEST):
         #VS
         [self.session.add_all(self.records[i].make_members(litter_sizes[i])) for i in range(self.num)]
 
-        self.session.flush()
+        self.session.commit()
 
 
 class t_mice(TEST):
@@ -288,7 +288,7 @@ class t_cell(TEST):
         for e in experiments:
             for s in slices:
                 for h in headstages:
-                    self.records.extend([Cell(Headstage=h,Slice=s,Patch=e) for i in range(self.num)])
+                    self.records.extend([Cell(Headstage=h,Slice=s,Experiment=e) for i in range(self.num)])
 
 ###-------------
 ###  experiments
@@ -317,7 +317,7 @@ class t_project(TEST):
             #[rec.people.append(person) for person in people] #FIXME somehow this no workey
             count+=1
         self.session.add_all(assocs)
-        self.session.flush()
+        self.session.commit()
 
 
 class t_experiment(TEST):
@@ -334,7 +334,7 @@ class t_experiment(TEST):
         lits.add_members()
         #lits.commit()
 
-        mice=[m for m in self.session.query(Mouse).filter(Mouse.breedingRec==None,Mouse.dod==None)]
+        mice=[m for m in self.session.query(Mouse).filter(Mouse.breedingRec==None,Mouse.dod==None)] #FIXME
 
         #mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
         self.records=[]
@@ -346,20 +346,21 @@ class t_experiment(TEST):
             exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
             datetimes=self.make_datetime()
 
-            self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],startDateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
+            self.records+=[Experiment(Project=p,Person=exps[i],startDateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
 class t_patch(TEST):
     def make_all(self):
         #mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
-        preps=[p for p in self.sesison.query(SlicePrep)]
-        acsf=ReagentInventory('poop1')
-        internal=ReagentInventory('poop1')
-        session.add_all([acsf,internal])
-        session.flush()
+        preps=[p for p in self.session.query(SlicePrep)]
+        acsf=ReagentInventory(name='poop1')
+        internal=ReagentInventory(name='poop2')
+        self.session.add_all([acsf,internal])
+        #self.session.flush() #shit not working FIXME
+        self.session.commit()
 
         self.records=[]
         datetimes=self.make_datetime()
-        [[self.records.extend(Patch(Prep=p,acsf=acsf,Internal=internal,startDateTime=self.datetimes[i])) for i in range(self.num)] for p in preps] #FIXME classic mouse not born yet problem
+        [self.records.extend([Patch(Prep=p,acsf=acsf,Internal=internal,startDateTime=datetimes[i]) for i in range(self.num)]) for p in preps] #FIXME classic mouse not born yet problem
 
 
 class t_sliceprep(TEST):

@@ -61,8 +61,8 @@ class SlicePrep(Experiment): #TODO this is probably an experiment...
 
     __mapper_args__={'polymorphic_identity':'slice prep'}
 
-    def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,methods_id=None,startDateTime=None,sucrose_id=None): #FIXME
-        super().__init__(Project=Project,Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime):
+    def __init__(self,Project=None,Person=None,Mouse=None,Methods=None,project_id=None,person_id=None,mouse_id=None,methods_id=None,startDateTime=None,sucrose_id=None): #FIXME
+        super().__init__(Project=Project,Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime)
         self.mouse_id=mouse_id
         self.sucrose_id=sucrose_id
 
@@ -73,14 +73,15 @@ class Patch(Experiment): #FIXME should this be a o-o with slice prep???
     """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
     __tablename__='patch'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
-
+    mouse_id=Column(Integer,ForeignKey('mouse.id')) #works with backref from mouse
+    slice_id=None #FIXME shit, do I put this here??!?!!! THINK THINK THINK
     #experimental conditions
     #TODO transition these to refer to the individual lot
     acsf_id=Column(String,ForeignKey('reagents.name'),nullable=False) #need to come up with a way to constrain
     internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME hopefully I won't run out of internal or have to switch batches!???! well, that suggests that the exact batch might not be releveant here but instead could be check by date some other way
     prep_id=Column(Integer,ForeignKey('sliceprep.id'))
 
-    prep=relationship('SlicePrep')#TODO 
+    prep=relationship('SlicePrep',primaryjoin='Patch.mouse_id==foreign(SlicePrep.mouse_id)')#TODO 
     cells=relationship('Cell',primaryjoin='Patch.id==foreign(Cell.experiment_id)',backref=backref('experiment',uselist=False))
 
     #pharmacology
@@ -89,7 +90,7 @@ class Patch(Experiment): #FIXME should this be a o-o with slice prep???
     __mapper_args__ = {'polymorphic_identity':'slice'}
     
     def __init__(self,Prep=None,acsf=None,Internal=None,Methods=None,Project=None,Person=None,project_id=None,person_id=None,prep_id=None,mouse_id=None,acsf_id=None,internal_id=None,methods_id=None,startDateTime=None):
-        super().__init__(Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime):
+        super().__init__(Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime)
         self.prep_id=prep_id
         self.mouse_id=mouse_id
         self.acsf_id=acsf_id
@@ -103,15 +104,15 @@ class Patch(Experiment): #FIXME should this be a o-o with slice prep???
             else:
                 raise AttributeError
         if acsf:
-            if acsf.id:
-                self.acsf_id=acsf.id
+            if acsf.name:
+                self.acsf_id=acsf.name
             else:
                 raise AttributeError
         if Internal:
-            if Internal.id:
-                self.internal_id=Internal.id
-        else:
-            raise AttributeError
+            if Internal.name:
+                self.internal_id=Internal.name
+            else:
+                raise AttributeError
 
 
 

@@ -57,7 +57,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="cell" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="cell" numRows="150000" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('cell_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="cell_id" foreignKey="cell_metadata_cell_id_fkey" implied="false" onDeleteCascade="false" table="cell_metadata"/>
             <child column="cell_1_id" foreignKey="cell_to_cell_cell_1_id_fkey" implied="false" onDeleteCascade="false" table="cell_to_cell"/>
@@ -75,13 +75,7 @@
          <column autoUpdated="false" digits="0" id="4" name="hs_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="cell_hs_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
          </column>
-         <column autoUpdated="false" digits="0" id="5" name="repoid" nullable="true" remarks="" size="10" type="int4">
-            <parent column="repopath_id" foreignKey="cell_repoid_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="6" name="filename" nullable="true" remarks="" size="2147483647" type="varchar">
-            <parent column="filename" foreignKey="cell_repoid_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
-         </column>
-         <column autoUpdated="false" digits="6" id="7" name="startDateTime" nullable="false" remarks="" size="29" type="timestamp"/>
+         <column autoUpdated="false" digits="6" id="5" name="startDateTime" nullable="false" remarks="" size="29" type="timestamp"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="cell_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -170,12 +164,10 @@
       <table name="datafile" numRows="9" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="id" nullable="true" remarks="" size="10" type="int4"/>
          <column autoUpdated="false" digits="0" id="1" name="repopath_id" nullable="false" remarks="" size="10" type="int4">
-            <child column="repoid" foreignKey="cell_repoid_fkey" implied="false" onDeleteCascade="false" table="cell"/>
             <child column="repoid" foreignKey="datafiles_metadata_repoid_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
             <parent column="id" foreignKey="datafile_repopath_id_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
          </column>
          <column autoUpdated="false" digits="0" id="2" name="filename" nullable="false" remarks="" size="2147483647" type="varchar">
-            <child column="filename" foreignKey="cell_repoid_fkey" implied="false" onDeleteCascade="false" table="cell"/>
             <child column="filename" foreignKey="datafiles_metadata_repoid_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
          </column>
          <column autoUpdated="false" digits="0" id="3" name="experiment_id" nullable="false" remarks="" size="10" type="int4">
@@ -258,7 +250,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="experiments" numRows="6" remarks="" schema="public" type="TABLE">
+      <table name="experiments" numRows="16" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('experiments_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="experiment_id" foreignKey="cell_experiment_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
             <child column="experiment_id" foreignKey="datafile_experiment_id_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
@@ -441,6 +433,7 @@
          <column autoUpdated="true" defaultValue="nextval('mouse_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="id" foreignKey="breeder_id_fkey" implied="false" onDeleteCascade="false" table="breeder"/>
             <child column="mouse_id" foreignKey="cell_mouse_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
+            <child column="mouse_id" foreignKey="patch_mouse_id_fkey" implied="false" onDeleteCascade="false" table="patch"/>
             <child column="mouse_id" foreignKey="slice_mouse_id_fkey" implied="false" onDeleteCascade="false" table="slice"/>
             <child column="mouse_id" foreignKey="sliceprep_mouse_id_fkey" implied="false" onDeleteCascade="false" table="sliceprep"/>
          </column>
@@ -476,16 +469,22 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="patch" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="patch" numRows="5" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4">
             <child column="id" foreignKey="chrsomsliceexperiment_id_fkey" implied="false" onDeleteCascade="false" table="chrsomsliceexperiment"/>
             <parent column="id" foreignKey="patch_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
          </column>
-         <column autoUpdated="false" digits="0" id="1" name="acsf_id" nullable="false" remarks="" size="2147483647" type="varchar">
+         <column autoUpdated="false" digits="0" id="1" name="mouse_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="patch_mouse_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="2" name="acsf_id" nullable="false" remarks="" size="2147483647" type="varchar">
             <parent column="name" foreignKey="patch_acsf_id_fkey" implied="false" onDeleteCascade="false" table="reagents"/>
          </column>
-         <column autoUpdated="false" digits="0" id="2" name="internal_id" nullable="false" remarks="" size="2147483647" type="varchar">
+         <column autoUpdated="false" digits="0" id="3" name="internal_id" nullable="false" remarks="" size="2147483647" type="varchar">
             <parent column="name" foreignKey="patch_internal_id_fkey" implied="false" onDeleteCascade="false" table="reagents"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="4" name="prep_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="patch_prep_id_fkey" implied="false" onDeleteCascade="false" table="sliceprep"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="patch_pkey" unique="true">
@@ -516,7 +515,7 @@
             <column ascending="true" name="neurotree_id"/>
          </index>
       </table>
-      <table name="person_to_project" numRows="15" remarks="" schema="public" type="TABLE">
+      <table name="person_to_project" numRows="1" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="person_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="person_to_project_person_id_fkey" implied="false" onDeleteCascade="false" table="people"/>
          </column>
@@ -557,7 +556,7 @@
             <column ascending="true" name="reagent_id"/>
          </index>
       </table>
-      <table name="reagents" numRows="1" remarks="" schema="public" type="TABLE">
+      <table name="reagents" numRows="3" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="name" nullable="false" remarks="" size="2147483647" type="varchar">
             <child column="acsf_id" foreignKey="patch_acsf_id_fkey" implied="false" onDeleteCascade="false" table="patch"/>
             <child column="internal_id" foreignKey="patch_internal_id_fkey" implied="false" onDeleteCascade="false" table="patch"/>
@@ -695,8 +694,9 @@
             <column ascending="true" name="datasource_id"/>
          </index>
       </table>
-      <table name="sliceprep" numRows="5" remarks="" schema="public" type="TABLE">
+      <table name="sliceprep" numRows="10" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4">
+            <child column="prep_id" foreignKey="patch_prep_id_fkey" implied="false" onDeleteCascade="false" table="patch"/>
             <parent column="id" foreignKey="sliceprep_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="mouse_id" nullable="true" remarks="" size="10" type="int4">

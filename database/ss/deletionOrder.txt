@@ -2,7 +2,6 @@ recipe
 methods
 file
 cagetransfer
-sliceprep
 datafiles_metadata
 users_datastreams
 slice_metadata
@@ -16,10 +15,11 @@ cell_metadata
 reagentlot
 cagerack
 patch
-cell
-slice
 datafile
+cell
+sliceprep
 repopaths
+slice
 repository
 hardware
 breeder

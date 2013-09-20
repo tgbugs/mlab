@@ -20,10 +20,8 @@ digraph "twoDegreesRelationshipsDiagram" {
     arrowsize="0.8"
   ];
   "cell":"experiment_id":w -> "experiments":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "cell":"filename":w -> "datafile":"filename":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"hs_id":w -> "hardware":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"mouse_id":w -> "mouse":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "cell":"repoid":w -> "datafile":"repopath_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"slice_id":w -> "slice":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell_metadata":"elipses":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell_metadata":"elipses":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -46,6 +44,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "patch":"acsf_id":w -> "reagents":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "patch":"id":w -> "experiments":"id.type":e [arrowhead=none dir=back arrowtail=teeodot];
   "patch":"internal_id":w -> "reagents":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "patch":"mouse_id":w -> "mouse":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "patch":"prep_id":w -> "sliceprep":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "people":"Gender":w -> "sex":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "person_to_project":"elipses":w -> "people":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "person_to_project":"elipses":w -> "project":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -69,10 +69,8 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="slice_id" COLSPAN="3" ALIGN="LEFT">slice_id</TD></TR>
       <TR><TD PORT="experiment_id" COLSPAN="3" ALIGN="LEFT">experiment_id</TD></TR>
       <TR><TD PORT="hs_id" COLSPAN="3" ALIGN="LEFT">hs_id</TD></TR>
-      <TR><TD PORT="repoid" COLSPAN="3" ALIGN="LEFT">repoid</TD></TR>
-      <TR><TD PORT="filename" COLSPAN="3" ALIGN="LEFT">filename</TD></TR>
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">150,000 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
     </TABLE>>
     URL="cell.html"
     tooltip="cell"
@@ -128,7 +126,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="experiment_id" COLSPAN="3" ALIGN="LEFT">experiment_id</TD></TR>
       <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
       <TR><TD PORT="creation_DateTime" COLSPAN="3" ALIGN="LEFT">creation_DateTime</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
     </TABLE>>
     URL="datafile.html"
     tooltip="datafile"
@@ -163,7 +161,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="startDateTime" COLSPAN="2" ALIGN="LEFT">startDateTime</TD><TD PORT="startDateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
       <TR><TD PORT="methods_id" COLSPAN="2" ALIGN="LEFT">methods_id</TD><TD PORT="methods_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="exp_type" COLSPAN="2" ALIGN="LEFT">exp_type</TD><TD PORT="exp_type.type" ALIGN="LEFT">varchar[20]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">16 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
     </TABLE>>
     URL="experiments.html"
     tooltip="experiments"
@@ -208,7 +206,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">mouse</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
     </TABLE>>
     URL="mouse.html"
     tooltip="mouse"
@@ -218,9 +216,11 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">patch</TD></TR>
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
       <TR><TD PORT="acsf_id" COLSPAN="3" ALIGN="LEFT">acsf_id</TD></TR>
       <TR><TD PORT="internal_id" COLSPAN="3" ALIGN="LEFT">internal_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD PORT="prep_id" COLSPAN="3" ALIGN="LEFT">prep_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="patch.html"
     tooltip="patch"
@@ -248,7 +248,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">person_to_project</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">15 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="person_to_project.html"
     tooltip="person_to_project"
@@ -271,7 +271,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">reagents</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
     </TABLE>>
     URL="reagents.html"
     tooltip="reagents"
@@ -327,7 +327,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
       <TR><TD PORT="chamber_id" COLSPAN="3" ALIGN="LEFT">chamber_id</TD></TR>
       <TR><TD PORT="sucrose_id" COLSPAN="3" ALIGN="LEFT">sucrose_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">10 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="sliceprep.html"
     tooltip="sliceprep"

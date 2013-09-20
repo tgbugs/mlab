@@ -20,15 +20,12 @@ digraph "oneDegreeRelationshipsDiagram" {
     arrowsize="0.8"
   ];
   "cell":"experiment_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "cell":"filename":w -> "datafile":"filename":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"hs_id":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"mouse_id":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "cell":"repoid":w -> "datafile":"repopath_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"slice_id":w -> "slice":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell_metadata":"cell_id":w -> "cell":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell_to_cell":"cell_1_id":w -> "cell":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell_to_cell":"cell_2_id":w -> "cell":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "datafile":"experiment_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "slice":"mouse_id":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "slice":"prep_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell" [
@@ -40,10 +37,8 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="slice_id" COLSPAN="2" ALIGN="LEFT">slice_id</TD><TD PORT="slice_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="experiment_id" COLSPAN="2" ALIGN="LEFT">experiment_id</TD><TD PORT="experiment_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="hs_id" COLSPAN="2" ALIGN="LEFT">hs_id</TD><TD PORT="hs_id.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD PORT="repoid" COLSPAN="2" ALIGN="LEFT">repoid</TD><TD PORT="repoid.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD PORT="filename" COLSPAN="2" ALIGN="LEFT">filename</TD><TD PORT="filename.type" ALIGN="LEFT">varchar[2147483647]</TD></TR>
       <TR><TD PORT="startDateTime" COLSPAN="2" ALIGN="LEFT">startDateTime</TD><TD PORT="startDateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">150,000 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
     </TABLE>>
     URL="cell.html"
     tooltip="cell"
@@ -74,21 +69,6 @@ digraph "oneDegreeRelationshipsDiagram" {
     URL="cell_to_cell.html"
     tooltip="cell_to_cell"
   ];
-  "datafile" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datafile</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#f4f7da" ALIGN="LEFT">id</TD></TR>
-      <TR><TD PORT="repopath_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">repopath_id</TD></TR>
-      <TR><TD PORT="filename" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">filename</TD></TR>
-      <TR><TD PORT="experiment_id" COLSPAN="3" ALIGN="LEFT">experiment_id</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
-      <TR><TD PORT="creation_DateTime" COLSPAN="3" ALIGN="LEFT">creation_DateTime</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
-    </TABLE>>
-    URL="datafile.html"
-    tooltip="datafile"
-  ];
   "experiments" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -99,7 +79,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
       <TR><TD PORT="methods_id" COLSPAN="3" ALIGN="LEFT">methods_id</TD></TR>
       <TR><TD PORT="exp_type" COLSPAN="3" ALIGN="LEFT">exp_type</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">16 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
     </TABLE>>
     URL="experiments.html"
     tooltip="experiments"
@@ -136,7 +116,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="dam_id" COLSPAN="3" ALIGN="LEFT">dam_id</TD></TR>
       <TR><TD PORT="dob_id" COLSPAN="3" ALIGN="LEFT">dob_id</TD></TR>
       <TR><TD PORT="dod" COLSPAN="3" ALIGN="LEFT">dod</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
     </TABLE>>
     URL="mouse.html"
     tooltip="mouse"
