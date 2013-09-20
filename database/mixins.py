@@ -34,12 +34,12 @@ class IsDataSource:
         return relationship('DataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
 
 
-class MetaData: #damnit I want this in data, oh well
+class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
     dateTime=Column(DateTime,nullable=False)
     value=Column(Float(53),nullable=False)
     sigfigs=Column(Integer)
     abs_error=Column(Float(53))
-    def __init__(self,Parent=None,DataSource=None,parent_id=None,datasource_id=None,value=None,sigfigs=None,abs_error=None):
+    def __init__(self,value,Parent=None,DataSource=None,parent_id=None,datasource_id=None,sigfigs=None,abs_error=None):
         self.parent_id=parent_id
         self.datasource_id=datasource_id
         self.dateTime=datetime.utcnow() #FIXME this logs when the md was entered
@@ -51,7 +51,7 @@ class MetaData: #damnit I want this in data, oh well
     def repr(self):
         return '%s %s %s %s %s %s'%(self.parent_id,self.dateTime,self.value,self.datasource,self.sigfigs,self.abs_error)
 
-
+#FIXME fuck, I think I did this wrong ;_; this will be a new table for every fucking experiment >_<
 class HasMetaData: #looks like we want this to be table per related
     @declared_attr
     def metadata_(cls): #FIXME naming...
@@ -60,14 +60,13 @@ class HasMetaData: #looks like we want this to be table per related
                 (MetaData, Base,),
                 {   '__tablename__':'%s_metadata'%cls.__tablename__,
                     'id':None,
-                    '%s_id'%'parent' : Column(Integer, #fuck :(
+                    'parent_id':Column(Integer, #FIXME will fail for DataFile :(
                         ForeignKey('%s.id'%cls.__tablename__),
                         primary_key=True,autoincrement=False),
                     'datasource_id':Column(Integer,
                         ForeignKey('datasources.id'),
                         primary_key=True,autoincrement=False),
-                    'datasource':relationship('DataSource',
-                        backref=backref('%s_metadata'%cls.__tablename__))
+                    'datasource':relationship('DataSource') #keep it one way
                 }
         )
         return relationship(cls.MetaData) #FIXME may need a primaryjoin on this
