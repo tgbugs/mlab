@@ -148,7 +148,7 @@ class RepoPath(Base):
     repo_url=Column(String(255),ForeignKey('repository.url'),nullable=False)#,primary_key=True) FIXME
     path=Column(String(255),nullable=False)#,primary_key=True) #make this explicitly relative path?
     assoc_program=Column(String(15)) #FIXME some of these should be automatically updated and check by the programs etc
-    relationship('DataFile',backref='repository_path') #FIXME datafiles can be kept in multiple repos...
+    relationship('DataFile',primaryjoin='DataFile.repopath_id==RepoPath.id',backref='repopath') #FIXME datafiles can be kept in multiple repos...
     #TODO how do we keep track of data duplication and backups!?!?!?
     blurb=Column(Text) #a little note saying what data is stored here, eg, abf files
     #TODO we MUST maintain synchrony between where external programs put files and where the database THINKS they put files, some programs may be able to have this specified on file creation, check the clxapi for example, note has to be done by hand for that one
@@ -206,10 +206,10 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
             datasource=relationship('DataSource')
             __table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {})
             def __init__(self,value,DataFile=None,DataSource=None,datasource_id=None,repoid=None,filename=None,sigfigs=None,abs_error=None):
+                self.dateTime=datetime.utcnow() #FIXME
                 self.repoid=repoid
                 self.filename=filename
                 self.datasource_id=datasource_id
-                self.dateTime=datetime.utcnow() #FIXME this logs when the md was entered
                 self.value=value
                 self.sigfigs=sigfigs
                 self.abs_error=abs_error

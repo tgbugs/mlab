@@ -43,8 +43,8 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
     sigfigs=Column(Integer)
     abs_error=Column(Float(53))
     def __init__(self,value,Parent=None,DataSource=None,datasource_id=None,sigfigs=None,abs_error=None):
+        self.dateTime=datetime.utcnow() #FIXME
         self.datasource_id=datasource_id
-        self.dateTime=datetime.utcnow() #FIXME this logs when the md was entered
         self.value=value
         self.sigfigs=sigfigs
         self.abs_error=abs_error

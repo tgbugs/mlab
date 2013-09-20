@@ -500,7 +500,7 @@ def run_tests(session):
     sp=t_sliceprep(session,20)
     p=t_patch(session,1)
 
-    s=t_slice(session,100)
+    s=t_slice(session,50)
     c=t_cell(session,10)
 
     session.commit()

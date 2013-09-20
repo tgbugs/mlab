@@ -69,7 +69,7 @@ class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific
         return '\nDOB %s %s %s'%(frmtDT(self.dateTime),_plusMinus,self.absolute_error)
 
 
-class Mouse(HasNotes, Base):
+class Mouse(HasNotes, Base): #TODO species metadata???
     #in addition to the id, keep track of some of the real world ways people refer to mice!
     eartag=Column(Integer)
     tattoo=Column(Integer)
@@ -95,14 +95,21 @@ class Mouse(HasNotes, Base):
     dob_id=Column(Integer, ForeignKey('dob.id'),nullable=False) #backref FIXME data integrity problem, dob_id and litter.dob_id may not match if entered manually...
     @hybrid_property #TODO
     def age(self):
-        pass
+        if self.dod:
+            return self.dod-self.dob.dateTime
+        else:
+            return datetime.utcnow()-self.dob.dateTime
+        
     dod=Column(DateTime) #FIXME need to figure out how to directly link this to experiments eg, a setter for dod would just get current datetime and make the mouse dead instead of calling a completely separate killMouse method
     @hybrid_property #TODO
     def ageAtDeath(self):
-        pass
+        return self.dod=self.dob.dateTime #FIXME add plusMinus
 
     #breeding records
     breedingRec=relationship('Breeder',primaryjoin='Mouse.id==Breeder.id',backref=backref('mouse',uselist=False),uselist=False)
+
+    #experiments
+    experiment_id=Column(Integer,ForeignKey('experiments.id')) #FIXME m-m
 
     #things that not all mice will have but that are needed for data to work out
     slices=relationship('Slice',backref=backref('mouse',uselist=False))
@@ -170,6 +177,7 @@ class Slice(HasMetaData, HasNotes, Base):
     id=Column(Integer,primary_key=True) #FIXME
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
     prep_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO this should really refer to slice prep, but suggests that this class should be 'acute slice'
+    #TODO check that there are not more slices than the thickness (from the metadta) divided by the total length of the largest know mouse brain
     startDateTime=Column(DateTime,nullable=False)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
     #hemisphere
     #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
@@ -211,11 +219,11 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
     #id=None #FIXME fuck it dude, wouldn't it be easier to just give them unqiue ids so we don't have to worry about datetime? or is it the stupid sqlite problem?
 
     #link to subject
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)
-    slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False) #FIXME NO DATETIME PRIMARY KEYS
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME
+    slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False)
 
     #link to data
-    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #FIXME this should be Patch ?? but.. but.. but..
     hs_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #FIXME need mapping to channels in abffile so that we can link the analysis results directly back to the cell, it really does feel like I should be putting cell id's into experiments rather than the ohter way around thought.... wait fuck damn it
 
     #datafile_id=Column(Integer,ForeignKey('datafile.id'),nullable=False)

@@ -48,20 +48,19 @@ class Experiment(HasMetaData, Base): #FIXME there is in fact a o-m on subject-ex
                 raise AttributeError
 
 
-class SlicePrep(Experiment): #TODO this is probably an experiment...
+class SlicePrep(Experiment): #it works better to have this first because I can create a sliceprep object and THEN pick the mouse :)
     """ Notes on the dissection and slice prep"""
     __tablename__='sliceprep'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
-    mouse_id=Column(Integer,ForeignKey('mouse.id')) #works with backref from mouse
     chamber_id=Column(Integer,ForeignKey('hardware.id'))
     sucrose_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME metadata??!
     #expmetadata=relationship('ExpMetaData') #FIXME For stuff like 'ketxyl volume'? vs explicit columns?!?!
     slices=relationship('Slice',primaryjoin='SlicePrep.id==foreign(Slice.prep_id)',backref=backref('prep',uselist=False))
-    mouse=relationship('Mouse',primaryjoin='SlicePrep.mouse_id==Mouse.id',backref=backref('prep',uselist=False))
+    mouse=relationship('Mouse',primaryjoin='SlicePrep.id==Mouse.experiment_id',backref=backref('prep',uselist=False)) #FIXME mice *should* be able to be part of more than one experiment for some types damn it
 
     __mapper_args__={'polymorphic_identity':'slice prep'}
 
-    def __init__(self,Project=None,Person=None,Mouse=None,Methods=None,project_id=None,person_id=None,mouse_id=None,methods_id=None,startDateTime=None,sucrose_id=None): #FIXME
+    def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None,sucrose_id=None): #FIXME
         super().__init__(Project=Project,Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime)
         self.mouse_id=mouse_id
         self.sucrose_id=sucrose_id
@@ -73,32 +72,31 @@ class Patch(Experiment): #FIXME should this be a o-o with slice prep???
     """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
     __tablename__='patch'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
-    mouse_id=Column(Integer,ForeignKey('mouse.id')) #works with backref from mouse
-    slice_id=None #FIXME shit, do I put this here??!?!!! THINK THINK THINK
+    #mouse_id=Column(Integer,ForeignKey('mouse.id')) #FIXME
+    #slice_id=None #FIXME shit, do I put this here??!?!!! THINK THINK THINK
     #experimental conditions
     #TODO transition these to refer to the individual lot
     acsf_id=Column(String,ForeignKey('reagents.name'),nullable=False) #need to come up with a way to constrain
     internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME hopefully I won't run out of internal or have to switch batches!???! well, that suggests that the exact batch might not be releveant here but instead could be check by date some other way
     prep_id=Column(Integer,ForeignKey('sliceprep.id'))
 
-    prep=relationship('SlicePrep',primaryjoin='Patch.mouse_id==foreign(SlicePrep.mouse_id)')#TODO 
+    prep=relationship('SlicePrep',primaryjoin='Patch.prep_id==SlicePrep.i)')#TODO 
     cells=relationship('Cell',primaryjoin='Patch.id==foreign(Cell.experiment_id)',backref=backref('experiment',uselist=False))
+    #mouse=relationship('Mouse',primaryjoin='Patch.mouse_id==Mouse.id',backref=backref('prep',uselist=False)) #FIXME super over connected :/
 
     #pharmacology
     #TODO might should add a pharmacology data table similar to the metadata table but with times?
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
     
-    def __init__(self,Prep=None,acsf=None,Internal=None,Methods=None,Project=None,Person=None,project_id=None,person_id=None,prep_id=None,mouse_id=None,acsf_id=None,internal_id=None,methods_id=None,startDateTime=None):
+    def __init__(self,Prep=None,acsf=None,Internal=None,Methods=None,Project=None,Person=None,project_id=None,person_id=None,prep_id=None,acsf_id=None,internal_id=None,methods_id=None,startDateTime=None):
         super().__init__(Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime)
         self.prep_id=prep_id
-        self.mouse_id=mouse_id
         self.acsf_id=acsf_id
         self.internal_id=internal_id
         if Prep:
             if Prep.id:
                 self.prep_id=Prep.id
-                self.mouse_id=Prep.mouse_id
                 self.project_id=Prep.project_id
                 self.person_id=Prep.person_id #FIXME in THEORY a different person could do prep vs patch...
             else:
