@@ -27,15 +27,18 @@ digraph "twoDegreesRelationshipsDiagram" {
   "cell":"mouse_id":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"repoid":w -> "datafile":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"slice_id":w -> "slice":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cell_metadata":"elipses":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cell_metadata":"elipses":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell_to_cell":"elipses":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell_to_cell":"elipses":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "cellmetadata":"elipses":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "dam":"elipses":w -> "breeder":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
+  "datafile":"elipses":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafile":"elipses":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "experiments":"methods_id":w -> "citeable":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "experiments":"person_id":w -> "people":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "experiments":"project_id":w -> "project":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "expmetadata":"elipses":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments_metadata":"elipses":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments_metadata":"elipses":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"elipses":w -> "cage":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"elipses":w -> "dam":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"elipses":w -> "dob":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -52,6 +55,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "sire":"elipses":w -> "breeder":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "slice":"mouse_id":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "slice":"prep_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "slice_metadata":"datasource_id":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "slice_metadata":"slice_id":w -> "slice":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "sliceprep":"elipses":w -> "hardware":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "sliceprep":"elipses":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "sliceprep":"elipses":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -92,6 +97,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="cell.html"
     tooltip="cell"
   ];
+  "cell_metadata" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cell_metadata</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="cell_metadata.html"
+    tooltip="cell_metadata"
+  ];
   "cell_to_cell" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -101,16 +116,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     </TABLE>>
     URL="cell_to_cell.html"
     tooltip="cell_to_cell"
-  ];
-  "cellmetadata" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cellmetadata</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="cellmetadata.html"
-    tooltip="cellmetadata"
   ];
   "citeable" [
     label=<
@@ -142,6 +147,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="datafile.html"
     tooltip="datafile"
   ];
+  "datasources" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datasources</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">8 &gt;</TD></TR>
+    </TABLE>>
+    URL="datasources.html"
+    tooltip="datasources"
+  ];
   "dob" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -167,15 +182,15 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="experiments.html"
     tooltip="experiments"
   ];
-  "expmetadata" [
+  "experiments_metadata" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">expmetadata</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments_metadata</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
-    URL="expmetadata.html"
-    tooltip="expmetadata"
+    URL="experiments_metadata.html"
+    tooltip="experiments_metadata"
   ];
   "hardware" [
     label=<
@@ -278,10 +293,25 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="mouse_id" COLSPAN="2" ALIGN="LEFT">mouse_id</TD><TD PORT="mouse_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="prep_id" COLSPAN="2" ALIGN="LEFT">prep_id</TD><TD PORT="prep_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="startDateTime" COLSPAN="2" ALIGN="LEFT">startDateTime</TD><TD PORT="startDateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">500 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">500 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
     </TABLE>>
     URL="slice.html"
     tooltip="slice"
+  ];
+  "slice_metadata" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">slice_metadata</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
+      <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
+      <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
+      <TR><TD PORT="slice_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">slice_id</TD></TR>
+      <TR><TD PORT="datasource_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="slice_metadata.html"
+    tooltip="slice_metadata"
   ];
   "sliceprep" [
     label=<

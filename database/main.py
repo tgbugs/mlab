@@ -136,13 +136,13 @@ def printStuff(cons=True,mice=True,data=True,notes=True):
 
 def main():
     #create engine
-    #echo=True
     echo=False
-    #engine=postgresEng(echo=echo,wipe_db=False)
-    engine=sqliteEng(echo=echo)
+    #echo=False
+    engine=postgresEng(echo=echo,wipe_db=False)
+    #engine=sqliteEng(echo=echo)
 
     #create metadata
-    #Base.metadata.drop_all(engine,checkfirst=True)
+    Base.metadata.drop_all(engine,checkfirst=True)
     Base.metadata.create_all(engine,checkfirst=True)
 
     #create session
@@ -155,6 +155,7 @@ def main():
     #do some tests!
     try:
         run_tests(session)
+        pass
     except:
         raise
         print('tests failed')

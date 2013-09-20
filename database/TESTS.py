@@ -15,15 +15,15 @@ from imports import printD,ploc,datetime,timedelta
 #order=(t_people,t_dob)# you get the idea... maybe make a tree in a dict or something?
 
 class TEST:
-    def __init__(self,session,num=None,autocommit=True,Thing=None):
+    def __init__(self,session,num=None,autoflush=True,Thing=None):
         self.Thing=Thing
         self.num=num
         self.session=session
         self.records=[] #this is the output
         self.setup()
         self.make_all()
-        if autocommit:
-            self.commit()
+        if autoflush:
+            self.flush()
     def make_date(self):
         from datetime import date,timedelta
         num=self.num
@@ -70,9 +70,9 @@ class TEST:
     def make_all(self):
         pass
 
-    def commit(self):
+    def flush(self):
         self.session.add_all(self.records)
-        self.session.commit()
+        self.session.flush()
 
 
 ###--------
@@ -209,7 +209,6 @@ class t_breeders(TEST):
     """makes n pairs of breeders"""
     def make_all(self):
         mice=t_mice(self.session,4*self.num)
-        mice.commit()
         sires=self.session.query(Mouse).filter(Mouse.sex_id=='m')
         dams=self.session.query(Mouse).filter(Mouse.sex_id=='f')
         self.records=[Sire(sire) for sire in sires[:self.num]]+[Dam(dam) for dam in dams[:self.num]]
@@ -219,7 +218,6 @@ class t_mating_record(TEST):
     def make_all(self):
         from datetime import datetime,timedelta
         breeders=t_breeders(self.session,int(self.num/6)+1)
-        breeders.commit()
 
         sires=[s for s in self.session.query(Sire)]
         dams=[d for d in self.session.query(Dam)]
@@ -243,7 +241,6 @@ class t_litters(TEST):
         dobs=t_dob(self.session,datetimes=dts)
         for mr,dob in zip(mrs.records,dobs.records):
             mr.dob_id=dob.id 
-        mrs.commit()
 
         self.records=[Litter(mr) for mr in mrs.records]
     def add_members(self):
@@ -260,7 +257,7 @@ class t_litters(TEST):
         #VS
         [self.session.add_all(self.records[i].make_members(litter_sizes[i])) for i in range(self.num)]
 
-        self.session.commit()
+        self.session.flush()
 
 
 class t_mice(TEST):
@@ -284,8 +281,14 @@ class t_slice(TEST):
 
 class t_cell(TEST):
     def make_all(self):
-        Cell(Cell=None)
-        self.records=None
+        slices=[s for s in self.session.query(Slice)]
+        experiments=[e for e in self.session.query(Patch)]
+        headstages=[h for h in self.session.query(Hardware).filter_by(type='headstage')]
+        self.records=[]
+        for e in experiments:
+            for s in slices:
+                for h in headstages:
+                    self.records.extend([Cell(Headstage=h,Slice=s,Patch=e) for i in range(self.num)])
 
 ###-------------
 ###  experiments
@@ -314,7 +317,7 @@ class t_project(TEST):
             #[rec.people.append(person) for person in people] #FIXME somehow this no workey
             count+=1
         self.session.add_all(assocs)
-        self.session.commit()
+        self.session.flush()
 
 
 class t_experiment(TEST):
@@ -344,6 +347,34 @@ class t_experiment(TEST):
             datetimes=self.make_datetime()
 
             self.records+=[Experiment(Project=p,Person=exps[i],Mouse=ms[i],startDateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
+
+class t_patch(TEST):
+    def __init__(self,session,num=None,num_projects=None):
+        self.num_projects=num_projects
+        super().__init__(session,num)
+    def make_all(self):
+        from time import sleep
+        projects=t_project(self.session,self.num_projects)
+        projects.add_people()
+        #projects.commit() #FIXME do I need to readd? or can I just commit directly?
+
+        lits=t_litters(self.session,50)
+        lits.add_members()
+        #lits.commit()
+
+        mice=[m for m in self.session.query(Mouse).filter(Mouse.breedingRec==None,Mouse.dod==None)]
+
+        #mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
+        self.records=[]
+        for p in projects.records:
+            #printD(p) #FIXME apparently p.__dict__ is not populated until AFTER you call the object...
+            #printD([t for t  in p.__dict__.items()]) #FIXME what the fuck, sometimes this catches nothing!?
+            ms=[mice[i] for i in np.random.choice(len(mice),self.num)] #FIXME missing mouse
+            #TODO need to test with bad inputs
+            exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
+            datetimes=self.make_datetime()
+
+            self.records+=[Patch(Project=p,Person=exps[i],Mouse=ms[i],startDateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
 
 class t_sliceprep(TEST):
@@ -420,7 +451,7 @@ class t_hardware(TEST):
     def setup(self):
         self.amps=[Hardware(type='amplifier',unique_id='0012312'),Hardware(type='amplifier',unique_id='bob')]
         self.session.add_all(self.amps)
-        self.session.commit()
+        self.session.flush()
 
     def make_all(self):
         self.records=[]
@@ -445,30 +476,23 @@ def run_tests(session):
     #RESPONSE turns out it is because I'm trying to make EXACTLY the same tables again and an identical mapped instance already exists
     #so it doesnt happen with people, but a collision *could* happen
     #people=t_people(session,10)
-    #people.commit()
     #people.query()
 
     #repos=t_repo(session)
-    #repos.commit()
     #printD([r.url for r in repos.records])
 
     #rps=t_repopath(session)
-    #rps.commit()
     #printD([r.id for r in rps.records])
 
     #ps=t_project(session,10)
-    #ps.commit()
     #ps.add_people()
-    #ps.commit()
     #printD([[t for t in p.__dict__] for p in ps.records])
 
     #p=t_project(session,3)
-    #p.commit()
     #p.add_people()
     #printD([[t for t in p.__dict__.items()] for p in session.query(Project)])
 
     #e=t_experiment(session,100)
-    #e.commit()
 
 
     #FIXME the real test will be to vary the number of projects, experiments and datafiles
@@ -488,6 +512,9 @@ def run_tests(session):
     i=t_reagent(session)
 
     s=t_slice(session,100)
+    c=t_cell(session,10)
+
+    session.commit()
 
 
     #l=t_litters(session,20) #FIXME another wierd error here... saying that I tried to add a mouse as a breeder twice... hrm...

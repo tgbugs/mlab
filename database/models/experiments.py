@@ -33,7 +33,7 @@ class Experiment(HasMetaData, Base): #FIXME there is in fact a o-m on subject-ex
         'polymorphic_on':exp_type,
         'polymorphic_identity':'experiment',
     }
-    def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,methods_id=None,startDateTime=None):
+    def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None):
         self.project_id=project_id
         self.person_id=person_id
         self.methods_id=methods_id
@@ -41,18 +41,11 @@ class Experiment(HasMetaData, Base): #FIXME there is in fact a o-m on subject-ex
 
         self.AssignID(Project)
         self.AssignID(Person)
-        """
-        if Project:
-            if Project.id:
-                self.project_id=Project.id
+        if Methods:
+            if Methods.id:
+                self.methods_id=Methods.id
             else:
                 raise AttributeError
-        if Person:
-            if Person.id:
-                self.person_id=Person.id
-            else:
-                raise AttributeError
-        """
 
 
 class SlicePrep(Experiment): #TODO this is probably an experiment...
@@ -69,15 +62,10 @@ class SlicePrep(Experiment): #TODO this is probably an experiment...
     __mapper_args__={'polymorphic_identity':'slice prep'}
 
     def __init__(self,Project=None,Person=None,Mouse=None,project_id=None,person_id=None,mouse_id=None,methods_id=None,startDateTime=None,sucrose_id=None): #FIXME
-        self.project_id=project_id
-        self.person_id=person_id
-        self.methods_id=methods_id
-        self.startDateTime=startDateTime
-        self.sucrose_id=sucrose_id
+        super().__init__(Project=Project,Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime):
         self.mouse_id=mouse_id
+        self.sucrose_id=sucrose_id
 
-        self.AssignID(Project)
-        self.AssignID(Person)
         self.AssignID(Mouse)
 
 
@@ -90,13 +78,39 @@ class Patch(Experiment):
     #TODO transition these to refer to the individual lot
     acsf_id=Column(String,ForeignKey('reagents.name'),nullable=False) #need to come up with a way to constrain
     internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME hopefully I won't run out of internal or have to switch batches!???! well, that suggests that the exact batch might not be releveant here but instead could be check by date some other way
+    prep_id=Column(Integer,ForeignKey('sliceprep.id'))
 
+    prep=relationship('SlicePrep')#TODO 
     cells=relationship('Cell',primaryjoin='Patch.id==foreign(Cell.experiment_id)',backref=backref('experiment',uselist=False))
 
     #pharmacology
     #TODO might should add a pharmacology data table similar to the metadata table but with times?
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
+    
+    def __init__(self,Project=None,Person=None,Prep=None,acsf=None,Internal=None,Methods=None,project_id=None,person_id=None,prep_id=None,mouse_id=None,acsf_id=None,internal_id=None,methods_id=None,startDateTime=None):
+        super().__init__(Project=Project,Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime):
+        self.prep_id=prep_id
+        self.mouse_id=mouse_id
+        self.acsf_id=acsf_id
+        self.internal_id=internal_id
+        if Prep:
+            if Prep.id:
+                self.prep_id=Prep.id
+                self.mouse_id=Prep.mouse_id
+            else:
+                raise AttributeError
+        if acsf:
+            if acsf.id:
+                self.acsf_id=acsf.id
+            else:
+                raise AttributeError
+        if Internal:
+            if Internal.id:
+                self.internal_id=Internal.id
+        else:
+            raise AttributeError
+
 
 
 class ChrSomWholeCell(Patch): #FIXME could do a 'HasLedStim' or something?

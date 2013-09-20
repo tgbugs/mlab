@@ -25,6 +25,7 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datafile</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#f4f7da" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="repopath_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">repopath_id</TD></TR>
       <TR><TD PORT="filename" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">filename</TD></TR>
       <TR><TD PORT="experiment_id" COLSPAN="3" ALIGN="LEFT">experiment_id</TD></TR>

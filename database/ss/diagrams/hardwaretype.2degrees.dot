@@ -23,7 +23,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "chrsomsliceexperiment":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware":"type":w -> "hardwaretype":"type.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware_datastreams":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "hwmetadata":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "hardware_metadata":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "sliceprep":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell" [
     label=<
@@ -69,6 +69,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="hardware_datastreams.html"
     tooltip="hardware_datastreams"
   ];
+  "hardware_metadata" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hardware_metadata</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">300 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="hardware_metadata.html"
+    tooltip="hardware_metadata"
+  ];
   "hardwaretype" [
     label=<
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -78,16 +88,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     </TABLE>>
     URL="hardwaretype.html"
     tooltip="hardwaretype"
-  ];
-  "hwmetadata" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hwmetadata</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="hwmetadata.html"
-    tooltip="hwmetadata"
   ];
   "sliceprep" [
     label=<

@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,13 +110,13 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('project_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="experiments.project_id refs project.id via experiments_project_id_fkey"><a href='experiments.html'>experiments</a><span class='relatedKey'>.project_id</span>
     </td>
     <td class='constraint detail'>experiments_project_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="person_to_project.project_id refs project.id via person_to_project_project_id_fkey"><a href='person_to_project.html'>person_to_project</a><span class='relatedKey'>.project_id</span>
     </td>
     <td class='constraint detail'>person_to_project_project_id_fkey<span title='Restrict delete:
@@ -127,7 +127,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>lab</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>15</td>
@@ -138,7 +138,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>iacuc_protocol_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -148,7 +148,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="project.iacuc_protocol_id refs iacucprotocols.id via project_iacuc_protocol_id_fkey"><a href='iacucprotocols.html'>iacucprotocols</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>project_iacuc_protocol_id_fkey<span title='Restrict delete:
@@ -158,7 +158,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>blurb</td>
  <td class='detail'>text</td>
  <td class='detail' align='right'>2147483647</td>
@@ -170,7 +170,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='4 columns'>Table contained 1 rows at Thu Sep 19 01:25 PDT 2013<p/>
+<p title='4 columns'>Table contained 1 rows at Thu Sep 19 23:19 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -196,25 +196,25 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from project'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="experiments.html" title="experiments" alt="" coords="521,5,666,198">
+<area shape="rect" id="node1" href="experiments.html" title="experiments" alt="" coords="525,5,670,198">
 <area shape="rect" id="node2" href="project.html" title="project" alt="" coords="197,131,467,285">
 <area shape="rect" id="node4" href="iacucprotocols.html" title="iacucprotocols" alt="" coords="6,180,151,260">
-<area shape="rect" id="node3" href="person_to_project.html" title="person_to_project" alt="" coords="513,215,674,318">
+<area shape="rect" id="node3" href="person_to_project.html" title="person_to_project" alt="" coords="513,215,682,318">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/project.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="cell.html" title="cell" alt="" coords="915,40,1050,120">
-<area shape="rect" id="node2" href="experiments.html" title="experiments" alt="" coords="521,187,666,381">
-<area shape="rect" id="node3" href="datafile.html" title="datafile" alt="" coords="727,40,862,120">
-<area shape="rect" id="node4" href="slice.html" title="slice" alt="" coords="719,137,870,217">
-<area shape="rect" id="node5" href="citeable.html" title="citeable" alt="" coords="269,329,395,409">
-<area shape="rect" id="node6" href="people.html" title="people" alt="" coords="257,232,407,312">
-<area shape="rect" id="node7" href="project.html" title="project" alt="" coords="197,61,467,214">
-<area shape="rect" id="node11" href="iacucprotocols.html" title="iacucprotocols" alt="" coords="6,109,151,189">
-<area shape="rect" id="node8" href="expmetadata.html" title="expmetadata" alt="" coords="725,235,865,315">
-<area shape="rect" id="node9" href="patch.html" title="patch" alt="" coords="727,332,862,412">
-<area shape="rect" id="node10" href="person_to_project.html" title="person_to_project" alt="" coords="513,54,674,157">
-<area shape="rect" id="node12" href="sliceprep.html" title="sliceprep" alt="" coords="731,429,859,509">
+<area shape="rect" id="node1" href="cell.html" title="cell" alt="" coords="955,44,1090,124">
+<area shape="rect" id="node2" href="experiments.html" title="experiments" alt="" coords="525,192,670,385">
+<area shape="rect" id="node3" href="datafile.html" title="datafile" alt="" coords="751,44,886,124">
+<area shape="rect" id="node4" href="slice.html" title="slice" alt="" coords="743,142,894,222">
+<area shape="rect" id="node5" href="citeable.html" title="citeable" alt="" coords="269,334,395,414">
+<area shape="rect" id="node6" href="people.html" title="people" alt="" coords="257,236,407,316">
+<area shape="rect" id="node7" href="project.html" title="project" alt="" coords="197,65,467,218">
+<area shape="rect" id="node11" href="iacucprotocols.html" title="iacucprotocols" alt="" coords="6,114,151,194">
+<area shape="rect" id="node8" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="727,239,910,319">
+<area shape="rect" id="node9" href="patch.html" title="patch" alt="" coords="751,336,886,416">
+<area shape="rect" id="node10" href="person_to_project.html" title="person_to_project" alt="" coords="513,58,682,161">
+<area shape="rect" id="node12" href="sliceprep.html" title="sliceprep" alt="" coords="755,434,883,514">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/project.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

@@ -25,9 +25,10 @@ digraph "twoDegreesRelationshipsDiagram" {
   "cell":"mouse_id":w -> "mouse":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"repoid":w -> "datafile":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"slice_id":w -> "slice":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cell_metadata":"elipses":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cell_metadata":"elipses":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell_to_cell":"elipses":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell_to_cell":"elipses":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "cellmetadata":"elipses":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "chrsomsliceexperiment":"id":w -> "patch":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "chrsomsliceexperiment":"led_id":w -> "hardware":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafile":"elipses":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -36,8 +37,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "hardware":"type":w -> "hardwaretype":"type":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware_datastreams":"datasource_id":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware_datastreams":"hardware_id":w -> "hardware":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "hwmetadata":"datasource_id":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "hwmetadata":"hw_id":w -> "hardware":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "hardware_metadata":"datasource_id":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "hardware_metadata":"hardware_id":w -> "hardware":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "patch":"elipses":w -> "reagents":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "patch":"elipses":w -> "experiments":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "patch":"elipses":w -> "reagents":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -64,6 +65,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="cell.html"
     tooltip="cell"
   ];
+  "cell_metadata" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cell_metadata</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="cell_metadata.html"
+    tooltip="cell_metadata"
+  ];
   "cell_to_cell" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -73,16 +84,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     </TABLE>>
     URL="cell_to_cell.html"
     tooltip="cell_to_cell"
-  ];
-  "cellmetadata" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cellmetadata</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="cellmetadata.html"
-    tooltip="cellmetadata"
   ];
   "chrsomsliceexperiment" [
     label=<
@@ -110,7 +111,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datasources</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">8 &gt;</TD></TR>
     </TABLE>>
     URL="datasources.html"
     tooltip="datasources"
@@ -150,6 +151,21 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="hardware_datastreams.html"
     tooltip="hardware_datastreams"
   ];
+  "hardware_metadata" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hardware_metadata</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
+      <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
+      <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
+      <TR><TD PORT="hardware_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">hardware_id</TD></TR>
+      <TR><TD PORT="datasource_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">300 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="hardware_metadata.html"
+    tooltip="hardware_metadata"
+  ];
   "hardwaretype" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -159,21 +175,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     </TABLE>>
     URL="hardwaretype.html"
     tooltip="hardwaretype"
-  ];
-  "hwmetadata" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hwmetadata</TD></TR>
-      <TR><TD PORT="hw_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">hw_id</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD></TR>
-      <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
-      <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
-      <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
-      <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="hwmetadata.html"
-    tooltip="hwmetadata"
   ];
   "mouse" [
     label=<
@@ -210,7 +211,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">slice</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">500 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">500 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
     </TABLE>>
     URL="slice.html"
     tooltip="slice"

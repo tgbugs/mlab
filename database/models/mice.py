@@ -219,9 +219,9 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
     hs_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #FIXME need mapping to channels in abffile so that we can link the analysis results directly back to the cell, it really does feel like I should be putting cell id's into experiments rather than the ohter way around thought.... wait fuck damn it
 
     #datafile_id=Column(Integer,ForeignKey('datafile.id'),nullable=False)
-    repoid=Column(Integer)
-    filename=Column(String)
-    __table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {}) #FIXME somehow this doesn't deal with the posibility of backups... which would be really, really good to keep track of at the same time so if there is a crash there can be instant failover
+    #repoid=Column(Integer) #FIXME this will NOT work because there are multiple files per cell!
+    #filename=Column(String) #FIXME NOTE this is _NOT_ a trivial problem
+    #__table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {}) #FIXME somehow this doesn't deal with the posibility of backups... which would be really, really good to keep track of at the same time so if there is a crash there can be instant failover
 
     #TODO we might be able to link cells to headstages and all that other shit more easily, keeping the data on the cell itself in the cell, tl;dr NORMALIZE!
     #hs_amp_serial=Column(Integer,ForeignKey('headstage.amp_serial'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
@@ -249,7 +249,26 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
                         secondaryjoin='Cell.id==cell_to_cell.c.cell_1_id',
                         backref='cell_2',
                        )
-
+    def __init__(self,Slice=None,Patch=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None):
+        self.startDateTime=datetime.utcnow() #FIXME
+        self.slice_id=slice_id
+        self.mouse_id=mouse_id
+        self.experiment_id=experiment_id
+        self.hs_id=hs_id
+        if Slice:
+            if Slice.id:
+                self.slice_id=Slice.id
+                self.mouse_id=Slice.mouse_id
+            else:
+                raise AttributeError
+        if Patch:
+            if Patch.id:
+                self.experiment_id=Patch.id
+        if Headstage:
+            if Headstage.id:
+                self.hs_id=Headstage.id
+            else:
+                raise AttributeError
     
     #TODO analysis should probably reference the objects not the other way around
 
