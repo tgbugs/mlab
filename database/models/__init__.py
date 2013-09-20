@@ -67,7 +67,7 @@ __all__.extend([
         'Mouse',
         'Slice',
         'Cell',
-        'cell_to_cell',
+        #'cell_to_cell',
         'DOB',
         'Sire',
         'Dam',
@@ -81,8 +81,8 @@ __all__.extend([
 from database.models.notes import *
 __all__.extend([
         'person_to_project',
-        'NoteAssociation',
-        'Note'
+        #'NoteAssociation',
+        #'Note'
 ])
 
 from database.models.people import *

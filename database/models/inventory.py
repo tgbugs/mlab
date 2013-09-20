@@ -53,7 +53,7 @@ class Hardware(HasMetaData, IsDataSource, Base):
         except: pass
         try: children=''.join([s.strHelper() for s in self.sub_components])
         except: pass
-        return '\n%s %s %s son of %s father to %s with MetaData %s'%(self.type.capitalize(),name,uid,parent,children,self.hwmetadata)
+        return '\n%s %s %s son of %s father to %s with MetaData %s'%(self.type.capitalize(),name,uid,parent,children,self.metadata_)
 
 ###-------------------
 ###  Reagent inventory

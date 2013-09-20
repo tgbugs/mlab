@@ -83,6 +83,19 @@ def sqliteEng(echo=False):
 ###  print stuff
 ###-------------
 
+def queryAll(session):
+    from database import models
+    s=session
+    #[s.query(models.__dict__[a]).all() for a in models.__all__] #AWEYISS 
+    for a in models.__all__:
+        print(s.query(models.__dict__[a]).all())
+        try:
+            print(s.query(models.__dict__[a].MetaData).all())
+        except:
+            pass
+
+
+
 def printStuff(cons=True,mice=True,data=True,notes=True):
     if cons:
         print('\n###***constraints***')
@@ -123,8 +136,8 @@ def printStuff(cons=True,mice=True,data=True,notes=True):
 
 def main():
     #create engine
-    echo=True
-    #echo=False
+    #echo=True
+    echo=False
     #engine=postgresEng(echo=echo,wipe_db=False)
     engine=sqliteEng(echo=echo)
 
@@ -148,6 +161,9 @@ def main():
 
     #print stuff!
     printStuff(cons=0,mice=0,data=0,notes=0)
+
+    #query stuff
+    queryAll(session)
 
     return session
     
