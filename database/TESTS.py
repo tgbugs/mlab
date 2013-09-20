@@ -403,12 +403,11 @@ class t_datafile(TEST):
                 data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),Experiment=exp,DataSource=ds.records[0]) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
         self.records=data
 
-class t_hwmetadata(TEST):
+class t_dfmetadata(TEST):
     def make_all(self):
         ds=self.session.query(DataSource)[0]
         self.records=[]
-        [self.records.extend([h.MetaData(i,Parent=h,datasource_id=ds.id) for i in range(self.num)]) for h in self.session.query(Hardware)]
-        
+        [self.records.extend([d.MetaData(i,DataFile=d,DataSource=ds) for i in range(self.num)]) for d in self.session.query(DataFile)]
 ###-----------
 ###  inventory
 ###-----------
@@ -423,6 +422,13 @@ class t_hardware(TEST):
         self.records=[]
         [[self.records.append(Hardware(type='headstage',unique_id='%s'%i, Parent=amp)) for i in range(2)] for amp in self.amps]
         #printD(self.records) #FIXME this whole make all is broken
+
+class t_hwmetadata(TEST):
+    def make_all(self):
+        ds=self.session.query(DataSource)[0]
+        self.records=[]
+        [self.records.extend([h.MetaData(i,Parent=h,DataSource=ds) for i in range(self.num)]) for h in self.session.query(Hardware)]
+        
 
 class t_reagent(TEST):
     def make_all(self):
@@ -467,6 +473,7 @@ def run_tests(session):
 
     #d=t_datafile(session,10,50,4)
     d=t_datafile(session,1,1,1)
+    dfmd=t_dfmetadata(session,50)
     
     #[print(df.creation_DateTime) for df in session.query(DataFile)]
 

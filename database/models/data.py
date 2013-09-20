@@ -1,3 +1,4 @@
+from time import sleep #FIXME
 from database.imports import *
 from database.base import Base
 from database.mixins import HasNotes, HasMetaData
@@ -194,24 +195,29 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     @declared_attr
     def metadata_(cls): #FIXME naming...
-        class MetaData(Base):
+        class DataFileMetaData(Base):
+            __tablename__='datafiles_metadata'
+            id=None
             repoid=Column(Integer,primary_key=True,autoincrement=False)
             filename=Column(String,primary_key=True)
-            dateTime=Column(DateTime,primary_key=True)
+            datasource_id=Column(Integer,ForeignKey('datasources.id'),primary_key=True,autoincrement=False)
+            dateTime=Column(DateTime,primary_key=True) #FIXME
             value=Column(Float(53),nullable=False)
             sigfigs=Column(Integer)
             abs_error=Column(Float(53))
+            datasource=relationship('DataSource')
             __table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {})
             def __init__(self,value,DataFile=None,DataSource=None,datasource_id=None,repoid=None,filename=None,sigfigs=None,abs_error=None):
                 self.repoid=repoid
                 self.filename=filename
                 self.datasource_id=datasource_id
                 self.dateTime=datetime.utcnow() #FIXME this logs when the md was entered
+                sleep(.001) #FIXME
                 self.value=value
                 self.sigfigs=sigfigs
                 self.abs_error=abs_error
                 if DataFile:
-                    if DataFile.repoid:
+                    if DataFile.repopath_id:
                         self.repoid=DataFile.repopath_id
                         self.filename=DataFile.filename
                     else:
@@ -224,7 +230,7 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
                 if self.abs_error != None: error='%s %s'%(_plusMinus,self.abs_error)
                 return '%s %s %s %s %s'%(self.dateTime,self.value,self.datasource.strHelper(),sigfigs,error)
 
-        cls.MetaData=MetaData
+        cls.MetaData=DataFileMetaData
         return relationship(cls.MetaData)
 
     #analysis_DateTime
