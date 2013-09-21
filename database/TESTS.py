@@ -515,8 +515,8 @@ def run_tests(session):
     sp.add_mice()
     p=t_patch(session,1) #FIXME you know it might be good to force a new exp rec when any of the variables changes... like the internal...? think think
 
-    s=t_slice(session,6)
-    c=t_cell(session,10)
+    #s=t_slice(session,6)
+    #c=t_cell(session,10)
 
     session.commit()
 

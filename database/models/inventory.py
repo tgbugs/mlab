@@ -46,8 +46,9 @@ class Hardware(HasMetaData, IsDataSource, Base):
             else:
                 raise AttributeError('BP no id!')
 
-    def strHelper(self):
-        return '%s '%(self.name)
+    def strHelper(self,depth=0):
+        ts='\t'*depth
+        return '\n%s%s'%(ts,self.name)
 
     def __repr__(self):
         name=None

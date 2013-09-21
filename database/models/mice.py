@@ -253,11 +253,11 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
     rheobase=None
 
     #NOTE: this table is now CRITICAL for maintaining a record of who was patched with whom
-    cell_1=relationship('Cell',
+    cell_2=relationship('Cell',
                         secondary=cell_to_cell,
-                        primaryjoin='Cell.id==cell_to_cell.c.cell_2_id',
-                        secondaryjoin='Cell.id==cell_to_cell.c.cell_1_id',
-                        backref='cell_2',
+                        primaryjoin='Cell.id==cell_to_cell.c.cell_1_id',
+                        secondaryjoin='Cell.id==cell_to_cell.c.cell_2_id',
+                        backref=backref('cell_1'),
                        )
     def __init__(self,Slice=None,Experiment=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None):
         self.startDateTime=datetime.utcnow() #FIXME

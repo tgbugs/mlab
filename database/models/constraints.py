@@ -15,7 +15,7 @@ class HardwareType(Base):
     #def __init__(self,type):
         #self.type=type
     def __repr__(self):
-        return '\n%s\n%s\n%s'%(self.type, self.decription, self.things)
+        return '\n%s\n%s%s'%(self.type, self.description, ''.join([thing.strHelper(1) for thing in self.things]))
 
 
 
