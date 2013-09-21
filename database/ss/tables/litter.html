@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,7 +110,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('litter_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="mouse.litter_id refs litter.id via mouse_litter_id_fkey"><a href='mouse.html'>mouse</a><span class='relatedKey'>.litter_id</span>
     </td>
     <td class='constraint detail'>mouse_litter_id_fkey<span title='Restrict delete:
@@ -121,7 +121,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>sire_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -131,7 +131,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="litter.sire_id refs sire.id via fk_sire"><a href='sire.html'>sire</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>fk_sire<span title='Restrict delete:
@@ -141,7 +141,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>dam_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -151,7 +151,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="litter.dam_id refs dam.id via fk_dam"><a href='dam.html'>dam</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>fk_dam<span title='Restrict delete:
@@ -161,7 +161,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='indexedColumn' title='Indexed'>mr_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -171,7 +171,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="litter.mr_id refs matingrecord.id via litter_mr_id_fkey"><a href='matingrecord.html'>matingrecord</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>litter_mr_id_fkey<span title='Restrict delete:
@@ -181,7 +181,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>dob_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -191,7 +191,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="litter.dob_id refs dob.id via litter_dob_id_fkey"><a href='dob.html'>dob</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>litter_dob_id_fkey<span title='Restrict delete:
@@ -201,7 +201,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>cage_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -211,7 +211,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="litter.cage_id refs cage.id via litter_cage_id_fkey"><a href='cage.html'>cage</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>litter_cage_id_fkey<span title='Restrict delete:
@@ -221,7 +221,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>name</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>20</td>
@@ -233,7 +233,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='7 columns'>Table contained 50 rows at Fri Sep 20 02:02 PDT 2013<p/>
+<p title='7 columns'>Table contained 50 rows at Fri Sep 20 23:16 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -274,25 +274,24 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <area shape="rect" id="node4" href="dob.html" title="dob" alt="" coords="6,557,159,683">
 <area shape="rect" id="node5" href="matingrecord.html" title="matingrecord" alt="" coords="205,279,358,473">
 <area shape="rect" id="node6" href="sire.html" title="sire" alt="" coords="15,175,150,255">
-<area shape="rect" id="node7" href="mouse.html" title="mouse" alt="" coords="649,5,812,379">
+<area shape="rect" id="node7" href="mouse.html" title="mouse" alt="" coords="649,5,820,403">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/litter.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="869,78,1011,158">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="657,235,820,609">
-<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="451,153,573,233">
-<area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="228,315,351,395">
-<area shape="rect" id="node8" href="dam.html" title="dam" alt="" coords="23,598,158,678">
-<area shape="rect" id="node9" href="litter.html" title="litter" alt="" coords="411,517,613,738">
-<area shape="rect" id="node10" href="dob.html" title="dob" alt="" coords="14,769,167,894">
-<area shape="rect" id="node12" href="sire.html" title="sire" alt="" coords="23,466,158,546">
-<area shape="rect" id="node13" href="strain.html" title="strain" alt="" coords="451,383,573,463">
-<area shape="rect" id="node4" href="cagerack.html" title="cagerack" alt="" coords="447,250,577,330">
-<area shape="rect" id="node6" href="cell.html" title="cell" alt="" coords="1060,209,1239,289">
-<area shape="rect" id="node7" href="slice.html" title="slice" alt="" coords="865,175,1015,255">
-<area shape="rect" id="node11" href="matingrecord.html" title="matingrecord" alt="" coords="213,588,366,781">
-<area shape="rect" id="node14" href="patch.html" title="patch" alt="" coords="1082,309,1217,389">
-<area shape="rect" id="node15" href="sliceprep.html" title="sliceprep" alt="" coords="869,345,1011,425">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="879,113,1022,193">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="660,323,831,721">
+<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="453,162,576,242">
+<area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="231,318,353,398">
+<area shape="rect" id="node7" href="experiments.html" title="experiments" alt="" coords="442,843,587,923">
+<area shape="rect" id="node9" href="dam.html" title="dam" alt="" coords="26,534,161,614">
+<area shape="rect" id="node10" href="litter.html" title="litter" alt="" coords="414,526,615,747">
+<area shape="rect" id="node11" href="dob.html" title="dob" alt="" coords="17,705,170,830">
+<area shape="rect" id="node13" href="sire.html" title="sire" alt="" coords="26,402,161,482">
+<area shape="rect" id="node14" href="strain.html" title="strain" alt="" coords="453,393,576,473">
+<area shape="rect" id="node4" href="cagerack.html" title="cagerack" alt="" coords="450,259,579,339">
+<area shape="rect" id="node6" href="cell.html" title="cell" alt="" coords="1071,562,1233,642">
+<area shape="rect" id="node8" href="slice.html" title="slice" alt="" coords="875,562,1026,642">
+<area shape="rect" id="node12" href="matingrecord.html" title="matingrecord" alt="" coords="215,524,369,717">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/litter.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

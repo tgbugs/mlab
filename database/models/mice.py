@@ -6,6 +6,7 @@ from database.imports import *
 from database.base import Base
 from database.mixins import HasNotes, HasMetaData
 from database.standards import frmtDT, timeDeltaIO
+from sqlalchemy.orm import mapper
 
 #some global variables that are used here and there that would be magic otherwise
 _plusMinus='\u00B1'
@@ -207,10 +208,27 @@ class Slice(HasMetaData, HasNotes, Base):
 
 
 
-cell_to_cell=Table('cell_to_cell', Base.metadata, 
-                   Column('cell_1_id',Integer,ForeignKey('cell.id'),primary_key=True),
-                   Column('cell_2_id',Integer,ForeignKey('cell.id'),primary_key=True)
-                  )
+class CellToCell(Base): #XXX ALERT! you need TWO rows for a reciprocal pairing!
+    __tablename__='cell_to_cell'
+    id=None
+    cell_1_id=Column(Integer,ForeignKey('cell.id'),primary_key=True)
+    cell_2_id=Column(Integer,ForeignKey('cell.id'),primary_key=True)
+    def __init__(self,Cell_1=None,Cell_2=None,cell_1_id=None,cell_2_id=None):
+        self.cell_1_id=cell_1_id
+        self.cell_2_id=cell_2_id
+        if Cell_1:
+            if Cell_1.id:
+                self.cell_1_id=Cell_1.id
+            else:
+                raise AttributeError
+        if Cell_2:
+            if Cell_2.id:
+                self.cell_2_id=Cell_2.id
+            else:
+                raise AttributeError
+
+
+
 
 class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #FIXME move to subjects
     #TODO link this as m-m to datafiles and bam many problems solved
@@ -253,12 +271,12 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
     rheobase=None
 
     #NOTE: this table is now CRITICAL for maintaining a record of who was patched with whom
-    cell_2=relationship('Cell',
-                        secondary=cell_to_cell,
-                        primaryjoin='Cell.id==cell_to_cell.c.cell_1_id',
-                        secondaryjoin='Cell.id==cell_to_cell.c.cell_2_id',
-                        backref=backref('cell_1'),
-                       )
+    cells=relationship('Cell',
+                        secondary='cell_to_cell',
+                        primaryjoin='Cell.id==CellToCell.cell_1_id',
+                        secondaryjoin='Cell.id==CellToCell.cell_2_id',
+                        #backref=backref('cell_1'),
+                      )
     def __init__(self,Slice=None,Experiment=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None):
         self.startDateTime=datetime.utcnow() #FIXME
         self.slice_id=slice_id

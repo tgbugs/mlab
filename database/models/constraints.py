@@ -8,7 +8,7 @@ from database.base      import Base
 
 class HardwareType(Base):
     id=None
-    type=Column(String(20),primary_key=True)
+    type=Column(String(30),primary_key=True)
     description=Column(Text)
 
     things=relationship('Hardware',primaryjoin='HardwareType.type==Hardware.type')

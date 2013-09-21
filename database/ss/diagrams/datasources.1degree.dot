@@ -46,12 +46,13 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cell_metadata</TD></TR>
-      <TR><TD PORT="dateTime" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
       <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
       <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
       <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
-      <TR><TD PORT="cell_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">cell_id</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="cell_id" COLSPAN="3" ALIGN="LEFT">cell_id</TD></TR>
+      <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="cell_metadata.html"
@@ -61,7 +62,6 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datafile</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#f4f7da" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="repopath_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">repopath_id</TD></TR>
       <TR><TD PORT="filename" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">filename</TD></TR>
       <TR><TD PORT="experiment_id" COLSPAN="3" ALIGN="LEFT">experiment_id</TD></TR>
@@ -76,10 +76,11 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datafiles_metadata</TD></TR>
-      <TR><TD PORT="repoid" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">repoid</TD></TR>
-      <TR><TD PORT="filename" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">filename</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD></TR>
-      <TR><TD PORT="dateTime" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="repoid" COLSPAN="3" ALIGN="LEFT">repoid</TD></TR>
+      <TR><TD PORT="filename" COLSPAN="3" ALIGN="LEFT">filename</TD></TR>
+      <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
       <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
       <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
       <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
@@ -106,12 +107,13 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments_metadata</TD></TR>
-      <TR><TD PORT="dateTime" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
       <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
       <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
       <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
-      <TR><TD PORT="experiments_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">experiments_id</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="experiments_id" COLSPAN="3" ALIGN="LEFT">experiments_id</TD></TR>
+      <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="experiments_metadata.html"
@@ -132,13 +134,14 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hardware_metadata</TD></TR>
-      <TR><TD PORT="dateTime" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
       <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
       <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
       <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
-      <TR><TD PORT="hardware_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">hardware_id</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">300 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="hardware_id" COLSPAN="3" ALIGN="LEFT">hardware_id</TD></TR>
+      <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">320 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="hardware_metadata.html"
     tooltip="hardware_metadata"
@@ -170,12 +173,13 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">slice_metadata</TD></TR>
-      <TR><TD PORT="dateTime" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
       <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
       <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
       <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
-      <TR><TD PORT="slice_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">slice_id</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="slice_id" COLSPAN="3" ALIGN="LEFT">slice_id</TD></TR>
+      <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="slice_metadata.html"

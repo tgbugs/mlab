@@ -2,6 +2,7 @@ recipe
 methods
 file
 cagetransfer
+sliceprep
 datafiles_metadata
 users_datastreams
 slice_metadata
@@ -17,7 +18,6 @@ cagerack
 patch
 datafile
 cell
-sliceprep
 repopaths
 slice
 repository
@@ -41,7 +41,7 @@ si_prefix
 iacucprotocols
 hardwaretype
 calibrationdata
-citeable
 sex
 dob
 cage
+citeable

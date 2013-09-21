@@ -27,7 +27,6 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datafile</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#f4f7da" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="repopath_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">repopath_id</TD></TR>
       <TR><TD PORT="filename" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">filename</TD></TR>
       <TR><TD PORT="experiment_id" COLSPAN="3" ALIGN="LEFT">experiment_id</TD></TR>
@@ -42,10 +41,11 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datafiles_metadata</TD></TR>
-      <TR><TD PORT="repoid" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">repoid</TD><TD PORT="repoid.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD PORT="filename" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">filename</TD><TD PORT="filename.type" ALIGN="LEFT">varchar[2147483647]</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD><TD PORT="datasource_id.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD PORT="dateTime" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">dateTime</TD><TD PORT="dateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
+      <TR><TD PORT="id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD><TD PORT="id.type" ALIGN="LEFT">serial[10]</TD></TR>
+      <TR><TD PORT="repoid" COLSPAN="2" ALIGN="LEFT">repoid</TD><TD PORT="repoid.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD PORT="filename" COLSPAN="2" ALIGN="LEFT">filename</TD><TD PORT="filename.type" ALIGN="LEFT">varchar[2147483647]</TD></TR>
+      <TR><TD PORT="datasource_id" COLSPAN="2" ALIGN="LEFT">datasource_id</TD><TD PORT="datasource_id.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="2" ALIGN="LEFT">dateTime</TD><TD PORT="dateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
       <TR><TD PORT="value" COLSPAN="2" ALIGN="LEFT">value</TD><TD PORT="value.type" ALIGN="LEFT">float8[17,17]</TD></TR>
       <TR><TD PORT="sigfigs" COLSPAN="2" ALIGN="LEFT">sigfigs</TD><TD PORT="sigfigs.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="abs_error" COLSPAN="2" ALIGN="LEFT">abs_error</TD><TD PORT="abs_error.type" ALIGN="LEFT">float8[17,17]</TD></TR>

@@ -29,7 +29,6 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datafile</TD></TR>
-      <TR><TD PORT="id" COLSPAN="2" BGCOLOR="#f4f7da" ALIGN="LEFT">id</TD><TD PORT="id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="repopath_id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">repopath_id</TD><TD PORT="repopath_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="filename" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">filename</TD><TD PORT="filename.type" ALIGN="LEFT">varchar[2147483647]</TD></TR>
       <TR><TD PORT="experiment_id" COLSPAN="2" ALIGN="LEFT">experiment_id</TD><TD PORT="experiment_id.type" ALIGN="LEFT">int4[10]</TD></TR>
@@ -44,10 +43,11 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datafiles_metadata</TD></TR>
-      <TR><TD PORT="repoid" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">repoid</TD></TR>
-      <TR><TD PORT="filename" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">filename</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD></TR>
-      <TR><TD PORT="dateTime" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="repoid" COLSPAN="3" ALIGN="LEFT">repoid</TD></TR>
+      <TR><TD PORT="filename" COLSPAN="3" ALIGN="LEFT">filename</TD></TR>
+      <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
       <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
       <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
       <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
@@ -78,9 +78,10 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT">project_id</TD></TR>
       <TR><TD PORT="person_id" COLSPAN="3" ALIGN="LEFT">person_id</TD></TR>
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
+      <TR><TD PORT="endDateTime" COLSPAN="3" ALIGN="LEFT">endDateTime</TD></TR>
       <TR><TD PORT="methods_id" COLSPAN="3" ALIGN="LEFT">methods_id</TD></TR>
       <TR><TD PORT="exp_type" COLSPAN="3" ALIGN="LEFT">exp_type</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">16 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">41 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">7 &gt;</TD></TR>
     </TABLE>>
     URL="experiments.html"
     tooltip="experiments"

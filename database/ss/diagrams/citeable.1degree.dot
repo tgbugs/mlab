@@ -20,6 +20,8 @@ digraph "oneDegreeRelationshipsDiagram" {
     arrowsize="0.8"
   ];
   "experiments":"methods_id":w -> "citeable":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "hardware":"blueprint_id":w -> "citeable":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "hardware":"manual_id":w -> "citeable":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "reagents":"document_id":w -> "citeable":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "citeable" [
     label=<
@@ -27,7 +29,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">citeable</TD></TR>
       <TR><TD PORT="id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD><TD PORT="id.type" ALIGN="LEFT">serial[10]</TD></TR>
       <TR><TD PORT="type" COLSPAN="2" ALIGN="LEFT">type</TD><TD PORT="type.type" ALIGN="LEFT">varchar[15]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 0</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 0</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
     </TABLE>>
     URL="citeable.html"
     tooltip="citeable"
@@ -40,12 +42,31 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT">project_id</TD></TR>
       <TR><TD PORT="person_id" COLSPAN="3" ALIGN="LEFT">person_id</TD></TR>
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
+      <TR><TD PORT="endDateTime" COLSPAN="3" ALIGN="LEFT">endDateTime</TD></TR>
       <TR><TD PORT="methods_id" COLSPAN="3" ALIGN="LEFT">methods_id</TD></TR>
       <TR><TD PORT="exp_type" COLSPAN="3" ALIGN="LEFT">exp_type</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">16 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">41 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">7 &gt;</TD></TR>
     </TABLE>>
     URL="experiments.html"
     tooltip="experiments"
+  ];
+  "hardware" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hardware</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="parent_id" COLSPAN="3" ALIGN="LEFT">parent_id</TD></TR>
+      <TR><TD PORT="type" COLSPAN="3" ALIGN="LEFT">type</TD></TR>
+      <TR><TD PORT="name" COLSPAN="3" ALIGN="LEFT">name</TD></TR>
+      <TR><TD PORT="unique_id" COLSPAN="3" ALIGN="LEFT">unique_id</TD></TR>
+      <TR><TD PORT="model" COLSPAN="3" ALIGN="LEFT">model</TD></TR>
+      <TR><TD PORT="company" COLSPAN="3" ALIGN="LEFT">company</TD></TR>
+      <TR><TD PORT="blueprint_id" COLSPAN="3" ALIGN="LEFT">blueprint_id</TD></TR>
+      <TR><TD PORT="manual_id" COLSPAN="3" ALIGN="LEFT">manual_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">16 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
+    </TABLE>>
+    URL="hardware.html"
+    tooltip="hardware"
   ];
   "reagents" [
     label=<

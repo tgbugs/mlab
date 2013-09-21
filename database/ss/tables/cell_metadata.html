@@ -101,8 +101,8 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
- <td class='primaryKey' title='Primary Key'>dateTime</td>
+<tr class='odd'>
+ <td class='detail'>dateTime</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
  <td class='detail' align='center'></td>
@@ -112,7 +112,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>value</td>
  <td class='detail'>float8</td>
  <td class='detail' align='right'>17,17</td>
@@ -123,7 +123,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>sigfigs</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -134,7 +134,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>abs_error</td>
  <td class='detail'>float8</td>
  <td class='detail' align='right'>17,17</td>
@@ -145,13 +145,24 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
- <td class='primaryKey' title='Primary Key'>cell_id</td>
- <td class='detail'>int4</td>
+<tr class='odd'>
+ <td class='primaryKey' title='Primary Key'>id</td>
+ <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
  <td class='detail' align='center'></td>
- <td class='detail' align='center'></td>
+ <td class='detail' align='center' title='Automatically updated by the database'>&nbsp;&radic;&nbsp;</td>
+ <td class='detail' align='right'>nextval('cell_metadata_id_seq'::regclass)</td>
  <td class='detail'></td>
+ <td class='detail'> </td>
+ <td class='comment detail'></td>
+</tr>
+<tr class='even'>
+ <td class='detail'>cell_id</td>
+ <td class='detail'>int4</td>
+ <td class='detail' align='right'>10</td>
+ <td class='detail' align='center' title='nullable'>&nbsp;&radic;&nbsp;</td>
+ <td class='detail' align='center'></td>
+ <td class='detail' align='right'>null</td>
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
@@ -166,12 +177,12 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 <tr class='odd'>
- <td class='primaryKey' title='Primary Key'>datasource_id</td>
+ <td class='detail'>datasource_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
+ <td class='detail' align='center' title='nullable'>&nbsp;&radic;&nbsp;</td>
  <td class='detail' align='center'></td>
- <td class='detail' align='center'></td>
- <td class='detail'></td>
+ <td class='detail' align='right'>null</td>
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
@@ -186,7 +197,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='6 columns'>Table contained 0 rows at Fri Sep 20 02:02 PDT 2013<p/>
+<p title='7 columns'>Table contained 0 rows at Fri Sep 20 23:16 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -201,9 +212,9 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </thead>
 <tbody>
  <tr>
-  <td class='primaryKey'>cell_id + datasource_id</td>
+  <td class='primaryKey'>id</td>
   <td class='detail'>Primary key</td>
-  <td class='detail' style='text-align:left;'><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+  <td class='detail' style='text-align:left;'><span title='Ascending'>Asc</span></td>
   <td class='constraint' style='text-align:left;'>cell_metadata_pkey</td>
  </tr>
 </table>
@@ -212,30 +223,30 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from cell_metadata'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="cell_metadata.html" title="cell_metadata" alt="" coords="239,5,484,203">
-<area shape="rect" id="node2" href="cell.html" title="cell" alt="" coords="5,5,195,198">
-<area shape="rect" id="node3" href="datasources.html" title="datasources" alt="" coords="23,216,177,387">
+<area shape="rect" id="node1" href="cell_metadata.html" title="cell_metadata" alt="" coords="223,5,468,227">
+<area shape="rect" id="node2" href="cell.html" title="cell" alt="" coords="5,27,179,221">
+<area shape="rect" id="node3" href="datasources.html" title="datasources" alt="" coords="15,239,169,409">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/cell_metadata.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="cell.html" title="cell" alt="" coords="411,6,600,199">
-<area shape="rect" id="node2" href="experiments.html" title="experiments" alt="" coords="14,395,159,475">
-<area shape="rect" id="node3" href="hardware.html" title="hardware" alt="" coords="218,315,361,395">
-<area shape="rect" id="node4" href="mouse.html" title="mouse" alt="" coords="5,84,168,164">
-<area shape="rect" id="node5" href="slice.html" title="slice" alt="" coords="214,117,365,197">
-<area shape="rect" id="node6" href="cell_metadata.html" title="cell_metadata" alt="" coords="644,281,889,479">
-<area shape="rect" id="node7" href="datasources.html" title="datasources" alt="" coords="213,537,366,708">
-<area shape="rect" id="node11" href="calibrationdata.html" title="calibrationdata" alt="" coords="14,703,159,783">
-<area shape="rect" id="node12" href="si_prefix.html" title="si_prefix" alt="" coords="19,508,154,588">
-<area shape="rect" id="node13" href="si_unit.html" title="si_unit" alt="" coords="21,605,152,685">
-<area shape="rect" id="node8" href="cell_to_cell.html" title="cell_to_cell" alt="" coords="700,5,833,85">
-<area shape="rect" id="node9" href="datafile.html" title="datafile" alt="" coords="438,776,573,856">
-<area shape="rect" id="node10" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="677,776,857,856">
-<area shape="rect" id="node14" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="414,509,597,589">
-<area shape="rect" id="node15" href="hardware_datastreams.html" title="hardware_datastreams" alt="" coords="414,412,597,492">
-<area shape="rect" id="node16" href="hardware_metadata.html" title="hardware_metadata" alt="" coords="413,315,598,395">
-<area shape="rect" id="node17" href="slice_metadata.html" title="slice_metadata" alt="" coords="431,217,579,297">
-<area shape="rect" id="node18" href="users_datastreams.html" title="users_datastreams" alt="" coords="422,643,589,723">
+<area shape="rect" id="node1" href="cell.html" title="cell" alt="" coords="608,6,781,199">
+<area shape="rect" id="node2" href="experiments.html" title="experiments" alt="" coords="6,189,151,269">
+<area shape="rect" id="node3" href="hardware.html" title="hardware" alt="" coords="409,315,551,395">
+<area shape="rect" id="node4" href="mouse.html" title="mouse" alt="" coords="196,56,359,136">
+<area shape="rect" id="node5" href="slice.html" title="slice" alt="" coords="405,189,555,269">
+<area shape="rect" id="node6" href="cell_metadata.html" title="cell_metadata" alt="" coords="832,221,1077,443">
+<area shape="rect" id="node7" href="datasources.html" title="datasources" alt="" coords="403,479,557,649">
+<area shape="rect" id="node11" href="calibrationdata.html" title="calibrationdata" alt="" coords="205,613,350,693">
+<area shape="rect" id="node12" href="si_prefix.html" title="si_prefix" alt="" coords="210,419,345,499">
+<area shape="rect" id="node13" href="si_unit.html" title="si_unit" alt="" coords="212,516,343,596">
+<area shape="rect" id="node8" href="cell_to_cell.html" title="cell_to_cell" alt="" coords="888,5,1021,85">
+<area shape="rect" id="node9" href="datafile.html" title="datafile" alt="" coords="627,776,762,856">
+<area shape="rect" id="node10" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="865,776,1045,856">
+<area shape="rect" id="node14" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="603,679,786,759">
+<area shape="rect" id="node15" href="hardware_datastreams.html" title="hardware_datastreams" alt="" coords="603,315,786,395">
+<area shape="rect" id="node16" href="hardware_metadata.html" title="hardware_metadata" alt="" coords="602,412,787,492">
+<area shape="rect" id="node17" href="slice_metadata.html" title="slice_metadata" alt="" coords="621,217,769,297">
+<area shape="rect" id="node18" href="users_datastreams.html" title="users_datastreams" alt="" coords="611,545,778,625">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/cell_metadata.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

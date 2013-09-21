@@ -298,6 +298,17 @@ class t_cell(TEST):
                 except IndexError: pass
 
 
+class t_c2c(TEST):
+    def make_all(self):
+        cells=self.session.query(Cell)
+        #circular link
+        #self.records=[CellToCell(cells[i-1],cells[i]) for i in range(cells.count())]
+        #pairs
+        self.records=[CellToCell(cells[i],cells[i+1]) for i in range(0,cells.count()-1,2)]
+        self.records.extend([CellToCell(cells[i+1],cells[i]) for i in range(0,cells.count()-1,2)])
+
+
+
 ###-------------
 ###  experiments
 ###-------------
@@ -515,10 +526,11 @@ def run_tests(session):
     sp.add_mice()
     p=t_patch(session,1) #FIXME you know it might be good to force a new exp rec when any of the variables changes... like the internal...? think think
 
-    #s=t_slice(session,6)
-    #c=t_cell(session,10)
+    s=t_slice(session,6)
+    c=t_cell(session,10)
+    c2c=t_c2c(session)
 
-    session.commit()
+    #session.commit()
 
 
     #l=t_litters(session,20) #FIXME another wierd error here... saying that I tried to add a mouse as a breeder twice... hrm...

@@ -1,7 +1,7 @@
+citeable
 cage
 dob
 sex
-citeable
 calibrationdata
 hardwaretype
 iacucprotocols
@@ -25,7 +25,6 @@ hardware
 repository
 slice
 repopaths
-sliceprep
 cell
 datafile
 patch
@@ -41,6 +40,7 @@ person_to_project
 slice_metadata
 users_datastreams
 datafiles_metadata
+sliceprep
 cagetransfer
 file
 methods

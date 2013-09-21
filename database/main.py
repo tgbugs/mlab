@@ -134,10 +134,8 @@ def printStuff(cons=True,mice=True,data=True,notes=True):
 ###  Test it!
 ###----------
 
-def main():
+def main(echo=True):
     #create engine
-    echo=True
-    #echo=False
     #engine=postgresEng(echo=echo,wipe_db=True)
     engine=sqliteEng(echo=echo)
 

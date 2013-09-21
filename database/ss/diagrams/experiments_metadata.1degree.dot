@@ -43,9 +43,10 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT">project_id</TD></TR>
       <TR><TD PORT="person_id" COLSPAN="3" ALIGN="LEFT">person_id</TD></TR>
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
+      <TR><TD PORT="endDateTime" COLSPAN="3" ALIGN="LEFT">endDateTime</TD></TR>
       <TR><TD PORT="methods_id" COLSPAN="3" ALIGN="LEFT">methods_id</TD></TR>
       <TR><TD PORT="exp_type" COLSPAN="3" ALIGN="LEFT">exp_type</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">16 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">41 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">7 &gt;</TD></TR>
     </TABLE>>
     URL="experiments.html"
     tooltip="experiments"
@@ -54,12 +55,13 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments_metadata</TD></TR>
-      <TR><TD PORT="dateTime" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">dateTime</TD><TD PORT="dateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="2" ALIGN="LEFT">dateTime</TD><TD PORT="dateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
       <TR><TD PORT="value" COLSPAN="2" ALIGN="LEFT">value</TD><TD PORT="value.type" ALIGN="LEFT">float8[17,17]</TD></TR>
       <TR><TD PORT="sigfigs" COLSPAN="2" ALIGN="LEFT">sigfigs</TD><TD PORT="sigfigs.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="abs_error" COLSPAN="2" ALIGN="LEFT">abs_error</TD><TD PORT="abs_error.type" ALIGN="LEFT">float8[17,17]</TD></TR>
-      <TR><TD PORT="experiments_id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">experiments_id</TD><TD PORT="experiments_id.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">datasource_id</TD><TD PORT="datasource_id.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD PORT="id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD><TD PORT="id.type" ALIGN="LEFT">serial[10]</TD></TR>
+      <TR><TD PORT="experiments_id" COLSPAN="2" ALIGN="LEFT">experiments_id</TD><TD PORT="experiments_id.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD PORT="datasource_id" COLSPAN="2" ALIGN="LEFT">datasource_id</TD><TD PORT="datasource_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 &gt;</TD></TR>
     </TABLE>>
     URL="experiments_metadata.html"
