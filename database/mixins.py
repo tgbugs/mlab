@@ -57,6 +57,7 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
         if self.abs_error != None: error='%s %s'%(_plusMinus,self.abs_error)
         return '\n%s %s %s %s %s'%(self.dateTime,self.value,self.datasource.strHelper(),sigfigs,error)
 
+
 class HasMetaData: #looks like we want this to be table per related
     @declared_attr
     def metadata_(cls): #FIXME naming...
@@ -76,6 +77,16 @@ class HasMetaData: #looks like we want this to be table per related
 
 
         
+class HasDataFile:
+    @declared_attr
+    def datafiles(cls):
+        datafile_association = Table('%s_datafiles'%cls.__tablename__,cls.metadata,
+            Column('datafile_url',Integer,ForeignKey('datafile.repopath_id'),primary_key=True)
+            Column('datafile_path',Integer,ForeignKey('datafile.repopath_id'),primary_key=True)
+            Column('datafile_filename',String,ForeignKey('datafile.filename'),primary_key=True)
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__),
+                   primary_key=True)
+
 ###--------------------
 ###  experiments mixins
 ###--------------------

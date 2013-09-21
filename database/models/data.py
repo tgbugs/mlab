@@ -144,10 +144,10 @@ class Repository(Base):
 class RepoPath(Base):
     __tablename__='repopaths'
     #Assumption: repository MUST be the full path to the data, so yes, a single 'repository' might have 10 entries, but that single repository is just a NAME and has not functional purpose for storing/retrieving data
-    id=Column(Integer,primary_key=True,autoincrement=True) #to simplify passing repos? is this reasonable?
-    repo_url=Column(String(255),ForeignKey('repository.url'),nullable=False)#,primary_key=True) FIXME
-    path=Column(String(255),nullable=False)#,primary_key=True) #make this explicitly relative path?
-    assoc_program=Column(String(15)) #FIXME some of these should be automatically updated and check by the programs etc
+    #id=Column(Integer,primary_key=True,autoincrement=True) #to simplify passing repos? is this reasonable?
+    url=Column(String,ForeignKey('repository.url'),primary_key=True)
+    path=Column(String,primary_key=True) #make this explicitly relative path?
+    assoc_program=Column(String(30)) #FIXME some of these should be automatically updated and check by the programs etc
     relationship('DataFile',primaryjoin='DataFile.repopath_id==RepoPath.id',backref='repopath') #FIXME datafiles can be kept in multiple repos...
     #TODO how do we keep track of data duplication and backups!?!?!?
     blurb=Column(Text) #a little note saying what data is stored here, eg, abf files
@@ -168,7 +168,7 @@ class RepoPath(Base):
         self.path=clean_path
 
 
-class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whole fucking lot like MetaData
+class DataFile(HasMetaData, Base): #FIXME THIS HAS NO LINK TO SUBJECTS FIX ASAP
     #TODO path, should the database maintain this???, yes
     #how to constrain/track files so they don't get lost??
     #well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
@@ -183,20 +183,27 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
     #repo_url=Column(Integer,ForeignKey('repository.url'),primary_key=True)
     #repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
     #with two above can direcly get the file from this record without having to do any cross table magic...
-    repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
+    #repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
+    url=Column(String,primary_key=True,autoincrement=False)
+    path=Column(String,primary_key=True,autoincrement=False)
+    __table_args__=(ForeignKeyConstraint([repo_url,repo_path],['repopaths.url','repopaths.path']), {}) #FIXME this *could* be really fucking slow because they arent indexed, may need to revert these changes, ah well
     filename=Column(String,primary_key=True,autoincrement=False) #urp! on ext3 255 max for EACH /asdf/
-    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
+    #experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
     #dfmetadata=relationship('DFMetaData',primaryjoin='DataFile.id==DFMetaData.df_id')
     #dfmetadata=relationship('DFMetaData',primaryjoin='and_(DataFile.repopath_id==DFMetaData.repoid,DataFile.filename==DFMetaData.filename)')
     #creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
+
+    #FUCK this is a many to many >_< BUT I can to a similar thing as I did for metadata!
+    #FIXME 'has datafiles' is not isomorphic with subjects >_<
+
     @declared_attr
     def metadata_(cls): #FIXME naming...
         class DataFileMetaData(Base):
             __tablename__='datafiles_metadata'
             id=Column(Integer,primary_key=True)
-            repoid=Column(Integer,nullable=False)
+            repoid=Column(Integer,nullable=False) #FIXME
             filename=Column(String,nullable=False)
             datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
             dateTime=Column(DateTime,nullable=False)
@@ -229,6 +236,7 @@ class DataFile(HasMetaData, Base): #FIXME make sure that this class looks a whol
 
         cls.MetaData=DataFileMetaData
         return relationship(cls.MetaData)
+
 
     #analysis_DateTime
     #FIXME a bunch of these DateTimes should be TIMESTAMP? using the python implementation is more consistent?
