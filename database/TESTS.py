@@ -281,15 +281,22 @@ class t_slice(TEST):
 
 class t_cell(TEST):
     def make_all(self):
-        slices=self.session.query(Slice)
+        slices=[s for s in self.session.query(Slice)]
+        patches=[p for p in self.session.query(Patch)]
         headstages=[h for h in self.session.query(Hardware).filter_by(type='headstage')][:2]
         self.records=[]
         z=0
-        for p in self.session.query(Patch):
-            z+=1
-            for s in slices.filter(mouse_id=z): #120 #FIXME pretty sure RI is broken here
+        for p in patches:
+            for i in range(z,len(slices)): #120 #FIXME pretty sure RI is broken here
+                s=slices[i]
                 for h in headstages:
-                    self.records.extend([Cell(Headstage=h,Slice=s,Experiment=e) for i in range(self.num)])
+                    self.records.extend([Cell(Headstage=h,Slice=s,Experiment=p) for j in range(self.num)])
+                try:
+                    if slices[i+1].mouse_id != s.mouse_id: #FIXME this should catch automatically when using session.add
+                        z=i+1 #FIXME constraint!!!!
+                        break
+                except IndexError: pass
+
 
 ###-------------
 ###  experiments

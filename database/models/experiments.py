@@ -8,6 +8,8 @@ from database.mixins import HasNotes, HasMetaData
 
 #experiments are things done on subjects (cells, mice, slices) they are referenced by the row containing the subjects, thus subject-exp is many-one, HOWEVER, for NON TERMINAL experiments the relationship could be many-many :/ #TODO
 
+#TODO new experiment from experiment, so if there is an example experiment can just use that to propagate?? those are really functions that don't go in models
+
 #FIXME do not add new experiments until you know what their parameters will be
 #furthermore, I may try to get away with just using expmetadata and df metadata for everything
 #using externally defined templates that know all the dimesions of the experiment
@@ -26,14 +28,16 @@ class Experiment(HasMetaData, Base): #FIXME there is in fact a o-m on subject-ex
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
     person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
     startDateTime=Column(DateTime,nullable=False)
+    endDateTime=Column(DateTime) #TODO extremely useful for automatically moving to the next experiment... not that that is really an issue, but also nice for evaluating my performance
     methods_id=Column(Integer,ForeignKey('citeable.id'))
-    #expmetadata=relationship('ExpMetaData',primaryjoin='Experiment.id==ExpMetaData.experiment_id') #this needs to be here for when there are things like slice experiments that have metadata instead of objects, you *could* put the metadata on the mouse and I will have to think about that, but it really seems like I am storing data on the experiment itself not on an object
     exp_type=Column(String(20),nullable=False)
+
     __mapper_args__ = {
         'polymorphic_on':exp_type,
         'polymorphic_identity':'experiment',
         'with_polymorphic':'*'
     }
+
     def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None):
         self.project_id=project_id
         self.person_id=person_id
@@ -54,8 +58,7 @@ class SlicePrep(Experiment): #it works better to have this first because I can c
     __tablename__='sliceprep'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
     chamber_id=Column(Integer,ForeignKey('hardware.id'))
-    sucrose_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME metadata??!
-    #expmetadata=relationship('ExpMetaData') #FIXME For stuff like 'ketxyl volume'? vs explicit columns?!?!
+    sucrose_id=Column(String,ForeignKey('reagents.name'),nullable=False)
     slices=relationship('Slice',primaryjoin='SlicePrep.id==foreign(Slice.prep_id)',backref=backref('prep',uselist=False))
     mouse=relationship('Mouse',primaryjoin='SlicePrep.id==foreign(Mouse.experiment_id)',backref=backref('prep',uselist=False),uselist=False) #FIXME mice *should* be able to be part of more than one experiment for some types damn it
 
@@ -76,15 +79,13 @@ class Patch(Experiment): #FIXME should this be a o-o with slice prep???
     """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
     __tablename__='patch'
     id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
-    #mouse_id=Column(Integer,ForeignKey('mouse.id')) #FIXME
-    #slice_id=None #FIXME shit, do I put this here??!?!!! THINK THINK THINK
+
     #experimental conditions
     #TODO transition these to refer to the individual lot
-    acsf_id=Column(String,ForeignKey('reagents.name'),nullable=False) #need to come up with a way to constrain
-    internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME hopefully I won't run out of internal or have to switch batches!???! well, that suggests that the exact batch might not be releveant here but instead could be check by date some other way
+    acsf_id=Column(String,ForeignKey('reagents.name'),nullable=False) #need to constrain
+    internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME ultimately this should be unique so if the internal or acsf change then it is a new experiment?
 
     cells=relationship('Cell',primaryjoin='Patch.id==foreign(Cell.experiment_id)',backref=backref('experiment',uselist=False))
-    #mouse=relationship('Mouse',primaryjoin='Patch.mouse_id==Mouse.id',backref=backref('prep',uselist=False)) #FIXME super over connected :/
 
     #pharmacology
     #TODO might should add a pharmacology data table similar to the metadata table but with times?
