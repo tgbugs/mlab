@@ -162,7 +162,8 @@ def main(echo=True):
     printStuff(cons=0,mice=0,data=0,notes=0)
 
     #query stuff
-    queryAll(session)
+    #queryAll(session)
+    session.query(Cell).all()
 
     return session
     

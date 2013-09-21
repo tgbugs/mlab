@@ -210,7 +210,7 @@ class Slice(HasMetaData, HasNotes, Base):
 
 
 
-class CellToCell(Base): #XXX ALERT! you need TWO rows for a reciprocal pairing!
+class CellPairs(Base): #XXX ALERT! you need TWO rows for a reciprocal pairing!
     __tablename__='cell_to_cell'
     id=None
     cell_1_id=Column(Integer,ForeignKey('cell.id'),primary_key=True)
@@ -279,8 +279,8 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
     #NOTE: this table is now CRITICAL for maintaining a record of who was patched with whom
     _cell_2=relationship('Cell', #FIXME I should only need ONE ROW for this
                         secondary='cell_to_cell',
-                        primaryjoin='Cell.id==CellToCell.cell_1_id',
-                        secondaryjoin='Cell.id==CellToCell.cell_2_id',
+                        primaryjoin='Cell.id==CellPairs.cell_1_id',
+                        secondaryjoin='Cell.id==CellPairs.cell_2_id',
                         backref=backref('_cell_1'),
                       )
     @hybrid_property
@@ -306,9 +306,11 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
                 self.hs_id=Headstage.id
             else:
                 raise AttributeError
+    #def strHelper(self,depth=0):
+        #base=super().strHelper(depth)
     def __repr__(self):
         base=super().__repr__()
-        return '%s%s%s'%(base,self.headstage.strHelper(1),self.slice.strHelper(1))
+        return '%s%s%s%s'%(base,self.headstage.strHelper(1),self.slice.strHelper(1),''.join([c.strHelper(1) for c in self.cells]))
     
     #TODO analysis should probably reference the objects not the other way around
 

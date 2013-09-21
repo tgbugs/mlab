@@ -303,10 +303,12 @@ class t_c2c(TEST):
         cells=self.session.query(Cell)
         #circular link
         self.records=[]
-        #self.records.extend([CellToCell(cells[i-2],cells[i]) for i in range(cells.count())]) #FIXME this breaks the bijective mapping!
+        self.records.extend([CellPairs(cells[i-2],cells[i]) for i in range(cells.count())]) #this adds tripplets since a single row here is treated as simultaneous, INCIDENTALLY FIXME this is a problem because it means that a=b=c IS NOT TRUE on this set a=b b=c a!=c fuck
+        #HOWEVER: this is less of an integrity concern than having to make two entries for each pair, for higher numbers of recordin I should probably do this as cell1 cell2 cell3 cell4 to prevent stuipd combinatorial nightmares
+
         #pairs
-        self.records.extend([CellToCell(cells[i],cells[i+1]) for i in range(0,cells.count()-1,2)])
-        #self.records.extend([CellToCell(cells[i+1],cells[i]) for i in range(0,cells.count()-1,2)])
+        self.records.extend([CellPairs(cells[i],cells[i+1]) for i in range(0,cells.count()-1,2)])
+        #self.records.extend([CellPairs(cells[i+1],cells[i]) for i in range(0,cells.count()-1,2)])
 
 
 
