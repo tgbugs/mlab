@@ -179,20 +179,12 @@ class DataFile(HasMetaData, Base): #FIXME THIS HAS NO LINK TO SUBJECTS FIX ASAP
     #TODO next problem: when do we actually CREATE the DataFile and how to we get the number right even if we discard the trial? well, we DONT discard the file, we just keep it, but we need to gracefully deal with deletions/renumbering so that if something goes wrong it will alert to user
     #RESPONSE: this record cannot be created until the file itself exists
     id=None
-    #Assumption: repository ID's refer to a single filesystem folder where there cannot be duplicate names
-    #repo_url=Column(Integer,ForeignKey('repository.url'),primary_key=True)
-    #repo_path=Column(Integer, ForeignKey('repopaths.path'), primary_key=True)
-    #with two above can direcly get the file from this record without having to do any cross table magic...
     #repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
     url=Column(String,primary_key=True,autoincrement=False)
     path=Column(String,primary_key=True,autoincrement=False)
     __table_args__=(ForeignKeyConstraint([repo_url,repo_path],['repopaths.url','repopaths.path']), {}) #FIXME this *could* be really fucking slow because they arent indexed, may need to revert these changes, ah well
     filename=Column(String,primary_key=True,autoincrement=False) #urp! on ext3 255 max for EACH /asdf/
-    #experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO think about how to associate these with other experiments? well, even a random image file will have an experiment... or should or be the only thing IN an experiment
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
-    #dfmetadata=relationship('DFMetaData',primaryjoin='DataFile.id==DFMetaData.df_id')
-    #dfmetadata=relationship('DFMetaData',primaryjoin='and_(DataFile.repopath_id==DFMetaData.repoid,DataFile.filename==DFMetaData.filename)')
-    #creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
 
     #FUCK this is a many to many >_< BUT I can to a similar thing as I did for metadata!
@@ -203,26 +195,29 @@ class DataFile(HasMetaData, Base): #FIXME THIS HAS NO LINK TO SUBJECTS FIX ASAP
         class DataFileMetaData(Base):
             __tablename__='datafiles_metadata'
             id=Column(Integer,primary_key=True)
-            repoid=Column(Integer,nullable=False) #FIXME
+            url=Column(String,nullable=False)
+            path=Column(String,nullable=False)
             filename=Column(String,nullable=False)
             datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
             dateTime=Column(DateTime,nullable=False)
             value=Column(Float(53),nullable=False)
-            sigfigs=Column(Integer)
-            abs_error=Column(Float(53))
+            sigfigs=Column(Integer) #TODO
+            abs_error=Column(Float(53)) #TODO
             datasource=relationship('DataSource')
-            __table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {})
-            def __init__(self,value,DataFile=None,DataSource=None,datasource_id=None,repoid=None,filename=None,sigfigs=None,abs_error=None):
+            __table_args__=(ForeignKeyConstraint([url,path,filename],['datafile.url','datafile.path','datafile.filename']), {})
+            def __init__(self,value,DataFile=None,DataSource=None,datasource_id=None,url=None,path=None,filename=None,sigfigs=None,abs_error=None):
                 self.dateTime=datetime.utcnow() #FIXME
-                self.repoid=repoid
+                self.url=url
+                self.path=path
                 self.filename=filename
                 self.datasource_id=datasource_id
                 self.value=value
                 self.sigfigs=sigfigs
                 self.abs_error=abs_error
                 if DataFile:
-                    if DataFile.repopath_id:
-                        self.repoid=DataFile.repopath_id
+                    if DataFile.url:
+                        self.url=DataFile.url
+                        self.path=DataFile.path
                         self.filename=DataFile.filename
                     else:
                         raise AttributeError
@@ -255,27 +250,14 @@ class DataFile(HasMetaData, Base): #FIXME THIS HAS NO LINK TO SUBJECTS FIX ASAP
         self.experiment_id=experiment_id
         self.creation_DateTime=datetime.utcnow() #FIXME
         self.datasource_id=datasource_id
-        self.AssignID(RepoPath)
         self.AssignID(Experiment) #FIXME should be subject instead?!?!
         self.AssignID(DataSource)
-        """
         if RepoPath:
-            if RepoPath.id:
-                #printD(RepoPath.id)
-                self.repopath_id=RepoPath.id
+            if RepoPath.url:
+                self.url=RepoPath.url
+                self.path=RepoPath.path
             else:
-                raise AttributeError('RepoPath has no id! Did you commit before referencing the instance directly?')
-        if Experiment:
-            if Experiment.id:
-                #printD(Experiment.id)
-                self.experiment_id=Experiment.id
-            else:
-                raise AttributeError('Experiment has no id! Did you commit before referencing the instance directly?')
-        if DataSource:
-            if DataSource.id:
-                self.datasource_id=DataSource.id
-            else:
-                raise AttributeError('DataSource has no id! Did you commit before referencing the instance directly?')
-                """
+                raise AttributeError('RepoPath has no url/path! Did you commit before referencing the instance directly?')
+
 
 
