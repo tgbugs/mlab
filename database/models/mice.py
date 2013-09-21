@@ -206,6 +206,7 @@ class Slice(HasMetaData, HasNotes, Base):
                 raise AttributeError
 
 
+
 cell_to_cell=Table('cell_to_cell', Base.metadata, 
                    Column('cell_1_id',Integer,ForeignKey('cell.id'),primary_key=True),
                    Column('cell_2_id',Integer,ForeignKey('cell.id'),primary_key=True)

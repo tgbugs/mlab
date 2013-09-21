@@ -281,13 +281,15 @@ class t_slice(TEST):
 
 class t_cell(TEST):
     def make_all(self):
-        slices=[s for s in self.session.query(Slice)]
+        slices=self.session.query(Slice)
         headstages=[h for h in self.session.query(Hardware).filter_by(type='headstage')][:2]
         self.records=[]
-        for s in slices: #120 #FIXME pretty sure RI is broken here
-            e=[e for e in self.session.query(Patch).filter_by(prep_id=s.prep_id)][0] #FIXME
-            for h in headstages:
-                self.records.extend([Cell(Headstage=h,Slice=s,Experiment=e) for i in range(self.num)])
+        z=0
+        for p in self.session.query(Patch):
+            z+=1
+            for s in slices.filter(mouse_id=z): #120 #FIXME pretty sure RI is broken here
+                for h in headstages:
+                    self.records.extend([Cell(Headstage=h,Slice=s,Experiment=e) for i in range(self.num)])
 
 ###-------------
 ###  experiments

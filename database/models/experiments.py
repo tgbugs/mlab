@@ -32,6 +32,7 @@ class Experiment(HasMetaData, Base): #FIXME there is in fact a o-m on subject-ex
     __mapper_args__ = {
         'polymorphic_on':exp_type,
         'polymorphic_identity':'experiment',
+        'with_polymorphic':'*'
     }
     def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None):
         self.project_id=project_id
@@ -60,12 +61,16 @@ class SlicePrep(Experiment): #it works better to have this first because I can c
 
     __mapper_args__={'polymorphic_identity':'slice prep'}
 
-    #TODO 'MakeSlice????'
-
     def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None,sucrose_id=None): #FIXME
         super().__init__(Project=Project,Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime)
         self.sucrose_id=sucrose_id
 
+    def add_mouse(self,Mouse): #TODO make it possible to give the specific prep a mouse
+        Mouse.experiment_id=self.id #FIXME need to deal w/ experiment-subject m-o
+        return Mouse
+
+    def make_slices(self,num): #TODO do I actually want this? yeah, then just unused flag
+        pass
 
 class Patch(Experiment): #FIXME should this be a o-o with slice prep???
     """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
