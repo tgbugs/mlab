@@ -106,7 +106,7 @@ class Mouse(HasNotes, Base): #TODO species metadata???
     breedingRec=relationship('Breeder',primaryjoin='Mouse.id==Breeder.id',backref=backref('mouse',uselist=False),uselist=False)
 
     #experiments
-    experiment_id=Column(Integer,ForeignKey('experiments.id')) #FIXME m-m
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),unique=True) #FIXME m-m
 
     #things that not all mice will have but that are needed for data to work out
     slices=relationship('Slice',backref=backref('mouse',uselist=False))
@@ -193,9 +193,12 @@ class Slice(HasMetaData, HasNotes, Base):
         if Prep:
             if Prep.id:
                 self.prep_id=Prep.id
-                self.mouse_id=Prep.mouse.id #FIXME ask aleks about this
             else:
                 raise AttributeError
+            if Prep.mouse:
+                self.mouse_id=Prep.mouse.id #FIXME ask aleks about this
+            else:
+                raise AttributeError('your sliceprep has no mouse!')
         elif Mouse:
             if Mouse.id:
                 self.mouse_id=Mouse.id
@@ -217,10 +220,11 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
 
     #link to subject
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #FIXME this should be Patch ?? but.. but.. but.. also that unique constraint... #check experiment.prep_id == slice.prep_id
     slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False)
+    #FIXME check that experiment_id.sliceprep.slices contains slice_id
 
     #link to data
-    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #FIXME this should be Patch ?? but.. but.. but..
     hs_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #FIXME need mapping to channels in abffile so that we can link the analysis results directly back to the cell, it really does feel like I should be putting cell id's into experiments rather than the ohter way around thought.... wait fuck damn it
 
     #datafile_id=Column(Integer,ForeignKey('datafile.id'),nullable=False)

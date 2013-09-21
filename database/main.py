@@ -138,8 +138,8 @@ def main():
     #create engine
     echo=True
     #echo=False
-    engine=postgresEng(echo=echo,wipe_db=True)
-    #engine=sqliteEng(echo=echo)
+    #engine=postgresEng(echo=echo,wipe_db=True)
+    engine=sqliteEng(echo=echo)
 
     #create metadata
     #Base.metadata.drop_all(engine,checkfirst=True)

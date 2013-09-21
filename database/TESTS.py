@@ -273,22 +273,21 @@ class t_mice(TEST):
 
 class t_slice(TEST):
     def make_all(self):
-        preps=t_sliceprep(self.session, int(self.num/6)) #8 being the average number of slices per mouse
+        preps=self.session.query(SlicePrep)
         
         self.records=[]
-        [[self.records.append(Slice(Prep=prep,startDateTime=datetime.utcnow()+timedelta(hours=i))) for i in range(self.num)] for prep in preps.records] #FIXME amplification of numbers
+        [[self.records.append(Slice(Prep=prep,startDateTime=datetime.utcnow()+timedelta(hours=i))) for i in range(self.num)] for prep in preps] #FIXME amplification of numbers
 
 
 class t_cell(TEST):
     def make_all(self):
         slices=[s for s in self.session.query(Slice)]
-        experiments=[e for e in self.session.query(Patch)]
-        headstages=[h for h in self.session.query(Hardware).filter_by(type='headstage')]
+        headstages=[h for h in self.session.query(Hardware).filter_by(type='headstage')][:2]
         self.records=[]
-        for e in experiments:
-            for s in slices:
-                for h in headstages:
-                    self.records.extend([Cell(Headstage=h,Slice=s,Experiment=e) for i in range(self.num)])
+        for s in slices: #120 #FIXME pretty sure RI is broken here
+            e=[e for e in self.session.query(Patch).filter_by(prep_id=s.prep_id)][0] #FIXME
+            for h in headstages:
+                self.records.extend([Cell(Headstage=h,Slice=s,Experiment=e) for i in range(self.num)])
 
 ###-------------
 ###  experiments
@@ -367,8 +366,14 @@ class t_sliceprep(TEST):
     def make_all(self):
         project=self.session.query(Project)[0]
         person=self.session.query(Person)[0]
-        mice=self.session.query(Mouse).filter_by(sex_id='u')[:5]
-        self.records=[SlicePrep(Project=project,Person=person,startDateTime=datetime.utcnow()-timedelta(int(np.random.randint(1))),sucrose_id='poop') for mouse in mice] #FIXME need to find a way to propagate mouse w/ RI
+        self.records=[SlicePrep(Project=project,Person=person,startDateTime=datetime.utcnow()-timedelta(int(np.random.randint(1))),sucrose_id='poop') for i in range(self.num)] #FIXME need to find a way to propagate mouse w/ RI
+    def add_mice(self):
+        mice=self.session.query(Mouse).filter_by(sex_id='u')[100:100+self.num]
+        np.random.shuffle(mice)
+        for i in range(self.num):
+            mice[i].experiment_id=self.records[i].id
+        self.session.commit()
+        
 
 
 ###------
@@ -498,9 +503,10 @@ def run_tests(session):
     i=t_reagent(session)
 
     sp=t_sliceprep(session,20)
-    p=t_patch(session,1)
+    sp.add_mice()
+    p=t_patch(session,1) #FIXME you know it might be good to force a new exp rec when any of the variables changes... like the internal...? think think
 
-    s=t_slice(session,50)
+    s=t_slice(session,6)
     c=t_cell(session,10)
 
     session.commit()

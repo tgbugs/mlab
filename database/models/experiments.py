@@ -60,6 +60,8 @@ class SlicePrep(Experiment): #it works better to have this first because I can c
 
     __mapper_args__={'polymorphic_identity':'slice prep'}
 
+    #TODO 'MakeSlice????'
+
     def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None,sucrose_id=None): #FIXME
         super().__init__(Project=Project,Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime)
         self.sucrose_id=sucrose_id
@@ -75,9 +77,7 @@ class Patch(Experiment): #FIXME should this be a o-o with slice prep???
     #TODO transition these to refer to the individual lot
     acsf_id=Column(String,ForeignKey('reagents.name'),nullable=False) #need to come up with a way to constrain
     internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME hopefully I won't run out of internal or have to switch batches!???! well, that suggests that the exact batch might not be releveant here but instead could be check by date some other way
-    prep_id=Column(Integer,ForeignKey('sliceprep.id'))
 
-    prep=relationship('SlicePrep',primaryjoin='Patch.prep_id==SlicePrep.id')#TODO 
     cells=relationship('Cell',primaryjoin='Patch.id==foreign(Cell.experiment_id)',backref=backref('experiment',uselist=False))
     #mouse=relationship('Mouse',primaryjoin='Patch.mouse_id==Mouse.id',backref=backref('prep',uselist=False)) #FIXME super over connected :/
 
@@ -88,14 +88,12 @@ class Patch(Experiment): #FIXME should this be a o-o with slice prep???
     
     def __init__(self,Prep=None,acsf=None,Internal=None,Methods=None,Project=None,Person=None,project_id=None,person_id=None,prep_id=None,acsf_id=None,internal_id=None,methods_id=None,startDateTime=None):
         super().__init__(Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime)
-        self.prep_id=prep_id
         self.acsf_id=acsf_id
         self.internal_id=internal_id
         if Prep:
             if Prep.id:
-                self.prep_id=Prep.id
                 self.project_id=Prep.project_id
-                self.person_id=Prep.person_id #FIXME in THEORY a different person could do prep vs patch...
+                self.person_id=Prep.person_id #FIXME different person could prep vs patch
             else:
                 raise AttributeError
         if acsf:
