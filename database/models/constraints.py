@@ -8,10 +8,15 @@ from database.base      import Base
 
 class HardwareType(Base):
     id=None
-    type=Column(String,primary_key=True)
+    type=Column(String(20),primary_key=True)
+    description=Column(Text)
+
     things=relationship('Hardware',primaryjoin='HardwareType.type==Hardware.type')
     #def __init__(self,type):
         #self.type=type
+    def __repr__(self):
+        return '\n%s\n%s\n%s'%(self.type, self.decription, self.things)
+
 
 
 class File(Base): #FIXME reinventing the wheel here kids, detect ft don't constraint it

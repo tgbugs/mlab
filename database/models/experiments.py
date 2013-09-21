@@ -23,6 +23,7 @@ from database.mixins import HasNotes, HasMetaData
 #TODO handling multiple subjects is NOT handled EXPLICITLY here, links between methods and subject type are probably probably not in the domain of things we should enforce
 
 class Experiment(HasMetaData, Base): #FIXME there is in fact a o-m on subject-experiment, better fix that, lol jk, it is fixed ish :)
+    #XXX datetimes, non nulls, and foreign keys go in these, metadata should be where all the non foreign key stuff goes
     __tablename__='experiments'
     id=Column(Integer,primary_key=True)
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
@@ -84,6 +85,7 @@ class Patch(Experiment): #FIXME should this be a o-o with slice prep???
     #TODO transition these to refer to the individual lot
     acsf_id=Column(String,ForeignKey('reagents.name'),nullable=False) #need to constrain
     internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME ultimately this should be unique so if the internal or acsf change then it is a new experiment?
+    #TODO flowrate and the like goes in metadata
 
     cells=relationship('Cell',primaryjoin='Patch.id==foreign(Cell.experiment_id)',backref=backref('experiment',uselist=False))
 

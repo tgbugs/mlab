@@ -155,27 +155,33 @@ def popSex(session):
 
 def popHardwareType(session):
     _HWTYPES=(
-        ('rig'), #FIXME want to go ahead and make this whole thing hierarchical? yes
-        ('amplifier'),
-        ('bnc'),
-        ('headstage'),
-        ('computer'),
-        ('manipulator'),
-        ('motion controller/driver'),
-        ('led'),
-        ('filter'),
-        ('microscope'),
-        ('digitizer'),
-        ('signal generator'),
-        ('pipette'), #FIXME is this a reagent?@??@?
-        ('pipette puller')
+        ('rig','ALL THE THINGS'),
+        ('amplifier','MAKE SIGNAL BIG'),
+        ('bnc','Connector between amps and digitizers etc. Could be used to make really specific HW trees but since atm there is no use for those it is sort of pointless.'),
+        ('headstage','the thing that actually holds the pipette holder and electrode'),
+        ('computer','beep boop!'),
+        ('manipulator','the thing a headstage sits on so it can be moved around with high percision and accuracy'),
+        ('motion controller/driver','A box for controlling actuators and/or motors, usually for moving an objective around.'),
+        ('led','Electrically controllable photon source, probably has a specific wavelenght or distribution of wavelengths it produces.'),
+        ('filter','Super expensive piece of glass for bandpassing or high/low passing photons.'),
+        ('microscope','Light! Focus! Objectives! Filters! Oh my!'),
+        ('objective','That super expensive thing for focusing light.'),
+        ('camera','Pictures thing!'),
+        ('digitizer','DAC, probably hooked to your computer, metadata should have how many bits it is'),
+        ('signal generator','things like a master8 that can generate arbitrary waveforms without a computer'),
+        ('pipette','Do i belong here?'), #FIXME is this a reagent?@??@?
+        ('pipette puller','Make that cappilary pointy!'),
+        ('chamber','Box for keeping dead brain slices alive.')
     )
-    session.add_all([HardwareType(type=t) for t in _HWTYPES])
+    session.add_all([HardwareType(type=t,description=d) for t,d in _HWTYPES])
 
 def popHardware(session): #FIXME
     root=Hardware(type='rig',name='Tom\'s Rig',parent_id=1)
     session.add(root)
     session.commit()
+
+    chamber=Hardware(type='chamber',name='interface chamber',unique_id='jim\'s',blueprint_id=None)
+    session.add(chamber)
 
     session.add(Hardware(Parent=root,type='amplifier',name='Multiclamp 700B',unique_id='serial1'))
     session.add(Hardware(Parent=root,type='amplifier',name='Multiclamp 700B',unique_id='serial2'))

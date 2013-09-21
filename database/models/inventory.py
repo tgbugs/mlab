@@ -16,13 +16,19 @@ class Hardware(HasMetaData, IsDataSource, Base):
     type=Column(String,ForeignKey('hardwaretype.type'),nullable=False)
     name=Column(String)
     unique_id=Column(String) #FIXME fuck
+    model=Column(String)
+    company=Column(String) #TODO oh look hooks into contacts
+    #TODO figure out what if this is NOT going in the database and can thus go in metadata instead
+    blueprint_id=Column(Integer,ForeignKey('citeable.id')) #TODO
+    manual_id=Column(Integer,ForeignKey('citeable.id')) #TODO
     sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
     #hwmetadata=relationship('HWMetaData',primaryjoin='Hardware.id==HWMetaData.hw_id') #FIXME should these just be blobs or what??? maybe by using a datatype column!??! that would mean I could just have a single metadata table per class...
-    def __init__(self,Type=None,Parent=None,type=None,parent_id=None,name=None,unique_id=None):
+    def __init__(self,Type=None,Parent=None,type=None,Blueprint=None,parent_id=None,name=None,unique_id=None,blueprint_id=None):
         self.type=type
         self.parent_id=parent_id
         self.name=name
         self.unique_id=unique_id
+        self.blueprint_id=blueprint_id
         if Type:
             if Type.name:
                 self.type=Type.name
@@ -34,6 +40,11 @@ class Hardware(HasMetaData, IsDataSource, Base):
                 self.parent_id=Parent.id
             else:
                 raise AttributeError
+        if Blueprint:
+            if Blueprint.id:
+                self.blueprint_id=Blueprint.id
+            else:
+                raise AttributeError('BP no id!')
 
     def strHelper(self):
         return '%s '%(self.name)
