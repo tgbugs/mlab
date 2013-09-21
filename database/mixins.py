@@ -40,8 +40,8 @@ class IsDataSource:
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
     dateTime=Column(DateTime,nullable=False)
     value=Column(Float(53),nullable=False)
-    sigfigs=Column(Integer)
-    abs_error=Column(Float(53))
+    sigfigs=Column(Integer) #TODO
+    abs_error=Column(Float(53)) #TODO
     def __init__(self,value,Parent=None,DataSource=None,datasource_id=None,sigfigs=None,abs_error=None):
         self.dateTime=datetime.utcnow() #FIXME
         self.datasource_id=datasource_id
@@ -77,15 +77,20 @@ class HasMetaData: #looks like we want this to be table per related
 
 
         
-class HasDataFile:
+class HasDataFiles:
     @declared_attr
     def datafiles(cls):
-        datafile_association = Table('%s_datafiles'%cls.__tablename__,cls.metadata,
-            Column('datafile_url',Integer,ForeignKey('datafile.repopath_id'),primary_key=True)
-            Column('datafile_path',Integer,ForeignKey('datafile.repopath_id'),primary_key=True)
-            Column('datafile_filename',String,ForeignKey('datafile.filename'),primary_key=True)
+        datafile_association = Table('%s_datafiles'%cls.__tablename__, cls.metadata,
+            Column('datafile_url',Integer,ForeignKey('datafile.url'),primary_key=True),
+            Column('datafile_path',Integer,ForeignKey('datafile.path'),primary_key=True),
+            Column('datafile_filename',String,ForeignKey('datafile.filename'),
+                   primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__),
                    primary_key=True)
+        )
+        return relationship('DataFile', secondary=datafile_association,
+                #primarjoin='and_(DataFile.url==,DataFile.path==,DataFile.filename==)', #FIXME
+                backref=backref('%s'%cls.__tablename__))
 
 ###--------------------
 ###  experiments mixins

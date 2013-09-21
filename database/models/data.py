@@ -168,7 +168,7 @@ class RepoPath(Base):
         self.path=clean_path
 
 
-class DataFile(HasMetaData, Base): #FIXME THIS HAS NO LINK TO SUBJECTS FIX ASAP
+class DataFile(HasMetaData, Base):
     #TODO path, should the database maintain this???, yes
     #how to constrain/track files so they don't get lost??
     #well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
@@ -182,7 +182,7 @@ class DataFile(HasMetaData, Base): #FIXME THIS HAS NO LINK TO SUBJECTS FIX ASAP
     #repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
     url=Column(String,primary_key=True,autoincrement=False)
     path=Column(String,primary_key=True,autoincrement=False)
-    __table_args__=(ForeignKeyConstraint([repo_url,repo_path],['repopaths.url','repopaths.path']), {}) #FIXME this *could* be really fucking slow because they arent indexed, may need to revert these changes, ah well
+    __table_args__=(ForeignKeyConstraint([url,path],['repopaths.url','repopaths.path']), {}) #FIXME this *could* be really fucking slow because they arent indexed, may need to revert these changes, ah well
     filename=Column(String,primary_key=True,autoincrement=False) #urp! on ext3 255 max for EACH /asdf/
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
     creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
@@ -258,6 +258,10 @@ class DataFile(HasMetaData, Base): #FIXME THIS HAS NO LINK TO SUBJECTS FIX ASAP
                 self.path=RepoPath.path
             else:
                 raise AttributeError('RepoPath has no url/path! Did you commit before referencing the instance directly?')
+
+class InDatabaseData(Base):
+    #TODO, need something more flexible than metadata (amazingly) that can hold stuff like calibration data not stored elsewhere?? also if I ever transition away from external datafiles or if I want to use neoio immediately to convert abf files
+    pass
 
 
 

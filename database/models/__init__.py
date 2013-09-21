@@ -67,7 +67,7 @@ __all__.extend([
         'Mouse',
         'Slice',
         'Cell',
-        'CellToCell',
+        'CellPairs',
         'DOB',
         'Sire',
         'Dam',

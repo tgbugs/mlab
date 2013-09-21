@@ -4,7 +4,7 @@
 
 from database.imports import *
 from database.base import Base
-from database.mixins import HasNotes, HasMetaData
+from database.mixins import HasNotes, HasMetaData, HasDataFiles
 from database.standards import frmtDT, timeDeltaIO
 from sqlalchemy.orm import mapper
 
@@ -232,9 +232,7 @@ class CellPairs(Base): #XXX ALERT! you need TWO rows for a reciprocal pairing!
         return '%s %s'%(self.cell_1_id,self.cell_2_id)
 
 
-
-
-class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #FIXME move to subjects
+class Cell(HasDataFiles, HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #FIXME move to subjects
     #TODO link this as m-m to datafiles and bam many problems solved
     #TODO cells are really the atomic 'subject' for this experiment... think about that
     #FIXME this Cell class is NOT extensible
