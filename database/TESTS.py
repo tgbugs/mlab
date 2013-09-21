@@ -289,8 +289,8 @@ class t_cell(TEST):
         for p in patches:
             for i in range(z,len(slices)): #120 #FIXME pretty sure RI is broken here
                 s=slices[i]
-                for h in headstages:
-                    self.records.extend([Cell(Headstage=h,Slice=s,Experiment=p) for j in range(self.num)])
+                for j in range(self.num):
+                    self.records.extend([Cell(Headstage=h,Slice=s,Experiment=p) for h in headstages])
                 try:
                     if slices[i+1].mouse_id != s.mouse_id: #FIXME this should catch automatically when using session.add
                         z=i+1 #FIXME constraint!!!!
@@ -302,10 +302,11 @@ class t_c2c(TEST):
     def make_all(self):
         cells=self.session.query(Cell)
         #circular link
-        #self.records=[CellToCell(cells[i-1],cells[i]) for i in range(cells.count())]
+        self.records=[]
+        #self.records.extend([CellToCell(cells[i-2],cells[i]) for i in range(cells.count())]) #FIXME this breaks the bijective mapping!
         #pairs
-        self.records=[CellToCell(cells[i],cells[i+1]) for i in range(0,cells.count()-1,2)]
-        self.records.extend([CellToCell(cells[i+1],cells[i]) for i in range(0,cells.count()-1,2)])
+        self.records.extend([CellToCell(cells[i],cells[i+1]) for i in range(0,cells.count()-1,2)])
+        #self.records.extend([CellToCell(cells[i+1],cells[i]) for i in range(0,cells.count()-1,2)])
 
 
 

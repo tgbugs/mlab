@@ -205,6 +205,8 @@ class Slice(HasMetaData, HasNotes, Base):
                 self.mouse_id=Mouse.id
             else:
                 raise AttributeError
+    def strHelper(self,depth=0):
+        return super().strHelper(depth)
 
 
 
@@ -226,6 +228,8 @@ class CellToCell(Base): #XXX ALERT! you need TWO rows for a reciprocal pairing!
                 self.cell_2_id=Cell_2.id
             else:
                 raise AttributeError
+    def __repr__(self):
+        return '%s %s'%(self.cell_1_id,self.cell_2_id)
 
 
 
@@ -270,13 +274,18 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
 
     rheobase=None
 
+    headstage=relationship('Hardware',primaryjoin='Cell.hs_id==Hardware.id')
+
     #NOTE: this table is now CRITICAL for maintaining a record of who was patched with whom
-    cells=relationship('Cell',
+    _cell_2=relationship('Cell', #FIXME I should only need ONE ROW for this
                         secondary='cell_to_cell',
                         primaryjoin='Cell.id==CellToCell.cell_1_id',
                         secondaryjoin='Cell.id==CellToCell.cell_2_id',
-                        #backref=backref('cell_1'),
+                        backref=backref('_cell_1'),
                       )
+    @hybrid_property
+    def cells(self):
+        return self._cell_1+self._cell_2
     def __init__(self,Slice=None,Experiment=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None):
         self.startDateTime=datetime.utcnow() #FIXME
         self.slice_id=slice_id
@@ -297,6 +306,9 @@ class Cell(HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #F
                 self.hs_id=Headstage.id
             else:
                 raise AttributeError
+    def __repr__(self):
+        base=super().__repr__()
+        return '%s%s%s'%(base,self.headstage.strHelper(1),self.slice.strHelper(1))
     
     #TODO analysis should probably reference the objects not the other way around
 
