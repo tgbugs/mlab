@@ -87,11 +87,15 @@ class HasDataFiles:
                    primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__),
                    primary_key=True),
-            foreign_keys=['datafile_url','datafile_path','datafile_filename','%s_id'%cls.__tablename__]
         )
         return relationship('DataFile', secondary=datafile_association,
                 #primaryjoin='and_(DataFile.url=={0}.datafile_url,DataFile.path=={0}.datafile_path,DataFile.filename=={0}.datafile_filename)'.format(cls.__name__), #FIXME no that wasn't the solution
-                backref=backref('%s'%cls.__tablename__))
+                primaryjoin='{0}_df_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
+                secondaryjoin='and_(DataFile.url=={0}.datafile_url,DataFile.path=={0}.datafile_path,DataFile.filename=={0}.datafile_filename)'.format(cls.__tablename__+'_df_assoc.c'), #FIXME no that wasn't the solution
+                backref=backref('%s'%cls.__tablename__),
+                #foreign_keys='[DataFile.url,DataFile.path,DataFile.filename,%s.id]'%cls.__name__
+                #foreign_keys='[{0}_df_assoc.c.datafile_url,{0}_df_assoc.c.datafile_path,{0}_df_assoc.c.datafile_filename]'.format(cls.__tablename__)
+                           )
 
 ###--------------------
 ###  experiments mixins
