@@ -448,7 +448,7 @@ class t_datafile(TEST):
         count=0
         for exp in experiment.records:
             for rp in repop.records:
-                data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),Experiment=exp,DataSource=ds.records[0]) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
+                data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),DataSource=ds.records[0]) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
         self.records=data
 
 

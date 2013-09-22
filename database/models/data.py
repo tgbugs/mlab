@@ -145,6 +145,7 @@ class RepoPath(Base):
     __tablename__='repopaths'
     #Assumption: repository MUST be the full path to the data, so yes, a single 'repository' might have 10 entries, but that single repository is just a NAME and has not functional purpose for storing/retrieving data
     #id=Column(Integer,primary_key=True,autoincrement=True) #to simplify passing repos? is this reasonable?
+    id=None
     url=Column(String,ForeignKey('repository.url'),primary_key=True)
     path=Column(String,primary_key=True) #make this explicitly relative path?
     assoc_program=Column(String(30)) #FIXME some of these should be automatically updated and check by the programs etc
@@ -198,13 +199,13 @@ class DataFile(HasMetaData, Base):
             url=Column(String,nullable=False)
             path=Column(String,nullable=False)
             filename=Column(String,nullable=False)
+            __table_args__=(ForeignKeyConstraint([url,path,filename],['datafile.url','datafile.path','datafile.filename']), {})
             datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
             dateTime=Column(DateTime,nullable=False)
             value=Column(Float(53),nullable=False)
             sigfigs=Column(Integer) #TODO
             abs_error=Column(Float(53)) #TODO
             datasource=relationship('DataSource')
-            __table_args__=(ForeignKeyConstraint([url,path,filename],['datafile.url','datafile.path','datafile.filename']), {})
             def __init__(self,value,DataFile=None,DataSource=None,datasource_id=None,url=None,path=None,filename=None,sigfigs=None,abs_error=None):
                 self.dateTime=datetime.utcnow() #FIXME
                 self.url=url
@@ -242,15 +243,16 @@ class DataFile(HasMetaData, Base):
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
     #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
-    def __init__(self,RepoPath=None,Experiment=None,url=None,path=None,filename=None,experiment_id=None,DataSource=None,datasource_id=None):
+    def __init__(self,RepoPath=None,url=None,path=None,filename=None,experiment_id=None,DataSource=None,datasource_id=None):
         #self.url=URL_STAND.baseClean(repo_url)
         #self.repo_path=URL_STAND.pathClean(repo_path)
-        self.repopath_id=repopath_id
+        self.url=url
+        self.path=path
         self.filename=filename
         self.experiment_id=experiment_id
         self.creation_DateTime=datetime.utcnow() #FIXME
         self.datasource_id=datasource_id
-        self.AssignID(Experiment) #FIXME should be subject instead?!?!
+        #self.AssignID(Experiment) #FIXME should be subject instead?!?!
         self.AssignID(DataSource)
         if RepoPath:
             if RepoPath.url:

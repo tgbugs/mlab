@@ -23,10 +23,10 @@ mouse
 breeder
 hardware
 repository
-slice
 repopaths
-cell
+slice
 datafile
+cell
 patch
 cagerack
 reagentlot
@@ -39,9 +39,11 @@ hardware_metadata
 person_to_project
 slice_metadata
 users_datastreams
-datafiles_metadata
 sliceprep
+cell_df_assoc
+datafiles_metadata
 cagetransfer
 file
+indatabasedata
 methods
 recipe

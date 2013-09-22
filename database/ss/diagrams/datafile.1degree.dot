@@ -19,22 +19,39 @@ digraph "oneDegreeRelationshipsDiagram" {
   edge [
     arrowsize="0.8"
   ];
+  "cell_df_assoc":"datafile_filename":w -> "datafile":"filename.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cell_df_assoc":"datafile_path":w -> "datafile":"path.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cell_df_assoc":"datafile_url":w -> "datafile":"url.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafile":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "datafile":"experiment_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "datafile":"repopath_id":w -> "repopaths":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "datafile":"path":w -> "repopaths":"path":e [arrowhead=none dir=back arrowtail=crowodot];
+  "datafile":"url":w -> "repopaths":"url":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafiles_metadata":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafiles_metadata":"filename":w -> "datafile":"filename.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "datafiles_metadata":"repoid":w -> "datafile":"repopath_id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "datafiles_metadata":"path":w -> "datafile":"path.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "datafiles_metadata":"url":w -> "datafile":"url.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cell_df_assoc" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cell_df_assoc</TD></TR>
+      <TR><TD PORT="datafile_url" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datafile_url</TD></TR>
+      <TR><TD PORT="datafile_path" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datafile_path</TD></TR>
+      <TR><TD PORT="datafile_filename" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datafile_filename</TD></TR>
+      <TR><TD PORT="cell_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">cell_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="cell_df_assoc.html"
+    tooltip="cell_df_assoc"
+  ];
   "datafile" [
     label=<
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datafile</TD></TR>
-      <TR><TD PORT="repopath_id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">repopath_id</TD><TD PORT="repopath_id.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD PORT="url" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">url</TD><TD PORT="url.type" ALIGN="LEFT">varchar[2147483647]</TD></TR>
+      <TR><TD PORT="path" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">path</TD><TD PORT="path.type" ALIGN="LEFT">varchar[2147483647]</TD></TR>
       <TR><TD PORT="filename" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">filename</TD><TD PORT="filename.type" ALIGN="LEFT">varchar[2147483647]</TD></TR>
-      <TR><TD PORT="experiment_id" COLSPAN="2" ALIGN="LEFT">experiment_id</TD><TD PORT="experiment_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="datasource_id" COLSPAN="2" ALIGN="LEFT">datasource_id</TD><TD PORT="datasource_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="creation_DateTime" COLSPAN="2" ALIGN="LEFT">creation_DateTime</TD><TD PORT="creation_DateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
     </TABLE>>
     URL="datafile.html"
     tooltip="datafile"
@@ -44,14 +61,15 @@ digraph "oneDegreeRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datafiles_metadata</TD></TR>
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD PORT="repoid" COLSPAN="3" ALIGN="LEFT">repoid</TD></TR>
+      <TR><TD PORT="url" COLSPAN="3" ALIGN="LEFT">url</TD></TR>
+      <TR><TD PORT="path" COLSPAN="3" ALIGN="LEFT">path</TD></TR>
       <TR><TD PORT="filename" COLSPAN="3" ALIGN="LEFT">filename</TD></TR>
       <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
       <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
       <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
       <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
       <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">450 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">450 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="datafiles_metadata.html"
     tooltip="datafiles_metadata"
@@ -70,32 +88,15 @@ digraph "oneDegreeRelationshipsDiagram" {
     URL="datasources.html"
     tooltip="datasources"
   ];
-  "experiments" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT">project_id</TD></TR>
-      <TR><TD PORT="person_id" COLSPAN="3" ALIGN="LEFT">person_id</TD></TR>
-      <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
-      <TR><TD PORT="endDateTime" COLSPAN="3" ALIGN="LEFT">endDateTime</TD></TR>
-      <TR><TD PORT="methods_id" COLSPAN="3" ALIGN="LEFT">methods_id</TD></TR>
-      <TR><TD PORT="exp_type" COLSPAN="3" ALIGN="LEFT">exp_type</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">41 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">7 &gt;</TD></TR>
-    </TABLE>>
-    URL="experiments.html"
-    tooltip="experiments"
-  ];
   "repopaths" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">repopaths</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD PORT="repo_url" COLSPAN="3" ALIGN="LEFT">repo_url</TD></TR>
-      <TR><TD PORT="path" COLSPAN="3" ALIGN="LEFT">path</TD></TR>
+      <TR><TD PORT="url" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">url</TD></TR>
+      <TR><TD PORT="path" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">path</TD></TR>
       <TR><TD PORT="assoc_program" COLSPAN="3" ALIGN="LEFT">assoc_program</TD></TR>
       <TR><TD PORT="blurb" COLSPAN="3" ALIGN="LEFT">blurb</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
     </TABLE>>
     URL="repopaths.html"
     tooltip="repopaths"

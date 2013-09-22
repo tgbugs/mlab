@@ -59,6 +59,7 @@
       </table>
       <table name="cell" numRows="2400" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('cell_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
+            <child column="cell_id" foreignKey="cell_df_assoc_cell_id_fkey" implied="false" onDeleteCascade="false" table="cell_df_assoc"/>
             <child column="cell_id" foreignKey="cell_metadata_cell_id_fkey" implied="false" onDeleteCascade="false" table="cell_metadata"/>
             <child column="cell_1_id" foreignKey="cell_to_cell_cell_1_id_fkey" implied="false" onDeleteCascade="false" table="cell_to_cell"/>
             <child column="cell_2_id" foreignKey="cell_to_cell_cell_2_id_fkey" implied="false" onDeleteCascade="false" table="cell_to_cell"/>
@@ -81,6 +82,30 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="cell_df_assoc" numRows="0" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="datafile_url" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="url" foreignKey="cell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="datafile_path" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="path" foreignKey="cell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="2" name="datafile_filename" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="filename" foreignKey="cell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="3" name="cell_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="cell_df_assoc_cell_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
+         </column>
+         <primaryKey column="datafile_url" sequenceNumberInPK="1"/>
+         <primaryKey column="datafile_path" sequenceNumberInPK="2"/>
+         <primaryKey column="datafile_filename" sequenceNumberInPK="3"/>
+         <primaryKey column="cell_id" sequenceNumberInPK="4"/>
+         <index name="cell_df_assoc_pkey" unique="true">
+            <column ascending="true" name="datafile_url"/>
+            <column ascending="true" name="datafile_path"/>
+            <column ascending="true" name="datafile_filename"/>
+            <column ascending="true" name="cell_id"/>
+         </index>
+      </table>
       <table name="cell_metadata" numRows="0" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="6" id="0" name="dateTime" nullable="false" remarks="" size="29" type="timestamp"/>
          <column autoUpdated="false" digits="17" id="1" name="value" nullable="false" remarks="" size="17" type="float8"/>
@@ -98,7 +123,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="cell_to_cell" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="cell_to_cell" numRows="3600" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="cell_1_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="cell_to_cell_cell_1_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
          </column>
@@ -162,42 +187,51 @@
          </index>
       </table>
       <table name="datafile" numRows="9" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" digits="0" id="0" name="repopath_id" nullable="false" remarks="" size="10" type="int4">
-            <child column="repoid" foreignKey="datafiles_metadata_repoid_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
-            <parent column="id" foreignKey="datafile_repopath_id_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
+         <column autoUpdated="false" digits="0" id="0" name="url" nullable="false" remarks="" size="2147483647" type="varchar">
+            <child column="datafile_url" foreignKey="cell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="cell_df_assoc"/>
+            <child column="url" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
+            <parent column="url" foreignKey="datafile_url_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
          </column>
-         <column autoUpdated="false" digits="0" id="1" name="filename" nullable="false" remarks="" size="2147483647" type="varchar">
-            <child column="filename" foreignKey="datafiles_metadata_repoid_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
+         <column autoUpdated="false" digits="0" id="1" name="path" nullable="false" remarks="" size="2147483647" type="varchar">
+            <child column="datafile_path" foreignKey="cell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="cell_df_assoc"/>
+            <child column="path" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
+            <parent column="path" foreignKey="datafile_url_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
          </column>
-         <column autoUpdated="false" digits="0" id="2" name="experiment_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="datafile_experiment_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
+         <column autoUpdated="false" digits="0" id="2" name="filename" nullable="false" remarks="" size="2147483647" type="varchar">
+            <child column="datafile_filename" foreignKey="cell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="cell_df_assoc"/>
+            <child column="filename" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
          </column>
          <column autoUpdated="false" digits="0" id="3" name="datasource_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="datafile_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
          </column>
          <column autoUpdated="false" digits="6" id="4" name="creation_DateTime" nullable="false" remarks="" size="29" type="timestamp"/>
-         <primaryKey column="repopath_id" sequenceNumberInPK="1"/>
-         <primaryKey column="filename" sequenceNumberInPK="2"/>
+         <primaryKey column="url" sequenceNumberInPK="1"/>
+         <primaryKey column="path" sequenceNumberInPK="2"/>
+         <primaryKey column="filename" sequenceNumberInPK="3"/>
          <index name="datafile_pkey" unique="true">
-            <column ascending="true" name="repopath_id"/>
+            <column ascending="true" name="url"/>
+            <column ascending="true" name="path"/>
             <column ascending="true" name="filename"/>
          </index>
       </table>
       <table name="datafiles_metadata" numRows="450" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('datafiles_metadata_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial"/>
-         <column autoUpdated="false" digits="0" id="1" name="repoid" nullable="false" remarks="" size="10" type="int4">
-            <parent column="repopath_id" foreignKey="datafiles_metadata_repoid_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         <column autoUpdated="false" digits="0" id="1" name="url" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="url" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
          </column>
-         <column autoUpdated="false" digits="0" id="2" name="filename" nullable="false" remarks="" size="2147483647" type="varchar">
-            <parent column="filename" foreignKey="datafiles_metadata_repoid_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         <column autoUpdated="false" digits="0" id="2" name="path" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="path" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
          </column>
-         <column autoUpdated="false" digits="0" id="3" name="datasource_id" nullable="false" remarks="" size="10" type="int4">
+         <column autoUpdated="false" digits="0" id="3" name="filename" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="filename" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="4" name="datasource_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="datafiles_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
          </column>
-         <column autoUpdated="false" digits="6" id="4" name="dateTime" nullable="false" remarks="" size="29" type="timestamp"/>
-         <column autoUpdated="false" digits="17" id="5" name="value" nullable="false" remarks="" size="17" type="float8"/>
-         <column autoUpdated="false" digits="0" id="6" name="sigfigs" nullable="true" remarks="" size="10" type="int4"/>
-         <column autoUpdated="false" digits="17" id="7" name="abs_error" nullable="true" remarks="" size="17" type="float8"/>
+         <column autoUpdated="false" digits="6" id="5" name="dateTime" nullable="false" remarks="" size="29" type="timestamp"/>
+         <column autoUpdated="false" digits="17" id="6" name="value" nullable="false" remarks="" size="17" type="float8"/>
+         <column autoUpdated="false" digits="0" id="7" name="sigfigs" nullable="true" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="17" id="8" name="abs_error" nullable="true" remarks="" size="17" type="float8"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="datafiles_metadata_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -245,7 +279,6 @@
       <table name="experiments" numRows="41" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('experiments_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="experiment_id" foreignKey="cell_experiment_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
-            <child column="experiment_id" foreignKey="datafile_experiment_id_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
             <child column="experiments_id" foreignKey="experiments_metadata_experiments_id_fkey" implied="false" onDeleteCascade="false" table="experiments_metadata"/>
             <child column="experiment_id" foreignKey="mouse_experiment_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
             <child column="id" foreignKey="patch_id_fkey" implied="false" onDeleteCascade="false" table="patch"/>
@@ -370,6 +403,13 @@
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="iacucprotocols_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="indatabasedata" numRows="0" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('indatabasedata_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="indatabasedata_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
@@ -512,7 +552,7 @@
             <column ascending="true" name="neurotree_id"/>
          </index>
       </table>
-      <table name="person_to_project" numRows="2" remarks="" schema="public" type="TABLE">
+      <table name="person_to_project" numRows="16" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="person_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="person_to_project_person_id_fkey" implied="false" onDeleteCascade="false" table="people"/>
          </column>
@@ -576,23 +616,25 @@
          </index>
       </table>
       <table name="repopaths" numRows="9" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="nextval('repopaths_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
-            <child column="repopath_id" foreignKey="datafile_repopath_id_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         <column autoUpdated="false" digits="0" id="0" name="url" nullable="false" remarks="" size="2147483647" type="varchar">
+            <child column="url" foreignKey="datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+            <parent column="url" foreignKey="repopaths_url_fkey" implied="false" onDeleteCascade="false" table="repository"/>
          </column>
-         <column autoUpdated="false" digits="0" id="1" name="repo_url" nullable="false" remarks="" size="255" type="varchar">
-            <parent column="url" foreignKey="repopaths_repo_url_fkey" implied="false" onDeleteCascade="false" table="repository"/>
+         <column autoUpdated="false" digits="0" id="1" name="path" nullable="false" remarks="" size="2147483647" type="varchar">
+            <child column="path" foreignKey="datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
          </column>
-         <column autoUpdated="false" digits="0" id="2" name="path" nullable="false" remarks="" size="255" type="varchar"/>
-         <column autoUpdated="false" digits="0" id="3" name="assoc_program" nullable="true" remarks="" size="15" type="varchar"/>
-         <column autoUpdated="false" digits="0" id="4" name="blurb" nullable="true" remarks="" size="2147483647" type="text"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <column autoUpdated="false" digits="0" id="2" name="assoc_program" nullable="true" remarks="" size="30" type="varchar"/>
+         <column autoUpdated="false" digits="0" id="3" name="blurb" nullable="true" remarks="" size="2147483647" type="text"/>
+         <primaryKey column="url" sequenceNumberInPK="1"/>
+         <primaryKey column="path" sequenceNumberInPK="2"/>
          <index name="repopaths_pkey" unique="true">
-            <column ascending="true" name="id"/>
+            <column ascending="true" name="url"/>
+            <column ascending="true" name="path"/>
          </index>
       </table>
       <table name="repository" numRows="3" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="url" nullable="false" remarks="" size="100" type="varchar">
-            <child column="repo_url" foreignKey="repopaths_repo_url_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
+            <child column="url" foreignKey="repopaths_url_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="credentials_id" nullable="true" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="repository_credentials_id_fkey" implied="false" onDeleteCascade="false" table="credentials"/>

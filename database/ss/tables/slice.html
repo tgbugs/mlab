@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,13 +110,13 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('slice_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="cell.slice_id refs slice.id via cell_slice_id_fkey"><a href='cell.html'>cell</a><span class='relatedKey'>.slice_id</span>
     </td>
     <td class='constraint detail'>cell_slice_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="slice_metadata.slice_id refs slice.id via slice_metadata_slice_id_fkey"><a href='slice_metadata.html'>slice_metadata</a><span class='relatedKey'>.slice_id</span>
     </td>
     <td class='constraint detail'>slice_metadata_slice_id_fkey<span title='Restrict delete:
@@ -127,7 +127,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>mouse_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -137,7 +137,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="slice.mouse_id refs mouse.id via slice_mouse_id_fkey"><a href='mouse.html'>mouse</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>slice_mouse_id_fkey<span title='Restrict delete:
@@ -147,7 +147,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>prep_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -157,7 +157,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="slice.prep_id refs experiments.id via slice_prep_id_fkey"><a href='experiments.html'>experiments</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>slice_prep_id_fkey<span title='Restrict delete:
@@ -167,7 +167,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>startDateTime</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -179,7 +179,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='4 columns'>Table contained 120 rows at Sat Sep 21 01:24 PDT 2013<p/>
+<p title='4 columns'>Table contained 120 rows at Sat Sep 21 18:55 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -213,30 +213,30 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/slice.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="841,347,983,427">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="567,125,737,522">
-<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="5,179,128,259">
-<area shape="rect" id="node5" href="experiments.html" title="experiments" alt="" coords="369,683,522,899">
-<area shape="rect" id="node11" href="dam.html" title="dam" alt="" coords="181,530,315,610">
-<area shape="rect" id="node17" href="litter.html" title="litter" alt="" coords="374,334,517,414">
-<area shape="rect" id="node18" href="cage.html" title="cage" alt="" coords="187,114,309,194">
-<area shape="rect" id="node19" href="dob.html" title="dob" alt="" coords="183,334,313,414">
-<area shape="rect" id="node20" href="sire.html" title="sire" alt="" coords="181,433,315,513">
-<area shape="rect" id="node21" href="strain.html" title="strain" alt="" coords="384,237,507,317">
-<area shape="rect" id="node4" href="cell.html" title="cell" alt="" coords="1092,369,1265,563">
-<area shape="rect" id="node6" href="hardware.html" title="hardware" alt="" coords="374,917,517,997">
-<area shape="rect" id="node7" href="slice.html" title="slice" alt="" coords="781,636,1043,789">
-<area shape="rect" id="node13" href="citeable.html" title="citeable" alt="" coords="185,917,311,997">
-<area shape="rect" id="node14" href="people.html" title="people" alt="" coords="173,727,323,807">
-<area shape="rect" id="node15" href="project.html" title="project" alt="" coords="185,630,311,710">
-<area shape="rect" id="node8" href="cell_metadata.html" title="cell_metadata" alt="" coords="1315,673,1458,753">
-<area shape="rect" id="node9" href="datasources.html" title="datasources" alt="" coords="847,879,977,959">
-<area shape="rect" id="node10" href="cell_to_cell.html" title="cell_to_cell" alt="" coords="1320,369,1453,449">
-<area shape="rect" id="node12" href="datafile.html" title="datafile" alt="" coords="1111,814,1246,894">
-<area shape="rect" id="node16" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="1087,947,1270,1027">
-<area shape="rect" id="node22" href="patch.html" title="patch" alt="" coords="581,611,723,691">
-<area shape="rect" id="node23" href="slice_metadata.html" title="slice_metadata" alt="" coords="1105,581,1253,797">
-<area shape="rect" id="node24" href="sliceprep.html" title="sliceprep" alt="" coords="584,879,720,959">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="841,60,983,140">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="567,145,737,543">
+<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="5,5,128,85">
+<area shape="rect" id="node5" href="experiments.html" title="experiments" alt="" coords="369,597,522,813">
+<area shape="rect" id="node12" href="dam.html" title="dam" alt="" coords="181,139,315,219">
+<area shape="rect" id="node17" href="litter.html" title="litter" alt="" coords="374,333,517,413">
+<area shape="rect" id="node18" href="cage.html" title="cage" alt="" coords="187,236,309,316">
+<area shape="rect" id="node19" href="dob.html" title="dob" alt="" coords="183,431,313,511">
+<area shape="rect" id="node20" href="sire.html" title="sire" alt="" coords="181,333,315,413">
+<area shape="rect" id="node21" href="strain.html" title="strain" alt="" coords="384,200,507,280">
+<area shape="rect" id="node4" href="cell.html" title="cell" alt="" coords="1092,735,1265,929">
+<area shape="rect" id="node6" href="hardware.html" title="hardware" alt="" coords="374,831,517,911">
+<area shape="rect" id="node7" href="slice.html" title="slice" alt="" coords="781,613,1043,766">
+<area shape="rect" id="node13" href="citeable.html" title="citeable" alt="" coords="185,831,311,911">
+<area shape="rect" id="node14" href="people.html" title="people" alt="" coords="173,641,323,721">
+<area shape="rect" id="node15" href="project.html" title="project" alt="" coords="185,544,311,624">
+<area shape="rect" id="node8" href="cell_df_assoc.html" title="cell_df_assoc" alt="" coords="1325,832,1467,912">
+<area shape="rect" id="node9" href="cell_metadata.html" title="cell_metadata" alt="" coords="1325,536,1467,616">
+<area shape="rect" id="node10" href="datasources.html" title="datasources" alt="" coords="847,479,977,559">
+<area shape="rect" id="node11" href="cell_to_cell.html" title="cell_to_cell" alt="" coords="1315,735,1477,815">
+<area shape="rect" id="node16" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="1087,368,1270,448">
+<area shape="rect" id="node22" href="patch.html" title="patch" alt="" coords="581,596,723,676">
+<area shape="rect" id="node23" href="slice_metadata.html" title="slice_metadata" alt="" coords="1105,501,1253,717">
+<area shape="rect" id="node24" href="sliceprep.html" title="sliceprep" alt="" coords="584,820,720,900">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/slice.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

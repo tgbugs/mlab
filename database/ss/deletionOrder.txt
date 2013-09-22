@@ -1,9 +1,11 @@
 recipe
 methods
+indatabasedata
 file
 cagetransfer
-sliceprep
 datafiles_metadata
+cell_df_assoc
+sliceprep
 users_datastreams
 slice_metadata
 person_to_project
@@ -16,10 +18,10 @@ cell_metadata
 reagentlot
 cagerack
 patch
-datafile
 cell
-repopaths
+datafile
 slice
+repopaths
 repository
 hardware
 breeder
