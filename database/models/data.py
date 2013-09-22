@@ -131,7 +131,7 @@ class Repository(Base):
     url=Column(String(100),primary_key=True) #use urllib.parse for this #since these are base URLS len 100 ok
     credentials_id=Column(Integer,ForeignKey('credentials.id')) 
     blurb=Column(Text)
-    paths=relationship('RepoPath',primaryjoin='RepoPath.repo_url==Repository.url')
+    paths=relationship('RepoPath',primaryjoin='RepoPath.url==Repository.url')
     #FIXME, move this to people/users because this is part of credentialing not data? move it to wherever I end up putting 'credential things' like users
     #TODO, if we are going to store these in a database then the db needs to pass sec tests, but it is probably better than trying to secure them in a separate file, BUT we will unify all our secure credentials management with the same system
     #TODO there should be a default folder or 
@@ -153,18 +153,18 @@ class RepoPath(Base):
     blurb=Column(Text) #a little note saying what data is stored here, eg, abf files
     #TODO we MUST maintain synchrony between where external programs put files and where the database THINKS they put files, some programs may be able to have this specified on file creation, check the clxapi for example, note has to be done by hand for that one
     #FIXME should the REPO HERE maintain a list of files? the filesystem KNOWS what is there
-    def __init__(self,Repo=None,repo_url=None,path=None,assoc_program=None,name=None):
-        self.repo_url=URL_STAND.baseClean(repo_url)
+    def __init__(self,Repo=None,url=None,path=None,assoc_program=None,name=None):
+        self.url=URL_STAND.baseClean(url)
         self.assoc_program=assoc_program
         self.name=name
         if Repo:
             if Repo.url:
-                self.repo_url=Repo.url
+                self.url=Repo.url
             else:
                 raise AttributeError('Repository has no url! Did you commit before referencing the instance directly?') #FIXME this should never trigger because url is a primary key and not an autoincrementing int...
         clean_path=URL_STAND.pathClean(path)
         #test to make sure the directory exists
-        URL_STAND.test_url(self.repo_url+clean_path) #FIXME may need a try in here
+        URL_STAND.test_url(self.url+clean_path) #FIXME may need a try in here
         self.path=clean_path
 
 
@@ -242,8 +242,8 @@ class DataFile(HasMetaData, Base):
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
     #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
-    def __init__(self,RepoPath=None,Experiment=None, repopath_id=None, repo_url=None,repo_path=None,experiment_id=None,filename=None,DataSource=None,datasource_id=None):
-        #self.repo_url=URL_STAND.baseClean(repo_url)
+    def __init__(self,RepoPath=None,Experiment=None,url=None,path=None,filename=None,experiment_id=None,DataSource=None,datasource_id=None):
+        #self.url=URL_STAND.baseClean(repo_url)
         #self.repo_path=URL_STAND.pathClean(repo_path)
         self.repopath_id=repopath_id
         self.filename=filename

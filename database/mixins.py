@@ -80,16 +80,17 @@ class HasMetaData: #looks like we want this to be table per related
 class HasDataFiles:
     @declared_attr
     def datafiles(cls):
-        datafile_association = Table('%s_datafiles'%cls.__tablename__, cls.metadata,
+        datafile_association = Table('%s_df_assoc'%cls.__tablename__, cls.metadata,
             Column('datafile_url',Integer,ForeignKey('datafile.url'),primary_key=True),
             Column('datafile_path',Integer,ForeignKey('datafile.path'),primary_key=True),
             Column('datafile_filename',String,ForeignKey('datafile.filename'),
                    primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__),
-                   primary_key=True)
+                   primary_key=True),
+            foreign_keys=['datafile_url','datafile_path','datafile_filename','%s_id'%cls.__tablename__]
         )
         return relationship('DataFile', secondary=datafile_association,
-                #primarjoin='and_(DataFile.url==,DataFile.path==,DataFile.filename==)', #FIXME
+                #primaryjoin='and_(DataFile.url=={0}.datafile_url,DataFile.path=={0}.datafile_path,DataFile.filename=={0}.datafile_filename)'.format(cls.__name__), #FIXME no that wasn't the solution
                 backref=backref('%s'%cls.__tablename__))
 
 ###--------------------
