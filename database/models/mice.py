@@ -70,7 +70,7 @@ class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific
         return '\nDOB %s %s %s'%(frmtDT(self.dateTime),_plusMinus,self.absolute_error)
 
 
-class Mouse(HasNotes, Base): #TODO species metadata???
+class Mouse(HasMetaData, HasNotes, Base): #TODO species metadata???
     #in addition to the id, keep track of some of the real world ways people refer to mice!
     eartag=Column(Integer)
     tattoo=Column(Integer)
@@ -82,7 +82,7 @@ class Mouse(HasNotes, Base): #TODO species metadata???
 
     sex_id=Column(String(1),ForeignKey('sex.abbrev'),nullable=False)
     #relationship('Breeder',primaryjoin='',backref=backref())
-    genotype_id=Column(Integer) #use the numbers that jax uses???? #TODO
+    genotype_id=Column(Integer) #TODO this should really be metadata, but how to constrain those metadata fields based on strain data?
     strain_id=Column(String(20),ForeignKey('strain.id')) #FIXME populating the strain ID probably won't be done in table? but can set rules that force it to match the parents, use a query, or a match or a condition on a join to prevent accidents? well, mouse strains could change via mute TODO
 
     #geology

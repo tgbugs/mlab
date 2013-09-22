@@ -59,5 +59,12 @@ class Strain(Base): #TODO
     #will be VERY useful when converting for real things
     #FIXME: by reflection from jax??? probably not
     id=None
-    id=Column(String(20),primary_key=True,autoincrement=False)
+    #id=Column(String(20),primary_key=True,autoincrement=False)
+    jax_id=Column(String(10),primary_key=True)
+    name=Column(Unicode(50)) #scrape from jax
+    abbrev=Column(String(15))
+    #TODO can just use datafiles to get the data on them via
+    #http://jaxmice.jax.org/strain/*.html
+    #make a way to put the data in via a url
+    
 
