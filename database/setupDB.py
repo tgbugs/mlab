@@ -194,7 +194,7 @@ def popHardware(session): #FIXME
     session.add(Hardware(Parent=digidata,type='amplifier',name='Multiclamp 700B',unique_id='00106382'))
     session.commit()
 
-    amp1=session.query(Hardware).filter_by(unique_id='serial1')[0]
+    amp1=session.query(Hardware).filter_by(unique_id='00106956')[0]
     session.add(Hardware(Parent=amp1,type='headstage',name='hs 0 (left)', unique_id='115054')) #FIXME needs to go via bnc, there has GOT to be a better way?
     session.add(Hardware(Parent=amp1,type='headstage',name='hs 1 (right)', unique_id='95017')) #so the bnc doesn't add anything because it doesn't propagate or constrain pysical reality
     session.commit()

@@ -32,7 +32,7 @@
 <div class='indent'>
 <table width='100%'>
 <tr><td class='container' valign='bottom'><b>
-73 Foreign Key Constraints:</b>
+76 Foreign Key Constraints:</b>
 </td><td class='container' align='right'>
 <table>
   <tr><td class='container' align='right' valign='top'><a href='http://sourceforge.net' target='_blank'><img src='http://sourceforge.net/sflogo.php?group_id=137197&amp;type=1' alt='SourceForge.net' border='0' height='31' width='88'></a></td></tr>
@@ -276,14 +276,14 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </tr>
   <tr class='odd'>
   <td class='detail'>fk_dam</td>
-  <td class='detail'><a href='tables/mouse.html'>mouse</a>.dam_id</td>
+  <td class='detail'><a href='tables/litter.html'>litter</a>.dam_id</td>
   <td class='detail'><a href='tables/dam.html'>dam</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
   <tr class='even'>
   <td class='detail'>fk_sire</td>
-  <td class='detail'><a href='tables/mouse.html'>mouse</a>.sire_id</td>
+  <td class='detail'><a href='tables/litter.html'>litter</a>.sire_id</td>
   <td class='detail'><a href='tables/sire.html'>sire</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
@@ -506,76 +506,97 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
   <tr class='even'>
+  <td class='detail'>righistory_hardware_id_fkey</td>
+  <td class='detail'><a href='tables/righistory.html'>righistory</a>.hardware_id</td>
+  <td class='detail'><a href='tables/hardware.html'>hardware</a>.id</td>
+  <td class='detail'><span title='Restrict delete:
+ Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
+ </tr>
+  <tr class='odd'>
+  <td class='detail'>righistory_new_parent_fkey</td>
+  <td class='detail'><a href='tables/righistory.html'>righistory</a>.new_parent</td>
+  <td class='detail'><a href='tables/hardware.html'>hardware</a>.id</td>
+  <td class='detail'><span title='Restrict delete:
+ Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
+ </tr>
+  <tr class='even'>
+  <td class='detail'>righistory_old_parent_fkey</td>
+  <td class='detail'><a href='tables/righistory.html'>righistory</a>.old_parent</td>
+  <td class='detail'><a href='tables/hardware.html'>hardware</a>.id</td>
+  <td class='detail'><span title='Restrict delete:
+ Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
+ </tr>
+  <tr class='odd'>
   <td class='detail'>sire_id_fkey</td>
   <td class='detail'><a href='tables/sire.html'>sire</a>.id</td>
   <td class='detail'><a href='tables/breeder.html'>breeder</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
-  <tr class='odd'>
+  <tr class='even'>
   <td class='detail'>slice_metadata_datasource_id_fkey</td>
   <td class='detail'><a href='tables/slice_metadata.html'>slice_metadata</a>.datasource_id</td>
   <td class='detail'><a href='tables/datasources.html'>datasources</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
-  <tr class='even'>
+  <tr class='odd'>
   <td class='detail'>slice_metadata_slice_id_fkey</td>
   <td class='detail'><a href='tables/slice_metadata.html'>slice_metadata</a>.slice_id</td>
   <td class='detail'><a href='tables/slice.html'>slice</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
-  <tr class='odd'>
+  <tr class='even'>
   <td class='detail'>slice_mouse_id_fkey</td>
   <td class='detail'><a href='tables/slice.html'>slice</a>.mouse_id</td>
   <td class='detail'><a href='tables/mouse.html'>mouse</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
-  <tr class='even'>
+  <tr class='odd'>
   <td class='detail'>slice_prep_id_fkey</td>
   <td class='detail'><a href='tables/slice.html'>slice</a>.prep_id</td>
   <td class='detail'><a href='tables/experiments.html'>experiments</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
-  <tr class='odd'>
+  <tr class='even'>
   <td class='detail'>sliceprep_chamber_id_fkey</td>
   <td class='detail'><a href='tables/sliceprep.html'>sliceprep</a>.chamber_id</td>
   <td class='detail'><a href='tables/hardware.html'>hardware</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
-  <tr class='even'>
+  <tr class='odd'>
   <td class='detail'>sliceprep_id_fkey</td>
   <td class='detail'><a href='tables/sliceprep.html'>sliceprep</a>.id</td>
   <td class='detail'><a href='tables/experiments.html'>experiments</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
-  <tr class='odd'>
+  <tr class='even'>
   <td class='detail'>sliceprep_sucrose_id_fkey</td>
   <td class='detail'><a href='tables/sliceprep.html'>sliceprep</a>.sucrose_id</td>
   <td class='detail'><a href='tables/reagents.html'>reagents</a>.name</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
-  <tr class='even'>
+  <tr class='odd'>
   <td class='detail'>users_datastreams_datasource_id_fkey</td>
   <td class='detail'><a href='tables/users_datastreams.html'>users_datastreams</a>.datasource_id</td>
   <td class='detail'><a href='tables/datasources.html'>datasources</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
-  <tr class='odd'>
+  <tr class='even'>
   <td class='detail'>users_datastreams_users_id_fkey</td>
   <td class='detail'><a href='tables/users_datastreams.html'>users_datastreams</a>.users_id</td>
   <td class='detail'><a href='tables/users.html'>users</a>.id</td>
   <td class='detail'><span title='Restrict delete:
  Parent cannot be deleted if children exist'>Restrict delete&nbsp;</span></td>
  </tr>
-  <tr class='even'>
+  <tr class='odd'>
   <td class='detail'>users_person_id_fkey</td>
   <td class='detail'><a href='tables/users.html'>users</a>.person_id</td>
   <td class='detail'><a href='tables/people.html'>people</a>.id</td>

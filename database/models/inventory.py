@@ -25,7 +25,7 @@ class Hardware(HasMetaData, IsDataSource, Base):
     manual_id=Column(Integer,ForeignKey('citeable.id')) #TODO
     sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
 
-    def __init__(self,Type=None,Parent=None,type=None,Blueprint=None,parent_id=None,name=None,unique_id=None,blueprint_id=None):
+    def __init__(self,Type=None,Parent=None,type=None,Blueprint=None,parent_id=None,name=None,unique_id=None,blueprint_id=None,model=None,company=None,manual_id=None):
         self.type=type
         self.parent_id=parent_id
         self.name=name
@@ -74,9 +74,9 @@ class RigHistory(Base): #this is nice, but it seems better to get the current ri
     dateTime=Column(DateTime,nullable=False) #FIXME should be timestamp
     user_id=None
     action=None
-    hardware_id=Column(Integer,ForeignKey('Hardware.id'),nullable=False)
-    old_parent=Column(Integer,ForeignKey('Hardware.id'),nullable=False)
-    new_parent=Column(Integer,ForeignKey('Hardware.id'),nullable=False)
+    hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False)
+    old_parent=Column(Integer,ForeignKey('hardware.id'),nullable=False)
+    new_parent=Column(Integer,ForeignKey('hardware.id'),nullable=False)
     @hybrid_property
     def delta(self):
         return self.old_parent-self.new_parent #this works better since the 'current' parents and all history will cancel eachother out and we will be left with the parent of that node on that date, +sum(delta) is the use

@@ -6,6 +6,7 @@ cagetransfer
 datafiles_metadata
 cell_df_assoc
 sliceprep
+righistory
 users_datastreams
 slice_metadata
 person_to_project

@@ -520,21 +520,21 @@ def run_tests(session):
 
     ds=t_datasource(session)
     h=t_hardware(session)
-    hwmd=t_hwmetadata(session,20)
+    hwmd=t_hwmetadata(session,5)
     t_experiment(session,1,4) #FIXME argh, so many things can become inconsistent...
 
     i=t_reagent(session)
 
-    sp=t_sliceprep(session,15)
+    sp=t_sliceprep(session,5)
     sp.add_mice()
     p=t_patch(session,1) #FIXME you know it might be good to force a new exp rec when any of the variables changes... like the internal...? think think
 
-    s=t_slice(session,6)
-    c=t_cell(session,10)
+    s=t_slice(session,4)
+    c=t_cell(session,5)
     c2c=t_c2c(session)
 
     d=t_datafile(session,10)#,2,1) #FIXME eating memory
-    dfmd=t_dfmetadata(session,1) #as in 8 gigs of memory...
+    dfmd=t_dfmetadata(session,10) #as in 8 gigs of memory...
 
     #session.commit()
 
