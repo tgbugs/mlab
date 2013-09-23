@@ -186,7 +186,7 @@ def popHardware(session): #FIXME
     session.add(Hardware(Parent=root,type='motion controller/driver',name='ESP300'))
     digidata=Hardware(Parent=root,type='digitizer',name='Digidata 1322A',unique_id='105309')
     session.add(digidata)
-    session.add(Hardware(Parent=root,type='digitizer',name='nidaq 1'))
+    session.add(Hardware(Parent=root,type='digitizer',name='nidaq',model='NI PCIe-6259',unique_id='0x138FADB'))
     session.commit()
     
     #wierd, since these can also be controlled directly, but I guess that ok?
@@ -201,9 +201,16 @@ def popHardware(session): #FIXME
     #basically, make sure reality matches what the computer thinks it is, could make a self test for that asking user to hit 0 and then hit 1?
     #good old corrispondence problems
 
-    nidaq=session.query(Hardware).filter_by(name='nidaq 1')[0]
-    session.add(Hardware(Parent=nidaq,type='led',name='led 470'))
+    nidaq=session.query(Hardware).filter_by(name='nidaq')[0]
+    session.add(Hardware(Parent=nidaq,type='led',name='470',model='M470L2',unique_id='M00277763'))
     session.commit()
+
+def popDataSourceAssociations(session):
+    #TODO make this as simple as possible
+    #so that hopefully the hardware tree is only needed for debugging/consistency checks
+
+    #fuck, datasource is going to change depending on the mode the amp is in... how to propagate forward
+    pass
 
 def populateConstraints(session):
     """Populate the tables used to constrain datatypes"""

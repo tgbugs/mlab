@@ -69,7 +69,7 @@ class Hardware(HasMetaData, IsDataSource, Base): #FIXME somehow I need a way to 
         except: pass
         return '\n%s %s %s son of %s father to %s with MetaData %s'%(self.type.capitalize(),name,uid,parent,children,self.metadata_)
 
-class RigHistory(Base):
+class RigHistory(Base): #this is nice, but it seems better to get the current rig state and pull the relevant data and put it in cell metadata
     id=Column(Integer,primary_key=True)
     dateTime=Column(DateTime,nullable=False) #FIXME should be timestamp
     user_id=None

@@ -182,6 +182,10 @@ class DataFile(HasMetaData, Base):
     #RESPONSE: this record cannot be created until the file itself exists
     id=None
     #repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
+    #FIXME datafiles have substructure that requires more than one datasource ;_;
+    #although, the easiest way to fix that is to just change this to allow for an arbitrary number of channels to be saved per datafile and link the datasources to those?
+    #maybe base it on datafile type??? or configuration... but that is going to change for every fucking thing...
+    #that stuff goes in the metadata, datasource here just means 'collection software' fucking conflation
     url=Column(String,primary_key=True,autoincrement=False)
     path=Column(String,primary_key=True,autoincrement=False)
     __table_args__=(ForeignKeyConstraint([url,path],['repopaths.url','repopaths.path']), {}) #FIXME this *could* be really fucking slow because they arent indexed, may need to revert these changes, ah well
@@ -243,7 +247,6 @@ class DataFile(HasMetaData, Base):
     @filetype.setter
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
-    #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
     def __init__(self,RepoPath=None,url=None,path=None,filename=None,DataSource=None,datasource_id=None,Cells=None): #FIXME Cells should be 'thing that has DataFiles...'
         #self.url=URL_STAND.baseClean(repo_url)
         #self.repo_path=URL_STAND.pathClean(repo_path)
