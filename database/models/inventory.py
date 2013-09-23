@@ -9,8 +9,8 @@ from database.mixins import HasNotes, IsDataSource, HasMetaData
 ###  Hardware inventory, aka rig parts
 ###-----------------------------------
 
-#TODO separate the hardware from the tree, the tree needs to be versioned the hardware properties do not
-class Hardware(HasMetaData, IsDataSource, Base): #FIXME somehow I need a way to 'version' the rig, I mean, I could try to do this all through metadata, but then it would be hard to match cell to channel???
+#FIXME this is not the right way to link subject-data
+class Hardware(HasMetaData, IsDataSource, Base):
     __tablename__='hardware'
     id=Column(Integer,primary_key=True)     #this is going to be a hierarchical structure
     parent_id=Column(Integer,ForeignKey('hardware.id')) #sadly we can't make this nullable :( :( can still suggest sr

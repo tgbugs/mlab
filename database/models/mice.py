@@ -210,7 +210,7 @@ class Slice(HasMetaData, HasNotes, Base):
 
 
 
-class CellPairs(Base): #XXX ALERT! you need TWO rows for a reciprocal pairing!
+class CellPairs(Base): #FIXME cell tupels?!??!
     #FIXME should THIS have datafiles instead??@??@
     #YES yes eys eys eys ey sy
     __tablename__='cell_to_cell'
@@ -233,6 +233,8 @@ class CellPairs(Base): #XXX ALERT! you need TWO rows for a reciprocal pairing!
     def __repr__(self):
         return '%s %s'%(self.cell_1_id,self.cell_2_id)
 
+    #TODO FIXME so maybe this shouldn't be explicit here, it should be in the metadata linking cells to datafile channels????
+
 
 class Cell(HasDataFiles, HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #FIXME move to subjects
     #TODO link this as m-m to datafiles and bam many problems solved
@@ -248,6 +250,7 @@ class Cell(HasDataFiles, HasMetaData, HasNotes, Base): #FIXME how to add markers
     #FIXME check that experiment_id.sliceprep.slices contains slice_id
 
     #link to data
+    #FIXME link to data seems like it is going to be via metadata :/
     hs_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #FIXME need mapping to channels in abffile so that we can link the analysis results directly back to the cell, it really does feel like I should be putting cell id's into experiments rather than the ohter way around thought.... wait fuck damn it
 
     #datafile_id=Column(Integer,ForeignKey('datafile.id'),nullable=False)
@@ -274,7 +277,7 @@ class Cell(HasDataFiles, HasMetaData, HasNotes, Base): #FIXME how to add markers
 
     rheobase=None
 
-    headstage=relationship('Hardware',primaryjoin='Cell.hs_id==Hardware.id')
+    #headstage=relationship('Hardware',primaryjoin='Cell.hs_id==Hardware.id')
 
     #NOTE: this table is now CRITICAL for maintaining a record of who was patched with whom
     _cell_2=relationship('Cell', #FIXME I should only need ONE ROW for this
