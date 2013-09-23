@@ -9,10 +9,12 @@ from database.mixins import HasNotes, IsDataSource, HasMetaData
 ###  Hardware inventory, aka rig parts
 ###-----------------------------------
 
-class Hardware(HasMetaData, IsDataSource, Base):
+#TODO separate the hardware from the tree, the tree needs to be versioned the hardware properties do not
+class Hardware(HasMetaData, IsDataSource, Base): #FIXME somehow I need a way to 'version' the rig, I mean, I could try to do this all through metadata, but then it would be hard to match cell to channel???
     __tablename__='hardware'
     id=Column(Integer,primary_key=True)     #this is going to be a hierarchical structure
     parent_id=Column(Integer,ForeignKey('hardware.id')) #sadly we can't make this nullable :( :( can still suggest sr
+    #TODO I MUST have a way to track changes in the parent state so that datafiles will have the state when THEY were recorded...
     type=Column(String,ForeignKey('hardwaretype.type'),nullable=False)
     name=Column(String)
     unique_id=Column(String) #FIXME fuck
@@ -22,7 +24,7 @@ class Hardware(HasMetaData, IsDataSource, Base):
     blueprint_id=Column(Integer,ForeignKey('citeable.id')) #TODO
     manual_id=Column(Integer,ForeignKey('citeable.id')) #TODO
     sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
-    #hwmetadata=relationship('HWMetaData',primaryjoin='Hardware.id==HWMetaData.hw_id') #FIXME should these just be blobs or what??? maybe by using a datatype column!??! that would mean I could just have a single metadata table per class...
+
     def __init__(self,Type=None,Parent=None,type=None,Blueprint=None,parent_id=None,name=None,unique_id=None,blueprint_id=None):
         self.type=type
         self.parent_id=parent_id
@@ -66,6 +68,22 @@ class Hardware(HasMetaData, IsDataSource, Base):
         try: children=''.join([s.strHelper() for s in self.sub_components])
         except: pass
         return '\n%s %s %s son of %s father to %s with MetaData %s'%(self.type.capitalize(),name,uid,parent,children,self.metadata_)
+
+class RigHistory(Base):
+    id=Column(Integer,primary_key=True)
+    dateTime=Column(DateTime,nullable=False) #FIXME should be timestamp
+    user_id=None
+    action=None
+    hardware_id=Column(Integer,ForeignKey('Hardware.id'),nullable=False)
+    old_parent=Column(Integer,ForeignKey('Hardware.id'),nullable=False)
+    new_parent=Column(Integer,ForeignKey('Hardware.id'),nullable=False)
+    @hybrid_property
+    def delta(self):
+        return self.old_parent-self.new_parent #this works better since the 'current' parents and all history will cancel eachother out and we will be left with the parent of that node on that date, +sum(delta) is the use
+
+    #TODO proper way to query this seems to be??? to sum the deltas I think... when reconstructing the rig config for output I will need to use this table
+
+
 
 ###-------------------
 ###  Reagent inventory

@@ -183,16 +183,20 @@ def popHardware(session): #FIXME
     chamber=Hardware(type='chamber',name='interface chamber',unique_id='jim\'s',blueprint_id=None)
     session.add(chamber)
 
-    session.add(Hardware(Parent=root,type='amplifier',name='Multiclamp 700B',unique_id='serial1'))
-    session.add(Hardware(Parent=root,type='amplifier',name='Multiclamp 700B',unique_id='serial2'))
     session.add(Hardware(Parent=root,type='motion controller/driver',name='ESP300'))
-    session.add(Hardware(Parent=root,type='digitizer',name='Digidata 1200A'))
+    digidata=Hardware(Parent=root,type='digitizer',name='Digidata 1322A',unique_id='105309')
+    session.add(digidata)
     session.add(Hardware(Parent=root,type='digitizer',name='nidaq 1'))
+    session.commit()
+    
+    #wierd, since these can also be controlled directly, but I guess that ok?
+    session.add(Hardware(Parent=digidata,type='amplifier',name='Multiclamp 700B',unique_id='00106956'))
+    session.add(Hardware(Parent=digidata,type='amplifier',name='Multiclamp 700B',unique_id='00106382'))
     session.commit()
 
     amp1=session.query(Hardware).filter_by(unique_id='serial1')[0]
-    session.add(Hardware(Parent=amp1,type='headstage',name='hs 0', unique_id='hs0')) #FIXME needs to go via bnc, there has GOT to be a better way?
-    session.add(Hardware(Parent=amp1,type='headstage',name='hs 1', unique_id='hs1')) #so the bnc doesn't add anything because it doesn't propagate or constrain pysical reality
+    session.add(Hardware(Parent=amp1,type='headstage',name='hs 0 (left)', unique_id='115054')) #FIXME needs to go via bnc, there has GOT to be a better way?
+    session.add(Hardware(Parent=amp1,type='headstage',name='hs 1 (right)', unique_id='95017')) #so the bnc doesn't add anything because it doesn't propagate or constrain pysical reality
     session.commit()
     #basically, make sure reality matches what the computer thinks it is, could make a self test for that asking user to hit 0 and then hit 1?
     #good old corrispondence problems
