@@ -1,3 +1,4 @@
+from os import sep
 from database.imports import *
 from database.base import Base
 from database.mixins import HasNotes, HasMetaData
@@ -236,7 +237,7 @@ class DataFile(HasMetaData, Base):
 
     #analysis_DateTime
     #FIXME a bunch of these DateTimes should be TIMESTAMP? using the python implementation is more consistent?
-    @property
+    @hybrid_property #FIXME this isn't really hybrid...
     def filetype(self):
         return self.filename.split('.')[-1]
     @filetype.setter
@@ -261,6 +262,11 @@ class DataFile(HasMetaData, Base):
                 self.path=RepoPath.path
             else:
                 raise AttributeError('RepoPath has no url/path! Did you commit before referencing the instance directly?')
+    def strHelper(self,depth=0):
+        return super(depth,'filename')
+    def __repr__(self):
+        return '\n%s%s%s%s'%(self.url,self.path,os.sep,self.filename)
+
 
 class InDatabaseData(Base):
     #TODO, need something more flexible than metadata (amazingly) that can hold stuff like calibration data not stored elsewhere?? also if I ever transition away from external datafiles or if I want to use neoio immediately to convert abf files

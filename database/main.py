@@ -132,6 +132,9 @@ def printStuff(cons=True,mice=True,data=True,notes=True):
 ###  Test it!
 ###----------
 
+def connect(echo=False):
+    return Session(postgresEng(echo=False))
+
 def main(echo=True):
     #create engine
     engine=postgresEng(echo=echo,wipe_db=False)
