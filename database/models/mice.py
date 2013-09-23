@@ -211,6 +211,8 @@ class Slice(HasMetaData, HasNotes, Base):
 
 
 class CellPairs(Base): #XXX ALERT! you need TWO rows for a reciprocal pairing!
+    #FIXME should THIS have datafiles instead??@??@
+    #YES yes eys eys eys ey sy
     __tablename__='cell_to_cell'
     id=None
     cell_1_id=Column(Integer,ForeignKey('cell.id'),primary_key=True)

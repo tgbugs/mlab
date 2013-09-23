@@ -448,7 +448,7 @@ class t_datafile(TEST):
         cells=self.session.query(Cell)
         for c1,c2 in zip(cells[:-1],cells[1:]):
             for rp in repop.records:
-                data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(c1.experiment_id,df),DataSource=ds,Cells=[c1,c2]) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
+                data+=[DataFile(RepoPath=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiment_id,c1.id,c2.id,df),DataSource=ds,Cells=[c1,c2]) for df in range(self.num)] 
         self.records=data
 
 
@@ -525,7 +525,7 @@ def run_tests(session):
 
     i=t_reagent(session)
 
-    sp=t_sliceprep(session,20)
+    sp=t_sliceprep(session,15)
     sp.add_mice()
     p=t_patch(session,1) #FIXME you know it might be good to force a new exp rec when any of the variables changes... like the internal...? think think
 
@@ -533,7 +533,7 @@ def run_tests(session):
     c=t_cell(session,10)
     c2c=t_c2c(session)
 
-    d=t_datafile(session,10,2,1) #FIXME eating memory
+    d=t_datafile(session,10)#,2,1) #FIXME eating memory
     dfmd=t_dfmetadata(session,50)
 
     #session.commit()
