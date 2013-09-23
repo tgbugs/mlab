@@ -1,5 +1,5 @@
-from models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware
-from imports import printD
+from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware
+from database.imports import printD
 
 ###----------------------------
 ###  Populate Constraint tables

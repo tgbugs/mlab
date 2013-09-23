@@ -2,7 +2,7 @@ from database.models import *
 
 import numpy as np
 
-from imports import printD,ploc,datetime,timedelta
+from database.imports import printD,ploc,datetime,timedelta
 
 
 #FIXME flush instead of commit will populate primary keys! for some reason this isn't working...
@@ -436,19 +436,19 @@ class t_datasource(TEST):
 
 
 class t_datafile(TEST):
-    def __init__(self,session,num=None,num_experiments=None,num_projects=None):
-        self.num_projects=num_projects
-        self.num_experiments=num_experiments
-        super().__init__(session,num)
+    #def __init__(self,session,num=None,num_experiments=None,num_projects=None):
+        #self.num_projects=num_projects
+        #self.num_experiments=num_experiments
+        #super().__init__(session,num)
     def make_all(self):
         repop=t_repopath(self.session)
-        experiment=t_experiment(self.session,self.num_experiments,self.num_projects) #I am getting  3x the number I request here, a yes, that is because I'm looking at 3 projects
+        ds=self.session.query(DataSource)[0]
         data=[]
-        ds=t_datasource(self.session)
         count=0
-        for exp in experiment.records:
+        cells=self.session.query(Cell)
+        for c1,c2 in zip(cells[:-1],cells[1:]):
             for rp in repop.records:
-                data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(exp.id,df),DataSource=ds.records[0]) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
+                data+=[DataFile(RepoPath=rp,filename='exp%s_%s.data'%(c1.experiment_id,df),DataSource=ds,Cells=[c1,c2]) for df in range(self.num)] #so it turns out that the old naming scheme was causing the massive slowdown as the number of datafiles went as the square of the experiment number! LOL
         self.records=data
 
 
@@ -515,13 +515,13 @@ def run_tests(session):
     #d=t_datafile(session,20,500,4) #add 1000 datafiles to 3 projects each with 10 experiments takes about 16 seconds, I'd say we're ok here
 
     #d=t_datafile(session,10,50,4)
-    d=t_datafile(session,1,1,1)
-    dfmd=t_dfmetadata(session,50)
     
     #[print(df.creation_DateTime) for df in session.query(DataFile)]
 
+    ds=t_datasource(session)
     h=t_hardware(session)
     hwmd=t_hwmetadata(session,20)
+    t_experiment(session,1,4) #FIXME argh, so many things can become inconsistent...
 
     i=t_reagent(session)
 
@@ -532,6 +532,9 @@ def run_tests(session):
     s=t_slice(session,6)
     c=t_cell(session,10)
     c2c=t_c2c(session)
+
+    d=t_datafile(session,10,2,1) #FIXME eating memory
+    dfmd=t_dfmetadata(session,50)
 
     #session.commit()
 

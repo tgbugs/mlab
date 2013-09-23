@@ -37,10 +37,10 @@ from sqlalchemy                 import create_engine
 from sqlalchemy.orm             import Session
 from sqlalchemy.engine          import Engine
 
-from models                     import *
+from database.models            import *
 from database.base              import Base
-from setupDB                    import populateConstraints, populateTables
-from TESTS                      import run_tests
+from database.setupDB                    import populateConstraints, populateTables
+from database.TESTS                      import run_tests
 
 try:
     import rpdb2
@@ -138,8 +138,8 @@ def main(echo=True):
     #engine=sqliteEng(echo=echo)
 
     #create metadata
-    #Base.metadata.drop_all(engine,checkfirst=True)
-    #Base.metadata.create_all(engine,checkfirst=True)
+    Base.metadata.drop_all(engine,checkfirst=True)
+    Base.metadata.create_all(engine,checkfirst=True)
 
     #create session
     session = Session(engine)

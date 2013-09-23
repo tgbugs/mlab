@@ -243,7 +243,7 @@ class DataFile(HasMetaData, Base):
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
     #metadata_id=Column(Integer,ForeignKey('metadata.id')) #FIXME what are we going to do about this eh?
-    def __init__(self,RepoPath=None,url=None,path=None,filename=None,experiment_id=None,DataSource=None,datasource_id=None):
+    def __init__(self,RepoPath=None,url=None,path=None,filename=None,experiment_id=None,DataSource=None,datasource_id=None,Cells=None):
         #self.url=URL_STAND.baseClean(repo_url)
         #self.repo_path=URL_STAND.pathClean(repo_path)
         self.url=url
@@ -254,6 +254,7 @@ class DataFile(HasMetaData, Base):
         self.datasource_id=datasource_id
         #self.AssignID(Experiment) #FIXME should be subject instead?!?!
         self.AssignID(DataSource)
+        self.cell.extend(Cells) #TODO listlike #FIXME there's going to be a row for every bloody thing with HasDataFiles
         if RepoPath:
             if RepoPath.url:
                 self.url=RepoPath.url
