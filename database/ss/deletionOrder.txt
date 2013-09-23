@@ -9,6 +9,7 @@ sliceprep
 users_datastreams
 slice_metadata
 person_to_project
+mouse_metadata
 hardware_metadata
 hardware_datastreams
 experiments_metadata

@@ -245,6 +245,7 @@
             <child column="datasource_id" foreignKey="experiments_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="experiments_metadata"/>
             <child column="datasource_id" foreignKey="hardware_datastreams_datasource_id_fkey" implied="false" onDeleteCascade="false" table="hardware_datastreams"/>
             <child column="datasource_id" foreignKey="hardware_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="hardware_metadata"/>
+            <child column="datasource_id" foreignKey="mouse_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="mouse_metadata"/>
             <child column="datasource_id" foreignKey="slice_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="slice_metadata"/>
             <child column="datasource_id" foreignKey="users_datastreams_datasource_id_fkey" implied="false" onDeleteCascade="false" table="users_datastreams"/>
          </column>
@@ -472,6 +473,7 @@
          <column autoUpdated="true" defaultValue="nextval('mouse_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="id" foreignKey="breeder_id_fkey" implied="false" onDeleteCascade="false" table="breeder"/>
             <child column="mouse_id" foreignKey="cell_mouse_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
+            <child column="mouse_id" foreignKey="mouse_metadata_mouse_id_fkey" implied="false" onDeleteCascade="false" table="mouse_metadata"/>
             <child column="mouse_id" foreignKey="slice_mouse_id_fkey" implied="false" onDeleteCascade="false" table="slice"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="eartag" nullable="true" remarks="" size="10" type="int4"/>
@@ -486,7 +488,7 @@
          </column>
          <column autoUpdated="false" digits="0" id="7" name="genotype_id" nullable="true" remarks="" size="10" type="int4"/>
          <column autoUpdated="false" digits="0" id="8" name="strain_id" nullable="true" remarks="" size="20" type="varchar">
-            <parent column="id" foreignKey="mouse_strain_id_fkey" implied="false" onDeleteCascade="false" table="strain"/>
+            <parent column="jax_id" foreignKey="mouse_strain_id_fkey" implied="false" onDeleteCascade="false" table="strain"/>
          </column>
          <column autoUpdated="false" digits="0" id="9" name="litter_id" nullable="true" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="mouse_litter_id_fkey" implied="false" onDeleteCascade="false" table="litter"/>
@@ -510,6 +512,23 @@
          </index>
          <index name="mouse_experiment_id_key" unique="true">
             <column ascending="true" name="experiment_id"/>
+         </index>
+      </table>
+      <table name="mouse_metadata" numRows="0" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" digits="6" id="0" name="dateTime" nullable="false" remarks="" size="29" type="timestamp"/>
+         <column autoUpdated="false" digits="17" id="1" name="value" nullable="false" remarks="" size="17" type="float8"/>
+         <column autoUpdated="false" digits="0" id="2" name="sigfigs" nullable="true" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="17" id="3" name="abs_error" nullable="true" remarks="" size="17" type="float8"/>
+         <column autoUpdated="true" defaultValue="nextval('mouse_metadata_id_seq'::regclass)" digits="0" id="4" name="id" nullable="false" remarks="" size="10" type="serial"/>
+         <column autoUpdated="false" digits="0" id="5" name="mouse_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="mouse_metadata_mouse_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="6" name="datasource_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="mouse_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="mouse_metadata_pkey" unique="true">
+            <column ascending="true" name="id"/>
          </index>
       </table>
       <table name="patch" numRows="20" remarks="" schema="public" type="TABLE">
@@ -552,7 +571,7 @@
             <column ascending="true" name="neurotree_id"/>
          </index>
       </table>
-      <table name="person_to_project" numRows="16" remarks="" schema="public" type="TABLE">
+      <table name="person_to_project" numRows="15" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="person_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="person_to_project_person_id_fkey" implied="false" onDeleteCascade="false" table="people"/>
          </column>
@@ -747,12 +766,14 @@
          </index>
       </table>
       <table name="strain" numRows="0" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="20" type="varchar">
+         <column autoUpdated="false" digits="0" id="0" name="jax_id" nullable="false" remarks="" size="10" type="varchar">
             <child column="strain_id" foreignKey="mouse_strain_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
          </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <column autoUpdated="false" digits="0" id="1" name="name" nullable="true" remarks="" size="50" type="varchar"/>
+         <column autoUpdated="false" digits="0" id="2" name="abbrev" nullable="true" remarks="" size="15" type="varchar"/>
+         <primaryKey column="jax_id" sequenceNumberInPK="1"/>
          <index name="strain_pkey" unique="true">
-            <column ascending="true" name="id"/>
+            <column ascending="true" name="jax_id"/>
          </index>
       </table>
       <table name="users" numRows="0" remarks="" schema="public" type="TABLE">

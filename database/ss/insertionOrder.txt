@@ -36,6 +36,7 @@ chrsomsliceexperiment
 experiments_metadata
 hardware_datastreams
 hardware_metadata
+mouse_metadata
 person_to_project
 slice_metadata
 users_datastreams

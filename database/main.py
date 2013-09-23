@@ -94,8 +94,6 @@ def queryAll(session):
         except:
             pass
 
-
-
 def printStuff(cons=True,mice=True,data=True,notes=True):
     if cons:
         print('\n###***constraints***')
@@ -141,7 +139,7 @@ def main(echo=True):
 
     #create metadata
     #Base.metadata.drop_all(engine,checkfirst=True)
-    Base.metadata.create_all(engine,checkfirst=True)
+    #Base.metadata.create_all(engine,checkfirst=True)
 
     #create session
     session = Session(engine)

@@ -17,4 +17,4 @@
  & 'C:\Program Files\Java\jre7\bin\java.exe' -jar T:\downloads\schemaSpyGUI\schemaSpy_5.0.0.jar -t pgsql -host 'localhost:54321' -db db_test -s public -u sqla -p asdf -o 'T:\git\mlab\database\ss\' -gv 'C:\Program Files (x86)\Graphviz2.32' -dp 'C:\Program Files (x86)\PostgreSQL\pgJDBC\postgresql-9.2-1002.jdbc4.jar'
 
 
- & 'C:\Program Files (x86)\Java\jre7\bin\java.exe' -jar C:\Users\root\Downloads\schemaSpy_5.0.0.jar -t pgsql -host 'localhost:54321' -db db_test -s public -u sqla -p asdf -o 'C:\git\mlab\database\ss\' -gv 'C:\Program Files (x86)\Graphviz2.32' -dp 'C:\Program Files (x86)\PostgreSQL\pgJDBC\postgresql-9.2-1002.jdbc4.jar'
+ & 'C:\Program Files (x86)\Java\jre7\bin\java.exe' -jar C:\Users\root\Downloads\schemaSpy_5.0.0.jar -t pgsql -host 'localhost:54321' -db db_test -s public -u sqla -p asdf -o 'C:\git\mlab\database\ss\' -gv 'C:\Program Files (x86)\Graphviz2.34' -dp 'C:\Program Files (x86)\PostgreSQL\pgJDBC\postgresql-9.2-1002.jdbc4.jar'

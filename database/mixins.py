@@ -75,7 +75,6 @@ class HasMetaData: #looks like we want this to be table per related
         )
         return relationship(cls.MetaData) #FIXME may need a primaryjoin on this
 
-
         
 class HasDataFiles:
     @declared_attr

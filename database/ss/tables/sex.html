@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>name</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>14</td>
@@ -112,7 +112,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='indexedColumn' title='Indexed'>symbol</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>1</td>
@@ -123,7 +123,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='indexedColumn' title='Indexed'>abbrev</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>1</td>
@@ -132,19 +132,19 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="breeder.sex_id refs sex.abbrev via breeder_sex_id_fkey"><a href='breeder.html'>breeder</a><span class='relatedKey'>.sex_id</span>
     </td>
     <td class='constraint detail'>breeder_sex_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="mouse.sex_id refs sex.abbrev via mouse_sex_id_fkey"><a href='mouse.html'>mouse</a><span class='relatedKey'>.sex_id</span>
     </td>
     <td class='constraint detail'>mouse_sex_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="people.Gender refs sex.abbrev via people_Gender_fkey"><a href='people.html'>people</a><span class='relatedKey'>.Gender</span>
     </td>
     <td class='constraint detail'>people_Gender_fkey<span title='Restrict delete:
@@ -156,7 +156,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='3 columns'>Table contained 3 rows at Sat Sep 21 18:55 PDT 2013<p/>
+<p title='3 columns'>Table contained 3 rows at Mon Sep 23 10:53 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -194,28 +194,29 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from sex'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="457,185,599,287">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="241,5,412,403">
-<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="5,340,197,471">
-<area shape="rect" id="node4" href="people.html" title="people" alt="" coords="250,456,403,717">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="457,195,599,303">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="241,5,412,425">
+<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="5,358,197,495">
+<area shape="rect" id="node4" href="people.html" title="people" alt="" coords="250,479,403,755">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/sex.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="874,336,1017,439">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="655,61,825,458">
-<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="5,432,197,562">
-<area shape="rect" id="node5" href="experiments.html" title="experiments" alt="" coords="453,742,598,822">
-<area shape="rect" id="node7" href="dam.html" title="dam" alt="" coords="251,408,386,488">
-<area shape="rect" id="node9" href="litter.html" title="litter" alt="" coords="454,274,597,354">
-<area shape="rect" id="node10" href="cage.html" title="cage" alt="" coords="257,213,380,293">
-<area shape="rect" id="node11" href="dob.html" title="dob" alt="" coords="253,310,384,390">
-<area shape="rect" id="node12" href="sire.html" title="sire" alt="" coords="251,116,386,196">
-<area shape="rect" id="node13" href="strain.html" title="strain" alt="" coords="464,141,587,221">
-<area shape="rect" id="node4" href="cell.html" title="cell" alt="" coords="1065,558,1228,638">
-<area shape="rect" id="node6" href="slice.html" title="slice" alt="" coords="870,558,1021,638">
-<area shape="rect" id="node8" href="people.html" title="people" alt="" coords="242,597,395,858">
-<area shape="rect" id="node14" href="person_to_project.html" title="person_to_project" alt="" coords="441,548,610,628">
-<area shape="rect" id="node15" href="users.html" title="users" alt="" coords="458,645,593,725">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="878,291,1021,399">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="655,383,825,803">
+<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="5,226,197,363">
+<area shape="rect" id="node5" href="experiments.html" title="experiments" alt="" coords="453,6,598,90">
+<area shape="rect" id="node7" href="dam.html" title="dam" alt="" coords="251,763,386,847">
+<area shape="rect" id="node9" href="litter.html" title="litter" alt="" coords="454,625,597,709">
+<area shape="rect" id="node10" href="cage.html" title="cage" alt="" coords="257,561,380,645">
+<area shape="rect" id="node11" href="dob.html" title="dob" alt="" coords="253,662,384,746">
+<area shape="rect" id="node12" href="sire.html" title="sire" alt="" coords="251,459,386,543">
+<area shape="rect" id="node13" href="strain.html" title="strain" alt="" coords="464,486,587,570">
+<area shape="rect" id="node4" href="cell.html" title="cell" alt="" coords="1073,134,1236,218">
+<area shape="rect" id="node6" href="slice.html" title="slice" alt="" coords="874,134,1025,218">
+<area shape="rect" id="node8" href="people.html" title="people" alt="" coords="242,17,395,293">
+<area shape="rect" id="node14" href="mouse_metadata.html" title="mouse_metadata" alt="" coords="870,454,1029,538">
+<area shape="rect" id="node15" href="person_to_project.html" title="person_to_project" alt="" coords="441,107,610,191">
+<area shape="rect" id="node16" href="users.html" title="users" alt="" coords="458,209,593,293">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/sex.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
