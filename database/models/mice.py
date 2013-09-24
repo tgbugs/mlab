@@ -193,13 +193,12 @@ class Mouse(Subject): #TODO species metadata???
 
 class Slice(Subject): #FIXME slice should probably be a subject
     __tablename__='slice'
-    id=None
+    #TODO experiments for slice prep might should also add these slices as their subjects? or should the slices get their data about the conditions they were generated under from the mouse?!?
+    #well, mice don't refer directly to mating record... but litter's do...
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True) #FIXME
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
-    prep_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO this should really refer to slice prep, but suggests that this class should be 'acute slice'
-    prep=relationship('Experiment',primaryjoin='Experiment.id==Slice.prep_id',backref=backref('slices',uselist=True))
     #TODO check that there are not more slices than the thickness (from the metadta) divided by the total length of the largest know mouse brain
-    startDateTime=Column(DateTime,default=datetime.now)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
+    startDateTime=Column(DateTime,default=datetime.now)
     #hemisphere
     #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
     #FIXME why the fuck is thickness metadata... it is linked to protocol and slice prep... ah, I guess it is sliceprep metadata that sort of needs to propagate

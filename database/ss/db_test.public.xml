@@ -220,7 +220,6 @@
             <child column="experiments_id" foreignKey="experiments_metadata_experiments_id_fkey" implied="false" onDeleteCascade="false" table="experiments_metadata"/>
             <child column="experiments_id" foreignKey="experiments_reagents_experiments_id_fkey" implied="false" onDeleteCascade="false" table="experiments_reagents"/>
             <child column="experiments_id" foreignKey="experiments_subjects_experiments_id_fkey" implied="false" onDeleteCascade="false" table="experiments_subjects"/>
-            <child column="prep_id" foreignKey="slice_prep_id_fkey" implied="false" onDeleteCascade="false" table="slice"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="project_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="experiments_project_id_fkey" implied="false" onDeleteCascade="false" table="project"/>
@@ -696,10 +695,7 @@
          <column autoUpdated="false" digits="0" id="1" name="mouse_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="slice_mouse_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
          </column>
-         <column autoUpdated="false" digits="0" id="2" name="prep_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="slice_prep_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
-         </column>
-         <column autoUpdated="false" digits="6" id="3" name="startDateTime" nullable="true" remarks="" size="29" type="timestamp"/>
+         <column autoUpdated="false" digits="6" id="2" name="startDateTime" nullable="true" remarks="" size="29" type="timestamp"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="slice_pkey" unique="true">
             <column ascending="true" name="id"/>

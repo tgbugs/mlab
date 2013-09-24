@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,19 +110,19 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('people_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="experiments.person_id refs people.id via experiments_person_id_fkey"><a href='experiments.html'>experiments</a><span class='relatedKey'>.person_id</span>
     </td>
     <td class='constraint detail'>experiments_person_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="person_to_project.person_id refs people.id via person_to_project_person_id_fkey"><a href='person_to_project.html'>person_to_project</a><span class='relatedKey'>.person_id</span>
     </td>
     <td class='constraint detail'>person_to_project_person_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="users.person_id refs people.id via users_person_id_fkey"><a href='users.html'>users</a><span class='relatedKey'>.person_id</span>
     </td>
     <td class='constraint detail'>users_person_id_fkey<span title='Restrict delete:
@@ -133,7 +133,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>PrefixName</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>50</td>
@@ -144,7 +144,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>FirstName</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>50</td>
@@ -155,7 +155,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>MiddleName</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>50</td>
@@ -166,7 +166,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>LastName</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>50</td>
@@ -177,7 +177,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>Gender</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>1</td>
@@ -187,7 +187,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="people.Gender refs sex.abbrev via people_Gender_fkey"><a href='sex.html'>sex</a><span class='relatedKey'>.abbrev</span>
     </td>
     <td class='constraint detail'>people_Gender_fkey<span title='Restrict delete:
@@ -197,7 +197,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>Birthdate</td>
  <td class='detail'>date</td>
  <td class='detail' align='right'>13</td>
@@ -208,7 +208,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>Role</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>20</td>
@@ -219,7 +219,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='indexedColumn' title='Indexed'>neurotree_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -231,7 +231,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='9 columns'>Table contained 20 rows at Tue Sep 24 10:43 PDT 2013<p/>
+<p title='9 columns'>Table contained 20 rows at Tue Sep 24 13:06 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -274,23 +274,22 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/people.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="449,5,583,89">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="207,54,358,138">
-<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="6,6,130,138">
-<area shape="rect" id="node4" href="credentials.html" title="credentials" alt="" coords="671,129,806,213">
-<area shape="rect" id="node5" href="users.html" title="users" alt="" coords="449,129,583,237">
-<area shape="rect" id="node8" href="people.html" title="people" alt="" coords="175,155,391,437">
-<area shape="rect" id="node6" href="experiments.html" title="experiments" alt="" coords="439,433,593,661">
-<area shape="rect" id="node7" href="citeable.html" title="citeable" alt="" coords="224,555,341,639">
-<area shape="rect" id="node9" href="project.html" title="project" alt="" coords="219,454,346,538">
-<area shape="rect" id="node10" href="experimenttype.html" title="experimenttype" alt="" coords="209,657,357,741">
-<area shape="rect" id="node11" href="experiments_hardware.html" title="experiments_hardware" alt="" coords="647,433,830,517">
-<area shape="rect" id="node12" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="647,534,830,618">
-<area shape="rect" id="node13" href="experiments_reagents.html" title="experiments_reagents" alt="" coords="645,635,833,719">
-<area shape="rect" id="node14" href="experiments_subjects.html" title="experiments_subjects" alt="" coords="642,331,835,415">
-<area shape="rect" id="node15" href="person_to_project.html" title="person_to_project" alt="" coords="435,305,597,413">
-<area shape="rect" id="node16" href="slice.html" title="slice" alt="" coords="667,230,810,314">
-<area shape="rect" id="node17" href="users_datastreams.html" title="users_datastreams" alt="" coords="655,27,822,111">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="449,7,583,91">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="207,53,358,137">
+<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="6,5,130,137">
+<area shape="rect" id="node4" href="credentials.html" title="credentials" alt="" coords="671,81,806,165">
+<area shape="rect" id="node5" href="users.html" title="users" alt="" coords="449,133,583,241">
+<area shape="rect" id="node8" href="people.html" title="people" alt="" coords="175,154,391,435">
+<area shape="rect" id="node6" href="experiments.html" title="experiments" alt="" coords="439,431,593,659">
+<area shape="rect" id="node7" href="citeable.html" title="citeable" alt="" coords="224,554,341,638">
+<area shape="rect" id="node9" href="project.html" title="project" alt="" coords="219,453,346,537">
+<area shape="rect" id="node10" href="experimenttype.html" title="experimenttype" alt="" coords="209,655,357,739">
+<area shape="rect" id="node11" href="experiments_hardware.html" title="experiments_hardware" alt="" coords="647,509,830,593">
+<area shape="rect" id="node12" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="647,610,830,694">
+<area shape="rect" id="node13" href="experiments_reagents.html" title="experiments_reagents" alt="" coords="645,306,833,390">
+<area shape="rect" id="node14" href="experiments_subjects.html" title="experiments_subjects" alt="" coords="642,407,835,491">
+<area shape="rect" id="node15" href="person_to_project.html" title="person_to_project" alt="" coords="435,283,597,391">
+<area shape="rect" id="node16" href="users_datastreams.html" title="users_datastreams" alt="" coords="655,182,822,266">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/people.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

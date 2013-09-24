@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>url</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -110,13 +110,13 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="datafiles_metadata.[url, path, filename] refs datafile.[url, path, filename] via datafiles_metadata_url_fkey"><a href='datafiles_metadata.html'>datafiles_metadata</a><span class='relatedKey'>.url</span>
     </td>
     <td class='constraint detail'>datafiles_metadata_url_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="subjects_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via subjects_df_assoc_datafile_url_fkey"><a href='subjects_df_assoc.html'>subjects_df_assoc</a><span class='relatedKey'>.datafile_url</span>
     </td>
     <td class='constraint detail'>subjects_df_assoc_datafile_url_fkey<span title='Restrict delete:
@@ -126,7 +126,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="datafile.[url, path] refs repopaths.[url, path] via datafile_url_fkey"><a href='repopaths.html'>repopaths</a><span class='relatedKey'>.url</span>
     </td>
     <td class='constraint detail'>datafile_url_fkey<span title='Restrict delete:
@@ -136,7 +136,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>path</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -145,13 +145,13 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="datafiles_metadata.[url, path, filename] refs datafile.[url, path, filename] via datafiles_metadata_url_fkey"><a href='datafiles_metadata.html'>datafiles_metadata</a><span class='relatedKey'>.path</span>
     </td>
     <td class='constraint detail'>datafiles_metadata_url_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="subjects_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via subjects_df_assoc_datafile_url_fkey"><a href='subjects_df_assoc.html'>subjects_df_assoc</a><span class='relatedKey'>.datafile_path</span>
     </td>
     <td class='constraint detail'>subjects_df_assoc_datafile_url_fkey<span title='Restrict delete:
@@ -161,7 +161,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="datafile.[url, path] refs repopaths.[url, path] via datafile_url_fkey"><a href='repopaths.html'>repopaths</a><span class='relatedKey'>.path</span>
     </td>
     <td class='constraint detail'>datafile_url_fkey<span title='Restrict delete:
@@ -171,7 +171,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>filename</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -180,13 +180,13 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="datafiles_metadata.[url, path, filename] refs datafile.[url, path, filename] via datafiles_metadata_url_fkey"><a href='datafiles_metadata.html'>datafiles_metadata</a><span class='relatedKey'>.filename</span>
     </td>
     <td class='constraint detail'>datafiles_metadata_url_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="subjects_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via subjects_df_assoc_datafile_url_fkey"><a href='subjects_df_assoc.html'>subjects_df_assoc</a><span class='relatedKey'>.datafile_filename</span>
     </td>
     <td class='constraint detail'>subjects_df_assoc_datafile_url_fkey<span title='Restrict delete:
@@ -197,7 +197,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>datasource_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -207,7 +207,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="datafile.datasource_id refs datasources.id via datafile_datasource_id_fkey"><a href='datasources.html'>datasources</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>datafile_datasource_id_fkey<span title='Restrict delete:
@@ -217,7 +217,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>creationDateTime</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -229,7 +229,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='5 columns'>Table contained 995 rows at Tue Sep 24 10:43 PDT 2013<p/>
+<p title='5 columns'>Table contained 995 rows at Tue Sep 24 13:06 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>

@@ -24,9 +24,9 @@ mouse
 breeder
 hardware
 repository
-experiments
 repopaths
 datafile
+experiments
 reagents
 slice
 cagerack

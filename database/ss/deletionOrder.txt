@@ -22,9 +22,9 @@ experiments_hardware
 cagerack
 slice
 reagents
+experiments
 datafile
 repopaths
-experiments
 repository
 hardware
 breeder

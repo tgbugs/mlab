@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,49 +110,49 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('hardware_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="experiments_hardware.hardware_id refs hardware.id via experiments_hardware_hardware_id_fkey"><a href='experiments_hardware.html'>experiments_hardware</a><span class='relatedKey'>.hardware_id</span>
     </td>
     <td class='constraint detail'>experiments_hardware_hardware_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="hardware.parent_id refs hardware.id via hardware_parent_id_fkey"><a href='hardware.html'>hardware</a><span class='relatedKey'>.parent_id</span>
     </td>
     <td class='constraint detail'>hardware_parent_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="hardware_datastreams.hardware_id refs hardware.id via hardware_datastreams_hardware_id_fkey"><a href='hardware_datastreams.html'>hardware_datastreams</a><span class='relatedKey'>.hardware_id</span>
     </td>
     <td class='constraint detail'>hardware_datastreams_hardware_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="hardware_metadata.hardware_id refs hardware.id via hardware_metadata_hardware_id_fkey"><a href='hardware_metadata.html'>hardware_metadata</a><span class='relatedKey'>.hardware_id</span>
     </td>
     <td class='constraint detail'>hardware_metadata_hardware_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="righistory.hardware_id refs hardware.id via righistory_hardware_id_fkey"><a href='righistory.html'>righistory</a><span class='relatedKey'>.hardware_id</span>
     </td>
     <td class='constraint detail'>righistory_hardware_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="righistory.new_parent refs hardware.id via righistory_new_parent_fkey"><a href='righistory.html'>righistory</a><span class='relatedKey'>.new_parent</span>
     </td>
     <td class='constraint detail'>righistory_new_parent_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="righistory.old_parent refs hardware.id via righistory_old_parent_fkey"><a href='righistory.html'>righistory</a><span class='relatedKey'>.old_parent</span>
     </td>
     <td class='constraint detail'>righistory_old_parent_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="subjects_hardware.hardware_id refs hardware.id via subjects_hardware_hardware_id_fkey"><a href='subjects_hardware.html'>subjects_hardware</a><span class='relatedKey'>.hardware_id</span>
     </td>
     <td class='constraint detail'>subjects_hardware_hardware_id_fkey<span title='Restrict delete:
@@ -163,7 +163,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>parent_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -173,7 +173,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="hardware.parent_id refs hardware.id via hardware_parent_id_fkey"><a href='hardware.html'>hardware</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>hardware_parent_id_fkey<span title='Restrict delete:
@@ -183,7 +183,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>type</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -193,7 +193,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="hardware.type refs hardwaretype.type via hardware_type_fkey"><a href='hardwaretype.html'>hardwaretype</a><span class='relatedKey'>.type</span>
     </td>
     <td class='constraint detail'>hardware_type_fkey<span title='Restrict delete:
@@ -203,7 +203,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>name</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -214,7 +214,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>unique_id</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -225,7 +225,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>model</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -236,7 +236,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>company</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -247,7 +247,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>blueprint_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -257,7 +257,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="hardware.blueprint_id refs citeable.id via hardware_blueprint_id_fkey"><a href='citeable.html'>citeable</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>hardware_blueprint_id_fkey<span title='Restrict delete:
@@ -267,7 +267,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>manual_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -277,7 +277,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="hardware.manual_id refs citeable.id via hardware_manual_id_fkey"><a href='citeable.html'>citeable</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>hardware_manual_id_fkey<span title='Restrict delete:
@@ -288,7 +288,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='9 columns'>Table contained 16 rows at Tue Sep 24 10:43 PDT 2013<p/>
+<p title='9 columns'>Table contained 16 rows at Tue Sep 24 13:06 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>

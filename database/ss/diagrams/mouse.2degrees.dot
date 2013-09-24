@@ -29,8 +29,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "cell":"mouse_id":w -> "mouse":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"slice_id":w -> "slice":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "dam":"id":w -> "breeder":"id":e [arrowhead=none dir=back arrowtail=teeodot];
-  "experiments":"elipses":w -> "people":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "experiments_subjects":"elipses":w -> "experiments":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "experiments_subjects":"elipses":w -> "subjects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"cage_id":w -> "cage":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"dam_id":w -> "dam":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -52,7 +50,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "sire":"id":w -> "breeder":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "slice":"id":w -> "subjects":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "slice":"mouse_id":w -> "mouse":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "slice":"prep_id":w -> "experiments":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "strain_citeables":"elipses":w -> "strain":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "subjects_df_assoc":"elipses":w -> "subjects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "subjects_hardware":"elipses":w -> "subjects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -136,16 +133,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     </TABLE>>
     URL="dob.html"
     tooltip="dob"
-  ];
-  "experiments" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">10 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
-    </TABLE>>
-    URL="experiments.html"
-    tooltip="experiments"
   ];
   "experiments_subjects" [
     label=<
@@ -244,9 +231,8 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">slice</TD></TR>
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
-      <TR><TD PORT="prep_id" COLSPAN="3" ALIGN="LEFT">prep_id</TD></TR>
       <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">20 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">20 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="slice.html"
     tooltip="slice"

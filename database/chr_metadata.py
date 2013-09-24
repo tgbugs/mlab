@@ -12,6 +12,7 @@ class cell_metadata:
 
 class slice_metadata:
     coordinates=None #aka ap_pos
+    hemisphere=None
 
 
 #TODO *which* metadata does pipette resistance belong to?!?! cell? df?
