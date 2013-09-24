@@ -15,28 +15,30 @@ _plusMinus='\u00B1'
 #espX, espY
 #NBQX_washin_start, concentration #by associating the data source with a reagent instead of a person... the data is there for both the acsf_id and all the drug information :), #FIXME unfortunately that leads to a massive proliferation of datasources :/, so we need to find a better way >_< since this is more along the lines of 'protocol metadata'
 
-class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDataSource'?
-    """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
-    #lol this might also have metadata fuck, ie the calibrations might go here???!
-    #definable by parent and having matching properties? nah, just keep it generic?
-    #might be able to cut this out entirely?
+class DataSource(Base): #TODO
+    """used for doccumenting where data (NOT metadata) came form, even if I generated it, this makes a distinction between data that I have complete control over and data that I get from another source such as clampex or jax"""
+    #this also works for citeables
     __tablename__='datasources'
     id=Column(Integer,primary_key=True)
-    #I mean, sure once 'source' back propagates down it will be ok but wtf
-    name=Column(String(20),nullable=False) #FIXME unforunately the one disadvantage of this setup is that there are no real constraints to prevent someone from forming an erroious link between types of data and where it comes from
-    #FIXME if these are going to be sources for datafiles they need to accomodate lack of units...
-    #FIXME where do we keep the calibration data ;_;
-    #define some properties
-    prefix=Column(String(2),ForeignKey('si_prefix.symbol'),nullable=False)#,unique=True)
-    unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)#,unique=True)
-    ds_calibration_rec=Column(Integer,ForeignKey('calibrationdata.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
-    #expmetadata=relationship('ExpMetaData',backref=backref('datasource',uselist=False))
-    #datafiles=relationship('DataFile',backref=backref('datasource',uselist=False)) #FIXME urmmmmmm fuck? this here or make a different set of datasources for data not stored in the database? well datafiles are produced by camplex and I suppose at some point I might pull data direct from it too so sure, that works out
+    name=Column(String(20),nullable=False)
+    #TODO
     def strHelper(self):
         return '%s%s'%(self.prefix,self.unit)
     def __repr__(self):
         return '\n%s units %s%s'%(self.name,self.prefix,self.unit)
 
+class MetaDataSource(Base):
+    """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
+    __tablename__='metadatasources'
+    id=Column(Integer,primary_key=True)
+    name=Column(String(20),nullable=False)
+    prefix=Column(String(2),ForeignKey('si_prefix.symbol'),nullable=False)
+    unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
+    ds_calibration_rec=Column(Integer,ForeignKey('calibrationdata.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
+    def strHelper(self):
+        return '%s%s'%(self.prefix,self.unit)
+    def __repr__(self):
+        return '\n%s units %s%s'%(self.name,self.prefix,self.unit)
 
 ###-----------------------------------------------
 ###  MetaData tables (for stuff stored internally)
@@ -153,6 +155,10 @@ class RepoPath(Base): #FIXME this may be missing trailing /on path :x
     path=Column(String,primary_key=True) #make this explicitly relative path?
     assoc_program=Column(String(30)) #FIXME some of these should be automatically updated and check by the programs etc
     verified=Column(Boolean,default=False) #TODO populated when the repopath has been verified to exist, should probably also check at startup for existence (will not check for datafiles)
+    fullpath=Column(String)
+    @hybrid_property
+    def fullpath(self):
+        return self.url+self.path
     relationship('DataFile',primaryjoin='DataFile.repopath_id==RepoPath.id',backref='repopath') #FIXME datafiles can be kept in multiple repos... #FIXME can you append to relationships?! test this
     #TODO how do we keep track of data duplication and backups!?!?!?
     blurb=Column(Text) #a little note saying what data is stored here, eg, abf files
@@ -173,8 +179,9 @@ class RepoPath(Base): #FIXME this may be missing trailing /on path :x
         self.path=clean_path
 
 
-class DataFile(HasMetaData, Base):
-    #TODO path, should the database maintain this???, yes
+class DataFile(Base):
+    #TODO google docs access does not go here because those could be writeable too
+    #these should point to more or less static things outside the program, every revision should add a new datafile for consistency, store the diffs?
     #how to constrain/track files so they don't get lost??
     #well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
     #and the constraint will be populated by the DataPath table, if I have 10,000 datafiles though, that could become a NASTY change
@@ -208,18 +215,18 @@ class DataFile(HasMetaData, Base):
             path=Column(String,nullable=False)
             filename=Column(String,nullable=False)
             __table_args__=(ForeignKeyConstraint([url,path,filename],['datafile.url','datafile.path','datafile.filename']), {})
-            datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
+            metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False)
             dateTime=Column(DateTime,default=datetime.now)
             value=Column(Float(53),nullable=False)
             sigfigs=Column(Integer) #TODO
             abs_error=Column(Float(53)) #TODO
-            datasource=relationship('DataSource')
-            def __init__(self,value,DataFile=None,DataSource=None,datasource_id=None,url=None,path=None,filename=None,sigfigs=None,abs_error=None,dateTime=None):
+            metadatasource=relationship('MetaDataSource')
+            def __init__(self,value,DataFile=None,MetaDataSource=None,metadatasource_id=None,url=None,path=None,filename=None,sigfigs=None,abs_error=None,dateTime=None):
                 self.dateTime=dateTime
                 self.url=url
                 self.path=path
                 self.filename=filename
-                self.datasource_id=datasource_id
+                self.metadatasource_id=metadatasource_id
                 self.value=value
                 self.sigfigs=sigfigs
                 self.abs_error=abs_error
@@ -230,7 +237,7 @@ class DataFile(HasMetaData, Base):
                         self.filename=DataFile.filename
                     else:
                         raise AttributeError
-                self.AssignID(DataSource)
+                self.AssignID(MetaDataSource)
             def __repr__(self):
                 sigfigs=''
                 error=''

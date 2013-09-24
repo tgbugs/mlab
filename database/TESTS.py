@@ -440,7 +440,16 @@ class t_repopath(TEST):
 
 class t_datasource(TEST):
     def make_all(self):
-        self.records=[DataSource(name='tom',prefix='u',unit='F')]
+        self.records=[
+            DataSource(name='tom'),
+        ]
+
+
+class t_metadatasource(TEST):
+    def make_all(self):
+        self.records=[
+            MetaDataSource(name='the void',prefix='T',unit='Pa'),
+        ]
 
 
 class t_datafile(TEST):
@@ -462,9 +471,9 @@ class t_datafile(TEST):
 
 class t_dfmetadata(TEST):
     def make_all(self):
-        ds=self.session.query(DataSource)[0]
+        ds=self.session.query(MetaDataSource)[0]
         self.records=[]
-        [self.records.extend([d.MetaData(i,DataFile=d,DataSource=ds) for i in range(self.num)]) for d in self.session.query(DataFile)]
+        [self.records.extend([d.MetaData(i,DataFile=d,MetaDataSource=ds) for i in range(self.num)]) for d in self.session.query(DataFile)]
 ###-----------
 ###  inventory
 ###-----------
@@ -483,9 +492,9 @@ class t_hardware(TEST):
 
 class t_hwmetadata(TEST):
     def make_all(self):
-        ds=self.session.query(DataSource)[0]
+        ds=self.session.query(DataSource)[0] #TODO make sure this breaks
         self.records=[]
-        [self.records.extend([h.MetaData(i,Parent=h,DataSource=ds) for i in range(self.num)]) for h in self.session.query(Hardware)]
+        [self.records.extend([h.MetaData(i,Parent=h,MetaDataSource=ds) for i in range(self.num)]) for h in self.session.query(Hardware)]
         
 
 class t_reagent(TEST):
@@ -512,6 +521,7 @@ def run_tests(session):
     #[print(df.creation_DateTime) for df in session.query(DataFile)]
 
     ds=t_datasource(session)
+    mds=t_metadatasource(session)
     h=t_hardware(session)
     hwmd=t_hwmetadata(session,5)
     #t_experiment(session,1,4) #FIXME argh, so many things can become inconsistent...

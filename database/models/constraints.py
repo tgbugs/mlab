@@ -2,7 +2,6 @@
 from database.imports   import *
 from database.base      import Base
 from database.mixins    import HasDataFiles, HasCiteables
-from database.models    import Website
 
 ###----------------------------------------------------------------
 ###  Helper classes/tables for mice (normalization and constraints)
@@ -78,11 +77,11 @@ class Strain(HasCiteables, Base): #TODO HasCiteable!@? need something between ci
     #TODO can just use datafiles to get the data on them via
     #http://jaxmice.jax.org/strain/*.html
     #make a way to put the data in via a url
-    def __init__(self,jax_id,name=None,abbrev=None):
+    def __init__(self,jax_id,name=None,abbrev=None,Citeables=[]):
         #name=getJaxData(jax_id) #TODO
         self.jax_id=jax_id
         self.name=name
         self.abbrev=abbrev
-        self.citeables.append(Website('http://jaxmice.jax.org/strain/%s.html'%jax_id))
+        self.citeables.extend(Citeables)
     
 

@@ -1,6 +1,7 @@
 from database.imports import *
 from database.base import Base
 from database.standards import URL_STAND
+from database.mixins import HasDataFiles
 
 ###----------
 ###  Projects
@@ -56,15 +57,32 @@ class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a jo
 ###------------
 
 #FIXME how the fuck do I query for these!??!?!
-class Citeable(Base):
+class Citeable(HasDataFiles, Base):
     #TODO base class for all citable things, such as personal communications, journal articles, books
+    #this is now a wrapper for datafiles (among other things) and it should allow for easy querying
     __tablename___='citeable'
     type=Column(String(15),nullable=False)
-    __mapper_args__={
-        'polymorphic_on':type,
-        'polymorphic_identity':'citeable'
-    }
+    title=None
+    authors=None #relationship('Person')
+    year=None
+    doi=None
+    version=None #for things like protocols...
+    accessDateTime=Column(DateTime,default=datetime.now)
 
+    #TODO create the columns here so that they can propagate people correctly when I pass in a pubmed citation
+    #once the columns are in place I can just make it so that the output format is whatever I want
+
+    #__mapper_args__={
+        #'polymorphic_on':type,
+        #'polymorphic_identity':'citeable'
+    #}
+    def __init__(self,type=None,DataFiles=None,accessDateTime=None):
+        self.type=type
+        self.datafiles.extend(DataFiles)
+        self.accessDateTime=accessDateTime
+
+
+"""
 class Website(Citeable):
     __tablename__='website'
     id=Column(Integer,ForeignKey('citeable.id'),primary_key=True)
@@ -77,7 +95,7 @@ class Website(Citeable):
         self.credentials_id=credentials_id
     def __repr__(self):
         return super().__repr__('url')
-
+"""
 
 
 class IACUCProtocols(Base): #note: probs can't store them here, but just put a number and a link (frankly no sense, they are kept in good order elsewere)

@@ -37,6 +37,15 @@ class IsDataSource:
         return relationship('DataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
 
 
+class IsMetaDataSource:
+    #users, citeables, hardware, NO PEOPLE
+    @declared_attr
+    def datastreams(cls):
+        datasource_association = Table('%s_metadatastreams'%cls.__tablename__, cls.metadata,
+            Column('metadatasource_id', ForeignKey('metadatasources.id'), primary_key=True),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
+        return relationship('MetaDataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
+
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
     dateTime=Column(DateTime,default=datetime.now)
     value=Column(Float(53),nullable=False)
@@ -68,9 +77,9 @@ class HasMetaData: #looks like we want this to be table per related
                     'id':Column(Integer,primary_key=True),
                     '%s_id'%cls.__tablename__:Column(Integer, #FIXME nasty errors inbound
                         ForeignKey('%s.id'%cls.__tablename__)),
-                    'datasource_id':Column(Integer,
-                        ForeignKey('datasources.id')),
-                    'datasource':relationship('DataSource'), #keep it one way
+                    'metadatasource_id':Column(Integer,
+                        ForeignKey('metadatasources.id')),
+                    'metadatasource':relationship('MetaDataSource'), #keep it one way
                 }
         )
         return relationship(cls.MetaData) #FIXME may need a primaryjoin on this

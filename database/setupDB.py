@@ -210,7 +210,9 @@ def popExperimentType(session):
     session.add(ExperimentType('in vitro patch','patch'))
 
 def popDataSources(session):
-    session.add(DataSource(name='jax',unit='num',prefix=''))
+    session.add(DataSource(name='jax'))
+
+def popMetaDataSources(session):
     espX=None
     espY=None
     stage_z=None
@@ -223,11 +225,11 @@ def popDataSources(session):
     pass
 
 def popRepos(session):
-    #jax=Repository('http://jaxmice.jax.org')
-    #session.add(jax)
-    #session.commit()
-    #session.add(RepoPath(jax,'/strain',name='jax strain db'))
-    #session.commit()
+    jax=Repository('http://jaxmice.jax.org')
+    session.add(jax)
+    session.commit()
+    session.add(RepoPath(jax,'/strain',name='jax strain db'))
+    session.commit()
     pass
 def popDataFiles(session): #FIXME this isn't a datafile, it is actually a citeable! :D look at how easy it was to make that mistake
     #rep=session.query(RepoPath).filter_by(name='jax strain db')[0]
