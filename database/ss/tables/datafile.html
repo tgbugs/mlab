@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>url</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -110,13 +110,19 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
+    <td class='relatedTable detail' title="citeable_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via citeable_df_assoc_datafile_url_fkey"><a href='citeable_df_assoc.html'>citeable_df_assoc</a><span class='relatedKey'>.datafile_url</span>
+    </td>
+    <td class='constraint detail'>citeable_df_assoc_datafile_url_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="datafiles_metadata.[url, path, filename] refs datafile.[url, path, filename] via datafiles_metadata_url_fkey"><a href='datafiles_metadata.html'>datafiles_metadata</a><span class='relatedKey'>.url</span>
     </td>
     <td class='constraint detail'>datafiles_metadata_url_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="subjects_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via subjects_df_assoc_datafile_url_fkey"><a href='subjects_df_assoc.html'>subjects_df_assoc</a><span class='relatedKey'>.datafile_url</span>
     </td>
     <td class='constraint detail'>subjects_df_assoc_datafile_url_fkey<span title='Restrict delete:
@@ -126,7 +132,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="datafile.[url, path] refs repopaths.[url, path] via datafile_url_fkey"><a href='repopaths.html'>repopaths</a><span class='relatedKey'>.url</span>
     </td>
     <td class='constraint detail'>datafile_url_fkey<span title='Restrict delete:
@@ -136,7 +142,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>path</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -145,13 +151,19 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
+    <td class='relatedTable detail' title="citeable_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via citeable_df_assoc_datafile_url_fkey"><a href='citeable_df_assoc.html'>citeable_df_assoc</a><span class='relatedKey'>.datafile_path</span>
+    </td>
+    <td class='constraint detail'>citeable_df_assoc_datafile_url_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="datafiles_metadata.[url, path, filename] refs datafile.[url, path, filename] via datafiles_metadata_url_fkey"><a href='datafiles_metadata.html'>datafiles_metadata</a><span class='relatedKey'>.path</span>
     </td>
     <td class='constraint detail'>datafiles_metadata_url_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="subjects_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via subjects_df_assoc_datafile_url_fkey"><a href='subjects_df_assoc.html'>subjects_df_assoc</a><span class='relatedKey'>.datafile_path</span>
     </td>
     <td class='constraint detail'>subjects_df_assoc_datafile_url_fkey<span title='Restrict delete:
@@ -161,7 +173,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="datafile.[url, path] refs repopaths.[url, path] via datafile_url_fkey"><a href='repopaths.html'>repopaths</a><span class='relatedKey'>.path</span>
     </td>
     <td class='constraint detail'>datafile_url_fkey<span title='Restrict delete:
@@ -171,7 +183,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>filename</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -180,13 +192,19 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
+    <td class='relatedTable detail' title="citeable_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via citeable_df_assoc_datafile_url_fkey"><a href='citeable_df_assoc.html'>citeable_df_assoc</a><span class='relatedKey'>.datafile_filename</span>
+    </td>
+    <td class='constraint detail'>citeable_df_assoc_datafile_url_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="datafiles_metadata.[url, path, filename] refs datafile.[url, path, filename] via datafiles_metadata_url_fkey"><a href='datafiles_metadata.html'>datafiles_metadata</a><span class='relatedKey'>.filename</span>
     </td>
     <td class='constraint detail'>datafiles_metadata_url_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="subjects_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via subjects_df_assoc_datafile_url_fkey"><a href='subjects_df_assoc.html'>subjects_df_assoc</a><span class='relatedKey'>.datafile_filename</span>
     </td>
     <td class='constraint detail'>subjects_df_assoc_datafile_url_fkey<span title='Restrict delete:
@@ -197,7 +215,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>datasource_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -207,7 +225,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="datafile.datasource_id refs datasources.id via datafile_datasource_id_fkey"><a href='datasources.html'>datasources</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>datafile_datasource_id_fkey<span title='Restrict delete:
@@ -217,7 +235,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>creationDateTime</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -229,7 +247,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='5 columns'>Table contained 995 rows at Tue Sep 24 13:06 PDT 2013<p/>
+<p title='5 columns'>Table contained 996 rows at Tue Sep 24 16:15 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -255,29 +273,26 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from datafile'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="213,74,518,259">
-<area shape="rect" id="node2" href="datasources.html" title="datasources" alt="" coords="6,274,167,454">
-<area shape="rect" id="node3" href="repopaths.html" title="repopaths" alt="" coords="15,53,158,257">
-<area shape="rect" id="node4" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="563,178,755,454">
-<area shape="rect" id="node5" href="subjects_df_assoc.html" title="subjects_df_assoc" alt="" coords="563,5,755,161">
+<area shape="rect" id="node1" href="citeable_df_assoc.html" title="citeable_df_assoc" alt="" coords="573,5,726,161">
+<area shape="rect" id="node2" href="datafile.html" title="datafile" alt="" coords="202,199,507,385">
+<area shape="rect" id="node3" href="datasources.html" title="datasources" alt="" coords="13,399,150,507">
+<area shape="rect" id="node4" href="repopaths.html" title="repopaths" alt="" coords="6,178,157,382">
+<area shape="rect" id="node5" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="552,178,747,454">
+<area shape="rect" id="node6" href="subjects_df_assoc.html" title="subjects_df_assoc" alt="" coords="553,471,745,627">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/datafile.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="403,47,709,233">
-<area shape="rect" id="node2" href="datasources.html" title="datasources" alt="" coords="197,457,358,637">
-<area shape="rect" id="node3" href="repopaths.html" title="repopaths" alt="" coords="206,26,349,230">
-<area shape="rect" id="node5" href="calibrationdata.html" title="calibrationdata" alt="" coords="6,630,151,714">
-<area shape="rect" id="node6" href="si_prefix.html" title="si_prefix" alt="" coords="11,427,146,511">
-<area shape="rect" id="node7" href="si_unit.html" title="si_unit" alt="" coords="13,529,144,613">
-<area shape="rect" id="node11" href="repository.html" title="repository" alt="" coords="15,50,142,134">
-<area shape="rect" id="node4" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="753,6,945,282">
-<area shape="rect" id="node8" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="465,287,647,371">
-<area shape="rect" id="node9" href="hardware_datastreams.html" title="hardware_datastreams" alt="" coords="465,527,647,611">
-<area shape="rect" id="node10" href="hardware_metadata.html" title="hardware_metadata" alt="" coords="467,629,645,713">
-<area shape="rect" id="node12" href="subjects_df_assoc.html" title="subjects_df_assoc" alt="" coords="753,299,945,455">
-<area shape="rect" id="node13" href="subjects.html" title="subjects" alt="" coords="485,389,627,473">
-<area shape="rect" id="node14" href="subjects_metadata.html" title="subjects_metadata" alt="" coords="766,473,933,557">
-<area shape="rect" id="node15" href="users_datastreams.html" title="users_datastreams" alt="" coords="473,730,639,814">
+<area shape="rect" id="node1" href="citeable_df_assoc.html" title="citeable_df_assoc" alt="" coords="753,5,906,161">
+<area shape="rect" id="node2" href="citeable.html" title="citeable" alt="" coords="476,77,593,161">
+<area shape="rect" id="node3" href="datafile.html" title="datafile" alt="" coords="382,199,687,385">
+<area shape="rect" id="node4" href="datasources.html" title="datasources" alt="" coords="193,401,330,509">
+<area shape="rect" id="node5" href="repopaths.html" title="repopaths" alt="" coords="186,178,337,382">
+<area shape="rect" id="node8" href="repository.html" title="repository" alt="" coords="6,202,141,286">
+<area shape="rect" id="node6" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="732,178,927,454">
+<area shape="rect" id="node7" href="metadatasources.html" title="metadatasources" alt="" coords="459,503,610,587">
+<area shape="rect" id="node9" href="subjects_df_assoc.html" title="subjects_df_assoc" alt="" coords="733,471,925,627">
+<area shape="rect" id="node10" href="subjects.html" title="subjects" alt="" coords="463,605,606,689">
+<area shape="rect" id="node11" href="users_datastreams.html" title="users_datastreams" alt="" coords="451,402,618,486">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/datafile.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -110,25 +110,25 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="breeder.id refs mouse.id via breeder_id_fkey"><a href='breeder.html'>breeder</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>breeder_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="cagetransfer.mouse_id refs mouse.id via cagetransfer_mouse_id_fkey"><a href='cagetransfer.html'>cagetransfer</a><span class='relatedKey'>.mouse_id</span>
     </td>
     <td class='constraint detail'>cagetransfer_mouse_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="cell.mouse_id refs mouse.id via cell_mouse_id_fkey"><a href='cell.html'>cell</a><span class='relatedKey'>.mouse_id</span>
     </td>
     <td class='constraint detail'>cell_mouse_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="slice.mouse_id refs mouse.id via slice_mouse_id_fkey"><a href='slice.html'>slice</a><span class='relatedKey'>.mouse_id</span>
     </td>
     <td class='constraint detail'>slice_mouse_id_fkey<span title='Restrict delete:
@@ -138,7 +138,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="mouse.id refs subjects.id via mouse_id_fkey"><a href='subjects.html'>subjects</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>mouse_id_fkey<span title='Restrict delete:
@@ -148,7 +148,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>eartag</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -159,7 +159,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>tattoo</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -170,7 +170,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>num_in_lit</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -181,7 +181,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>name</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>20</td>
@@ -192,7 +192,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>cage_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -202,7 +202,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="mouse.cage_id refs cage.id via mouse_cage_id_fkey"><a href='cage.html'>cage</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>mouse_cage_id_fkey<span title='Restrict delete:
@@ -212,7 +212,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>sex_id</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>1</td>
@@ -222,7 +222,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="mouse.sex_id refs sex.abbrev via mouse_sex_id_fkey"><a href='sex.html'>sex</a><span class='relatedKey'>.abbrev</span>
     </td>
     <td class='constraint detail'>mouse_sex_id_fkey<span title='Restrict delete:
@@ -232,7 +232,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>genotype_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -243,7 +243,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>strain_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -253,7 +253,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="mouse.strain_id refs strain.id via mouse_strain_id_fkey"><a href='strain.html'>strain</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>mouse_strain_id_fkey<span title='Restrict delete:
@@ -263,7 +263,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>litter_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -273,7 +273,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="mouse.litter_id refs litter.id via mouse_litter_id_fkey"><a href='litter.html'>litter</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>mouse_litter_id_fkey<span title='Restrict delete:
@@ -283,7 +283,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>sire_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -293,7 +293,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="mouse.sire_id refs sire.id via fk_sire"><a href='sire.html'>sire</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>fk_sire<span title='Restrict delete:
@@ -303,7 +303,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>dam_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -313,7 +313,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="mouse.dam_id refs dam.id via fk_dam"><a href='dam.html'>dam</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>fk_dam<span title='Restrict delete:
@@ -323,7 +323,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>dob_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -333,7 +333,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="mouse.dob_id refs dob.id via mouse_dob_id_fkey"><a href='dob.html'>dob</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>mouse_dob_id_fkey<span title='Restrict delete:
@@ -343,7 +343,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>dod</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -355,7 +355,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='14 columns'>Table contained 416 rows at Tue Sep 24 13:06 PDT 2013<p/>
+<p title='14 columns'>Table contained 416 rows at Tue Sep 24 16:15 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -414,7 +414,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <area shape="rect" id="node11" href="experiments_subjects.html" title="experiments_subjects" alt="" coords="617,366,810,450">
 <area shape="rect" id="node14" href="matingrecord.html" title="matingrecord" alt="" coords="205,1018,353,1102">
 <area shape="rect" id="node17" href="people.html" title="people" alt="" coords="642,1265,785,1349">
-<area shape="rect" id="node18" href="strain_citeables.html" title="strain_citeables" alt="" coords="642,707,785,791">
+<area shape="rect" id="node18" href="strain_citeables.html" title="strain_citeables" alt="" coords="638,707,789,791">
 <area shape="rect" id="node19" href="subjects_df_assoc.html" title="subjects_df_assoc" alt="" coords="617,467,809,551">
 <area shape="rect" id="node20" href="subjects_hardware.html" title="subjects_hardware" alt="" coords="622,569,805,653">
 <area shape="rect" id="node21" href="subjects_metadata.html" title="subjects_metadata" alt="" coords="630,265,797,349">

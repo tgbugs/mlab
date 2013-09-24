@@ -1,5 +1,7 @@
 #Base file for creating the tables that I will use to store all my (meta)data
 
+#TODO when thinking about staging this stuff I need a safe way to hold data incase my access to the db goes down, like pickling something or the like? ideally this shouldn't happen but better safe than sorry
+
 #TODO therefore we need a 'convert local to utc for storage'
 
 #TODO conform to MINI, NIF ontologies?, or odML terminiologies?
@@ -125,13 +127,13 @@ def printStuff(cons=True,mice=True,data=True,notes=True):
 def connect(echo=False):
     return Session(postgresEng(echo=False))
 
-def main(echo=False):
+def main(echo=True):
     #create engine
-    #engine=postgresEng(echo=echo,wipe_db=False)
-    engine=sqliteEng(echo=echo)
+    engine=postgresEng(echo=echo,wipe_db=False)
+    #engine=sqliteEng(echo=echo)
 
     #create metadata
-    Base.metadata.drop_all(engine,checkfirst=True)
+    #Base.metadata.drop_all(engine,checkfirst=True)
     Base.metadata.create_all(engine,checkfirst=True)
 
     #create session

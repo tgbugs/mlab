@@ -27,8 +27,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "hardware":"blueprint_id":w -> "citeable":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware":"manual_id":w -> "citeable":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware":"type":w -> "hardwaretype":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "hardware_datastreams":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware_metadata":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "hardware_metadatastreams":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse":"elipses":w -> "subjects":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "righistory":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "righistory":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -97,16 +97,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="hardware.html"
     tooltip="hardware"
   ];
-  "hardware_datastreams" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hardware_datastreams</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="hardware_datastreams.html"
-    tooltip="hardware_datastreams"
-  ];
   "hardware_metadata" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -116,6 +106,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     </TABLE>>
     URL="hardware_metadata.html"
     tooltip="hardware_metadata"
+  ];
+  "hardware_metadatastreams" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hardware_metadatastreams</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="hardware_metadatastreams.html"
+    tooltip="hardware_metadatastreams"
   ];
   "hardwaretype" [
     label=<

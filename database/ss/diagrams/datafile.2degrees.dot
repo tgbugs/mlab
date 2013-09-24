@@ -19,36 +19,45 @@ digraph "twoDegreesRelationshipsDiagram" {
   edge [
     arrowsize="0.8"
   ];
+  "citeable_df_assoc":"citeable_id":w -> "citeable":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "citeable_df_assoc":"datafile_filename":w -> "datafile":"filename.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "citeable_df_assoc":"datafile_path":w -> "datafile":"path.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "citeable_df_assoc":"datafile_url":w -> "datafile":"url.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafile":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafile":"path":w -> "repopaths":"path":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafile":"url":w -> "repopaths":"url":e [arrowhead=none dir=back arrowtail=crowodot];
-  "datafiles_metadata":"datasource_id":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafiles_metadata":"filename":w -> "datafile":"filename.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "datafiles_metadata":"metadatasource_id":w -> "metadatasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafiles_metadata":"path":w -> "datafile":"path.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafiles_metadata":"url":w -> "datafile":"url.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "datasources":"ds_calibration_rec":w -> "calibrationdata":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "datasources":"prefix":w -> "si_prefix":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "datasources":"unit":w -> "si_unit":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "experiments_metadata":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "hardware_datastreams":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "hardware_metadata":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "repopaths":"url":w -> "repository":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "subjects_df_assoc":"datafile_filename":w -> "datafile":"filename.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "subjects_df_assoc":"datafile_path":w -> "datafile":"path.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "subjects_df_assoc":"datafile_url":w -> "datafile":"url.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "subjects_df_assoc":"subjects_id":w -> "subjects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "subjects_metadata":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "subjects_metadata":"elipses":w -> "subjects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "users_datastreams":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "calibrationdata" [
+  "citeable" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">calibrationdata</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">citeable</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
     </TABLE>>
-    URL="calibrationdata.html"
-    tooltip="calibrationdata"
+    URL="citeable.html"
+    tooltip="citeable"
+  ];
+  "citeable_df_assoc" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">citeable_df_assoc</TD></TR>
+      <TR><TD PORT="datafile_url" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datafile_url</TD></TR>
+      <TR><TD PORT="datafile_path" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datafile_path</TD></TR>
+      <TR><TD PORT="datafile_filename" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datafile_filename</TD></TR>
+      <TR><TD PORT="citeable_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">citeable_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="citeable_df_assoc.html"
+    tooltip="citeable_df_assoc"
   ];
   "datafile" [
     label=<
@@ -59,7 +68,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="filename" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">filename</TD><TD PORT="filename.type" ALIGN="LEFT">varchar[2147483647]</TD></TR>
       <TR><TD PORT="datasource_id" COLSPAN="2" ALIGN="LEFT">datasource_id</TD><TD PORT="datasource_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="creationDateTime" COLSPAN="2" ALIGN="LEFT">creationDateTime</TD><TD PORT="creationDateTime.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">995 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">996 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9 &gt;</TD></TR>
     </TABLE>>
     URL="datafile.html"
     tooltip="datafile"
@@ -72,12 +81,12 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="url" COLSPAN="3" ALIGN="LEFT">url</TD></TR>
       <TR><TD PORT="path" COLSPAN="3" ALIGN="LEFT">path</TD></TR>
       <TR><TD PORT="filename" COLSPAN="3" ALIGN="LEFT">filename</TD></TR>
-      <TR><TD PORT="datasource_id" COLSPAN="3" ALIGN="LEFT">datasource_id</TD></TR>
+      <TR><TD PORT="metadatasource_id" COLSPAN="3" ALIGN="LEFT">metadatasource_id</TD></TR>
       <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
       <TR><TD PORT="value" COLSPAN="3" ALIGN="LEFT">value</TD></TR>
       <TR><TD PORT="sigfigs" COLSPAN="3" ALIGN="LEFT">sigfigs</TD></TR>
       <TR><TD PORT="abs_error" COLSPAN="3" ALIGN="LEFT">abs_error</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9,950 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9,960 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="datafiles_metadata.html"
     tooltip="datafiles_metadata"
@@ -88,43 +97,20 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">datasources</TD></TR>
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="name" COLSPAN="3" ALIGN="LEFT">name</TD></TR>
-      <TR><TD PORT="prefix" COLSPAN="3" ALIGN="LEFT">prefix</TD></TR>
-      <TR><TD PORT="unit" COLSPAN="3" ALIGN="LEFT">unit</TD></TR>
-      <TR><TD PORT="ds_calibration_rec" COLSPAN="3" ALIGN="LEFT">ds_calibration_rec</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">7 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
     </TABLE>>
     URL="datasources.html"
     tooltip="datasources"
   ];
-  "experiments_metadata" [
+  "metadatasources" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments_metadata</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">metadatasources</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
     </TABLE>>
-    URL="experiments_metadata.html"
-    tooltip="experiments_metadata"
-  ];
-  "hardware_datastreams" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hardware_datastreams</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="hardware_datastreams.html"
-    tooltip="hardware_datastreams"
-  ];
-  "hardware_metadata" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hardware_metadata</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">80 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="hardware_metadata.html"
-    tooltip="hardware_metadata"
+    URL="metadatasources.html"
+    tooltip="metadatasources"
   ];
   "repopaths" [
     label=<
@@ -136,7 +122,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="assoc_program" COLSPAN="3" ALIGN="LEFT">assoc_program</TD></TR>
       <TR><TD PORT="verified" COLSPAN="3" ALIGN="LEFT">verified</TD></TR>
       <TR><TD PORT="blurb" COLSPAN="3" ALIGN="LEFT">blurb</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
     </TABLE>>
     URL="repopaths.html"
     tooltip="repopaths"
@@ -146,30 +132,10 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">repository</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="repository.html"
     tooltip="repository"
-  ];
-  "si_prefix" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">si_prefix</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">22 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
-    </TABLE>>
-    URL="si_prefix.html"
-    tooltip="si_prefix"
-  ];
-  "si_unit" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">si_unit</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">42 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
-    </TABLE>>
-    URL="si_unit.html"
-    tooltip="si_unit"
   ];
   "subjects" [
     label=<
@@ -193,16 +159,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     </TABLE>>
     URL="subjects_df_assoc.html"
     tooltip="subjects_df_assoc"
-  ];
-  "subjects_metadata" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">subjects_metadata</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="subjects_metadata.html"
-    tooltip="subjects_metadata"
   ];
   "users_datastreams" [
     label=<

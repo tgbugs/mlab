@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>name</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -110,7 +110,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="reagents.reagent_id refs reagenttypes.name via reagents_reagent_id_fkey"><a href='reagents.html'>reagents</a><span class='relatedKey'>.reagent_id</span>
     </td>
     <td class='constraint detail'>reagents_reagent_id_fkey<span title='Restrict delete:
@@ -121,7 +121,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>document_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -131,7 +131,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="reagenttypes.document_id refs citeable.id via reagenttypes_document_id_fkey"><a href='citeable.html'>citeable</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>reagenttypes_document_id_fkey<span title='Restrict delete:
@@ -142,7 +142,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='2 columns'>Table contained 3 rows at Tue Sep 24 13:06 PDT 2013<p/>
+<p title='2 columns'>Table contained 3 rows at Tue Sep 24 16:15 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -168,20 +168,20 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from reagenttypes'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="reagents.html" title="reagents" alt="" coords="486,5,650,161">
-<area shape="rect" id="node2" href="reagenttypes.html" title="reagenttypes" alt="" coords="167,26,441,139">
-<area shape="rect" id="node3" href="citeable.html" title="citeable" alt="" coords="5,53,123,161">
+<area shape="rect" id="node1" href="reagents.html" title="reagents" alt="" coords="521,5,685,161">
+<area shape="rect" id="node2" href="reagenttypes.html" title="reagenttypes" alt="" coords="202,26,475,139">
+<area shape="rect" id="node3" href="citeable.html" title="citeable" alt="" coords="6,53,157,185">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/reagenttypes.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="experiments.html" title="experiments" alt="" coords="495,46,641,130">
-<area shape="rect" id="node2" href="citeable.html" title="citeable" alt="" coords="5,122,123,230">
-<area shape="rect" id="node3" href="experiments_reagents.html" title="experiments_reagents" alt="" coords="695,97,883,181">
-<area shape="rect" id="node4" href="reagents.html" title="reagents" alt="" coords="486,147,650,303">
-<area shape="rect" id="node6" href="reagenttypes.html" title="reagenttypes" alt="" coords="167,143,441,257">
-<area shape="rect" id="node5" href="hardware.html" title="hardware" alt="" coords="233,5,375,89">
-<area shape="rect" id="node7" href="strain_citeables.html" title="strain_citeables" alt="" coords="233,274,375,358">
-<area shape="rect" id="node8" href="website.html" title="website" alt="" coords="245,375,363,459">
+<area shape="rect" id="node1" href="citeable_df_assoc.html" title="citeable_df_assoc" alt="" coords="262,5,415,89">
+<area shape="rect" id="node2" href="citeable.html" title="citeable" alt="" coords="6,222,157,354">
+<area shape="rect" id="node3" href="experiments.html" title="experiments" alt="" coords="530,46,675,130">
+<area shape="rect" id="node4" href="experiments_reagents.html" title="experiments_reagents" alt="" coords="730,97,918,181">
+<area shape="rect" id="node5" href="reagents.html" title="reagents" alt="" coords="521,147,685,303">
+<area shape="rect" id="node7" href="reagenttypes.html" title="reagenttypes" alt="" coords="202,143,475,257">
+<area shape="rect" id="node6" href="hardware.html" title="hardware" alt="" coords="267,274,410,358">
+<area shape="rect" id="node8" href="strain_citeables.html" title="strain_citeables" alt="" coords="263,375,414,459">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/reagenttypes.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

@@ -3,6 +3,7 @@ citeable
 cage
 dob
 sex
+datasources
 strain
 calibrationdata
 experimenttype
@@ -10,7 +11,6 @@ hardwaretype
 iacucprotocols
 si_prefix
 si_unit
-datasources
 people
 project
 reagenttypes
@@ -26,6 +26,7 @@ hardware
 repository
 repopaths
 datafile
+metadatasources
 experiments
 reagents
 slice
@@ -34,17 +35,17 @@ experiments_hardware
 experiments_metadata
 experiments_reagents
 experiments_subjects
-hardware_datastreams
 hardware_metadata
+hardware_metadatastreams
 person_to_project
 strain_citeables
 subjects_hardware
 subjects_metadata
 users_datastreams
-website
 cagetransfer
 cell
 righistory
+citeable_df_assoc
 datafiles_metadata
 subjects_df_assoc
 file

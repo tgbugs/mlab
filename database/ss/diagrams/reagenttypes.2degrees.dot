@@ -19,6 +19,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   edge [
     arrowsize="0.8"
   ];
+  "citeable_df_assoc":"elipses":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "experiments":"elipses":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "experiments_reagents":"elipses":w -> "experiments":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "experiments_reagents":"elipses":w -> "reagents":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -27,17 +28,27 @@ digraph "twoDegreesRelationshipsDiagram" {
   "reagents":"reagent_id":w -> "reagenttypes":"name.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "reagenttypes":"document_id":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "strain_citeables":"elipses":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "website":"elipses":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "citeable" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">citeable</TD></TR>
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="type" COLSPAN="3" ALIGN="LEFT">type</TD></TR>
+      <TR><TD PORT="accessDateTime" COLSPAN="3" ALIGN="LEFT">accessDateTime</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
     </TABLE>>
     URL="citeable.html"
     tooltip="citeable"
+  ];
+  "citeable_df_assoc" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">citeable_df_assoc</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="citeable_df_assoc.html"
+    tooltip="citeable_df_assoc"
   ];
   "experiments" [
     label=<
@@ -98,19 +109,9 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">strain_citeables</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="strain_citeables.html"
     tooltip="strain_citeables"
-  ];
-  "website" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">website</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="website.html"
-    tooltip="website"
   ];
 }

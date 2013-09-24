@@ -4,17 +4,17 @@ indatabasedata
 file
 subjects_df_assoc
 datafiles_metadata
+citeable_df_assoc
 righistory
 cell
 cagetransfer
-website
 users_datastreams
 subjects_metadata
 subjects_hardware
 strain_citeables
 person_to_project
+hardware_metadatastreams
 hardware_metadata
-hardware_datastreams
 experiments_subjects
 experiments_reagents
 experiments_metadata
@@ -23,6 +23,7 @@ cagerack
 slice
 reagents
 experiments
+metadatasources
 datafile
 repopaths
 repository
@@ -38,7 +39,6 @@ users
 reagenttypes
 project
 people
-datasources
 si_unit
 si_prefix
 iacucprotocols
@@ -46,6 +46,7 @@ hardwaretype
 experimenttype
 calibrationdata
 strain
+datasources
 sex
 dob
 cage

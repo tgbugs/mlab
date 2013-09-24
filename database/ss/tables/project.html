@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,13 +110,13 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('project_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="experiments.project_id refs project.id via experiments_project_id_fkey"><a href='experiments.html'>experiments</a><span class='relatedKey'>.project_id</span>
     </td>
     <td class='constraint detail'>experiments_project_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="person_to_project.project_id refs project.id via person_to_project_project_id_fkey"><a href='person_to_project.html'>person_to_project</a><span class='relatedKey'>.project_id</span>
     </td>
     <td class='constraint detail'>person_to_project_project_id_fkey<span title='Restrict delete:
@@ -127,7 +127,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>lab</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>15</td>
@@ -138,7 +138,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>iacuc_protocol_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -148,7 +148,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="project.iacuc_protocol_id refs iacucprotocols.id via project_iacuc_protocol_id_fkey"><a href='iacucprotocols.html'>iacucprotocols</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>project_iacuc_protocol_id_fkey<span title='Restrict delete:
@@ -158,7 +158,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>blurb</td>
  <td class='detail'>text</td>
  <td class='detail' align='right'>2147483647</td>
@@ -170,7 +170,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='4 columns'>Table contained 1 rows at Tue Sep 24 13:06 PDT 2013<p/>
+<p title='4 columns'>Table contained 1 rows at Tue Sep 24 16:15 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>

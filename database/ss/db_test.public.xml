@@ -62,7 +62,7 @@
       </table>
       <table name="calibrationdata" numRows="0" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('calibrationdata_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
-            <child column="ds_calibration_rec" foreignKey="datasources_ds_calibration_rec_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
+            <child column="ds_calibration_rec" foreignKey="metadatasources_ds_calibration_rec_fkey" implied="false" onDeleteCascade="false" table="metadatasources"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="calibrationdata_pkey" unique="true">
@@ -87,23 +87,47 @@
       </table>
       <table name="citeable" numRows="1" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('citeable_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
+            <child column="citeable_id" foreignKey="citeable_df_assoc_citeable_id_fkey" implied="false" onDeleteCascade="false" table="citeable_df_assoc"/>
             <child column="methods_id" foreignKey="experiments_methods_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
             <child column="blueprint_id" foreignKey="hardware_blueprint_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
             <child column="manual_id" foreignKey="hardware_manual_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
             <child column="document_id" foreignKey="reagenttypes_document_id_fkey" implied="false" onDeleteCascade="false" table="reagenttypes"/>
             <child column="citeable_id" foreignKey="strain_citeables_citeable_id_fkey" implied="false" onDeleteCascade="false" table="strain_citeables"/>
-            <child column="id" foreignKey="website_id_fkey" implied="false" onDeleteCascade="false" table="website"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="type" nullable="false" remarks="" size="15" type="varchar"/>
+         <column autoUpdated="false" digits="6" id="2" name="accessDateTime" nullable="true" remarks="" size="29" type="timestamp"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="citeable_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="citeable_df_assoc" numRows="1" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="datafile_url" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="url" foreignKey="citeable_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="datafile_path" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="path" foreignKey="citeable_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="2" name="datafile_filename" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="filename" foreignKey="citeable_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="3" name="citeable_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="citeable_df_assoc_citeable_id_fkey" implied="false" onDeleteCascade="false" table="citeable"/>
+         </column>
+         <primaryKey column="datafile_url" sequenceNumberInPK="1"/>
+         <primaryKey column="datafile_path" sequenceNumberInPK="2"/>
+         <primaryKey column="datafile_filename" sequenceNumberInPK="3"/>
+         <primaryKey column="citeable_id" sequenceNumberInPK="4"/>
+         <index name="citeable_df_assoc_pkey" unique="true">
+            <column ascending="true" name="datafile_url"/>
+            <column ascending="true" name="datafile_path"/>
+            <column ascending="true" name="datafile_filename"/>
+            <column ascending="true" name="citeable_id"/>
+         </index>
+      </table>
       <table name="credentials" numRows="0" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('credentials_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="credentials_id" foreignKey="repository_credentials_id_fkey" implied="false" onDeleteCascade="false" table="repository"/>
-            <child column="credentials_id" foreignKey="website_credentials_id_fkey" implied="false" onDeleteCascade="false" table="website"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="user_id" nullable="true" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="credentials_user_id_fkey" implied="false" onDeleteCascade="false" table="users"/>
@@ -125,18 +149,21 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="datafile" numRows="995" remarks="" schema="public" type="TABLE">
+      <table name="datafile" numRows="996" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="url" nullable="false" remarks="" size="2147483647" type="varchar">
+            <child column="datafile_url" foreignKey="citeable_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="citeable_df_assoc"/>
             <child column="url" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
             <child column="datafile_url" foreignKey="subjects_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="subjects_df_assoc"/>
             <parent column="url" foreignKey="datafile_url_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="path" nullable="false" remarks="" size="2147483647" type="varchar">
+            <child column="datafile_path" foreignKey="citeable_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="citeable_df_assoc"/>
             <child column="path" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
             <child column="datafile_path" foreignKey="subjects_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="subjects_df_assoc"/>
             <parent column="path" foreignKey="datafile_url_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
          </column>
          <column autoUpdated="false" digits="0" id="2" name="filename" nullable="false" remarks="" size="2147483647" type="varchar">
+            <child column="datafile_filename" foreignKey="citeable_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="citeable_df_assoc"/>
             <child column="filename" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
             <child column="datafile_filename" foreignKey="subjects_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="subjects_df_assoc"/>
          </column>
@@ -153,7 +180,7 @@
             <column ascending="true" name="filename"/>
          </index>
       </table>
-      <table name="datafiles_metadata" numRows="9950" remarks="" schema="public" type="TABLE">
+      <table name="datafiles_metadata" numRows="9960" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('datafiles_metadata_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial"/>
          <column autoUpdated="false" digits="0" id="1" name="url" nullable="false" remarks="" size="2147483647" type="varchar">
             <parent column="url" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
@@ -164,8 +191,8 @@
          <column autoUpdated="false" digits="0" id="3" name="filename" nullable="false" remarks="" size="2147483647" type="varchar">
             <parent column="filename" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
          </column>
-         <column autoUpdated="false" digits="0" id="4" name="datasource_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="datafiles_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
+         <column autoUpdated="false" digits="0" id="4" name="metadatasource_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="datafiles_metadata_metadatasource_id_fkey" implied="false" onDeleteCascade="false" table="metadatasources"/>
          </column>
          <column autoUpdated="false" digits="6" id="5" name="dateTime" nullable="true" remarks="" size="29" type="timestamp"/>
          <column autoUpdated="false" digits="17" id="6" name="value" nullable="false" remarks="" size="17" type="float8"/>
@@ -179,23 +206,9 @@
       <table name="datasources" numRows="2" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('datasources_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="datasource_id" foreignKey="datafile_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
-            <child column="datasource_id" foreignKey="datafiles_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
-            <child column="datasource_id" foreignKey="experiments_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="experiments_metadata"/>
-            <child column="datasource_id" foreignKey="hardware_datastreams_datasource_id_fkey" implied="false" onDeleteCascade="false" table="hardware_datastreams"/>
-            <child column="datasource_id" foreignKey="hardware_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="hardware_metadata"/>
-            <child column="datasource_id" foreignKey="subjects_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="subjects_metadata"/>
             <child column="datasource_id" foreignKey="users_datastreams_datasource_id_fkey" implied="false" onDeleteCascade="false" table="users_datastreams"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="name" nullable="false" remarks="" size="20" type="varchar"/>
-         <column autoUpdated="false" digits="0" id="2" name="prefix" nullable="false" remarks="" size="2" type="varchar">
-            <parent column="symbol" foreignKey="datasources_prefix_fkey" implied="false" onDeleteCascade="false" table="si_prefix"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="3" name="unit" nullable="false" remarks="" size="3" type="varchar">
-            <parent column="symbol" foreignKey="datasources_unit_fkey" implied="false" onDeleteCascade="false" table="si_unit"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="4" name="ds_calibration_rec" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="datasources_ds_calibration_rec_fkey" implied="false" onDeleteCascade="false" table="calibrationdata"/>
-         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="datasources_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -263,8 +276,8 @@
          <column autoUpdated="false" digits="0" id="5" name="experiments_id" nullable="true" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="experiments_metadata_experiments_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
          </column>
-         <column autoUpdated="false" digits="0" id="6" name="datasource_id" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="experiments_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
+         <column autoUpdated="false" digits="0" id="6" name="metadatasource_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="experiments_metadata_metadatasource_id_fkey" implied="false" onDeleteCascade="false" table="metadatasources"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="experiments_metadata_pkey" unique="true">
@@ -320,8 +333,8 @@
          <column autoUpdated="true" defaultValue="nextval('hardware_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="hardware_id" foreignKey="experiments_hardware_hardware_id_fkey" implied="false" onDeleteCascade="false" table="experiments_hardware"/>
             <child column="parent_id" foreignKey="hardware_parent_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
-            <child column="hardware_id" foreignKey="hardware_datastreams_hardware_id_fkey" implied="false" onDeleteCascade="false" table="hardware_datastreams"/>
             <child column="hardware_id" foreignKey="hardware_metadata_hardware_id_fkey" implied="false" onDeleteCascade="false" table="hardware_metadata"/>
+            <child column="hardware_id" foreignKey="hardware_metadatastreams_hardware_id_fkey" implied="false" onDeleteCascade="false" table="hardware_metadatastreams"/>
             <child column="hardware_id" foreignKey="righistory_hardware_id_fkey" implied="false" onDeleteCascade="false" table="righistory"/>
             <child column="new_parent" foreignKey="righistory_new_parent_fkey" implied="false" onDeleteCascade="false" table="righistory"/>
             <child column="old_parent" foreignKey="righistory_old_parent_fkey" implied="false" onDeleteCascade="false" table="righistory"/>
@@ -348,20 +361,6 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="hardware_datastreams" numRows="0" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" digits="0" id="0" name="datasource_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="hardware_datastreams_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="1" name="hardware_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="hardware_datastreams_hardware_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
-         </column>
-         <primaryKey column="datasource_id" sequenceNumberInPK="1"/>
-         <primaryKey column="hardware_id" sequenceNumberInPK="2"/>
-         <index name="hardware_datastreams_pkey" unique="true">
-            <column ascending="true" name="datasource_id"/>
-            <column ascending="true" name="hardware_id"/>
-         </index>
-      </table>
       <table name="hardware_metadata" numRows="80" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="6" id="0" name="dateTime" nullable="true" remarks="" size="29" type="timestamp"/>
          <column autoUpdated="false" digits="17" id="1" name="value" nullable="false" remarks="" size="17" type="float8"/>
@@ -371,12 +370,26 @@
          <column autoUpdated="false" digits="0" id="5" name="hardware_id" nullable="true" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="hardware_metadata_hardware_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
          </column>
-         <column autoUpdated="false" digits="0" id="6" name="datasource_id" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="hardware_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
+         <column autoUpdated="false" digits="0" id="6" name="metadatasource_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="hardware_metadata_metadatasource_id_fkey" implied="false" onDeleteCascade="false" table="metadatasources"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="hardware_metadata_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="hardware_metadatastreams" numRows="0" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="metadatasource_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="hardware_metadatastreams_metadatasource_id_fkey" implied="false" onDeleteCascade="false" table="metadatasources"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="hardware_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="hardware_metadatastreams_hardware_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
+         </column>
+         <primaryKey column="metadatasource_id" sequenceNumberInPK="1"/>
+         <primaryKey column="hardware_id" sequenceNumberInPK="2"/>
+         <index name="hardware_metadatastreams_pkey" unique="true">
+            <column ascending="true" name="metadatasource_id"/>
+            <column ascending="true" name="hardware_id"/>
          </index>
       </table>
       <table name="hardwaretype" numRows="17" remarks="" schema="public" type="TABLE">
@@ -450,6 +463,29 @@
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="matingrecord_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="metadatasources" numRows="1" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('metadatasources_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
+            <child column="metadatasource_id" foreignKey="datafiles_metadata_metadatasource_id_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
+            <child column="metadatasource_id" foreignKey="experiments_metadata_metadatasource_id_fkey" implied="false" onDeleteCascade="false" table="experiments_metadata"/>
+            <child column="metadatasource_id" foreignKey="hardware_metadata_metadatasource_id_fkey" implied="false" onDeleteCascade="false" table="hardware_metadata"/>
+            <child column="metadatasource_id" foreignKey="hardware_metadatastreams_metadatasource_id_fkey" implied="false" onDeleteCascade="false" table="hardware_metadatastreams"/>
+            <child column="metadatasource_id" foreignKey="subjects_metadata_metadatasource_id_fkey" implied="false" onDeleteCascade="false" table="subjects_metadata"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="name" nullable="false" remarks="" size="20" type="varchar"/>
+         <column autoUpdated="false" digits="0" id="2" name="prefix" nullable="false" remarks="" size="2" type="varchar">
+            <parent column="symbol" foreignKey="metadatasources_prefix_fkey" implied="false" onDeleteCascade="false" table="si_prefix"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="3" name="unit" nullable="false" remarks="" size="3" type="varchar">
+            <parent column="symbol" foreignKey="metadatasources_unit_fkey" implied="false" onDeleteCascade="false" table="si_unit"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="4" name="ds_calibration_rec" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="metadatasources_ds_calibration_rec_fkey" implied="false" onDeleteCascade="false" table="calibrationdata"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="metadatasources_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
@@ -586,7 +622,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="repopaths" numRows="1" remarks="" schema="public" type="TABLE">
+      <table name="repopaths" numRows="2" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="name" nullable="true" remarks="" size="2147483647" type="varchar"/>
          <column autoUpdated="false" digits="0" id="1" name="url" nullable="false" remarks="" size="2147483647" type="varchar">
             <child column="url" foreignKey="datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
@@ -605,7 +641,7 @@
             <column ascending="true" name="path"/>
          </index>
       </table>
-      <table name="repository" numRows="1" remarks="" schema="public" type="TABLE">
+      <table name="repository" numRows="2" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="url" nullable="false" remarks="" size="100" type="varchar">
             <child column="url" foreignKey="repopaths_url_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
          </column>
@@ -656,7 +692,7 @@
       </table>
       <table name="si_prefix" numRows="22" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="symbol" nullable="false" remarks="" size="2" type="varchar">
-            <child column="prefix" foreignKey="datasources_prefix_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
+            <child column="prefix" foreignKey="metadatasources_prefix_fkey" implied="false" onDeleteCascade="false" table="metadatasources"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="prefix" nullable="false" remarks="" size="5" type="varchar"/>
          <column autoUpdated="false" digits="0" id="2" name="E" nullable="false" remarks="" size="10" type="int4"/>
@@ -667,7 +703,7 @@
       </table>
       <table name="si_unit" numRows="42" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="symbol" nullable="false" remarks="" size="3" type="varchar">
-            <child column="unit" foreignKey="datasources_unit_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
+            <child column="unit" foreignKey="metadatasources_unit_fkey" implied="false" onDeleteCascade="false" table="metadatasources"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="name" nullable="false" remarks="" size="15" type="varchar"/>
          <primaryKey column="symbol" sequenceNumberInPK="1"/>
@@ -714,7 +750,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="strain_citeables" numRows="1" remarks="" schema="public" type="TABLE">
+      <table name="strain_citeables" numRows="0" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="citeable_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="strain_citeables_citeable_id_fkey" implied="false" onDeleteCascade="false" table="citeable"/>
          </column>
@@ -791,8 +827,8 @@
          <column autoUpdated="false" digits="0" id="5" name="subjects_id" nullable="true" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="subjects_metadata_subjects_id_fkey" implied="false" onDeleteCascade="false" table="subjects"/>
          </column>
-         <column autoUpdated="false" digits="0" id="6" name="datasource_id" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="subjects_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
+         <column autoUpdated="false" digits="0" id="6" name="metadatasource_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="subjects_metadata_metadatasource_id_fkey" implied="false" onDeleteCascade="false" table="metadatasources"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="subjects_metadata_pkey" unique="true">
@@ -827,19 +863,6 @@
          <index name="users_datastreams_pkey" unique="true">
             <column ascending="true" name="datasource_id"/>
             <column ascending="true" name="users_id"/>
-         </index>
-      </table>
-      <table name="website" numRows="1" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="website_id_fkey" implied="false" onDeleteCascade="false" table="citeable"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="1" name="url" nullable="true" remarks="" size="2147483647" type="varchar"/>
-         <column autoUpdated="false" digits="0" id="2" name="credentials_id" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="website_credentials_id_fkey" implied="false" onDeleteCascade="false" table="credentials"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="website_pkey" unique="true">
-            <column ascending="true" name="id"/>
          </index>
       </table>
    </tables>
