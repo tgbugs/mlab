@@ -72,9 +72,22 @@ class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific
     def __repr__(self):
         return '\nDOB %s %s %s'%(frmtDT(self.dateTime),_plusMinus,self.absolute_error)
 
+###-----------------------
+###  Subjects
+###-----------------------
 
-class Mouse(HasMetaData, HasNotes, Base): #TODO species metadata???
+class Subject(Base):
+    __tablename__='subjects'
+    id=Column(Integer,primary_key=True)
+    type=Column(String,nullable=False)
+    __mapper_args__ = {
+        'polymorphic_on':type,
+        'polymorphic_identity':'subject',
+    }
+
+class Mouse(HasMetaData, HasNotes, Subject): #TODO species metadata???
     #in addition to the id, keep track of some of the real world ways people refer to mice!
+    id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
     eartag=Column(Integer)
     tattoo=Column(Integer)
     num_in_lit=Column(Integer)  #for mice with no eartag or tattoo, numbered in litter, might replace this with mouse ID proper?
@@ -169,9 +182,6 @@ class Mouse(HasMetaData, HasNotes, Base): #TODO species metadata???
 
         return base+'%s %s %s'%(self.dob.strHelper(1),litter,breedingRec)
 
-###-----------------------
-###  Subjects beyond mouse
-###-----------------------
 
 class Slice(HasMetaData, HasNotes, Base):
     id=None
@@ -242,6 +252,7 @@ class CellPairs(Base): #FIXME cell tupels?!??!
 
 class Cell(Base):
     __tablename__='cell'
+    id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME
     #FIXME overlap between experiment type and cell type, confusing
     exp_type=Column(String,nullable=False)
