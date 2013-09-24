@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,52 +110,52 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('hardware_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="experiments_hardware.hardware_id refs hardware.id via experiments_hardware_hardware_id_fkey"><a href='experiments_hardware.html'>experiments_hardware</a><span class='relatedKey'>.hardware_id</span>
     </td>
     <td class='constraint detail'>experiments_hardware_hardware_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="hardware.parent_id refs hardware.id via hardware_parent_id_fkey"><a href='hardware.html'>hardware</a><span class='relatedKey'>.parent_id</span>
     </td>
     <td class='constraint detail'>hardware_parent_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="hardware_datastreams.hardware_id refs hardware.id via hardware_datastreams_hardware_id_fkey"><a href='hardware_datastreams.html'>hardware_datastreams</a><span class='relatedKey'>.hardware_id</span>
     </td>
     <td class='constraint detail'>hardware_datastreams_hardware_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="hardware_metadata.hardware_id refs hardware.id via hardware_metadata_hardware_id_fkey"><a href='hardware_metadata.html'>hardware_metadata</a><span class='relatedKey'>.hardware_id</span>
     </td>
     <td class='constraint detail'>hardware_metadata_hardware_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
-    <td class='relatedTable detail' title="patchcell.hs_id refs hardware.id via patchcell_hs_id_fkey"><a href='patchcell.html'>patchcell</a><span class='relatedKey'>.hs_id</span>
-    </td>
-    <td class='constraint detail'>patchcell_hs_id_fkey<span title='Restrict delete:
- Parent cannot be deleted if children exist'>&nbsp;R</span></td>
-   </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="righistory.hardware_id refs hardware.id via righistory_hardware_id_fkey"><a href='righistory.html'>righistory</a><span class='relatedKey'>.hardware_id</span>
     </td>
     <td class='constraint detail'>righistory_hardware_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="righistory.new_parent refs hardware.id via righistory_new_parent_fkey"><a href='righistory.html'>righistory</a><span class='relatedKey'>.new_parent</span>
     </td>
     <td class='constraint detail'>righistory_new_parent_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="righistory.old_parent refs hardware.id via righistory_old_parent_fkey"><a href='righistory.html'>righistory</a><span class='relatedKey'>.old_parent</span>
     </td>
     <td class='constraint detail'>righistory_old_parent_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+   <tr class='relative even' valign='top'>
+    <td class='relatedTable detail' title="subjects_hardware.hardware_id refs hardware.id via subjects_hardware_hardware_id_fkey"><a href='subjects_hardware.html'>subjects_hardware</a><span class='relatedKey'>.hardware_id</span>
+    </td>
+    <td class='constraint detail'>subjects_hardware_hardware_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
   </table>
@@ -163,7 +163,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>parent_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -173,7 +173,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="hardware.parent_id refs hardware.id via hardware_parent_id_fkey"><a href='hardware.html'>hardware</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>hardware_parent_id_fkey<span title='Restrict delete:
@@ -183,7 +183,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>type</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -193,7 +193,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="hardware.type refs hardwaretype.type via hardware_type_fkey"><a href='hardwaretype.html'>hardwaretype</a><span class='relatedKey'>.type</span>
     </td>
     <td class='constraint detail'>hardware_type_fkey<span title='Restrict delete:
@@ -203,7 +203,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>name</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -214,7 +214,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>unique_id</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -225,7 +225,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>model</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -236,7 +236,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>company</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -247,7 +247,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>blueprint_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -257,7 +257,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="hardware.blueprint_id refs citeable.id via hardware_blueprint_id_fkey"><a href='citeable.html'>citeable</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>hardware_blueprint_id_fkey<span title='Restrict delete:
@@ -267,7 +267,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>manual_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -277,7 +277,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="hardware.manual_id refs citeable.id via hardware_manual_id_fkey"><a href='citeable.html'>citeable</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>hardware_manual_id_fkey<span title='Restrict delete:
@@ -288,7 +288,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='9 columns'>Table contained 16 rows at Tue Sep 24 00:28 PDT 2013<p/>
+<p title='9 columns'>Table contained 16 rows at Tue Sep 24 10:43 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -314,34 +314,31 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from hardware'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="experiments_hardware.html" title="experiments_hardware" alt="" coords="523,5,706,107">
-<area shape="rect" id="node2" href="hardware.html" title="hardware" alt="" coords="202,545,478,812">
-<area shape="rect" id="node3" href="citeable.html" title="citeable" alt="" coords="23,721,140,823">
-<area shape="rect" id="node4" href="hardwaretype.html" title="hardwaretype" alt="" coords="6,593,157,695">
-<area shape="rect" id="node5" href="hardware_datastreams.html" title="hardware_datastreams" alt="" coords="523,125,706,227">
-<area shape="rect" id="node6" href="hardware_metadata.html" title="hardware_metadata" alt="" coords="526,245,703,461">
-<area shape="rect" id="node7" href="patchcell.html" title="patchcell" alt="" coords="534,479,695,649">
-<area shape="rect" id="node8" href="righistory.html" title="righistory" alt="" coords="546,667,683,837">
+<area shape="rect" id="node1" href="experiments_hardware.html" title="experiments_hardware" alt="" coords="523,5,706,113">
+<area shape="rect" id="node2" href="hardware.html" title="hardware" alt="" coords="202,546,478,827">
+<area shape="rect" id="node3" href="citeable.html" title="citeable" alt="" coords="23,731,140,839">
+<area shape="rect" id="node4" href="hardwaretype.html" title="hardwaretype" alt="" coords="6,597,157,705">
+<area shape="rect" id="node5" href="hardware_datastreams.html" title="hardware_datastreams" alt="" coords="523,130,706,238">
+<area shape="rect" id="node6" href="hardware_metadata.html" title="hardware_metadata" alt="" coords="526,255,703,483">
+<area shape="rect" id="node7" href="righistory.html" title="righistory" alt="" coords="546,501,683,681">
+<area shape="rect" id="node8" href="subjects_hardware.html" title="subjects_hardware" alt="" coords="523,698,706,806">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/hardware.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="experiments.html" title="experiments" alt="" coords="267,200,413,280">
-<area shape="rect" id="node2" href="citeable.html" title="citeable" alt="" coords="23,637,140,739">
-<area shape="rect" id="node3" href="experiments_hardware.html" title="experiments_hardware" alt="" coords="523,237,706,339">
-<area shape="rect" id="node4" href="hardware.html" title="hardware" alt="" coords="202,401,478,668">
-<area shape="rect" id="node5" href="hardwaretype.html" title="hardwaretype" alt="" coords="6,449,157,551">
-<area shape="rect" id="node6" href="hardware_datastreams.html" title="hardware_datastreams" alt="" coords="523,591,706,694">
-<area shape="rect" id="node7" href="datasources.html" title="datasources" alt="" coords="271,977,409,1057">
-<area shape="rect" id="node8" href="hardware_metadata.html" title="hardware_metadata" alt="" coords="526,731,703,947">
-<area shape="rect" id="node9" href="patchcell.html" title="patchcell" alt="" coords="751,93,913,264">
-<area shape="rect" id="node10" href="cell.html" title="cell" alt="" coords="539,5,690,85">
-<area shape="rect" id="node11" href="slice.html" title="slice" alt="" coords="543,139,686,219">
-<area shape="rect" id="node12" href="patchcell_df_assoc.html" title="patchcell_df_assoc" alt="" coords="957,92,1152,172">
-<area shape="rect" id="node13" href="patchcell_metadata.html" title="patchcell_metadata" alt="" coords="971,579,1138,659">
-<area shape="rect" id="node14" href="reagenttypes.html" title="reagenttypes" alt="" coords="270,685,410,765">
-<area shape="rect" id="node15" href="righistory.html" title="righistory" alt="" coords="546,357,683,528">
-<area shape="rect" id="node16" href="strain_citeables.html" title="strain_citeables" alt="" coords="269,783,411,863">
-<area shape="rect" id="node17" href="website.html" title="website" alt="" coords="281,880,399,960">
+<area shape="rect" id="node1" href="experiments.html" title="experiments" alt="" coords="267,39,413,123">
+<area shape="rect" id="node2" href="citeable.html" title="citeable" alt="" coords="23,422,140,530">
+<area shape="rect" id="node3" href="experiments_hardware.html" title="experiments_hardware" alt="" coords="523,5,706,113">
+<area shape="rect" id="node4" href="hardware.html" title="hardware" alt="" coords="202,175,478,457">
+<area shape="rect" id="node5" href="hardwaretype.html" title="hardwaretype" alt="" coords="6,226,157,334">
+<area shape="rect" id="node6" href="hardware_datastreams.html" title="hardware_datastreams" alt="" coords="523,347,706,455">
+<area shape="rect" id="node7" href="datasources.html" title="datasources" alt="" coords="271,778,409,862">
+<area shape="rect" id="node8" href="hardware_metadata.html" title="hardware_metadata" alt="" coords="526,551,703,779">
+<area shape="rect" id="node9" href="reagenttypes.html" title="reagenttypes" alt="" coords="270,474,410,558">
+<area shape="rect" id="node10" href="righistory.html" title="righistory" alt="" coords="546,130,683,310">
+<area shape="rect" id="node11" href="strain_citeables.html" title="strain_citeables" alt="" coords="269,575,411,659">
+<area shape="rect" id="node12" href="subjects_hardware.html" title="subjects_hardware" alt="" coords="523,835,706,943">
+<area shape="rect" id="node13" href="subjects.html" title="subjects" alt="" coords="269,879,411,963">
+<area shape="rect" id="node14" href="website.html" title="website" alt="" coords="281,677,399,761">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/hardware.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

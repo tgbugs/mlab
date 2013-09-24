@@ -76,7 +76,7 @@ class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific
 ###  Subjects
 ###-----------------------
 
-class Subject(HasDataFiles, HasHardware, Base):
+class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base): #FIXME should metadata all go here?
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     type=Column(String,nullable=False)
@@ -89,7 +89,7 @@ class Subject(HasDataFiles, HasHardware, Base):
         self.hardware.extend(Hardware)
 
 
-class Mouse(HasMetaData, HasNotes, Subject): #TODO species metadata???
+class Mouse(Subject): #TODO species metadata???
     #in addition to the id, keep track of some of the real world ways people refer to mice!
     __tablename__='mouse'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
@@ -132,7 +132,7 @@ class Mouse(HasMetaData, HasNotes, Subject): #TODO species metadata???
     #experiment_id=Column(Integer,ForeignKey('experiments.id'),unique=True) #FIXME m-m
 
     #things that not all mice will have but that are needed for data to work out
-    slices=relationship('Slice',backref=backref('mouse',uselist=False))
+    slices=relationship('Slice',primaryjoin='Slice.mouse_id==Mouse.id',backref=backref('mouse',uselist=False))
     cells=relationship('Cell',primaryjoin='Cell.mouse_id==Mouse.id',backref=backref('mouse',uselist=False))
 
 
@@ -191,9 +191,10 @@ class Mouse(HasMetaData, HasNotes, Subject): #TODO species metadata???
         return base+'%s %s %s'%(self.dob.strHelper(1),litter,breedingRec)
 
 
-class Slice(HasMetaData, HasNotes, Base):
+class Slice(Subject): #FIXME slice should probably be a subject
+    __tablename__='slice'
     id=None
-    id=Column(Integer,primary_key=True) #FIXME
+    id=Column(Integer,ForeignKey('subjects.id'),primary_key=True) #FIXME
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
     prep_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO this should really refer to slice prep, but suggests that this class should be 'acute slice'
     prep=relationship('Experiment',primaryjoin='Experiment.id==Slice.prep_id',backref=backref('slices',uselist=True))
@@ -205,7 +206,10 @@ class Slice(HasMetaData, HasNotes, Base):
 
     cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
-    def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None,startDateTime=None):
+    __mapper_args__ = {'polymorphic_identity':'slice'}
+
+    def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None,startDateTime=None,Hardware=[], Experiments=[]):
+        super().__init__(Experiments,Hardware)
         self.startDateTime=startDateTime
         self.mouse_id=mouse_id
         self.prep_id=prep_id
@@ -231,7 +235,7 @@ class Slice(HasMetaData, HasNotes, Base):
         return super().strHelper(depth)
 
 
-class Cell(HasMetaData, Subject):
+class Cell(Subject):
     __tablename__='cell'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME grandparent_id

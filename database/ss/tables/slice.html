@@ -101,33 +101,36 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>id</td>
- <td class='detail'>serial</td>
+ <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
  <td class='detail' align='center'></td>
- <td class='detail' align='center' title='Automatically updated by the database'>&nbsp;&radic;&nbsp;</td>
- <td class='detail' align='right'>nextval('slice_id_seq'::regclass)</td>
+ <td class='detail' align='center'></td>
+ <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
-    <td class='relatedTable detail' title="patchcell.slice_id refs slice.id via patchcell_slice_id_fkey"><a href='patchcell.html'>patchcell</a><span class='relatedKey'>.slice_id</span>
+   <tr class='relative even' valign='top'>
+    <td class='relatedTable detail' title="cell.slice_id refs slice.id via cell_slice_id_fkey"><a href='cell.html'>cell</a><span class='relatedKey'>.slice_id</span>
     </td>
-    <td class='constraint detail'>patchcell_slice_id_fkey<span title='Restrict delete:
- Parent cannot be deleted if children exist'>&nbsp;R</span></td>
-   </tr>
-   <tr class='relative odd' valign='top'>
-    <td class='relatedTable detail' title="slice_metadata.slice_id refs slice.id via slice_metadata_slice_id_fkey"><a href='slice_metadata.html'>slice_metadata</a><span class='relatedKey'>.slice_id</span>
-    </td>
-    <td class='constraint detail'>slice_metadata_slice_id_fkey<span title='Restrict delete:
+    <td class='constraint detail'>cell_slice_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
   </table>
 </td>
- <td class='detail'> </td>
+ <td class='detail'>
+  <table border='0' width='100%' cellspacing='0' cellpadding='0'>
+   <tr class='relative even' valign='top'>
+    <td class='relatedTable detail' title="slice.id refs subjects.id via slice_id_fkey"><a href='subjects.html'>subjects</a><span class='relatedKey'>.id</span>
+    </td>
+    <td class='constraint detail'>slice_id_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+  </table>
+ </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>mouse_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -137,7 +140,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="slice.mouse_id refs mouse.id via slice_mouse_id_fkey"><a href='mouse.html'>mouse</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>slice_mouse_id_fkey<span title='Restrict delete:
@@ -147,7 +150,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>prep_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -157,7 +160,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="slice.prep_id refs experiments.id via slice_prep_id_fkey"><a href='experiments.html'>experiments</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>slice_prep_id_fkey<span title='Restrict delete:
@@ -167,7 +170,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>startDateTime</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -179,7 +182,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='4 columns'>Table contained 20 rows at Tue Sep 24 00:28 PDT 2013<p/>
+<p title='4 columns'>Table contained 20 rows at Tue Sep 24 10:43 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -205,43 +208,39 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from slice'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="patchcell.html" title="patchcell" alt="" coords="502,375,663,545">
-<area shape="rect" id="node2" href="experiments.html" title="experiments" alt="" coords="6,397,159,613">
-<area shape="rect" id="node3" href="slice.html" title="slice" alt="" coords="204,255,457,409">
-<area shape="rect" id="node4" href="mouse.html" title="mouse" alt="" coords="7,5,158,379">
-<area shape="rect" id="node5" href="slice_metadata.html" title="slice_metadata" alt="" coords="509,141,657,357">
+<area shape="rect" id="node1" href="cell.html" title="cell" alt="" coords="690,22,851,178">
+<area shape="rect" id="node2" href="subjects.html" title="subjects" alt="" coords="6,46,149,154">
+<area shape="rect" id="node3" href="mouse.html" title="mouse" alt="" coords="195,46,346,442">
+<area shape="rect" id="node4" href="slice.html" title="slice" alt="" coords="392,270,645,432">
+<area shape="rect" id="node5" href="experiments.html" title="experiments" alt="" coords="194,497,347,725">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/slice.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="637,1216,772,1296">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="381,674,532,1049">
-<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="12,819,135,899">
-<area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="12,1031,135,1111">
-<area shape="rect" id="node7" href="subjects.html" title="subjects" alt="" coords="189,605,332,685">
-<area shape="rect" id="node8" href="dam.html" title="dam" alt="" coords="6,1323,141,1403">
-<area shape="rect" id="node20" href="litter.html" title="litter" alt="" coords="189,1155,332,1235">
-<area shape="rect" id="node21" href="dob.html" title="dob" alt="" coords="8,1128,139,1208">
-<area shape="rect" id="node22" href="sire.html" title="sire" alt="" coords="6,1225,141,1305">
-<area shape="rect" id="node23" href="strain.html" title="strain" alt="" coords="203,887,318,967">
-<area shape="rect" id="node4" href="cagetransfer.html" title="cagetransfer" alt="" coords="636,1079,773,1159">
-<area shape="rect" id="node6" href="cell.html" title="cell" alt="" coords="629,741,780,821">
-<area shape="rect" id="node9" href="experiments.html" title="experiments" alt="" coords="380,268,533,484">
-<area shape="rect" id="node10" href="experimenttype.html" title="experimenttype" alt="" coords="186,407,334,487">
-<area shape="rect" id="node11" href="citeable.html" title="citeable" alt="" coords="202,504,319,584">
-<area shape="rect" id="node12" href="people.html" title="people" alt="" coords="189,309,332,389">
-<area shape="rect" id="node13" href="project.html" title="project" alt="" coords="197,212,324,292">
-<area shape="rect" id="node14" href="experiments_hardware.html" title="experiments_hardware" alt="" coords="613,303,796,383">
-<area shape="rect" id="node15" href="hardware.html" title="hardware" alt="" coords="385,504,528,584">
-<area shape="rect" id="node16" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="876,5,1058,85">
-<area shape="rect" id="node17" href="datasources.html" title="datasources" alt="" coords="636,72,773,152">
-<area shape="rect" id="node18" href="experiments_reagents.html" title="experiments_reagents" alt="" coords="610,169,798,249">
-<area shape="rect" id="node19" href="experiments_subjects.html" title="experiments_subjects" alt="" coords="616,400,793,480">
-<area shape="rect" id="node24" href="mouse_metadata.html" title="mouse_metadata" alt="" coords="888,373,1046,453">
-<area shape="rect" id="node25" href="patchcell.html" title="patchcell" alt="" coords="886,471,1048,641">
-<area shape="rect" id="node26" href="slice.html" title="slice" alt="" coords="578,498,831,651">
-<area shape="rect" id="node27" href="patchcell_df_assoc.html" title="patchcell_df_assoc" alt="" coords="1103,469,1298,549">
-<area shape="rect" id="node28" href="patchcell_metadata.html" title="patchcell_metadata" alt="" coords="1117,223,1284,303">
-<area shape="rect" id="node29" href="slice_metadata.html" title="slice_metadata" alt="" coords="893,140,1041,356">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="675,430,810,514">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="400,519,551,915">
+<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="13,377,136,461">
+<area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="13,1137,136,1221">
+<area shape="rect" id="node7" href="subjects.html" title="subjects" alt="" coords="190,1006,332,1114">
+<area shape="rect" id="node9" href="dam.html" title="dam" alt="" coords="7,741,142,825">
+<area shape="rect" id="node19" href="litter.html" title="litter" alt="" coords="190,725,332,809">
+<area shape="rect" id="node20" href="dob.html" title="dob" alt="" coords="9,854,140,938">
+<area shape="rect" id="node21" href="sire.html" title="sire" alt="" coords="7,639,142,723">
+<area shape="rect" id="node22" href="strain.html" title="strain" alt="" coords="204,586,318,670">
+<area shape="rect" id="node4" href="cagetransfer.html" title="cagetransfer" alt="" coords="674,1321,811,1405">
+<area shape="rect" id="node6" href="cell.html" title="cell" alt="" coords="914,947,1075,1103">
+<area shape="rect" id="node8" href="slice.html" title="slice" alt="" coords="616,1042,869,1203">
+<area shape="rect" id="node10" href="experiments.html" title="experiments" alt="" coords="399,126,552,354">
+<area shape="rect" id="node11" href="citeable.html" title="citeable" alt="" coords="202,207,320,291">
+<area shape="rect" id="node12" href="people.html" title="people" alt="" coords="190,106,332,190">
+<area shape="rect" id="node13" href="project.html" title="project" alt="" coords="198,5,324,89">
+<area shape="rect" id="node14" href="experimenttype.html" title="experimenttype" alt="" coords="187,309,335,393">
+<area shape="rect" id="node15" href="experiments_hardware.html" title="experiments_hardware" alt="" coords="651,25,834,109">
+<area shape="rect" id="node16" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="651,126,834,210">
+<area shape="rect" id="node17" href="experiments_reagents.html" title="experiments_reagents" alt="" coords="648,227,836,311">
+<area shape="rect" id="node18" href="experiments_subjects.html" title="experiments_subjects" alt="" coords="646,707,839,791">
+<area shape="rect" id="node23" href="subjects_df_assoc.html" title="subjects_df_assoc" alt="" coords="380,1006,572,1090">
+<area shape="rect" id="node24" href="subjects_hardware.html" title="subjects_hardware" alt="" coords="384,1107,567,1191">
+<area shape="rect" id="node25" href="subjects_metadata.html" title="subjects_metadata" alt="" coords="392,1209,559,1293">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/slice.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

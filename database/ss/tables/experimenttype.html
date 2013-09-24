@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>20</td>
@@ -110,10 +110,10 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
-    <td class='relatedTable detail' title="experiments.exp_type refs experimenttype.id via experiments_exp_type_fkey"><a href='experiments.html'>experiments</a><span class='relatedKey'>.exp_type</span>
+   <tr class='relative even' valign='top'>
+    <td class='relatedTable detail' title="experiments.type refs experimenttype.id via experiments_type_fkey"><a href='experiments.html'>experiments</a><span class='relatedKey'>.type</span>
     </td>
-    <td class='constraint detail'>experiments_exp_type_fkey<span title='Restrict delete:
+    <td class='constraint detail'>experiments_type_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
   </table>
@@ -121,7 +121,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>abbrev</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -133,7 +133,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='2 columns'>Table contained 2 rows at Tue Sep 24 00:28 PDT 2013<p/>
+<p title='2 columns'>Table contained 2 rows at Tue Sep 24 10:43 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -159,22 +159,21 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from experimenttype'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="experiments.html" title="experiments" alt="" coords="314,5,467,221">
-<area shape="rect" id="node2" href="experimenttype.html" title="experimenttype" alt="" coords="6,139,269,247">
+<area shape="rect" id="node1" href="experiments.html" title="experiments" alt="" coords="314,5,467,233">
+<area shape="rect" id="node2" href="experimenttype.html" title="experimenttype" alt="" coords="6,146,269,259">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/experimenttype.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="experiments.html" title="experiments" alt="" coords="314,251,467,467">
-<area shape="rect" id="node2" href="experimenttype.html" title="experimenttype" alt="" coords="6,475,269,583">
-<area shape="rect" id="node3" href="citeable.html" title="citeable" alt="" coords="79,377,196,457">
-<area shape="rect" id="node4" href="people.html" title="people" alt="" coords="66,280,209,360">
-<area shape="rect" id="node5" href="project.html" title="project" alt="" coords="74,183,201,263">
-<area shape="rect" id="node6" href="experiments_hardware.html" title="experiments_hardware" alt="" coords="515,5,698,85">
-<area shape="rect" id="node7" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="515,103,698,183">
-<area shape="rect" id="node8" href="experiments_reagents.html" title="experiments_reagents" alt="" coords="513,200,701,280">
-<area shape="rect" id="node9" href="experiments_subjects.html" title="experiments_subjects" alt="" coords="518,297,695,377">
-<area shape="rect" id="node10" href="patchcell.html" title="patchcell" alt="" coords="746,397,897,477">
-<area shape="rect" id="node11" href="slice.html" title="slice" alt="" coords="535,431,678,511">
+<area shape="rect" id="node1" href="experiments.html" title="experiments" alt="" coords="314,207,467,435">
+<area shape="rect" id="node2" href="citeable.html" title="citeable" alt="" coords="79,342,196,426">
+<area shape="rect" id="node3" href="people.html" title="people" alt="" coords="66,241,209,325">
+<area shape="rect" id="node4" href="project.html" title="project" alt="" coords="74,139,201,223">
+<area shape="rect" id="node5" href="experimenttype.html" title="experimenttype" alt="" coords="6,443,269,557">
+<area shape="rect" id="node6" href="experiments_hardware.html" title="experiments_hardware" alt="" coords="518,5,701,89">
+<area shape="rect" id="node7" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="518,106,701,190">
+<area shape="rect" id="node8" href="experiments_reagents.html" title="experiments_reagents" alt="" coords="515,207,703,291">
+<area shape="rect" id="node9" href="experiments_subjects.html" title="experiments_subjects" alt="" coords="513,309,706,393">
+<area shape="rect" id="node10" href="slice.html" title="slice" alt="" coords="538,410,681,494">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/experimenttype.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

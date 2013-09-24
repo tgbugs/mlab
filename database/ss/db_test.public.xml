@@ -71,12 +71,15 @@
       </table>
       <table name="cell" numRows="200" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4">
-            <child column="id" foreignKey="patchcell_id_fkey" implied="false" onDeleteCascade="false" table="patchcell"/>
             <parent column="id" foreignKey="cell_id_fkey" implied="false" onDeleteCascade="false" table="subjects"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="mouse_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="cell_mouse_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
          </column>
+         <column autoUpdated="false" digits="0" id="2" name="slice_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="cell_slice_id_fkey" implied="false" onDeleteCascade="false" table="slice"/>
+         </column>
+         <column autoUpdated="false" digits="6" id="3" name="startDateTime" nullable="true" remarks="" size="29" type="timestamp"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="cell_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -122,20 +125,20 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="datafile" numRows="1990" remarks="" schema="public" type="TABLE">
+      <table name="datafile" numRows="995" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="url" nullable="false" remarks="" size="2147483647" type="varchar">
             <child column="url" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
-            <child column="datafile_url" foreignKey="patchcell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="patchcell_df_assoc"/>
+            <child column="datafile_url" foreignKey="subjects_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="subjects_df_assoc"/>
             <parent column="url" foreignKey="datafile_url_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="path" nullable="false" remarks="" size="2147483647" type="varchar">
             <child column="path" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
-            <child column="datafile_path" foreignKey="patchcell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="patchcell_df_assoc"/>
+            <child column="datafile_path" foreignKey="subjects_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="subjects_df_assoc"/>
             <parent column="path" foreignKey="datafile_url_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
          </column>
          <column autoUpdated="false" digits="0" id="2" name="filename" nullable="false" remarks="" size="2147483647" type="varchar">
             <child column="filename" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
-            <child column="datafile_filename" foreignKey="patchcell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="patchcell_df_assoc"/>
+            <child column="datafile_filename" foreignKey="subjects_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="subjects_df_assoc"/>
          </column>
          <column autoUpdated="false" digits="0" id="3" name="datasource_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="datafile_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
@@ -150,7 +153,7 @@
             <column ascending="true" name="filename"/>
          </index>
       </table>
-      <table name="datafiles_metadata" numRows="19900" remarks="" schema="public" type="TABLE">
+      <table name="datafiles_metadata" numRows="9950" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('datafiles_metadata_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial"/>
          <column autoUpdated="false" digits="0" id="1" name="url" nullable="false" remarks="" size="2147483647" type="varchar">
             <parent column="url" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
@@ -180,9 +183,7 @@
             <child column="datasource_id" foreignKey="experiments_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="experiments_metadata"/>
             <child column="datasource_id" foreignKey="hardware_datastreams_datasource_id_fkey" implied="false" onDeleteCascade="false" table="hardware_datastreams"/>
             <child column="datasource_id" foreignKey="hardware_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="hardware_metadata"/>
-            <child column="datasource_id" foreignKey="mouse_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="mouse_metadata"/>
-            <child column="datasource_id" foreignKey="patchcell_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="patchcell_metadata"/>
-            <child column="datasource_id" foreignKey="slice_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="slice_metadata"/>
+            <child column="datasource_id" foreignKey="subjects_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="subjects_metadata"/>
             <child column="datasource_id" foreignKey="users_datastreams_datasource_id_fkey" implied="false" onDeleteCascade="false" table="users_datastreams"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="name" nullable="false" remarks="" size="20" type="varchar"/>
@@ -219,7 +220,6 @@
             <child column="experiments_id" foreignKey="experiments_metadata_experiments_id_fkey" implied="false" onDeleteCascade="false" table="experiments_metadata"/>
             <child column="experiments_id" foreignKey="experiments_reagents_experiments_id_fkey" implied="false" onDeleteCascade="false" table="experiments_reagents"/>
             <child column="experiments_id" foreignKey="experiments_subjects_experiments_id_fkey" implied="false" onDeleteCascade="false" table="experiments_subjects"/>
-            <child column="patch_id" foreignKey="patchcell_patch_id_fkey" implied="false" onDeleteCascade="false" table="patchcell"/>
             <child column="prep_id" foreignKey="slice_prep_id_fkey" implied="false" onDeleteCascade="false" table="slice"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="project_id" nullable="false" remarks="" size="10" type="int4">
@@ -233,8 +233,8 @@
          <column autoUpdated="false" digits="0" id="5" name="methods_id" nullable="true" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="experiments_methods_id_fkey" implied="false" onDeleteCascade="false" table="citeable"/>
          </column>
-         <column autoUpdated="false" digits="0" id="6" name="exp_type" nullable="false" remarks="" size="20" type="varchar">
-            <parent column="id" foreignKey="experiments_exp_type_fkey" implied="false" onDeleteCascade="false" table="experimenttype"/>
+         <column autoUpdated="false" digits="0" id="6" name="type" nullable="false" remarks="" size="20" type="varchar">
+            <parent column="id" foreignKey="experiments_type_fkey" implied="false" onDeleteCascade="false" table="experimenttype"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="experiments_pkey" unique="true">
@@ -286,7 +286,7 @@
             <column ascending="true" name="experiments_id"/>
          </index>
       </table>
-      <table name="experiments_subjects" numRows="5" remarks="" schema="public" type="TABLE">
+      <table name="experiments_subjects" numRows="205" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="subjects_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="experiments_subjects_subjects_id_fkey" implied="false" onDeleteCascade="false" table="subjects"/>
          </column>
@@ -302,7 +302,7 @@
       </table>
       <table name="experimenttype" numRows="2" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="20" type="varchar">
-            <child column="exp_type" foreignKey="experiments_exp_type_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
+            <child column="type" foreignKey="experiments_type_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="abbrev" nullable="true" remarks="" size="2147483647" type="varchar"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -323,10 +323,10 @@
             <child column="parent_id" foreignKey="hardware_parent_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
             <child column="hardware_id" foreignKey="hardware_datastreams_hardware_id_fkey" implied="false" onDeleteCascade="false" table="hardware_datastreams"/>
             <child column="hardware_id" foreignKey="hardware_metadata_hardware_id_fkey" implied="false" onDeleteCascade="false" table="hardware_metadata"/>
-            <child column="hs_id" foreignKey="patchcell_hs_id_fkey" implied="false" onDeleteCascade="false" table="patchcell"/>
             <child column="hardware_id" foreignKey="righistory_hardware_id_fkey" implied="false" onDeleteCascade="false" table="righistory"/>
             <child column="new_parent" foreignKey="righistory_new_parent_fkey" implied="false" onDeleteCascade="false" table="righistory"/>
             <child column="old_parent" foreignKey="righistory_old_parent_fkey" implied="false" onDeleteCascade="false" table="righistory"/>
+            <child column="hardware_id" foreignKey="subjects_hardware_hardware_id_fkey" implied="false" onDeleteCascade="false" table="subjects_hardware"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="parent_id" nullable="true" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="hardware_parent_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
@@ -466,7 +466,6 @@
             <child column="id" foreignKey="breeder_id_fkey" implied="false" onDeleteCascade="false" table="breeder"/>
             <child column="mouse_id" foreignKey="cagetransfer_mouse_id_fkey" implied="false" onDeleteCascade="false" table="cagetransfer"/>
             <child column="mouse_id" foreignKey="cell_mouse_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
-            <child column="mouse_id" foreignKey="mouse_metadata_mouse_id_fkey" implied="false" onDeleteCascade="false" table="mouse_metadata"/>
             <child column="mouse_id" foreignKey="slice_mouse_id_fkey" implied="false" onDeleteCascade="false" table="slice"/>
             <parent column="id" foreignKey="mouse_id_fkey" implied="false" onDeleteCascade="false" table="subjects"/>
          </column>
@@ -499,85 +498,6 @@
          <column autoUpdated="false" digits="6" id="13" name="dod" nullable="true" remarks="" size="29" type="timestamp"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="mouse_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="mouse_metadata" numRows="0" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" digits="6" id="0" name="dateTime" nullable="true" remarks="" size="29" type="timestamp"/>
-         <column autoUpdated="false" digits="17" id="1" name="value" nullable="false" remarks="" size="17" type="float8"/>
-         <column autoUpdated="false" digits="0" id="2" name="sigfigs" nullable="true" remarks="" size="10" type="int4"/>
-         <column autoUpdated="false" digits="17" id="3" name="abs_error" nullable="true" remarks="" size="17" type="float8"/>
-         <column autoUpdated="true" defaultValue="nextval('mouse_metadata_id_seq'::regclass)" digits="0" id="4" name="id" nullable="false" remarks="" size="10" type="serial"/>
-         <column autoUpdated="false" digits="0" id="5" name="mouse_id" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="mouse_metadata_mouse_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="6" name="datasource_id" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="mouse_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="mouse_metadata_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="patchcell" numRows="200" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4">
-            <child column="patchcell_id" foreignKey="patchcell_df_assoc_patchcell_id_fkey" implied="false" onDeleteCascade="false" table="patchcell_df_assoc"/>
-            <child column="patchcell_id" foreignKey="patchcell_metadata_patchcell_id_fkey" implied="false" onDeleteCascade="false" table="patchcell_metadata"/>
-            <parent column="id" foreignKey="patchcell_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="1" name="patch_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="patchcell_patch_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="2" name="slice_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="patchcell_slice_id_fkey" implied="false" onDeleteCascade="false" table="slice"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="3" name="hs_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="patchcell_hs_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
-         </column>
-         <column autoUpdated="false" digits="6" id="4" name="startDateTime" nullable="true" remarks="" size="29" type="timestamp"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="patchcell_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="patchcell_df_assoc" numRows="3980" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" digits="0" id="0" name="datafile_url" nullable="false" remarks="" size="2147483647" type="varchar">
-            <parent column="url" foreignKey="patchcell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="1" name="datafile_path" nullable="false" remarks="" size="2147483647" type="varchar">
-            <parent column="path" foreignKey="patchcell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="2" name="datafile_filename" nullable="false" remarks="" size="2147483647" type="varchar">
-            <parent column="filename" foreignKey="patchcell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="3" name="patchcell_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="patchcell_df_assoc_patchcell_id_fkey" implied="false" onDeleteCascade="false" table="patchcell"/>
-         </column>
-         <primaryKey column="datafile_url" sequenceNumberInPK="1"/>
-         <primaryKey column="datafile_path" sequenceNumberInPK="2"/>
-         <primaryKey column="datafile_filename" sequenceNumberInPK="3"/>
-         <primaryKey column="patchcell_id" sequenceNumberInPK="4"/>
-         <index name="patchcell_df_assoc_pkey" unique="true">
-            <column ascending="true" name="datafile_url"/>
-            <column ascending="true" name="datafile_path"/>
-            <column ascending="true" name="datafile_filename"/>
-            <column ascending="true" name="patchcell_id"/>
-         </index>
-      </table>
-      <table name="patchcell_metadata" numRows="0" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" digits="6" id="0" name="dateTime" nullable="true" remarks="" size="29" type="timestamp"/>
-         <column autoUpdated="false" digits="17" id="1" name="value" nullable="false" remarks="" size="17" type="float8"/>
-         <column autoUpdated="false" digits="0" id="2" name="sigfigs" nullable="true" remarks="" size="10" type="int4"/>
-         <column autoUpdated="false" digits="17" id="3" name="abs_error" nullable="true" remarks="" size="17" type="float8"/>
-         <column autoUpdated="true" defaultValue="nextval('patchcell_metadata_id_seq'::regclass)" digits="0" id="4" name="id" nullable="false" remarks="" size="10" type="serial"/>
-         <column autoUpdated="false" digits="0" id="5" name="patchcell_id" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="patchcell_metadata_patchcell_id_fkey" implied="false" onDeleteCascade="false" table="patchcell"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="6" name="datasource_id" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="patchcell_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="patchcell_metadata_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
@@ -769,9 +689,9 @@
          </index>
       </table>
       <table name="slice" numRows="20" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="nextval('slice_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
-            <child column="slice_id" foreignKey="patchcell_slice_id_fkey" implied="false" onDeleteCascade="false" table="patchcell"/>
-            <child column="slice_id" foreignKey="slice_metadata_slice_id_fkey" implied="false" onDeleteCascade="false" table="slice_metadata"/>
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4">
+            <child column="slice_id" foreignKey="cell_slice_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
+            <parent column="id" foreignKey="slice_id_fkey" implied="false" onDeleteCascade="false" table="subjects"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="mouse_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="slice_mouse_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
@@ -782,23 +702,6 @@
          <column autoUpdated="false" digits="6" id="3" name="startDateTime" nullable="true" remarks="" size="29" type="timestamp"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="slice_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="slice_metadata" numRows="0" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" digits="6" id="0" name="dateTime" nullable="true" remarks="" size="29" type="timestamp"/>
-         <column autoUpdated="false" digits="17" id="1" name="value" nullable="false" remarks="" size="17" type="float8"/>
-         <column autoUpdated="false" digits="0" id="2" name="sigfigs" nullable="true" remarks="" size="10" type="int4"/>
-         <column autoUpdated="false" digits="17" id="3" name="abs_error" nullable="true" remarks="" size="17" type="float8"/>
-         <column autoUpdated="true" defaultValue="nextval('slice_metadata_id_seq'::regclass)" digits="0" id="4" name="id" nullable="false" remarks="" size="10" type="serial"/>
-         <column autoUpdated="false" digits="0" id="5" name="slice_id" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="slice_metadata_slice_id_fkey" implied="false" onDeleteCascade="false" table="slice"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="6" name="datasource_id" nullable="true" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="slice_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="slice_metadata_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>
@@ -829,15 +732,74 @@
             <column ascending="true" name="strain_id"/>
          </index>
       </table>
-      <table name="subjects" numRows="616" remarks="" schema="public" type="TABLE">
+      <table name="subjects" numRows="636" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('subjects_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="id" foreignKey="cell_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
             <child column="subjects_id" foreignKey="experiments_subjects_subjects_id_fkey" implied="false" onDeleteCascade="false" table="experiments_subjects"/>
             <child column="id" foreignKey="mouse_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
+            <child column="id" foreignKey="slice_id_fkey" implied="false" onDeleteCascade="false" table="slice"/>
+            <child column="subjects_id" foreignKey="subjects_df_assoc_subjects_id_fkey" implied="false" onDeleteCascade="false" table="subjects_df_assoc"/>
+            <child column="subjects_id" foreignKey="subjects_hardware_subjects_id_fkey" implied="false" onDeleteCascade="false" table="subjects_hardware"/>
+            <child column="subjects_id" foreignKey="subjects_metadata_subjects_id_fkey" implied="false" onDeleteCascade="false" table="subjects_metadata"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="type" nullable="false" remarks="" size="2147483647" type="varchar"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="subjects_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="subjects_df_assoc" numRows="1990" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="datafile_url" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="url" foreignKey="subjects_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="datafile_path" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="path" foreignKey="subjects_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="2" name="datafile_filename" nullable="false" remarks="" size="2147483647" type="varchar">
+            <parent column="filename" foreignKey="subjects_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="3" name="subjects_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="subjects_df_assoc_subjects_id_fkey" implied="false" onDeleteCascade="false" table="subjects"/>
+         </column>
+         <primaryKey column="datafile_url" sequenceNumberInPK="1"/>
+         <primaryKey column="datafile_path" sequenceNumberInPK="2"/>
+         <primaryKey column="datafile_filename" sequenceNumberInPK="3"/>
+         <primaryKey column="subjects_id" sequenceNumberInPK="4"/>
+         <index name="subjects_df_assoc_pkey" unique="true">
+            <column ascending="true" name="datafile_url"/>
+            <column ascending="true" name="datafile_path"/>
+            <column ascending="true" name="datafile_filename"/>
+            <column ascending="true" name="subjects_id"/>
+         </index>
+      </table>
+      <table name="subjects_hardware" numRows="200" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="hardware_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="subjects_hardware_hardware_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="subjects_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="subjects_hardware_subjects_id_fkey" implied="false" onDeleteCascade="false" table="subjects"/>
+         </column>
+         <primaryKey column="hardware_id" sequenceNumberInPK="1"/>
+         <primaryKey column="subjects_id" sequenceNumberInPK="2"/>
+         <index name="subjects_hardware_pkey" unique="true">
+            <column ascending="true" name="hardware_id"/>
+            <column ascending="true" name="subjects_id"/>
+         </index>
+      </table>
+      <table name="subjects_metadata" numRows="0" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" digits="6" id="0" name="dateTime" nullable="true" remarks="" size="29" type="timestamp"/>
+         <column autoUpdated="false" digits="17" id="1" name="value" nullable="false" remarks="" size="17" type="float8"/>
+         <column autoUpdated="false" digits="0" id="2" name="sigfigs" nullable="true" remarks="" size="10" type="int4"/>
+         <column autoUpdated="false" digits="17" id="3" name="abs_error" nullable="true" remarks="" size="17" type="float8"/>
+         <column autoUpdated="true" defaultValue="nextval('subjects_metadata_id_seq'::regclass)" digits="0" id="4" name="id" nullable="false" remarks="" size="10" type="serial"/>
+         <column autoUpdated="false" digits="0" id="5" name="subjects_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="subjects_metadata_subjects_id_fkey" implied="false" onDeleteCascade="false" table="subjects"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="6" name="datasource_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="subjects_metadata_datasource_id_fkey" implied="false" onDeleteCascade="false" table="datasources"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="subjects_metadata_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>

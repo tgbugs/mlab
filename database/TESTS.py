@@ -501,25 +501,6 @@ def run_tests(session):
     #FIXME for some reason running these sequentially causes all sorts of problems...
     #RESPONSE turns out it is because I'm trying to make EXACTLY the same tables again and an identical mapped instance already exists
     #so it doesnt happen with people, but a collision *could* happen
-    #people=t_people(session,10)
-    #people.query()
-
-    #repos=t_repo(session)
-    #printD([r.url for r in repos.records])
-
-    #rps=t_repopath(session)
-    #printD([r.id for r in rps.records])
-
-    #ps=t_project(session,10)
-    #ps.add_people()
-    #printD([[t for t in p.__dict__] for p in ps.records])
-
-    #p=t_project(session,3)
-    #p.add_people()
-    #printD([[t for t in p.__dict__.items()] for p in session.query(Project)])
-
-    #e=t_experiment(session,100)
-
 
     #FIXME the real test will be to vary the number of projects, experiments and datafiles
     #compare these two cases with profiler
@@ -551,7 +532,7 @@ def run_tests(session):
     c=t_cell(session,5)
     #c2c=t_c2c(session) #no longer used
 
-    d=t_datafile(session,10)#,2,1) #FIXME eating memory
+    d=t_datafile(session,5)#,2,1) #FIXME eating memory
     dfmd=t_dfmetadata(session,10) #as in 8 gigs of memory...
 
     #session.commit()
