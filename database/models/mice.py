@@ -4,7 +4,7 @@
 
 from database.imports import *
 from database.base import Base
-from database.mixins import HasNotes, HasMetaData, HasDataFiles
+from database.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardware
 from database.standards import frmtDT, timeDeltaIO
 from sqlalchemy.orm import mapper
 
@@ -76,7 +76,7 @@ class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific
 ###  Subjects
 ###-----------------------
 
-class Subject(Base):
+class Subject(HasDataFiles, HasHardware, Base):
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     type=Column(String,nullable=False)
@@ -84,6 +84,10 @@ class Subject(Base):
         'polymorphic_on':type,
         'polymorphic_identity':'subject',
     }
+    def __init__(self,Experiments=[],Hardware=[]):
+        self.experiments.extend(Experiments)
+        self.hardware.extend(Hardware)
+
 
 class Mouse(HasMetaData, HasNotes, Subject): #TODO species metadata???
     #in addition to the id, keep track of some of the real world ways people refer to mice!
@@ -132,7 +136,8 @@ class Mouse(HasMetaData, HasNotes, Subject): #TODO species metadata???
     cells=relationship('Cell',primaryjoin='Cell.mouse_id==Mouse.id',backref=backref('mouse',uselist=False))
 
 
-    def __init__(self,Litter=None, litter_id=None,sire_id=None,dam_id=None, dob_id=None,DOB=None, eartag=None,tattoo=None,num=None,name=None, sex_id=None,genotype=None,strain_id=None, cage_id=None, dod=None, notes=[]):
+    def __init__(self,Litter=None, litter_id=None,sire_id=None,dam_id=None, dob_id=None,DOB=None, eartag=None,tattoo=None,num=None,name=None, sex_id=None,genotype=None,strain_id=None, cage_id=None, dod=None, notes=[], Experiments=[]):
+        super().__init__(Experiments)
         self.notes=notes
 
         self.eartag=eartag
@@ -170,6 +175,7 @@ class Mouse(HasMetaData, HasNotes, Subject): #TODO species metadata???
                 self.dob_id=DOB.id
             else:
                 raise AttributeError('DOB has no id! Did you commit before referencing the instance directly?')
+
     
     def __repr__(self):
         base=super().__repr__()
@@ -197,7 +203,7 @@ class Slice(HasMetaData, HasNotes, Base):
     #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
     #FIXME why the fuck is thickness metadata... it is linked to protocol and slice prep... ah, I guess it is sliceprep metadata that sort of needs to propagate
 
-    cells=relationship('PatchCell',primaryjoin='PatchCell.slice_id==Slice.id',backref=backref('slice',uselist=False))
+    cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
     def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None,startDateTime=None):
         self.startDateTime=startDateTime
@@ -225,84 +231,15 @@ class Slice(HasMetaData, HasNotes, Base):
         return super().strHelper(depth)
 
 
-''' replaced by cells to datafile table it's simpler and has same data
-class CellPairs(Base): #FIXME cell tupels?!??!
-    #FIXME should THIS have datafiles instead??@??@
-    #YES yes eys eys eys ey sy
-    __tablename__='cell_to_cell'
-    id=None
-    cell_1_id=Column(Integer,ForeignKey('cell.id'),primary_key=True)
-    cell_2_id=Column(Integer,ForeignKey('cell.id'),primary_key=True)
-    def __init__(self,Cell_1=None,Cell_2=None,cell_1_id=None,cell_2_id=None):
-        self.cell_1_id=cell_1_id
-        self.cell_2_id=cell_2_id
-        if Cell_1:
-            if Cell_1.id:
-                self.cell_1_id=Cell_1.id
-            else:
-                raise AttributeError
-        if Cell_2:
-            if Cell_2.id:
-                self.cell_2_id=Cell_2.id
-            else:
-                raise AttributeError
-    def __repr__(self):
-        return '%s %s'%(self.cell_1_id,self.cell_2_id)
-
-    #TODO FIXME so maybe this shouldn't be explicit here, it should be in the metadata linking cells to datafile channels????
-'''
-
-class Cell(Subject):
+class Cell(HasMetaData, Subject):
     __tablename__='cell'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME
-    #FIXME overlap between experiment type and cell type, confusing
-    #exp_type=Column(String,nullable=False)
-    __mapper_args__={
-        #'polymorphic_on':exp_type,
-        'polymorphic_identity':'cell'}
-
-
-class PatchCell(HasDataFiles, HasMetaData, HasNotes, Cell):
-    __tablename__='patchcell'
-    #link to subject
-    id=Column(Integer,ForeignKey('cell.id'),primary_key=True,autoincrement=False)
-    patch_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #FIXME this should be Patch ?? but.. but.. but.. also that unique constraint... #check experiment.prep_id == slice.prep_id
-    slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False)
-    #FIXME check that experiment_id.sliceprep.slices contains slice_id
-
-    #link to data
-    #FIXME link to data seems like it is going to be via metadata :/
-    hs_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #TODO use this when creating datafile metadata?!
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME grandparent_id
+    slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False) #FIXME parent_id, not subject though...
     startDateTime=Column(DateTime,default=datetime.now)
-    __mapper_args__={'polymorphic_identity':'patch cell'}
-
-    #these should probably go in metadata which can be configged per experiment
-    #wholeCell=None
-    #loosePatch=None
-
-
-    #TODO abfFiles are going to be a many-many relationship here....
-    #abfFile_channel=None #FIXME this nd the headstage serials seems redundant but... wtf? I have to link them somehow
-
-    breakInTime=None
-
-    rheobase=None
-
-    #headstage=relationship('Hardware',primaryjoin='Cell.hs_id==Hardware.id')
-
-    #NOTE: this table is now CRITICAL for maintaining a record of who was patched with whom
-    #_cell_2=relationship('Cell', #FIXME I should only need ONE ROW for this
-                        #secondary='cell_to_cell',
-                        #primaryjoin='Cell.id==CellPairs.cell_1_id',
-                        #secondaryjoin='Cell.id==CellPairs.cell_2_id',
-                        #backref=backref('_cell_1'),
-                      #)
-    @hybrid_property #FIXME shouldn't his just be a property?
-    def cells(self):
-        #return self._cell_1+self._cell_2
-        return self.datafiles.cell
-    def __init__(self,Slice=None,Experiment=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
+    __mapper_args__={'polymorphic_identity':'cell'}
+    def __init__(self,Slice=None,Experiments=[],Hardware=[],slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
+        super().__init__(Experiments,Hardware)
         self.startDateTime=startDateTime
         self.slice_id=slice_id
         self.mouse_id=mouse_id
@@ -314,22 +251,11 @@ class PatchCell(HasDataFiles, HasMetaData, HasNotes, Cell):
                 self.mouse_id=Slice.mouse_id
             else:
                 raise AttributeError
-        if Patch:
-            if Patch.id:
-                self.patch_id=Patch.id
-        if Headstage:
-            if Headstage.id:
-                self.hs_id=Headstage.id
-            else:
-                raise AttributeError
     #def strHelper(self,depth=0):
         #base=super().strHelper(depth)
     def __repr__(self):
         base=super().__repr__()
         return '%s%s%s%s'%(base,self.headstage.strHelper(1),self.slice.strHelper(1),''.join([c.strHelper(1) for c in self.cells]))
-    
-    #TODO analysis should probably reference the objects not the other way around
-
 
 
 ###----------------

@@ -6,6 +6,9 @@ class cell_metadata:
     Z=None, tomseyeballs
     headstage=None
     abffile_channel=None #should be equivalent to HS
+    rheobase=None #FIXME this probably should go in online analysis...
+    breakInTime=None #this is a time, time usually goes in the regular location...
+
 
 class slice_metadata:
     coordinates=None #aka ap_pos

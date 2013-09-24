@@ -290,7 +290,7 @@ class t_cell(TEST):
             for i in range(z,len(slices)): #120 #FIXME pretty sure RI is broken here
                 s=slices[i]
                 for j in range(self.num):
-                    self.records.extend([PatchCell(Headstage=h,Slice=s,Patch=p) for h in headstages])
+                    self.records.extend([Cell(Hardware=[h],Slice=s,Experiments=[p]) for h in headstages])
                 try:
                     if slices[i+1].mouse_id != s.mouse_id: #FIXME this should catch automatically when using session.add
                         z=i+1 #FIXME constraint!!!!
@@ -375,7 +375,7 @@ class t_experiment(TEST):
 class t_patch(TEST):
     def make_all(self):
         #mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
-        preps=[p for p in self.session.query(Experiment).filter_by(exp_type='acute slice prep')]
+        preps=[p for p in self.session.query(Experiment).filter_by(type='acute slice prep')]
         project=self.session.query(Project)[0]
         person=self.session.query(Person)[0]
         acsf=Reagent(reagent_id='poop1')
@@ -456,7 +456,7 @@ class t_datafile(TEST):
         cells=self.session.query(Cell)
         for c1,c2 in zip(cells[:-1],cells[1:]):
             for rp in repop.records:
-                data+=[DataFile(RepoPath=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiment_id,c1.id,c2.id,df),DataSource=ds,Cells=[c1,c2]) for df in range(self.num)] 
+                data+=[DataFile(RepoPath=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiment_id,c1.id,c2.id,df),DataSource=ds,Subjects=[c1,c2]) for df in range(self.num)] 
         self.records=data
 
 
