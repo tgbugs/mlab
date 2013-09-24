@@ -88,7 +88,7 @@ class Patch(Experiment): #FIXME should this be a o-o with slice prep???
     internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME ultimately this should be unique so if the internal or acsf change then it is a new experiment?
     #TODO flowrate and the like goes in metadata
 
-    cells=relationship('Cell',primaryjoin='Patch.id==foreign(Cell.experiment_id)',backref=backref('experiment',uselist=False))
+    cells=relationship('PatchCell',primaryjoin='Patch.id==foreign(PatchCell.patch_id)',backref=backref('patch',uselist=False))
 
     #pharmacology
     #TODO might should add a pharmacology data table similar to the metadata table but with times?

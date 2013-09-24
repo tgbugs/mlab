@@ -177,14 +177,14 @@ class Slice(HasMetaData, HasNotes, Base):
     id=None
     id=Column(Integer,primary_key=True) #FIXME
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
-    prep_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO this should really refer to slice prep, but suggests that this class should be 'acute slice'
+    prep_id=Column(Integer,ForeignKey('sliceprep.id'),nullable=False) #TODO this should really refer to slice prep, but suggests that this class should be 'acute slice'
     #TODO check that there are not more slices than the thickness (from the metadta) divided by the total length of the largest know mouse brain
     startDateTime=Column(DateTime,default=datetime.now)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
     #hemisphere
     #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
     #FIXME why the fuck is thickness metadata... it is linked to protocol and slice prep... ah, I guess it is sliceprep metadata that sort of needs to propagate
 
-    cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
+    cells=relationship('PatchCell',primaryjoin='PatchCell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
     def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None,startDateTime=None):
         self.startDateTime=startDateTime
@@ -239,10 +239,21 @@ class CellPairs(Base): #FIXME cell tupels?!??!
     #TODO FIXME so maybe this shouldn't be explicit here, it should be in the metadata linking cells to datafile channels????
 '''
 
-class Cell(HasDataFiles, HasMetaData, HasNotes, Base):
-    #link to subject
+class Cell(Base):
+    __tablename__='cell'
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME
-    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #FIXME this should be Patch ?? but.. but.. but.. also that unique constraint... #check experiment.prep_id == slice.prep_id
+    #FIXME overlap between experiment type and cell type, confusing
+    exp_type=Column(String,nullable=False)
+    __mapper_args__={
+        'polymorphic_on':exp_type,
+        'polymorphic_identity':'cell'}
+
+
+class PatchCell(HasDataFiles, HasMetaData, HasNotes, Cell):
+    __tablename__='patchcell'
+    #link to subject
+    id=Column(Integer,ForeignKey('cell.id'),primary_key=True,autoincrement=False)
+    patch_id=Column(Integer,ForeignKey('patch.id'),nullable=False) #FIXME this should be Patch ?? but.. but.. but.. also that unique constraint... #check experiment.prep_id == slice.prep_id
     slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False)
     #FIXME check that experiment_id.sliceprep.slices contains slice_id
 
@@ -250,6 +261,7 @@ class Cell(HasDataFiles, HasMetaData, HasNotes, Base):
     #FIXME link to data seems like it is going to be via metadata :/
     hs_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #TODO use this when creating datafile metadata?!
     startDateTime=Column(DateTime,default=datetime.now)
+    __mapper_args__={'polymorphic_identity':'patch cell'}
 
     #these should probably go in metadata which can be configged per experiment
     #wholeCell=None
@@ -276,7 +288,7 @@ class Cell(HasDataFiles, HasMetaData, HasNotes, Base):
     def cells(self):
         #return self._cell_1+self._cell_2
         return self.datafiles.cell
-    def __init__(self,Slice=None,Experiment=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
+    def __init__(self,Slice=None,Patch=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
         self.startDateTime=startDateTime
         self.slice_id=slice_id
         self.mouse_id=mouse_id
@@ -288,9 +300,9 @@ class Cell(HasDataFiles, HasMetaData, HasNotes, Base):
                 self.mouse_id=Slice.mouse_id
             else:
                 raise AttributeError
-        if Experiment:
-            if Experiment.id:
-                self.experiment_id=Experiment.id
+        if Patch:
+            if Patch.id:
+                self.patch_id=Patch.id
         if Headstage:
             if Headstage.id:
                 self.hs_id=Headstage.id

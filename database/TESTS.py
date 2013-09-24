@@ -290,7 +290,7 @@ class t_cell(TEST):
             for i in range(z,len(slices)): #120 #FIXME pretty sure RI is broken here
                 s=slices[i]
                 for j in range(self.num):
-                    self.records.extend([Cell(Headstage=h,Slice=s,Experiment=p) for h in headstages])
+                    self.records.extend([PatchCell(Headstage=h,Slice=s,Patch=p) for h in headstages])
                 try:
                     if slices[i+1].mouse_id != s.mouse_id: #FIXME this should catch automatically when using session.add
                         z=i+1 #FIXME constraint!!!!
