@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -110,13 +110,13 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="chrsomsliceexperiment.id refs patch.id via chrsomsliceexperiment_id_fkey"><a href='chrsomsliceexperiment.html'>chrsomsliceexperiment</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>chrsomsliceexperiment_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="patchcell.patch_id refs patch.id via patchcell_patch_id_fkey"><a href='patchcell.html'>patchcell</a><span class='relatedKey'>.patch_id</span>
     </td>
     <td class='constraint detail'>patchcell_patch_id_fkey<span title='Restrict delete:
@@ -126,7 +126,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="patch.id refs experiments.id via patch_id_fkey"><a href='experiments.html'>experiments</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>patch_id_fkey<span title='Restrict delete:
@@ -136,7 +136,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>acsf_id</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -146,7 +146,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="patch.acsf_id refs reagents.name via patch_acsf_id_fkey"><a href='reagents.html'>reagents</a><span class='relatedKey'>.name</span>
     </td>
     <td class='constraint detail'>patch_acsf_id_fkey<span title='Restrict delete:
@@ -156,7 +156,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>internal_id</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -166,7 +166,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="patch.internal_id refs reagents.name via patch_internal_id_fkey"><a href='reagents.html'>reagents</a><span class='relatedKey'>.name</span>
     </td>
     <td class='constraint detail'>patch_internal_id_fkey<span title='Restrict delete:
@@ -177,7 +177,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='3 columns'>Table contained 5 rows at Mon Sep 23 20:02 PDT 2013<p/>
+<p title='3 columns'>Table contained 5 rows at Mon Sep 23 22:17 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -203,31 +203,31 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from patch'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="chrsomsliceexperiment.html" title="chrsomsliceexperiment" alt="" coords="512,127,699,235">
-<area shape="rect" id="node2" href="patch.html" title="patch" alt="" coords="204,199,468,337">
-<area shape="rect" id="node3" href="reagents.html" title="reagents" alt="" coords="13,250,153,358">
-<area shape="rect" id="node4" href="experiments.html" title="experiments" alt="" coords="6,5,159,233">
-<area shape="rect" id="node5" href="patchcell.html" title="patchcell" alt="" coords="525,253,686,433">
+<area shape="rect" id="node1" href="chrsomsliceexperiment.html" title="chrsomsliceexperiment" alt="" coords="512,121,699,223">
+<area shape="rect" id="node2" href="patch.html" title="patch" alt="" coords="204,191,468,321">
+<area shape="rect" id="node3" href="reagents.html" title="reagents" alt="" coords="13,239,153,342">
+<area shape="rect" id="node4" href="experiments.html" title="experiments" alt="" coords="6,5,159,221">
+<area shape="rect" id="node5" href="patchcell.html" title="patchcell" alt="" coords="525,241,686,412">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/patch.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="cell.html" title="cell" alt="" coords="726,125,877,209">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="451,106,613,190">
-<area shape="rect" id="node6" href="experiments.html" title="experiments" alt="" coords="202,117,355,345">
-<area shape="rect" id="node3" href="chrsomsliceexperiment.html" title="chrsomsliceexperiment" alt="" coords="708,429,895,537">
-<area shape="rect" id="node4" href="patch.html" title="patch" alt="" coords="400,207,664,345">
-<area shape="rect" id="node5" href="hardware.html" title="hardware" alt="" coords="207,487,350,571">
-<area shape="rect" id="node11" href="reagents.html" title="reagents" alt="" coords="209,362,349,470">
-<area shape="rect" id="node7" href="citeable.html" title="citeable" alt="" coords="19,437,144,521">
-<area shape="rect" id="node8" href="people.html" title="people" alt="" coords="6,203,157,287">
-<area shape="rect" id="node9" href="project.html" title="project" alt="" coords="14,102,149,186">
-<area shape="rect" id="node10" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="441,5,623,89">
-<area shape="rect" id="node12" href="patchcell.html" title="patchcell" alt="" coords="939,210,1101,390">
-<area shape="rect" id="node13" href="slice.html" title="slice" alt="" coords="730,281,873,365">
-<area shape="rect" id="node17" href="sliceprep.html" title="sliceprep" alt="" coords="465,463,599,547">
-<area shape="rect" id="node14" href="patchcell_df_assoc.html" title="patchcell_df_assoc" alt="" coords="1146,159,1313,243">
-<area shape="rect" id="node15" href="patchcell_metadata.html" title="patchcell_metadata" alt="" coords="1146,261,1313,345">
-<area shape="rect" id="node16" href="reagentlot.html" title="reagentlot" alt="" coords="467,362,597,446">
+<area shape="rect" id="node1" href="cell.html" title="cell" alt="" coords="726,120,877,200">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="451,103,613,183">
+<area shape="rect" id="node6" href="experiments.html" title="experiments" alt="" coords="202,115,355,331">
+<area shape="rect" id="node3" href="chrsomsliceexperiment.html" title="chrsomsliceexperiment" alt="" coords="708,413,895,515">
+<area shape="rect" id="node4" href="patch.html" title="patch" alt="" coords="400,200,664,331">
+<area shape="rect" id="node5" href="hardware.html" title="hardware" alt="" coords="207,469,350,549">
+<area shape="rect" id="node11" href="reagents.html" title="reagents" alt="" coords="209,349,349,451">
+<area shape="rect" id="node7" href="citeable.html" title="citeable" alt="" coords="23,420,140,500">
+<area shape="rect" id="node8" href="people.html" title="people" alt="" coords="6,196,157,276">
+<area shape="rect" id="node9" href="project.html" title="project" alt="" coords="14,99,149,179">
+<area shape="rect" id="node10" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="441,5,623,85">
+<area shape="rect" id="node12" href="patchcell.html" title="patchcell" alt="" coords="939,203,1101,373">
+<area shape="rect" id="node13" href="slice.html" title="slice" alt="" coords="730,269,873,349">
+<area shape="rect" id="node17" href="sliceprep.html" title="sliceprep" alt="" coords="465,445,599,525">
+<area shape="rect" id="node14" href="patchcell_df_assoc.html" title="patchcell_df_assoc" alt="" coords="1146,152,1313,232">
+<area shape="rect" id="node15" href="patchcell_metadata.html" title="patchcell_metadata" alt="" coords="1146,249,1313,329">
+<area shape="rect" id="node16" href="reagentlot.html" title="reagentlot" alt="" coords="467,348,597,428">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/patch.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

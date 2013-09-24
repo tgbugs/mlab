@@ -1,7 +1,8 @@
 #contains all the constraint tables and their initial values 
 from database.imports   import *
 from database.base      import Base
-from database.mixins    import HasDataFiles
+from database.mixins    import HasDataFiles, HasCiteables
+from database.models    import Website
 
 ###----------------------------------------------------------------
 ###  Helper classes/tables for mice (normalization and constraints)
@@ -55,8 +56,9 @@ class SEX(Base):
         return '\n%s %s %s'%(self.name,self.abbrev,self.symbol) #FIXME somehow there are trailing chars here >_<
 
 
-class Strain(Base): #TODO HasCiteable!@? need something between citeable and datafile
+class Strain(HasCiteables, Base): #TODO HasCiteable!@? need something between citeable and datafile
     id=Column(Integer,primary_key=True) #FIXME
+    #website_id=Column(Integer,ForeignKey('website.id'))
     jax_id=Column(String(10))
     name=Column(Unicode(50)) #scrape from jax
     abbrev=Column(String(15))
@@ -67,5 +69,11 @@ class Strain(Base): #TODO HasCiteable!@? need something between citeable and dat
     #TODO can just use datafiles to get the data on them via
     #http://jaxmice.jax.org/strain/*.html
     #make a way to put the data in via a url
+    def __init__(self,jax_id,name=None,abbrev=None):
+        #name=getJaxData(jax_id) #TODO
+        self.jax_id=jax_id
+        self.name=name
+        self.abbrev=abbrev
+        self.citeables.append(Website('http://jaxmice.jax.org/strain/%s.html'%jax_id))
     
 

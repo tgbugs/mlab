@@ -6,7 +6,9 @@ patchcell_df_assoc
 datafiles_metadata
 righistory
 cagetransfer
+website
 users_datastreams
+strain_citeables
 slice_metadata
 person_to_project
 patchcell_metadata
@@ -39,13 +41,13 @@ project
 people
 reagents
 datasources
-strain
 si_unit
 si_prefix
 iacucprotocols
 hardwaretype
 calibrationdata
+strain
 sex
 dob
-citeable
 cage
+citeable

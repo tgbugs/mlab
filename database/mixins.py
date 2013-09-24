@@ -104,3 +104,23 @@ class IsTerminal:
     def dod(cls):
         return  None
 
+
+###-------------
+###  Credentials??!?!
+###-------------
+
+class HasCredentials:
+    #TODO I might be able to use a mixin to do logins, but this seems unlikely to work safely
+    pass
+
+###---------------
+###  Has citeables
+###---------------
+
+class HasCiteables:
+    @declared_attr
+    def citeables(cls):
+        cite_association = Table('%s_citeables'%cls.__tablename__,cls.metadata,
+            Column('citeable_id', ForeignKey('citeable.id'), primary_key=True),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
+        return relationship('Citeable', secondary=cite_association,backref=backref('%s_citer'%cls.__tablename__))

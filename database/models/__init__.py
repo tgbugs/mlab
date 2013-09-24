@@ -10,6 +10,7 @@ __all__.extend([
         'person_to_project',
         'Project',
         'Citeable',
+        'Website',
         'IACUCProtocols',
         'Methods',
         'Recipe'

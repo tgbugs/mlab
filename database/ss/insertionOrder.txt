@@ -1,13 +1,13 @@
-cage
 citeable
+cage
 dob
 sex
+strain
 calibrationdata
 hardwaretype
 iacucprotocols
 si_prefix
 si_unit
-strain
 datasources
 reagents
 people
@@ -40,7 +40,9 @@ mouse_metadata
 patchcell_metadata
 person_to_project
 slice_metadata
+strain_citeables
 users_datastreams
+website
 cagetransfer
 righistory
 datafiles_metadata

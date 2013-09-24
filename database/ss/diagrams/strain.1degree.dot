@@ -1,4 +1,4 @@
-// dot 2.34.0 on Windows 7 6.1
+// dot 2.32.0 on Windows 7 6.1
 // SchemaSpy rev 590
 digraph "oneDegreeRelationshipsDiagram" {
   graph [
@@ -20,6 +20,7 @@ digraph "oneDegreeRelationshipsDiagram" {
     arrowsize="0.8"
   ];
   "mouse":"strain_id":w -> "strain":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "strain_citeables":"strain_id":w -> "strain":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -52,9 +53,20 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="jax_id" COLSPAN="2" ALIGN="LEFT">jax_id</TD><TD PORT="jax_id.type" ALIGN="LEFT">varchar[10]</TD></TR>
       <TR><TD PORT="name" COLSPAN="2" ALIGN="LEFT">name</TD><TD PORT="name.type" ALIGN="LEFT">varchar[50]</TD></TR>
       <TR><TD PORT="abbrev" COLSPAN="2" ALIGN="LEFT">abbrev</TD><TD PORT="abbrev.type" ALIGN="LEFT">varchar[15]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 0</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 0</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
     </TABLE>>
     URL="strain.html"
     tooltip="strain"
+  ];
+  "strain_citeables" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">strain_citeables</TD></TR>
+      <TR><TD PORT="citeable_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">citeable_id</TD></TR>
+      <TR><TD PORT="strain_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">strain_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="strain_citeables.html"
+    tooltip="strain_citeables"
   ];
 }

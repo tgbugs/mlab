@@ -154,7 +154,8 @@ def main(echo=True):
 
     #query stuff
     #queryAll(session)
-    session.query(Cell).all()
+    #session.query(Cell).all()
+    print(session.query(Website).all())
 
     return session
     

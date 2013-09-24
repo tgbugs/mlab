@@ -94,12 +94,14 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="citeable" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="citeable" numRows="1" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('citeable_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="methods_id" foreignKey="experiments_methods_id_fkey" implied="false" onDeleteCascade="false" table="experiments"/>
             <child column="blueprint_id" foreignKey="hardware_blueprint_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
             <child column="manual_id" foreignKey="hardware_manual_id_fkey" implied="false" onDeleteCascade="false" table="hardware"/>
             <child column="document_id" foreignKey="reagents_document_id_fkey" implied="false" onDeleteCascade="false" table="reagents"/>
+            <child column="citeable_id" foreignKey="strain_citeables_citeable_id_fkey" implied="false" onDeleteCascade="false" table="strain_citeables"/>
+            <child column="id" foreignKey="website_id_fkey" implied="false" onDeleteCascade="false" table="website"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="type" nullable="false" remarks="" size="15" type="varchar"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -110,6 +112,7 @@
       <table name="credentials" numRows="0" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('credentials_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="credentials_id" foreignKey="repository_credentials_id_fkey" implied="false" onDeleteCascade="false" table="repository"/>
+            <child column="credentials_id" foreignKey="website_credentials_id_fkey" implied="false" onDeleteCascade="false" table="website"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="user_id" nullable="true" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="credentials_user_id_fkey" implied="false" onDeleteCascade="false" table="users"/>
@@ -131,7 +134,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="datafile" numRows="1991" remarks="" schema="public" type="TABLE">
+      <table name="datafile" numRows="1990" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="url" nullable="false" remarks="" size="2147483647" type="varchar">
             <child column="url" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafiles_metadata"/>
             <child column="datafile_url" foreignKey="patchcell_df_assoc_datafile_url_fkey" implied="false" onDeleteCascade="false" table="patchcell_df_assoc"/>
@@ -159,7 +162,7 @@
             <column ascending="true" name="filename"/>
          </index>
       </table>
-      <table name="datafiles_metadata" numRows="19910" remarks="" schema="public" type="TABLE">
+      <table name="datafiles_metadata" numRows="19900" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('datafiles_metadata_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial"/>
          <column autoUpdated="false" digits="0" id="1" name="url" nullable="false" remarks="" size="2147483647" type="varchar">
             <parent column="url" foreignKey="datafiles_metadata_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
@@ -581,7 +584,7 @@
             <column ascending="true" name="neurotree_id"/>
          </index>
       </table>
-      <table name="person_to_project" numRows="61" remarks="" schema="public" type="TABLE">
+      <table name="person_to_project" numRows="20" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="person_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="person_to_project_person_id_fkey" implied="false" onDeleteCascade="false" table="people"/>
          </column>
@@ -644,7 +647,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="repopaths" numRows="2" remarks="" schema="public" type="TABLE">
+      <table name="repopaths" numRows="1" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="name" nullable="true" remarks="" size="2147483647" type="varchar"/>
          <column autoUpdated="false" digits="0" id="1" name="url" nullable="false" remarks="" size="2147483647" type="varchar">
             <child column="url" foreignKey="datafile_url_fkey" implied="false" onDeleteCascade="false" table="datafile"/>
@@ -663,7 +666,7 @@
             <column ascending="true" name="path"/>
          </index>
       </table>
-      <table name="repository" numRows="2" remarks="" schema="public" type="TABLE">
+      <table name="repository" numRows="1" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="url" nullable="false" remarks="" size="100" type="varchar">
             <child column="url" foreignKey="repopaths_url_fkey" implied="false" onDeleteCascade="false" table="repopaths"/>
          </column>
@@ -795,9 +798,10 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="strain" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="strain" numRows="1" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('strain_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="strain_id" foreignKey="mouse_strain_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
+            <child column="strain_id" foreignKey="strain_citeables_strain_id_fkey" implied="false" onDeleteCascade="false" table="strain_citeables"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="jax_id" nullable="true" remarks="" size="10" type="varchar"/>
          <column autoUpdated="false" digits="0" id="2" name="name" nullable="true" remarks="" size="50" type="varchar"/>
@@ -805,6 +809,20 @@
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="strain_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="strain_citeables" numRows="1" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="citeable_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="strain_citeables_citeable_id_fkey" implied="false" onDeleteCascade="false" table="citeable"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="strain_id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="strain_citeables_strain_id_fkey" implied="false" onDeleteCascade="false" table="strain"/>
+         </column>
+         <primaryKey column="citeable_id" sequenceNumberInPK="1"/>
+         <primaryKey column="strain_id" sequenceNumberInPK="2"/>
+         <index name="strain_citeables_pkey" unique="true">
+            <column ascending="true" name="citeable_id"/>
+            <column ascending="true" name="strain_id"/>
          </index>
       </table>
       <table name="users" numRows="0" remarks="" schema="public" type="TABLE">
@@ -835,6 +853,19 @@
          <index name="users_datastreams_pkey" unique="true">
             <column ascending="true" name="datasource_id"/>
             <column ascending="true" name="users_id"/>
+         </index>
+      </table>
+      <table name="website" numRows="1" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="website_id_fkey" implied="false" onDeleteCascade="false" table="citeable"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="url" nullable="true" remarks="" size="2147483647" type="varchar"/>
+         <column autoUpdated="false" digits="0" id="2" name="credentials_id" nullable="true" remarks="" size="10" type="int4">
+            <parent column="id" foreignKey="website_credentials_id_fkey" implied="false" onDeleteCascade="false" table="credentials"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="website_pkey" unique="true">
+            <column ascending="true" name="id"/>
          </index>
       </table>
    </tables>

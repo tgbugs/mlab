@@ -1,4 +1,4 @@
-from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, RepoPath, DataFile, DataSource
+from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, RepoPath, DataFile, DataSource, Strain
 from database.imports import printD
 
 ###----------------------------
@@ -219,17 +219,26 @@ def popDataSources(session):
     pass
 
 def popRepos(session):
-    jax=Repository('http://jaxmice.jax.org')
-    session.add(jax)
-    session.commit()
-    session.add(RepoPath(jax,'/strain',name='jax strain db'))
-    session.commit()
-
+    #jax=Repository('http://jaxmice.jax.org')
+    #session.add(jax)
+    #session.commit()
+    #session.add(RepoPath(jax,'/strain',name='jax strain db'))
+    #session.commit()
+    pass
 def popDataFiles(session): #FIXME this isn't a datafile, it is actually a citeable! :D look at how easy it was to make that mistake
-    rep=session.query(RepoPath).filter_by(name='jax strain db')[0]
-    ds=session.query(DataSource).filter_by(name='jax')[0]
-    session.add(DataFile(rep,'003718.html',ds))
+    #rep=session.query(RepoPath).filter_by(name='jax strain db')[0]
+    #ds=session.query(DataSource).filter_by(name='jax')[0]
+    #session.add(DataFile(rep,'003718.html',ds))
+    pass
     
+def popCiteables(session):
+    #session.commit()
+    pass
+
+def popStrains(session):
+    #session.add(Website('http://jaxmice.jax.org/strain/003718.html'))
+    session.add(Strain(jax_id='003718',abbrev='dkgin'))
+    session.commit()
 
 
 def popDataSourceAssociations(session):
@@ -254,6 +263,7 @@ def populateTables(session):
     popDataSources(session)
     popRepos(session)
     popDataFiles(session)
+    popStrains(session)
 if __name__=='__main__':
     import re
     printT=lambda tup:print(re.sub('\), ','),\r\n',str(tup)))

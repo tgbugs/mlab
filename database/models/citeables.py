@@ -1,5 +1,6 @@
 from database.imports import *
 from database.base import Base
+from database.standards import URL_STAND
 
 ###----------
 ###  Projects
@@ -54,6 +55,7 @@ class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a jo
 ###  Doccuments
 ###------------
 
+#FIXME how the fuck do I query for these!??!?!
 class Citeable(Base):
     #TODO base class for all citable things, such as personal communications, journal articles, books
     __tablename___='citeable'
@@ -62,6 +64,20 @@ class Citeable(Base):
         'polymorphic_on':type,
         'polymorphic_identity':'citeable'
     }
+
+class Website(Citeable):
+    __tablename__='website'
+    id=Column(Integer,ForeignKey('citeable.id'),primary_key=True)
+    url=Column(String)
+    cached=None #TODO wget it with a timestamp?!
+    credentials_id=Column(Integer,ForeignKey('credentials.id')) 
+    __mapper_args__={'polymorphic_identity':'website'}
+    def __init__(self,url,credentials_id=None):
+        self.url=url
+        self.credentials_id=credentials_id
+    def __repr__(self):
+        return super().__repr__('url')
+
 
 
 class IACUCProtocols(Base): #note: probs can't store them here, but just put a number and a link (frankly no sense, they are kept in good order elsewere)

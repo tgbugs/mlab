@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,19 +110,19 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('dob_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="litter.dob_id refs dob.id via litter_dob_id_fkey"><a href='litter.html'>litter</a><span class='relatedKey'>.dob_id</span>
     </td>
     <td class='constraint detail'>litter_dob_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="matingrecord.dob_id refs dob.id via matingrecord_dob_id_fkey"><a href='matingrecord.html'>matingrecord</a><span class='relatedKey'>.dob_id</span>
     </td>
     <td class='constraint detail'>matingrecord_dob_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="mouse.dob_id refs dob.id via mouse_dob_id_fkey"><a href='mouse.html'>mouse</a><span class='relatedKey'>.dob_id</span>
     </td>
     <td class='constraint detail'>mouse_dob_id_fkey<span title='Restrict delete:
@@ -133,7 +133,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>dateTime</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -144,7 +144,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>absolute_error</td>
  <td class='detail'>interval</td>
  <td class='detail' align='right'>49,6</td>
@@ -156,7 +156,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='3 columns'>Table contained 86 rows at Mon Sep 23 20:02 PDT 2013<p/>
+<p title='3 columns'>Table contained 86 rows at Mon Sep 23 22:17 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -182,28 +182,28 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from dob'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="litter.html" title="litter" alt="" coords="505,150,647,378">
-<area shape="rect" id="node2" href="dob.html" title="dob" alt="" coords="6,323,261,461">
-<area shape="rect" id="node3" href="matingrecord.html" title="matingrecord" alt="" coords="306,138,459,342">
-<area shape="rect" id="node4" href="mouse.html" title="mouse" alt="" coords="692,5,863,425">
+<area shape="rect" id="node1" href="litter.html" title="litter" alt="" coords="505,143,647,359">
+<area shape="rect" id="node2" href="dob.html" title="dob" alt="" coords="6,307,261,437">
+<area shape="rect" id="node3" href="matingrecord.html" title="matingrecord" alt="" coords="306,129,459,322">
+<area shape="rect" id="node4" href="mouse.html" title="mouse" alt="" coords="692,5,863,403">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/dob.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="918,17,1061,101">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="695,220,865,640">
-<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="516,212,639,296">
-<area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="321,133,444,217">
-<area shape="rect" id="node7" href="dam.html" title="dam" alt="" coords="66,537,201,621">
-<area shape="rect" id="node8" href="litter.html" title="litter" alt="" coords="506,452,649,680">
-<area shape="rect" id="node9" href="dob.html" title="dob" alt="" coords="6,709,261,847">
-<area shape="rect" id="node11" href="sire.html" title="sire" alt="" coords="66,400,201,484">
-<area shape="rect" id="node12" href="experiments.html" title="experiments" alt="" coords="505,855,650,939">
-<area shape="rect" id="node13" href="strain.html" title="strain" alt="" coords="516,313,639,397">
-<area shape="rect" id="node4" href="cagetransfer.html" title="cagetransfer" alt="" coords="921,119,1058,203">
-<area shape="rect" id="node6" href="cell.html" title="cell" alt="" coords="914,423,1065,507">
-<area shape="rect" id="node10" href="matingrecord.html" title="matingrecord" alt="" coords="306,524,459,728">
-<area shape="rect" id="node14" href="mouse_metadata.html" title="mouse_metadata" alt="" coords="910,220,1069,304">
-<area shape="rect" id="node15" href="slice.html" title="slice" alt="" coords="918,321,1061,405">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="918,18,1061,98">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="695,214,865,611">
+<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="516,210,639,290">
+<area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="321,132,444,212">
+<area shape="rect" id="node7" href="dam.html" title="dam" alt="" coords="66,519,201,599">
+<area shape="rect" id="node8" href="litter.html" title="litter" alt="" coords="506,440,649,656">
+<area shape="rect" id="node9" href="dob.html" title="dob" alt="" coords="6,687,261,818">
+<area shape="rect" id="node11" href="sire.html" title="sire" alt="" coords="66,387,201,467">
+<area shape="rect" id="node12" href="experiments.html" title="experiments" alt="" coords="505,828,650,908">
+<area shape="rect" id="node13" href="strain.html" title="strain" alt="" coords="520,307,635,387">
+<area shape="rect" id="node4" href="cagetransfer.html" title="cagetransfer" alt="" coords="921,115,1058,195">
+<area shape="rect" id="node6" href="cell.html" title="cell" alt="" coords="914,407,1065,487">
+<area shape="rect" id="node10" href="matingrecord.html" title="matingrecord" alt="" coords="306,509,459,702">
+<area shape="rect" id="node14" href="mouse_metadata.html" title="mouse_metadata" alt="" coords="910,212,1069,292">
+<area shape="rect" id="node15" href="slice.html" title="slice" alt="" coords="918,310,1061,390">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/dob.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
