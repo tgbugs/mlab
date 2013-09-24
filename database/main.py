@@ -125,7 +125,7 @@ def printStuff(cons=True,mice=True,data=True,notes=True):
 def connect(echo=False):
     return Session(postgresEng(echo=False))
 
-def main(echo=True):
+def main(echo=False):
     #create engine
     #engine=postgresEng(echo=echo,wipe_db=False)
     engine=sqliteEng(echo=echo)
@@ -153,9 +153,8 @@ def main(echo=True):
     printStuff(cons=0,mice=0,data=0,notes=0)
 
     #query stuff
-    #queryAll(session)
+    queryAll(session)
     #session.query(Cell).all()
-    print(session.query(Website).all())
 
     return session
     

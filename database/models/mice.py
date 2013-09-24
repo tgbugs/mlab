@@ -1,6 +1,7 @@
 #source file contining the definitions for all the tables related to mouse management
 #in theory since this now has the 'mice' namespace I could rename it to mouse.py and then do DOB organism breeder male_breeder female_breeder MatingRecord Litter
 
+from numpy import unique as np_unique
 
 from database.imports import *
 from database.base import Base
@@ -238,27 +239,30 @@ class Cell(Subject):
     __tablename__='cell'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME grandparent_id
-    slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False) #FIXME parent_id, not subject though...
+    slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False) #FIXME parent_id
     startDateTime=Column(DateTime,default=datetime.now)
     __mapper_args__={'polymorphic_identity':'cell'}
-    def __init__(self,Slice=None,Experiments=[],Hardware=[],slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
+    def __init__(self,Slice=None,Mouse=None,Experiments=[],Hardware=[],slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
         super().__init__(Experiments,Hardware)
+        #printD(Slice.mouse)
         self.startDateTime=startDateTime
         self.slice_id=slice_id
         self.mouse_id=mouse_id
         self.experiment_id=experiment_id
         self.hs_id=hs_id
+        #self.slice=Slice #FIXME extremely inconsistent behavior around this DO NOT USE
+        #self.mouse=Slice.mouse #FIXME wierd
         if Slice:
             if Slice.id:
                 self.slice_id=Slice.id
                 self.mouse_id=Slice.mouse_id
-            else:
-                raise AttributeError
+            #else:
+                #raise AttributeError
     #def strHelper(self,depth=0):
         #base=super().strHelper(depth)
     def __repr__(self):
         base=super().__repr__()
-        return '%s%s%s%s'%(base,self.headstage.strHelper(1),self.slice.strHelper(1),''.join([c.strHelper(1) for c in self.cells]))
+        return '%s%s%s%s'%(base,''.join([h.strHelper(1) for h in self.hardware]),self.slice.strHelper(1),''.join([c.strHelper(1) for c in self.datafiles[0].subjects]))
 
 
 ###----------------
@@ -378,7 +382,7 @@ class MatingRecord(HasNotes, Base):
             litter='\n\tLitter %s %s'%(self.litter.id,self.litter.dob.strHelper(2))
         except:
             litter='\n\tLitter None'
-        return base+'%s %s %s'%(self.sire.strHelper(1),self.dam.strHelper(1),litter)
+        return base+'%s %s\n\tstartDateTime %s %s'%(self.sire.strHelper(1),self.dam.strHelper(1),self.startDateTime,litter)
 
 
 class Litter(HasNotes, Base):
@@ -486,5 +490,5 @@ class Litter(HasNotes, Base):
             matingRecord='\n\tMatingRecord %s\n\t\tstartDateTime %s'%(self.matingRecord.id,frmtDT(self.matingRecord.startDateTime))
         except:
             matingRecord='\n\tMatingRecord None'
-        return base+'%s %s %s'%(sire,self.dam.strHelper(1),matingRecord)
+        return base+'%s %s %s %s'%(sire,self.dam.strHelper(1),self.dob.strHelper(1),matingRecord)
 

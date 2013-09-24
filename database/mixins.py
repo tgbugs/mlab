@@ -51,20 +51,20 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
     value=Column(Float(53),nullable=False)
     sigfigs=Column(Integer) #TODO
     abs_error=Column(Float(53)) #TODO
-    def __init__(self,value,Parent=None,DataSource=None,datasource_id=None,sigfigs=None,abs_error=None,dateTime=None):
+    def __init__(self,value,Parent=None,MetaDataSource=None,metadatasource_id=None,sigfigs=None,abs_error=None,dateTime=None):
         self.dateTime=dateTime
-        self.datasource_id=datasource_id
+        self.metadatasource_id=metadatasource_id
         self.value=value
         self.sigfigs=sigfigs
         self.abs_error=abs_error
         self.AssignID(Parent) #FIXME
-        self.AssignID(DataSource)
+        self.AssignID(MetaDataSource)
     def __repr__(self):
         sigfigs=''
         error=''
         if self.sigfigs: sigfigs=self.sigfigs
         if self.abs_error != None: error='%s %s'%(_plusMinus,self.abs_error)
-        return '\n%s %s %s %s %s'%(self.dateTime,self.value,self.datasource.strHelper(),sigfigs,error)
+        return '\n%s %s %s %s %s'%(self.dateTime,self.value,self.metadatasource.strHelper(),sigfigs,error)
 
 
 class HasMetaData: #looks like we want this to be table per related

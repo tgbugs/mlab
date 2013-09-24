@@ -22,10 +22,11 @@ class DataSource(Base): #TODO
     id=Column(Integer,primary_key=True)
     name=Column(String(20),nullable=False)
     #TODO
-    def strHelper(self):
-        return '%s%s'%(self.prefix,self.unit)
+    def strHelper(self,depth=0):
+        #return '%s%s'%(self.prefix,self.unit)
+        return super().strHelper(depth,'name')
     def __repr__(self):
-        return '\n%s units %s%s'%(self.name,self.prefix,self.unit)
+        return '\n%s'%(self.name)
 
 class MetaDataSource(Base):
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
@@ -257,10 +258,10 @@ class DataFile(Base):
     @filetype.setter
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
-    def __init__(self,RepoPath=None,filename=None,DataSource=None,url=None,path=None,datasource_id=None,Subjects=[], creationDateTime=None): #FIXME Cells should be 'thing that has DataFiles...'
+    def __init__(self,RepoPath=None,filename=None,DataSource=None,url=None,path=None,datasource_id=None,Subjects=[], creationDateTime=None):
         #self.url=URL_STAND.baseClean(repo_url)
         #self.repo_path=URL_STAND.pathClean(repo_path)
-        self.url=url
+        self.url=url #TODO urlparse should make it trivial to add datafiles by url, in which case path may be obsolete?
         self.path=path
         self.filename=filename
         self.creationDateTime=creationDateTime
@@ -276,9 +277,9 @@ class DataFile(Base):
             else:
                 raise AttributeError('RepoPath has no url/path! Did you commit before referencing the instance directly?')
     def strHelper(self,depth=0):
-        return super(depth,'filename')
+        return super().strHelper(depth,'filename')
     def __repr__(self):
-        return '\n%s%s%s%s'%(self.url,self.path,os.sep,self.filename)
+        return '\n%s%s%s%s'%(self.url,self.path,sep,self.filename)
 
 
 class InDatabaseData(Base):

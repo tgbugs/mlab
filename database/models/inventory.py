@@ -1,6 +1,6 @@
 from database.imports import *
 from database.base import Base
-from database.mixins import HasNotes, IsDataSource, HasMetaData
+from database.mixins import HasNotes, IsMetaDataSource, IsDataSource, HasMetaData
 
 #TODO could just make this a hardware table and maybe CHECK that the type matches?
 #then just have another table for any specifics on that, could do the same for the reagents, since most of them are going to have links to urls and msdses or whatever the fuck
@@ -10,7 +10,7 @@ from database.mixins import HasNotes, IsDataSource, HasMetaData
 ###-----------------------------------
 
 #FIXME this is not the right way to link subject-data
-class Hardware(HasMetaData, IsDataSource, Base):
+class Hardware(HasMetaData, IsMetaDataSource, Base):
     __tablename__='hardware'
     id=Column(Integer,primary_key=True)     #this is going to be a hierarchical structure
     parent_id=Column(Integer,ForeignKey('hardware.id')) #sadly we can't make this nullable :( :( can still suggest sr

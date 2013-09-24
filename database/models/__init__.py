@@ -10,7 +10,7 @@ __all__.extend([
         'person_to_project',
         'Project',
         'Citeable',
-        'Website',
+        #'Website',
         'IACUCProtocols',
         'Methods',
         'Recipe'
@@ -31,7 +31,8 @@ __all__.extend([
 from database.models.data import *
 __all__.extend([
         'person_to_project',
-        'DataSource', #FIXME
+        'DataSource',
+        'MetaDataSource',
         #'MetaData',
         #'CellMetaData',
         #'DFMetaData',

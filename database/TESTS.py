@@ -492,7 +492,7 @@ class t_hardware(TEST):
 
 class t_hwmetadata(TEST):
     def make_all(self):
-        ds=self.session.query(DataSource)[0] #TODO make sure this breaks
+        ds=self.session.query(MetaDataSource)[0] #TODO make sure this breaks, FIXME it breaks but not where expected...
         self.records=[]
         [self.records.extend([h.MetaData(i,Parent=h,MetaDataSource=ds) for i in range(self.num)]) for h in self.session.query(Hardware)]
         

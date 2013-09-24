@@ -1,4 +1,4 @@
-from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, RepoPath, DataFile, DataSource, Strain, ExperimentType
+from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, RepoPath, DataFile, DataSource, Strain, ExperimentType, Citeable
 from database.imports import printD
 
 ###----------------------------
@@ -232,12 +232,14 @@ def popRepos(session):
     session.commit()
     pass
 def popDataFiles(session): #FIXME this isn't a datafile, it is actually a citeable! :D look at how easy it was to make that mistake
-    #rep=session.query(RepoPath).filter_by(name='jax strain db')[0]
-    #ds=session.query(DataSource).filter_by(name='jax')[0]
-    #session.add(DataFile(rep,'003718.html',ds))
+    rep=session.query(RepoPath).filter_by(name='jax strain db')[0]
+    ds=session.query(DataSource).filter_by(name='jax')[0]
+    session.add(DataFile(rep,'003718.html',ds))
     pass
     
 def popCiteables(session):
+    df=session.query(DataFile).filter_by(filename='003718.html')[0]
+    session.add(Citeable(type='website',DataFiles=[df])) #FIXME
     #session.commit()
     pass
 
@@ -270,6 +272,7 @@ def populateTables(session):
     popDataSources(session)
     popRepos(session)
     popDataFiles(session)
+    popCiteables(session)
     popStrains(session)
 if __name__=='__main__':
     import re
