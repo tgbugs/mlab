@@ -34,12 +34,15 @@ class CageTransfer(Base):
     #TODO this is a transaction record for when someone changes the cage_id on a mouse
     #or does a cage.mice.append(mouse) (im not even sure that actually works???)
     #FIXME this HAS to be implemented as an event trigger!!!!
-    #id=None
-    #old_cage_id=Column(Integer, ForeignKey('cage.id'), primary_key=True)
-    #new_cage_id=Column(Integer, ForeignKey('cage.id'), primary_key=True)
-    #mouse_id=Column(Integer, ForeignKey('mouse.id'), primary_key=True)
-    #dateTime=Column(DateTime, nullable=False)
-    pass
+    #triggers require actual sql see: http://docs.sqlalchemy.org/en/rel_0_8/core/ddl.html
+    #TODO the versioned mixin may be more along the lines of what I want for this?
+    id=Column(Integer,primary_key=True)
+    dateTime=Column(DateTime, default=datetime.now)
+    user_id=None
+    action=None
+    mouse_id=Column(Integer, ForeignKey('mouse.id'))
+    old_cage_id=Column(Integer, ForeignKey('cage.id'))
+    new_cage_id=Column(Integer, ForeignKey('cage.id'))
 
 
 ###-----------------------------------------------------

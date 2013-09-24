@@ -205,6 +205,18 @@ def popHardware(session): #FIXME
     session.add(Hardware(Parent=nidaq,type='led',name='470',model='M470L2',unique_id='M00277763'))
     session.commit()
 
+def popRepos(session):
+    jax=Repository('http://jaxmice.jax.org')
+    session.add(jax)
+    session.commit()
+    session.add(RepoPath(jax,'/strain'),name='jax strain db')
+    session.commit()
+
+def popDataFiles(session):
+    rep=session.query(RepoPath).filter_by(name='jax strain db')[0]
+    session.add(DataFile(rep,'003718.html'))
+    
+
 def popDataSources(session):
     espX=None
     espY=None
@@ -236,6 +248,8 @@ def populateConstraints(session):
 def populateTables(session):
     """A run once to load current data (not existing elsewhere into the database (ie may use google docs as a web interface for entering/viewing certain types of data eg mice)"""
     popHardware(session)
+    popRepos(session)
+    popDataFiles(session)
 if __name__=='__main__':
     import re
     printT=lambda tup:print(re.sub('\), ','),\r\n',str(tup)))

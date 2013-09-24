@@ -54,7 +54,7 @@ class SEX(Base):
         return '\n%s %s %s'%(self.name,self.abbrev,self.symbol) #FIXME somehow there are trailing chars here >_<
 
 
-class Strain(Base): #TODO
+class Strain(HasDataFiles, Base): #TODO
     #FIXME class for strain IDs pair up with the shorthand names that I use and make sure mappings are one to one
     #will be VERY useful when converting for real things
     #FIXME: by reflection from jax??? probably not

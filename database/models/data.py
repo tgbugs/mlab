@@ -142,20 +142,22 @@ class Repository(Base):
         self.credentials_id=credentials_id
 
 
-class RepoPath(Base):
+class RepoPath(Base): #FIXME this may be missing trailing /on path :x
     __tablename__='repopaths'
     #Assumption: repository MUST be the full path to the data, so yes, a single 'repository' might have 10 entries, but that single repository is just a NAME and has not functional purpose for storing/retrieving data
     #id=Column(Integer,primary_key=True,autoincrement=True) #to simplify passing repos? is this reasonable?
     id=None
+    name=Column(String)
     url=Column(String,ForeignKey('repository.url'),primary_key=True)
     path=Column(String,primary_key=True) #make this explicitly relative path?
     assoc_program=Column(String(30)) #FIXME some of these should be automatically updated and check by the programs etc
-    relationship('DataFile',primaryjoin='DataFile.repopath_id==RepoPath.id',backref='repopath') #FIXME datafiles can be kept in multiple repos...
+    verified=Column(Boolean,default=False) #TODO populated when the repopath has been verified to exist, should probably also check at startup for existence (will not check for datafiles)
+    relationship('DataFile',primaryjoin='DataFile.repopath_id==RepoPath.id',backref='repopath') #FIXME datafiles can be kept in multiple repos... #FIXME can you append to relationships?! test this
     #TODO how do we keep track of data duplication and backups!?!?!?
     blurb=Column(Text) #a little note saying what data is stored here, eg, abf files
     #TODO we MUST maintain synchrony between where external programs put files and where the database THINKS they put files, some programs may be able to have this specified on file creation, check the clxapi for example, note has to be done by hand for that one
     #FIXME should the REPO HERE maintain a list of files? the filesystem KNOWS what is there
-    def __init__(self,Repo=None,url=None,path=None,assoc_program=None,name=None):
+    def __init__(self,Repo=None,path=None,url=None,assoc_program=None,name=None):
         self.url=URL_STAND.baseClean(url)
         self.assoc_program=assoc_program
         self.name=name

@@ -1,10 +1,6 @@
 #Base file for creating the tables that I will use to store all my (meta)data
 
 #TODO therefore we need a 'convert local to utc for storage'
-#TODO start moving stuff out of here that we don't use to define the tables
-#TODO watch out for sqlite_autoincriment=True needed when using composite keys!
-#TODO going to need the 'PRAGMA foreign_keys=ON' ???
-#TODO I can just store the bloody python code used to calculate the values in another column... >_<, that will allow for consistnecy check even if code changes
 
 #TODO conform to MINI, NIF ontologies?, or odML terminiologies?
 

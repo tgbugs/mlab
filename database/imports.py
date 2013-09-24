@@ -5,6 +5,7 @@ from datetime import datetime,timedelta #ALL TIMES ARE UTC WITH tzinfo=None, CON
 from sqlalchemy                         import Table
 from sqlalchemy                         import Column
 from sqlalchemy                         import Integer
+from sqlalchemy                         import Boolean
 from sqlalchemy                         import Float
 from sqlalchemy                         import String
 from sqlalchemy                         import Unicode
