@@ -250,7 +250,7 @@ class DataFile(HasMetaData, Base):
     @filetype.setter
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
-    def __init__(self,RepoPath=None,filename=None,DataSource=None,url=None,path=None,datasource_id=None,Cells=None, creationDateTime=None): #FIXME Cells should be 'thing that has DataFiles...'
+    def __init__(self,RepoPath=None,filename=None,DataSource=None,url=None,path=None,datasource_id=None,Cells=[], creationDateTime=None): #FIXME Cells should be 'thing that has DataFiles...'
         #self.url=URL_STAND.baseClean(repo_url)
         #self.repo_path=URL_STAND.pathClean(repo_path)
         self.url=url
@@ -260,10 +260,7 @@ class DataFile(HasMetaData, Base):
         self.datasource_id=datasource_id
         #self.AssignID(Experiment) #FIXME should be subject instead?!?!
         self.AssignID(DataSource)
-        try:
-            self.cell.extend(Cells) #TODO listlike #FIXME there's going to be a row for every bloody thing with HasDataFiles
-        except:
-            pass
+        self.cell.extend(Cells) #TODO listlike #FIXME there's going to be a row for every bloody thing with HasDataFiles
         #FIXME can I have an in-database check to make sure that pairs of cells match CellPairs???
         if RepoPath:
             if RepoPath.url:

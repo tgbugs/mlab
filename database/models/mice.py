@@ -178,6 +178,7 @@ class Slice(HasMetaData, HasNotes, Base):
     id=Column(Integer,primary_key=True) #FIXME
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
     prep_id=Column(Integer,ForeignKey('sliceprep.id'),nullable=False) #TODO this should really refer to slice prep, but suggests that this class should be 'acute slice'
+    prep=relationship('Experiment',primaryjoin='Experiment.id==Slice.prep_id',backref=backref('slices',uselist=True))
     #TODO check that there are not more slices than the thickness (from the metadta) divided by the total length of the largest know mouse brain
     startDateTime=Column(DateTime,default=datetime.now)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
     #hemisphere

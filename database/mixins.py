@@ -124,3 +124,42 @@ class HasCiteables:
             Column('citeable_id', ForeignKey('citeable.id'), primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
         return relationship('Citeable', secondary=cite_association,backref=backref('%s_citer'%cls.__tablename__))
+
+###--------------
+###  Has reagents
+###--------------
+
+class HasReagents:
+    @declared_attr
+    def reagents(cls):
+        reagent_association = Table('%s_reagents'%cls.__tablename__,cls.metadata,
+            Column('reagent_id', ForeignKey('reagent.id'), primary_key=True),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
+        return relationship('Reagent', secondary=reagent_association,backref=backref('%s_used'%cls.__tablename__))
+
+
+###--------------
+###  Has hardware
+###--------------
+
+class HasHardware:
+    @declared_attr
+    def hardware(cls):
+        harware_association = Table('%s_hardware'%cls.__tablename__,cls.metadata,
+            Column('harware_id', ForeignKey('harware.id'), primary_key=True),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
+        return relationship('Hardware', secondary=reagent_association,backref=backref('%s_used'%cls.__tablename__))
+
+###--------------
+###  Has subjects
+###--------------
+
+class HasSubjects:
+    @declared_attr
+    def subjects(cls):
+        subjects_association = Table('%s_subjects'%cls.__tablename__,cls.metadata,
+            Column('subjects_id', ForeignKey('subjects.id'), primary_key=True),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
+        return relationship('Subjects', secondary=reagent_association,backref=backref('%s_used'%cls.__tablename__))
+
+

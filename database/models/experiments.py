@@ -1,6 +1,6 @@
 from database.imports import *
 from database.base import Base
-from database.mixins import HasNotes, HasMetaData
+from database.mixins import HasNotes, HasMetaData, HasReagents, HasHardware
 
 ###-------------------
 ###  Experiment tables
@@ -22,7 +22,8 @@ from database.mixins import HasNotes, HasMetaData
 #TODO FIXME need to dissociate PROCEDURE from DATA, the CONDITIONS for that day are DIFFERENT from the actual individual experimetns
 #TODO handling multiple subjects is NOT handled EXPLICITLY here, links between methods and subject type are probably probably not in the domain of things we should enforce
 
-class Experiment(HasMetaData, Base): #FIXME there is in fact a o-m on subject-experiment, better fix that, lol jk, it is fixed ish :)
+#TODO XXX FIXME so in theory I could convert all of this joined table inheritance into metadata at the cost of connections to regents, OR better yet I could have a many-many with reagents O_0
+class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base): #FIXME there is in fact a o-m on subject-experiment, better fix that, lol jk, it is fixed ish :)
     #XXX datetimes, non nulls, and foreign keys go in these, metadata should be where all the non foreign key stuff goes
     __tablename__='experiments'
     id=Column(Integer,primary_key=True)
@@ -31,19 +32,16 @@ class Experiment(HasMetaData, Base): #FIXME there is in fact a o-m on subject-ex
     startDateTime=Column(DateTime,default=datetime.now())
     endDateTime=Column(DateTime) #TODO extremely useful for automatically moving to the next experiment... not that that is really an issue, but also nice for evaluating my performance
     methods_id=Column(Integer,ForeignKey('citeable.id'))
-    exp_type=Column(String(20),nullable=False)
+    exp_type=Column(String(20),ForeignKey('experimenttype.id'),nullable=False)
 
-    __mapper_args__ = {
-        'polymorphic_on':exp_type,
-        'polymorphic_identity':'experiment',
-        'with_polymorphic':'*'
-    }
-
-    def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None):
+    def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None,Reagents=[],Hardware=[],Subjects=[]):
         self.project_id=project_id
         self.person_id=person_id
         self.methods_id=methods_id
         self.startDateTime=startDateTime
+        self.reagents.extend(Reagents) #TODO base experiment and then extend? or maybe a bit more complicated
+        self.hardware.extend(Hardware)
+        self.subjects.extend(Subjects)
 
         self.AssignID(Project)
         self.AssignID(Person)
