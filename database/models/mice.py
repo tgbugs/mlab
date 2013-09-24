@@ -99,7 +99,7 @@ class Mouse(HasMetaData, HasNotes, Base): #TODO species metadata???
         if self.dod:
             return self.dod-self.dob.dateTime
         else:
-            return datetime.utcnow()-self.dob.dateTime
+            return datetime.now()-self.dob.dateTime #FIXME
         
     dod=Column(DateTime) #FIXME need to figure out how to directly link this to experiments eg, a setter for dod would just get current datetime and make the mouse dead instead of calling a completely separate killMouse method
 
@@ -176,16 +176,15 @@ class Slice(HasMetaData, HasNotes, Base):
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
     prep_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO this should really refer to slice prep, but suggests that this class should be 'acute slice'
     #TODO check that there are not more slices than the thickness (from the metadta) divided by the total length of the largest know mouse brain
-    startDateTime=Column(DateTime,nullable=False)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
+    startDateTime=Column(DateTime,default=datetime.now)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
     #hemisphere
     #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
     #FIXME why the fuck is thickness metadata... it is linked to protocol and slice prep... ah, I guess it is sliceprep metadata that sort of needs to propagate
 
     cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
-
     def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None,startDateTime=None):
-        self.startDateTime=startDateTime #datetime.utcnow() #FIXME
+        self.startDateTime=startDateTime
         self.mouse_id=mouse_id
         self.prep_id=prep_id
 
@@ -247,7 +246,7 @@ class Cell(HasDataFiles, HasMetaData, HasNotes, Base):
     #link to data
     #FIXME link to data seems like it is going to be via metadata :/
     hs_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #TODO use this when creating datafile metadata?!
-    startDateTime=Column(DateTime,nullable=False)
+    startDateTime=Column(DateTime,default=datetime.now)
 
     #these should probably go in metadata which can be configged per experiment
     #wholeCell=None
@@ -274,8 +273,8 @@ class Cell(HasDataFiles, HasMetaData, HasNotes, Base):
     def cells(self):
         #return self._cell_1+self._cell_2
         return self.datafiles.cell
-    def __init__(self,Slice=None,Experiment=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None):
-        self.startDateTime=datetime.utcnow() #FIXME
+    def __init__(self,Slice=None,Experiment=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
+        self.startDateTime=startDateTime
         self.slice_id=slice_id
         self.mouse_id=mouse_id
         self.experiment_id=experiment_id
@@ -365,13 +364,13 @@ class Dam(HasNotes, Breeder):
 
 
 class MatingRecord(HasNotes, Base):
-    id=Column(Integer,primary_key=True)#,unique=True) #THIS MUST BE UNIQUIE DUHHHH #FIXME wierd stuff be here!??!
-    sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'))#,primary_key=True) #backref
-    dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'))#,primary_key=True) #backref
-    startDateTime=Column(DateTime,nullable=False)#,primary_key=True) #FIXME fucking strings
+    id=Column(Integer,primary_key=True)
+    sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'))
+    dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'))
+    startDateTime=Column(DateTime,nullable=False)
     stopDateTime=Column(DateTime)
-    est_p0=Column(DateTime) #FIXME this shit will error
     e0_err=Column(Interval) #FIXME test this!
+    est_e0=Column(DateTime) #FIXME this shit will error
 
     @hybrid_property #FIXME http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/hybrid.html
     def e0_err(self):
@@ -380,17 +379,16 @@ class MatingRecord(HasNotes, Base):
     def e0_err(self):
         raise AttributeError('readonly attribute, set a stopTime if you want this')
         
-    @hybrid_property #FIXME HOLY SHIT HYBRID ATTRIBUTES!!!!!!
-    def est_p0(self):
+    @hybrid_property
+    def est_e0(self):
         return self.startDateTime+self.e0_err #standard: sticks this right in the middle of the interval
-    @est_p0.setter #FIXME should be est_dob....
+    @est_e0.setter
     def est_e0(self):
         raise AttributeError('readonly attribute, set a stopTime if you want this')
-    
+
     dob_id=Column(Integer,ForeignKey('dob.id')) #FIXME the foreing key missmatch I get on update is cause by... what? check for referencing a table that does not exist
     
     litter=relationship('Litter',primaryjoin='and_(MatingRecord.id==foreign(Litter.mr_id),MatingRecord.sire_id==foreign(Litter.sire_id),MatingRecord.dam_id==foreign(Litter.dam_id),MatingRecord.dob_id==foreign(Litter.dob_id))',uselist=False,backref=backref('matingRecord',uselist=False))
-    #litter=relationship('Litter',primaryjoin='and_(MatingRecord.sire_id==foreign(Litter.sire_id),MatingRecord.dam_id==foreign(Litter.dam_id),MatingRecord.startDateTime==foreign(Litter.mr_sdt))',uselist=False,backref=backref('matingRecord',uselist=False)) FIXME this is where the dates being strings is a problem, REALLY can't use them as primary keys :(
     
     def __init__(self,sire_id=None,Sire=None,dam_id=None,Dam=None,startDateTime=None,stopDateTime=None,notes=[]):
         self.notes=notes
@@ -426,15 +424,12 @@ class MatingRecord(HasNotes, Base):
 
 
 class Litter(HasNotes, Base):
-    #could to id=None here too...
     sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'),nullable=False) #can have mice w/o litters, but no litters w/o mice
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'),nullable=False)
-    mr_id=Column(Integer, ForeignKey('matingrecord.id'),unique=True) #could be the source? YEP IT WAS
-    #mr_sdt=Column(DateTime, ForeignKey('matingrecord.startDateTime'),unique=True) #FIXME could be the source?
+    mr_id=Column(Integer, ForeignKey('matingrecord.id'),unique=True)
     dob_id=Column(Integer,ForeignKey('dob.id'),nullable=False)
 
     cage_id=Column(Integer, ForeignKey('cage.id'))
-
 
     name=Column(String(20)) #the name by which I shall write upon their cage cards!
 
@@ -468,22 +463,12 @@ class Litter(HasNotes, Base):
         return self.members.filter(Mouse.sex_id=='u',Mouse.dod==None).count()
 
             
+
+    members=relationship('Mouse',primaryjoin='Mouse.litter_id==Litter.id',backref=backref('litter',uselist=False)) #litter stores the members and starts out with ALL unknown each mouse has its own entry
+
     def make_members(self,number):
         """Method to generate new members of a given litter that can then be added to the database"""
         return [Mouse(Litter=self,sex_id='u') for i in range(number)]
-
-    #FIXME generate these from a query/select on _mouse.litter_id==self.id??
-    #pupps=Column(Integer) #aka total at first count
-    #male=Column(Integer)
-    #female=Column(Integer)
-    #unknown=Column(Integer)
-
-    #mUsed=Column(Integer)
-    #fUsed=Column(Integer)
-    #uUsed=Column(Integer)
-    #FIXME those don't go here, I will enter a number in the interfacing program when a litter is counted and the offspring will be automatically updated
-
-    members=relationship('Mouse',primaryjoin='Mouse.litter_id==Litter.id',backref=backref('litter',uselist=False)) #litter stores the members and starts out with ALL unknown each mouse has its own entry
 
     def __init__(self, MatingRecord=None, mr_id=None, Sire=None, Dam=None, DOB=None, sire_id=None, dam_id=None, dob_id=None, name=None, cage_id=None, notes=[]):
         self.notes=notes
@@ -524,7 +509,6 @@ class Litter(HasNotes, Base):
             else:
                 raise AttributeError('Dam has no id! Did you commit before referencing the instance directly?')
     
-
     def strHelper(self,depth=0):
         base=super().strHelper(depth)
         try:

@@ -1,6 +1,7 @@
-from datetime import datetime,timedelta #ALL TIMES ARE UTC WITH tzinfo=None, CONVERT LATER
+from datetime import datetime,timedelta #ALL TIMES ARE UTC WITH tzinfo=None, CONVERT LATER; FIXME postgress assumes the times give are from the env timezone >_<, just use func.now
 
 #IEEE DOUBLE and numpy float64 have the same format, 1 bit sign, 11 bits exponent, 52 bits mantissa
+#from sqlalchemy                         import func
 from sqlalchemy                         import Table
 from sqlalchemy                         import Column
 from sqlalchemy                         import Integer

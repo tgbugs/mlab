@@ -28,7 +28,7 @@ class Experiment(HasMetaData, Base): #FIXME there is in fact a o-m on subject-ex
     id=Column(Integer,primary_key=True)
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
     person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
-    startDateTime=Column(DateTime,nullable=False)
+    startDateTime=Column(DateTime,default=datetime.now())
     endDateTime=Column(DateTime) #TODO extremely useful for automatically moving to the next experiment... not that that is really an issue, but also nice for evaluating my performance
     methods_id=Column(Integer,ForeignKey('citeable.id'))
     exp_type=Column(String(20),nullable=False)
@@ -76,6 +76,7 @@ class SlicePrep(Experiment): #it works better to have this first because I can c
     def make_slices(self,num): #TODO do I actually want this? yeah, then just unused flag
         pass
 
+
 class Patch(Experiment): #FIXME should this be a o-o with slice prep???
     """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
     __tablename__='patch'
@@ -114,7 +115,6 @@ class Patch(Experiment): #FIXME should this be a o-o with slice prep???
                 self.internal_id=Internal.name
             else:
                 raise AttributeError
-
 
 
 class ChrSomWholeCell(Patch): #FIXME could do a 'HasLedStim' or something?

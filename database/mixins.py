@@ -38,12 +38,12 @@ class IsDataSource:
 
 
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
-    dateTime=Column(DateTime,nullable=False)
+    dateTime=Column(DateTime,default=datetime.now)
     value=Column(Float(53),nullable=False)
     sigfigs=Column(Integer) #TODO
     abs_error=Column(Float(53)) #TODO
-    def __init__(self,value,Parent=None,DataSource=None,datasource_id=None,sigfigs=None,abs_error=None):
-        self.dateTime=datetime.utcnow() #FIXME
+    def __init__(self,value,Parent=None,DataSource=None,datasource_id=None,sigfigs=None,abs_error=None,dateTime=None):
+        self.dateTime=dateTime
         self.datasource_id=datasource_id
         self.value=value
         self.sigfigs=sigfigs

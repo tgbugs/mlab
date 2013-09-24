@@ -15,7 +15,6 @@ hardware_metadata
 hardware_datastreams
 experiments_metadata
 chrsomsliceexperiment
-cell_to_cell
 cell_metadata
 reagentlot
 cagerack

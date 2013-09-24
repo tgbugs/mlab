@@ -31,7 +31,6 @@ patch
 cagerack
 reagentlot
 cell_metadata
-cell_to_cell
 chrsomsliceexperiment
 experiments_metadata
 hardware_datastreams

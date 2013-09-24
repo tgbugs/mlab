@@ -5,14 +5,8 @@
 #TODO watch out for sqlite_autoincriment=True needed when using composite keys!
 #TODO going to need the 'PRAGMA foreign_keys=ON' ???
 #TODO I can just store the bloody python code used to calculate the values in another column... >_<, that will allow for consistnecy check even if code changes
-#TODO install git you asshole
-#TODO aleks says overnormalization is just stuipd for this?
 
 #TODO conform to MINI, NIF ontologies?, or odML terminiologies?
-
-#TODO autogenerate ALL THE DATES based on startDateTime
-#table of projected dates which has: estimated and actual pairs for each one
-#but we don't really need that information stored because we can just generate it
 
 #TODO
 ### Create an IsLoggable class or the like to manage logging changes to fields
@@ -141,7 +135,7 @@ def main(echo=True):
     #engine=sqliteEng(echo=echo)
 
     #create metadata
-    Base.metadata.drop_all(engine,checkfirst=True)
+    #Base.metadata.drop_all(engine,checkfirst=True)
     Base.metadata.create_all(engine,checkfirst=True)
 
     #create session

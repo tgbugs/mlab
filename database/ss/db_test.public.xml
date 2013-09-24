@@ -61,8 +61,6 @@
          <column autoUpdated="true" defaultValue="nextval('cell_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial">
             <child column="cell_id" foreignKey="cell_df_assoc_cell_id_fkey" implied="false" onDeleteCascade="false" table="cell_df_assoc"/>
             <child column="cell_id" foreignKey="cell_metadata_cell_id_fkey" implied="false" onDeleteCascade="false" table="cell_metadata"/>
-            <child column="cell_1_id" foreignKey="cell_to_cell_cell_1_id_fkey" implied="false" onDeleteCascade="false" table="cell_to_cell"/>
-            <child column="cell_2_id" foreignKey="cell_to_cell_cell_2_id_fkey" implied="false" onDeleteCascade="false" table="cell_to_cell"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="mouse_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="cell_mouse_id_fkey" implied="false" onDeleteCascade="false" table="mouse"/>
@@ -121,20 +119,6 @@
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="cell_metadata_pkey" unique="true">
             <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="cell_to_cell" numRows="300" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" digits="0" id="0" name="cell_1_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="cell_to_cell_cell_1_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
-         </column>
-         <column autoUpdated="false" digits="0" id="1" name="cell_2_id" nullable="false" remarks="" size="10" type="int4">
-            <parent column="id" foreignKey="cell_to_cell_cell_2_id_fkey" implied="false" onDeleteCascade="false" table="cell"/>
-         </column>
-         <primaryKey column="cell_1_id" sequenceNumberInPK="1"/>
-         <primaryKey column="cell_2_id" sequenceNumberInPK="2"/>
-         <index name="cell_to_cell_pkey" unique="true">
-            <column ascending="true" name="cell_1_id"/>
-            <column ascending="true" name="cell_2_id"/>
          </index>
       </table>
       <table name="chrsomsliceexperiment" numRows="0" remarks="" schema="public" type="TABLE">
@@ -574,7 +558,7 @@
             <column ascending="true" name="neurotree_id"/>
          </index>
       </table>
-      <table name="person_to_project" numRows="44" remarks="" schema="public" type="TABLE">
+      <table name="person_to_project" numRows="29" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" digits="0" id="0" name="person_id" nullable="false" remarks="" size="10" type="int4">
             <parent column="id" foreignKey="person_to_project_person_id_fkey" implied="false" onDeleteCascade="false" table="people"/>
          </column>

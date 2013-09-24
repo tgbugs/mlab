@@ -531,7 +531,7 @@ def run_tests(session):
 
     s=t_slice(session,4)
     c=t_cell(session,5)
-    c2c=t_c2c(session)
+    #c2c=t_c2c(session) #no longer used
 
     d=t_datafile(session,10)#,2,1) #FIXME eating memory
     dfmd=t_dfmetadata(session,10) #as in 8 gigs of memory...

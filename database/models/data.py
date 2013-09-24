@@ -191,7 +191,7 @@ class DataFile(HasMetaData, Base):
     __table_args__=(ForeignKeyConstraint([url,path],['repopaths.url','repopaths.path']), {}) #FIXME this *could* be really fucking slow because they arent indexed, may need to revert these changes, ah well
     filename=Column(String,primary_key=True,autoincrement=False) #urp! on ext3 255 max for EACH /asdf/
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
-    creation_DateTime=Column(DateTime,nullable=False) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
+    creationDateTime=Column(DateTime,default=datetime.now) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
 
     #FUCK this is a many to many >_< BUT I can to a similar thing as I did for metadata!
     #FIXME 'has datafiles' is not isomorphic with subjects >_<
@@ -206,13 +206,13 @@ class DataFile(HasMetaData, Base):
             filename=Column(String,nullable=False)
             __table_args__=(ForeignKeyConstraint([url,path,filename],['datafile.url','datafile.path','datafile.filename']), {})
             datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
-            dateTime=Column(DateTime,nullable=False)
+            dateTime=Column(DateTime,default=datetime.now)
             value=Column(Float(53),nullable=False)
             sigfigs=Column(Integer) #TODO
             abs_error=Column(Float(53)) #TODO
             datasource=relationship('DataSource')
-            def __init__(self,value,DataFile=None,DataSource=None,datasource_id=None,url=None,path=None,filename=None,sigfigs=None,abs_error=None):
-                self.dateTime=datetime.utcnow() #FIXME
+            def __init__(self,value,DataFile=None,DataSource=None,datasource_id=None,url=None,path=None,filename=None,sigfigs=None,abs_error=None,dateTime=None):
+                self.dateTime=dateTime
                 self.url=url
                 self.path=path
                 self.filename=filename
@@ -247,13 +247,13 @@ class DataFile(HasMetaData, Base):
     @filetype.setter
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
-    def __init__(self,RepoPath=None,url=None,path=None,filename=None,DataSource=None,datasource_id=None,Cells=None): #FIXME Cells should be 'thing that has DataFiles...'
+    def __init__(self,RepoPath=None,url=None,path=None,filename=None,DataSource=None,datasource_id=None,Cells=None, creationDateTime=None): #FIXME Cells should be 'thing that has DataFiles...'
         #self.url=URL_STAND.baseClean(repo_url)
         #self.repo_path=URL_STAND.pathClean(repo_path)
         self.url=url
         self.path=path
         self.filename=filename
-        self.creation_DateTime=datetime.utcnow() #FIXME
+        self.creationDateTime=creationDateTime
         self.datasource_id=datasource_id
         #self.AssignID(Experiment) #FIXME should be subject instead?!?!
         self.AssignID(DataSource)
