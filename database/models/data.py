@@ -275,5 +275,3 @@ class InDatabaseData(Base):
     #TODO, need something more flexible than metadata (amazingly) that can hold stuff like calibration data not stored elsewhere?? also if I ever transition away from external datafiles or if I want to use neoio immediately to convert abf files
     pass
 
-
-

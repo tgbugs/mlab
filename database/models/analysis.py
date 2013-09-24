@@ -7,5 +7,13 @@ class _Result(HasNotes, Base):
     analysis_id=None
     output_id=None
 
+class OnlineAnalysis(Base):
+    #TODO these should probably be mixins!???! or something per cell type halp!
+    #should probably look like metadata tables
+    pass
+
+class OfflineAnalysis(Base):
+    pass
+
 
 

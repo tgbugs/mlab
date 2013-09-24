@@ -179,9 +179,10 @@ class Slice(HasMetaData, HasNotes, Base):
     startDateTime=Column(DateTime,nullable=False)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
     #hemisphere
     #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
-    #positionAP #this is metadata
+    #FIXME why the fuck is thickness metadata... it is linked to protocol and slice prep... ah, I guess it is sliceprep metadata that sort of needs to propagate
 
     cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
+
 
     def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None,startDateTime=None):
         self.startDateTime=startDateTime #datetime.utcnow() #FIXME
@@ -209,7 +210,7 @@ class Slice(HasMetaData, HasNotes, Base):
         return super().strHelper(depth)
 
 
-
+''' replaced by cells to datafile table it's simpler and has same data
 class CellPairs(Base): #FIXME cell tupels?!??!
     #FIXME should THIS have datafiles instead??@??@
     #YES yes eys eys eys ey sy
@@ -234,15 +235,9 @@ class CellPairs(Base): #FIXME cell tupels?!??!
         return '%s %s'%(self.cell_1_id,self.cell_2_id)
 
     #TODO FIXME so maybe this shouldn't be explicit here, it should be in the metadata linking cells to datafile channels????
+'''
 
-
-class Cell(HasDataFiles, HasMetaData, HasNotes, Base): #FIXME how to add markers? metadata? #FIXME move to subjects
-    #TODO link this as m-m to datafiles and bam many problems solved
-    #TODO cells are really the atomic 'subject' for this experiment... think about that
-    #FIXME this Cell class is NOT extensible
-    #probably should use inheritance
-    #id=None #FIXME fuck it dude, wouldn't it be easier to just give them unqiue ids so we don't have to worry about datetime? or is it the stupid sqlite problem?
-
+class Cell(HasDataFiles, HasMetaData, HasNotes, Base):
     #link to subject
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #FIXME this should be Patch ?? but.. but.. but.. also that unique constraint... #check experiment.prep_id == slice.prep_id
@@ -251,27 +246,16 @@ class Cell(HasDataFiles, HasMetaData, HasNotes, Base): #FIXME how to add markers
 
     #link to data
     #FIXME link to data seems like it is going to be via metadata :/
-    hs_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #FIXME need mapping to channels in abffile so that we can link the analysis results directly back to the cell, it really does feel like I should be putting cell id's into experiments rather than the ohter way around thought.... wait fuck damn it
-
-    #datafile_id=Column(Integer,ForeignKey('datafile.id'),nullable=False)
-    #repoid=Column(Integer) #FIXME this will NOT work because there are multiple files per cell!
-    #filename=Column(String) #FIXME NOTE this is _NOT_ a trivial problem
-    #__table_args__=(ForeignKeyConstraint([repoid,filename],['datafile.repopath_id','datafile.filename']), {}) #FIXME somehow this doesn't deal with the posibility of backups... which would be really, really good to keep track of at the same time so if there is a crash there can be instant failover
-
-    #TODO we might be able to link cells to headstages and all that other shit more easily, keeping the data on the cell itself in the cell, tl;dr NORMALIZE!
-    #hs_amp_serial=Column(Integer,ForeignKey('headstage.amp_serial'),primary_key=True)#,ForeignKey('headstages.id')) #FIXME critical
-
+    hs_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #TODO use this when creating datafile metadata?!
     startDateTime=Column(DateTime,nullable=False)
 
-    #cellmetadata=relationship('CellMetaData',primaryjoin='CellMetaData.cell_id==Cell.id') #TODO
-
     #these should probably go in metadata which can be configged per experiment
-    wholeCell=None
-    loosePatch=None
+    #wholeCell=None
+    #loosePatch=None
 
 
     #TODO abfFiles are going to be a many-many relationship here....
-    abfFile_channel=None #FIXME this nd the headstage serials seems redundant but... wtf? I have to link them somehow
+    #abfFile_channel=None #FIXME this nd the headstage serials seems redundant but... wtf? I have to link them somehow
 
     breakInTime=None
 
@@ -280,15 +264,16 @@ class Cell(HasDataFiles, HasMetaData, HasNotes, Base): #FIXME how to add markers
     #headstage=relationship('Hardware',primaryjoin='Cell.hs_id==Hardware.id')
 
     #NOTE: this table is now CRITICAL for maintaining a record of who was patched with whom
-    _cell_2=relationship('Cell', #FIXME I should only need ONE ROW for this
-                        secondary='cell_to_cell',
-                        primaryjoin='Cell.id==CellPairs.cell_1_id',
-                        secondaryjoin='Cell.id==CellPairs.cell_2_id',
-                        backref=backref('_cell_1'),
-                      )
-    @hybrid_property
+    #_cell_2=relationship('Cell', #FIXME I should only need ONE ROW for this
+                        #secondary='cell_to_cell',
+                        #primaryjoin='Cell.id==CellPairs.cell_1_id',
+                        #secondaryjoin='Cell.id==CellPairs.cell_2_id',
+                        #backref=backref('_cell_1'),
+                      #)
+    @hybrid_property #FIXME shouldn't his just be a property?
     def cells(self):
-        return self._cell_1+self._cell_2
+        #return self._cell_1+self._cell_2
+        return self.datafiles.cell
     def __init__(self,Slice=None,Experiment=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None):
         self.startDateTime=datetime.utcnow() #FIXME
         self.slice_id=slice_id

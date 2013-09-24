@@ -205,6 +205,18 @@ def popHardware(session): #FIXME
     session.add(Hardware(Parent=nidaq,type='led',name='470',model='M470L2',unique_id='M00277763'))
     session.commit()
 
+def popDataSources(session):
+    espX=None
+    espY=None
+    stage_z=None
+    tomsEyeballs=None
+    number_from_protocol=None
+    super_accurate_scale=None
+    mouse_scale=None
+    multiclampcommmader_shit_tons_of_fields_shit=None
+    clampex_same_problem_as_above_fuck=None
+    pass
+
 def popDataSourceAssociations(session):
     #TODO make this as simple as possible
     #so that hopefully the hardware tree is only needed for debugging/consistency checks
