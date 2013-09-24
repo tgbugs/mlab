@@ -112,8 +112,79 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
+<tr class='even'>
+ <td class='detail'>dateTime</td>
+ <td class='detail'>timestamp</td>
+ <td class='detail' align='right'>29,6</td>
+ <td class='detail' align='center' title='nullable'>&nbsp;&radic;&nbsp;</td>
+ <td class='detail' align='center'></td>
+ <td class='detail' align='right'>null</td>
+ <td class='detail'></td>
+ <td class='detail'> </td>
+ <td class='comment detail'></td>
+</tr>
+<tr class='odd'>
+ <td class='detail'>mouse_id</td>
+ <td class='detail'>int4</td>
+ <td class='detail' align='right'>10</td>
+ <td class='detail' align='center' title='nullable'>&nbsp;&radic;&nbsp;</td>
+ <td class='detail' align='center'></td>
+ <td class='detail' align='right'>null</td>
+ <td class='detail'></td>
+ <td class='detail'>
+  <table border='0' width='100%' cellspacing='0' cellpadding='0'>
+   <tr class='relative odd' valign='top'>
+    <td class='relatedTable detail' title="cagetransfer.mouse_id refs mouse.id via cagetransfer_mouse_id_fkey"><a href='mouse.html'>mouse</a><span class='relatedKey'>.id</span>
+    </td>
+    <td class='constraint detail'>cagetransfer_mouse_id_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+  </table>
+ </td>
+ <td class='comment detail'></td>
+</tr>
+<tr class='even'>
+ <td class='detail'>old_cage_id</td>
+ <td class='detail'>int4</td>
+ <td class='detail' align='right'>10</td>
+ <td class='detail' align='center' title='nullable'>&nbsp;&radic;&nbsp;</td>
+ <td class='detail' align='center'></td>
+ <td class='detail' align='right'>null</td>
+ <td class='detail'></td>
+ <td class='detail'>
+  <table border='0' width='100%' cellspacing='0' cellpadding='0'>
+   <tr class='relative even' valign='top'>
+    <td class='relatedTable detail' title="cagetransfer.old_cage_id refs cage.id via cagetransfer_old_cage_id_fkey"><a href='cage.html'>cage</a><span class='relatedKey'>.id</span>
+    </td>
+    <td class='constraint detail'>cagetransfer_old_cage_id_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+  </table>
+ </td>
+ <td class='comment detail'></td>
+</tr>
+<tr class='odd'>
+ <td class='detail'>new_cage_id</td>
+ <td class='detail'>int4</td>
+ <td class='detail' align='right'>10</td>
+ <td class='detail' align='center' title='nullable'>&nbsp;&radic;&nbsp;</td>
+ <td class='detail' align='center'></td>
+ <td class='detail' align='right'>null</td>
+ <td class='detail'></td>
+ <td class='detail'>
+  <table border='0' width='100%' cellspacing='0' cellpadding='0'>
+   <tr class='relative odd' valign='top'>
+    <td class='relatedTable detail' title="cagetransfer.new_cage_id refs cage.id via cagetransfer_new_cage_id_fkey"><a href='cage.html'>cage</a><span class='relatedKey'>.id</span>
+    </td>
+    <td class='constraint detail'>cagetransfer_new_cage_id_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+  </table>
+ </td>
+ <td class='comment detail'></td>
+</tr>
 </table>
-<p title='1 columns'>Table contained 0 rows at Mon Sep 23 17:39 PDT 2013<p/>
+<p title='5 columns'>Table contained 0 rows at Mon Sep 23 19:30 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -135,6 +206,35 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </tr>
 </table>
 </div>
+<table width='100%' border='0'><tr><td class='container'>
+<br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from cagetransfer'>
+&nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
+<map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
+<area shape="rect" id="node1" href="cagetransfer.html" title="cagetransfer" alt="" coords="387,334,629,519">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="172,5,343,425">
+<area shape="rect" id="node3" href="cage.html" title="cage" alt="" coords="5,409,128,493">
+</map>
+  <a name='diagram'><img id='oneDegreeImg' src='../diagrams/cagetransfer.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
+<map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="642,432,784,516">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="377,217,548,637">
+<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="198,227,321,311">
+<area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="13,111,136,195">
+<area shape="rect" id="node8" href="experiments.html" title="experiments" alt="" coords="187,728,332,812">
+<area shape="rect" id="node10" href="dam.html" title="dam" alt="" coords="7,619,142,703">
+<area shape="rect" id="node11" href="litter.html" title="litter" alt="" coords="188,432,331,516">
+<area shape="rect" id="node12" href="dob.html" title="dob" alt="" coords="9,416,140,500">
+<area shape="rect" id="node13" href="sire.html" title="sire" alt="" coords="7,517,142,601">
+<area shape="rect" id="node14" href="strain.html" title="strain" alt="" coords="198,331,321,415">
+<area shape="rect" id="node4" href="cagerack.html" title="cagerack" alt="" coords="195,43,324,127">
+<area shape="rect" id="node6" href="cagetransfer.html" title="cagetransfer" alt="" coords="592,12,834,197">
+<area shape="rect" id="node7" href="cell.html" title="cell" alt="" coords="879,619,1030,703">
+<area shape="rect" id="node9" href="slice.html" title="slice" alt="" coords="642,619,784,703">
+<area shape="rect" id="node15" href="mouse_metadata.html" title="mouse_metadata" alt="" coords="634,288,792,372">
+</map>
+
+  <a name='diagram'><img id='twoDegreesImg' src='../diagrams/cagetransfer.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
+</td></tr></table>
 </div>
 </body>
 </html>

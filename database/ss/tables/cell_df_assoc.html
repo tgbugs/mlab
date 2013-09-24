@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>datafile_url</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -111,7 +111,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="cell_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via cell_df_assoc_datafile_url_fkey"><a href='datafile.html'>datafile</a><span class='relatedKey'>.url</span>
     </td>
     <td class='constraint detail'>cell_df_assoc_datafile_url_fkey<span title='Restrict delete:
@@ -121,7 +121,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>datafile_path</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -131,7 +131,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="cell_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via cell_df_assoc_datafile_url_fkey"><a href='datafile.html'>datafile</a><span class='relatedKey'>.path</span>
     </td>
     <td class='constraint detail'>cell_df_assoc_datafile_url_fkey<span title='Restrict delete:
@@ -141,7 +141,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>datafile_filename</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -151,7 +151,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="cell_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via cell_df_assoc_datafile_url_fkey"><a href='datafile.html'>datafile</a><span class='relatedKey'>.filename</span>
     </td>
     <td class='constraint detail'>cell_df_assoc_datafile_url_fkey<span title='Restrict delete:
@@ -161,7 +161,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>cell_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -171,7 +171,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="cell_df_assoc.cell_id refs cell.id via cell_df_assoc_cell_id_fkey"><a href='cell.html'>cell</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>cell_df_assoc_cell_id_fkey<span title='Restrict delete:
@@ -182,7 +182,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='4 columns'>Table contained 3,980 rows at Mon Sep 23 17:39 PDT 2013<p/>
+<p title='4 columns'>Table contained 3,980 rows at Mon Sep 23 19:30 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -208,23 +208,23 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from cell_df_assoc'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="cell_df_assoc.html" title="cell_df_assoc" alt="" coords="245,5,558,166">
-<area shape="rect" id="node2" href="cell.html" title="cell" alt="" coords="22,205,183,409">
-<area shape="rect" id="node3" href="datafile.html" title="datafile" alt="" coords="5,7,200,187">
+<area shape="rect" id="node1" href="cell_df_assoc.html" title="cell_df_assoc" alt="" coords="239,5,553,166">
+<area shape="rect" id="node2" href="cell.html" title="cell" alt="" coords="19,205,181,409">
+<area shape="rect" id="node3" href="datafile.html" title="datafile" alt="" coords="5,7,195,187">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/cell_df_assoc.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="cell.html" title="cell" alt="" coords="607,303,769,507">
+<area shape="rect" id="node1" href="cell.html" title="cell" alt="" coords="605,303,766,507">
 <area shape="rect" id="node2" href="experiments.html" title="experiments" alt="" coords="6,398,151,482">
 <area shape="rect" id="node3" href="hardware.html" title="hardware" alt="" coords="403,499,546,583">
 <area shape="rect" id="node4" href="mouse.html" title="mouse" alt="" coords="196,398,359,482">
 <area shape="rect" id="node5" href="slice.html" title="slice" alt="" coords="403,398,546,482">
-<area shape="rect" id="node6" href="cell_df_assoc.html" title="cell_df_assoc" alt="" coords="830,106,1143,267">
-<area shape="rect" id="node7" href="datafile.html" title="datafile" alt="" coords="591,69,785,249">
-<area shape="rect" id="node9" href="datasources.html" title="datasources" alt="" coords="410,170,539,254">
-<area shape="rect" id="node10" href="repopaths.html" title="repopaths" alt="" coords="411,69,538,153">
-<area shape="rect" id="node8" href="cell_metadata.html" title="cell_metadata" alt="" coords="915,297,1058,381">
-<area shape="rect" id="node11" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="887,5,1087,89">
+<area shape="rect" id="node6" href="cell_df_assoc.html" title="cell_df_assoc" alt="" coords="825,106,1138,267">
+<area shape="rect" id="node7" href="datafile.html" title="datafile" alt="" coords="591,69,780,249">
+<area shape="rect" id="node9" href="datasources.html" title="datasources" alt="" coords="406,170,543,254">
+<area shape="rect" id="node10" href="repopaths.html" title="repopaths" alt="" coords="407,69,542,153">
+<area shape="rect" id="node8" href="cell_metadata.html" title="cell_metadata" alt="" coords="910,297,1053,381">
+<area shape="rect" id="node11" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="881,5,1081,89">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/cell_df_assoc.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

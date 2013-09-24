@@ -1,5 +1,5 @@
-citeable
 cage
+citeable
 dob
 sex
 calibrationdata
@@ -39,11 +39,11 @@ mouse_metadata
 person_to_project
 slice_metadata
 users_datastreams
+cagetransfer
 righistory
 sliceprep
 cell_df_assoc
 datafiles_metadata
-cagetransfer
 file
 indatabasedata
 methods

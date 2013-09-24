@@ -127,11 +127,11 @@ def connect(echo=False):
 
 def main(echo=True):
     #create engine
-    engine=postgresEng(echo=echo,wipe_db=False)
+    engine=postgresEng(echo=echo,wipe_db=True)
     #engine=sqliteEng(echo=echo)
 
     #create metadata
-    #Base.metadata.drop_all(engine,checkfirst=True)
+    Base.metadata.drop_all(engine,checkfirst=True)
     Base.metadata.create_all(engine,checkfirst=True)
 
     #create session

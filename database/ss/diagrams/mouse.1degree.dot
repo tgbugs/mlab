@@ -21,6 +21,9 @@ digraph "oneDegreeRelationshipsDiagram" {
   ];
   "breeder":"id":w -> "mouse":"id.type":e [arrowhead=none dir=back arrowtail=teeodot];
   "breeder":"sex_id":w -> "sex":"abbrev":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cagetransfer":"mouse_id":w -> "mouse":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cagetransfer":"new_cage_id":w -> "cage":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cagetransfer":"old_cage_id":w -> "cage":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"experiment_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"mouse_id":w -> "mouse":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell":"slice_id":w -> "slice":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -36,7 +39,7 @@ digraph "oneDegreeRelationshipsDiagram" {
   "mouse":"litter_id":w -> "litter":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse":"sex_id":w -> "sex":"abbrev":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse":"sire_id":w -> "sire":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "mouse":"strain_id":w -> "strain":"jax_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "mouse":"strain_id":w -> "strain":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse_metadata":"mouse_id":w -> "mouse":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "sire":"id":w -> "breeder":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "slice":"mouse_id":w -> "mouse":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -57,10 +60,24 @@ digraph "oneDegreeRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cage</TD></TR>
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
     </TABLE>>
     URL="cage.html"
     tooltip="cage"
+  ];
+  "cagetransfer" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cagetransfer</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
+      <TR><TD PORT="old_cage_id" COLSPAN="3" ALIGN="LEFT">old_cage_id</TD></TR>
+      <TR><TD PORT="new_cage_id" COLSPAN="3" ALIGN="LEFT">new_cage_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="cagetransfer.html"
+    tooltip="cagetransfer"
   ];
   "cell" [
     label=<
@@ -143,14 +160,14 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="cage_id" COLSPAN="2" ALIGN="LEFT">cage_id</TD><TD PORT="cage_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="sex_id" COLSPAN="2" ALIGN="LEFT">sex_id</TD><TD PORT="sex_id.type" ALIGN="LEFT">varchar[1]</TD></TR>
       <TR><TD PORT="genotype_id" COLSPAN="2" ALIGN="LEFT">genotype_id</TD><TD PORT="genotype_id.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD PORT="strain_id" COLSPAN="2" ALIGN="LEFT">strain_id</TD><TD PORT="strain_id.type" ALIGN="LEFT">varchar[20]</TD></TR>
+      <TR><TD PORT="strain_id" COLSPAN="2" ALIGN="LEFT">strain_id</TD><TD PORT="strain_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="litter_id" COLSPAN="2" ALIGN="LEFT">litter_id</TD><TD PORT="litter_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="sire_id" COLSPAN="2" ALIGN="LEFT">sire_id</TD><TD PORT="sire_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="dam_id" COLSPAN="2" ALIGN="LEFT">dam_id</TD><TD PORT="dam_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="dob_id" COLSPAN="2" ALIGN="LEFT">dob_id</TD><TD PORT="dob_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="dod" COLSPAN="2" ALIGN="LEFT">dod</TD><TD PORT="dod.type" ALIGN="LEFT">timestamp[29,6]</TD></TR>
       <TR><TD PORT="experiment_id" COLSPAN="2" BGCOLOR="#f4f7da" ALIGN="LEFT">experiment_id</TD><TD PORT="experiment_id.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
     </TABLE>>
     URL="mouse.html"
     tooltip="mouse"
@@ -210,7 +227,8 @@ digraph "oneDegreeRelationshipsDiagram" {
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">strain</TD></TR>
-      <TR><TD PORT="jax_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">jax_id</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="jax_id" COLSPAN="3" ALIGN="LEFT">jax_id</TD></TR>
       <TR><TD PORT="name" COLSPAN="3" ALIGN="LEFT">name</TD></TR>
       <TR><TD PORT="abbrev" COLSPAN="3" ALIGN="LEFT">abbrev</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>

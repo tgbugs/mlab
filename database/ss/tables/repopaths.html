@@ -102,6 +102,17 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </thead>
 <tbody valign='top'>
 <tr class='even'>
+ <td class='detail'>name</td>
+ <td class='detail'>varchar</td>
+ <td class='detail' align='right'>2147483647</td>
+ <td class='detail' align='center' title='nullable'>&nbsp;&radic;&nbsp;</td>
+ <td class='detail' align='center'></td>
+ <td class='detail' align='right'>null</td>
+ <td class='detail'></td>
+ <td class='detail'> </td>
+ <td class='comment detail'></td>
+</tr>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>url</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -110,7 +121,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="datafile.[url, path] refs repopaths.[url, path] via datafile_url_fkey"><a href='datafile.html'>datafile</a><span class='relatedKey'>.url</span>
     </td>
     <td class='constraint detail'>datafile_url_fkey<span title='Restrict delete:
@@ -120,7 +131,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="repopaths.url refs repository.url via repopaths_url_fkey"><a href='repository.html'>repository</a><span class='relatedKey'>.url</span>
     </td>
     <td class='constraint detail'>repopaths_url_fkey<span title='Restrict delete:
@@ -130,7 +141,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='primaryKey' title='Primary Key'>path</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -139,7 +150,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="datafile.[url, path] refs repopaths.[url, path] via datafile_url_fkey"><a href='datafile.html'>datafile</a><span class='relatedKey'>.path</span>
     </td>
     <td class='constraint detail'>datafile_url_fkey<span title='Restrict delete:
@@ -150,10 +161,21 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>assoc_program</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>30</td>
+ <td class='detail' align='center' title='nullable'>&nbsp;&radic;&nbsp;</td>
+ <td class='detail' align='center'></td>
+ <td class='detail' align='right'>null</td>
+ <td class='detail'></td>
+ <td class='detail'> </td>
+ <td class='comment detail'></td>
+</tr>
+<tr class='even'>
+ <td class='detail'>verified</td>
+ <td class='detail'>bool</td>
+ <td class='detail' align='right'>1</td>
  <td class='detail' align='center' title='nullable'>&nbsp;&radic;&nbsp;</td>
  <td class='detail' align='center'></td>
  <td class='detail' align='right'>null</td>
@@ -173,7 +195,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='4 columns'>Table contained 1 rows at Mon Sep 23 17:39 PDT 2013<p/>
+<p title='6 columns'>Table contained 2 rows at Mon Sep 23 19:30 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -199,19 +221,19 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from repopaths'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="515,7,709,187">
-<area shape="rect" id="node2" href="repopaths.html" title="repopaths" alt="" coords="185,5,471,166">
-<area shape="rect" id="node3" href="repository.html" title="repository" alt="" coords="6,7,141,139">
+<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="523,31,712,211">
+<area shape="rect" id="node2" href="repopaths.html" title="repopaths" alt="" coords="193,5,479,214">
+<area shape="rect" id="node3" href="repository.html" title="repository" alt="" coords="6,31,149,163">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/repopaths.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="cell_df_assoc.html" title="cell_df_assoc" alt="" coords="948,11,1119,95">
-<area shape="rect" id="node2" href="datafile.html" title="datafile" alt="" coords="695,11,889,191">
-<area shape="rect" id="node3" href="datasources.html" title="datasources" alt="" coords="443,183,573,267">
-<area shape="rect" id="node4" href="repopaths.html" title="repopaths" alt="" coords="365,5,651,166">
-<area shape="rect" id="node6" href="repository.html" title="repository" alt="" coords="186,7,321,139">
-<area shape="rect" id="node5" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="933,113,1133,197">
-<area shape="rect" id="node7" href="credentials.html" title="credentials" alt="" coords="6,31,141,115">
+<area shape="rect" id="node1" href="cell_df_assoc.html" title="cell_df_assoc" alt="" coords="951,41,1121,125">
+<area shape="rect" id="node2" href="datafile.html" title="datafile" alt="" coords="703,41,892,221">
+<area shape="rect" id="node3" href="datasources.html" title="datasources" alt="" coords="447,231,585,315">
+<area shape="rect" id="node4" href="repopaths.html" title="repopaths" alt="" coords="373,5,659,214">
+<area shape="rect" id="node6" href="repository.html" title="repository" alt="" coords="186,31,329,163">
+<area shape="rect" id="node5" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="936,142,1136,226">
+<area shape="rect" id="node7" href="credentials.html" title="credentials" alt="" coords="6,55,141,139">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/repopaths.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

@@ -2,11 +2,11 @@ recipe
 methods
 indatabasedata
 file
-cagetransfer
 datafiles_metadata
 cell_df_assoc
 sliceprep
 righistory
+cagetransfer
 users_datastreams
 slice_metadata
 person_to_project
@@ -46,5 +46,5 @@ hardwaretype
 calibrationdata
 sex
 dob
-cage
 citeable
+cage

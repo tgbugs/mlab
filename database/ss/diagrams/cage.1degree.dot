@@ -20,6 +20,9 @@ digraph "oneDegreeRelationshipsDiagram" {
     arrowsize="0.8"
   ];
   "cagerack":"cage_id":w -> "cage":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cagetransfer":"mouse_id":w -> "mouse":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cagetransfer":"new_cage_id":w -> "cage":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "cagetransfer":"old_cage_id":w -> "cage":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "litter":"cage_id":w -> "cage":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse":"cage_id":w -> "cage":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse":"litter_id":w -> "litter":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -28,7 +31,7 @@ digraph "oneDegreeRelationshipsDiagram" {
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cage</TD></TR>
       <TR><TD PORT="id" COLSPAN="2" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD><TD PORT="id.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 0</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 0</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
     </TABLE>>
     URL="cage.html"
     tooltip="cage"
@@ -45,6 +48,20 @@ digraph "oneDegreeRelationshipsDiagram" {
     </TABLE>>
     URL="cagerack.html"
     tooltip="cagerack"
+  ];
+  "cagetransfer" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cagetransfer</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="dateTime" COLSPAN="3" ALIGN="LEFT">dateTime</TD></TR>
+      <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
+      <TR><TD PORT="old_cage_id" COLSPAN="3" ALIGN="LEFT">old_cage_id</TD></TR>
+      <TR><TD PORT="new_cage_id" COLSPAN="3" ALIGN="LEFT">new_cage_id</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="cagetransfer.html"
+    tooltip="cagetransfer"
   ];
   "litter" [
     label=<
@@ -81,7 +98,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="dob_id" COLSPAN="3" ALIGN="LEFT">dob_id</TD></TR>
       <TR><TD PORT="dod" COLSPAN="3" ALIGN="LEFT">dod</TD></TR>
       <TR><TD PORT="experiment_id" COLSPAN="3" BGCOLOR="#f4f7da" ALIGN="LEFT">experiment_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
     </TABLE>>
     URL="mouse.html"
     tooltip="mouse"

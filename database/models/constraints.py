@@ -1,6 +1,7 @@
 #contains all the constraint tables and their initial values 
 from database.imports   import *
 from database.base      import Base
+from database.mixins    import HasDataFiles
 
 ###----------------------------------------------------------------
 ###  Helper classes/tables for mice (normalization and constraints)
@@ -54,15 +55,15 @@ class SEX(Base):
         return '\n%s %s %s'%(self.name,self.abbrev,self.symbol) #FIXME somehow there are trailing chars here >_<
 
 
-class Strain(HasDataFiles, Base): #TODO
+class Strain(Base): #TODO HasCiteable!@? need something between citeable and datafile
+    id=Column(Integer,primary_key=True) #FIXME
+    jax_id=Column(String(10))
+    name=Column(Unicode(50)) #scrape from jax
+    abbrev=Column(String(15))
     #FIXME class for strain IDs pair up with the shorthand names that I use and make sure mappings are one to one
     #will be VERY useful when converting for real things
     #FIXME: by reflection from jax??? probably not
-    id=None
     #id=Column(String(20),primary_key=True,autoincrement=False)
-    jax_id=Column(String(10),primary_key=True)
-    name=Column(Unicode(50)) #scrape from jax
-    abbrev=Column(String(15))
     #TODO can just use datafiles to get the data on them via
     #http://jaxmice.jax.org/strain/*.html
     #make a way to put the data in via a url

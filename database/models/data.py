@@ -24,6 +24,7 @@ class DataSource(Base): #FIXME this could also be called 'DataStreams' or 'RawDa
     id=Column(Integer,primary_key=True)
     #I mean, sure once 'source' back propagates down it will be ok but wtf
     name=Column(String(20),nullable=False) #FIXME unforunately the one disadvantage of this setup is that there are no real constraints to prevent someone from forming an erroious link between types of data and where it comes from
+    #FIXME if these are going to be sources for datafiles they need to accomodate lack of units...
     #FIXME where do we keep the calibration data ;_;
     #define some properties
     prefix=Column(String(2),ForeignKey('si_prefix.symbol'),nullable=False)#,unique=True)
@@ -249,7 +250,7 @@ class DataFile(HasMetaData, Base):
     @filetype.setter
     def filetype(self):
         raise AttributeError('readonly attribute, there should be a file name associate with this record?')
-    def __init__(self,RepoPath=None,url=None,path=None,filename=None,DataSource=None,datasource_id=None,Cells=None, creationDateTime=None): #FIXME Cells should be 'thing that has DataFiles...'
+    def __init__(self,RepoPath=None,filename=None,DataSource=None,url=None,path=None,datasource_id=None,Cells=None, creationDateTime=None): #FIXME Cells should be 'thing that has DataFiles...'
         #self.url=URL_STAND.baseClean(repo_url)
         #self.repo_path=URL_STAND.pathClean(repo_path)
         self.url=url
@@ -259,7 +260,10 @@ class DataFile(HasMetaData, Base):
         self.datasource_id=datasource_id
         #self.AssignID(Experiment) #FIXME should be subject instead?!?!
         self.AssignID(DataSource)
-        self.cell.extend(Cells) #TODO listlike #FIXME there's going to be a row for every bloody thing with HasDataFiles
+        try:
+            self.cell.extend(Cells) #TODO listlike #FIXME there's going to be a row for every bloody thing with HasDataFiles
+        except:
+            pass
         #FIXME can I have an in-database check to make sure that pairs of cells match CellPairs???
         if RepoPath:
             if RepoPath.url:

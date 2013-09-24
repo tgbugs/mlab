@@ -1,4 +1,4 @@
-from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware
+from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, RepoPath, DataFile, DataSource
 from database.imports import printD
 
 ###----------------------------
@@ -205,19 +205,8 @@ def popHardware(session): #FIXME
     session.add(Hardware(Parent=nidaq,type='led',name='470',model='M470L2',unique_id='M00277763'))
     session.commit()
 
-def popRepos(session):
-    jax=Repository('http://jaxmice.jax.org')
-    session.add(jax)
-    session.commit()
-    session.add(RepoPath(jax,'/strain'),name='jax strain db')
-    session.commit()
-
-def popDataFiles(session):
-    rep=session.query(RepoPath).filter_by(name='jax strain db')[0]
-    session.add(DataFile(rep,'003718.html'))
-    
-
 def popDataSources(session):
+    session.add(DataSource(name='jax',unit='num',prefix=''))
     espX=None
     espY=None
     stage_z=None
@@ -228,6 +217,20 @@ def popDataSources(session):
     multiclampcommmader_shit_tons_of_fields_shit=None
     clampex_same_problem_as_above_fuck=None
     pass
+
+def popRepos(session):
+    jax=Repository('http://jaxmice.jax.org')
+    session.add(jax)
+    session.commit()
+    session.add(RepoPath(jax,'/strain',name='jax strain db'))
+    session.commit()
+
+def popDataFiles(session): #FIXME this isn't a datafile, it is actually a citeable! :D look at how easy it was to make that mistake
+    rep=session.query(RepoPath).filter_by(name='jax strain db')[0]
+    ds=session.query(DataSource).filter_by(name='jax')[0]
+    session.add(DataFile(rep,'003718.html',ds))
+    
+
 
 def popDataSourceAssociations(session):
     #TODO make this as simple as possible
@@ -248,6 +251,7 @@ def populateConstraints(session):
 def populateTables(session):
     """A run once to load current data (not existing elsewhere into the database (ie may use google docs as a web interface for entering/viewing certain types of data eg mice)"""
     popHardware(session)
+    popDataSources(session)
     popRepos(session)
     popDataFiles(session)
 if __name__=='__main__':
