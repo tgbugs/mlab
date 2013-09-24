@@ -87,6 +87,7 @@ class Subject(Base):
 
 class Mouse(HasMetaData, HasNotes, Subject): #TODO species metadata???
     #in addition to the id, keep track of some of the real world ways people refer to mice!
+    __tablename__='mouse'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
     eartag=Column(Integer)
     tattoo=Column(Integer)
@@ -107,6 +108,7 @@ class Mouse(HasMetaData, HasNotes, Subject): #TODO species metadata???
     sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire')) #FIXME test the sire_id=0 hack may not work on all schemas?
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam')) #FIXME delete these, they are not used anymore
 
+    __mapper_args__ = {'polymorphic_identity':'mouse'}
 
     #dates and times
     dob_id=Column(Integer, ForeignKey('dob.id'),nullable=False) #backref FIXME data integrity problem, dob_id and litter.dob_id may not match if entered manually...
@@ -123,11 +125,11 @@ class Mouse(HasMetaData, HasNotes, Subject): #TODO species metadata???
     breedingRec=relationship('Breeder',primaryjoin='Mouse.id==Breeder.id',backref=backref('mouse',uselist=False),uselist=False)
 
     #experiments
-    experiment_id=Column(Integer,ForeignKey('experiments.id'),unique=True) #FIXME m-m
+    #experiment_id=Column(Integer,ForeignKey('experiments.id'),unique=True) #FIXME m-m
 
     #things that not all mice will have but that are needed for data to work out
     slices=relationship('Slice',backref=backref('mouse',uselist=False))
-    cells=relationship('Cell',backref=backref('mouse',uselist=False))
+    cells=relationship('Cell',primaryjoin='Cell.mouse_id==Mouse.id',backref=backref('mouse',uselist=False))
 
 
     def __init__(self,Litter=None, litter_id=None,sire_id=None,dam_id=None, dob_id=None,DOB=None, eartag=None,tattoo=None,num=None,name=None, sex_id=None,genotype=None,strain_id=None, cage_id=None, dod=None, notes=[]):
@@ -187,7 +189,7 @@ class Slice(HasMetaData, HasNotes, Base):
     id=None
     id=Column(Integer,primary_key=True) #FIXME
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
-    prep_id=Column(Integer,ForeignKey('sliceprep.id'),nullable=False) #TODO this should really refer to slice prep, but suggests that this class should be 'acute slice'
+    prep_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #TODO this should really refer to slice prep, but suggests that this class should be 'acute slice'
     prep=relationship('Experiment',primaryjoin='Experiment.id==Slice.prep_id',backref=backref('slices',uselist=True))
     #TODO check that there are not more slices than the thickness (from the metadta) divided by the total length of the largest know mouse brain
     startDateTime=Column(DateTime,default=datetime.now)#,primary_key=True) #these two keys should be sufficient to ID a slice and I can use ORDER BY startDateTime and query(Slice).match(id=Mouse.id).count() :)
@@ -210,8 +212,8 @@ class Slice(HasMetaData, HasNotes, Base):
                 self.prep_id=Prep.id
             else:
                 raise AttributeError
-            if Prep.mouse:
-                self.mouse_id=Prep.mouse.id #FIXME ask aleks about this
+            if Prep.subjects:
+                self.mouse_id=Prep.subjects[0].id
             else:
                 raise AttributeError('your sliceprep has no mouse!')
         elif Mouse:
@@ -250,14 +252,14 @@ class CellPairs(Base): #FIXME cell tupels?!??!
     #TODO FIXME so maybe this shouldn't be explicit here, it should be in the metadata linking cells to datafile channels????
 '''
 
-class Cell(Base):
+class Cell(Subject):
     __tablename__='cell'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME
     #FIXME overlap between experiment type and cell type, confusing
-    exp_type=Column(String,nullable=False)
+    #exp_type=Column(String,nullable=False)
     __mapper_args__={
-        'polymorphic_on':exp_type,
+        #'polymorphic_on':exp_type,
         'polymorphic_identity':'cell'}
 
 
@@ -265,7 +267,7 @@ class PatchCell(HasDataFiles, HasMetaData, HasNotes, Cell):
     __tablename__='patchcell'
     #link to subject
     id=Column(Integer,ForeignKey('cell.id'),primary_key=True,autoincrement=False)
-    patch_id=Column(Integer,ForeignKey('patch.id'),nullable=False) #FIXME this should be Patch ?? but.. but.. but.. also that unique constraint... #check experiment.prep_id == slice.prep_id
+    patch_id=Column(Integer,ForeignKey('experiments.id'),nullable=False) #FIXME this should be Patch ?? but.. but.. but.. also that unique constraint... #check experiment.prep_id == slice.prep_id
     slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False)
     #FIXME check that experiment_id.sliceprep.slices contains slice_id
 

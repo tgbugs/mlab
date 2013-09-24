@@ -1,6 +1,6 @@
 from database.imports import *
 from database.base import Base
-from database.mixins import HasNotes, HasMetaData, HasReagents, HasHardware
+from database.mixins import HasNotes, HasMetaData, HasReagents, HasHardware, HasSubjects
 
 ###-------------------
 ###  Experiment tables
@@ -23,6 +23,7 @@ from database.mixins import HasNotes, HasMetaData, HasReagents, HasHardware
 #TODO handling multiple subjects is NOT handled EXPLICITLY here, links between methods and subject type are probably probably not in the domain of things we should enforce
 
 #TODO XXX FIXME so in theory I could convert all of this joined table inheritance into metadata at the cost of connections to regents, OR better yet I could have a many-many with reagents O_0
+    
 class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base): #FIXME there is in fact a o-m on subject-experiment, better fix that, lol jk, it is fixed ish :)
     #XXX datetimes, non nulls, and foreign keys go in these, metadata should be where all the non foreign key stuff goes
     __tablename__='experiments'
@@ -34,7 +35,7 @@ class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base): #FIX
     methods_id=Column(Integer,ForeignKey('citeable.id'))
     exp_type=Column(String(20),ForeignKey('experimenttype.id'),nullable=False)
 
-    def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None,Reagents=[],Hardware=[],Subjects=[]):
+    def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None,Reagents=[],Hardware=[],Subjects=[],ExpType=None,exp_type=None):
         self.project_id=project_id
         self.person_id=person_id
         self.methods_id=methods_id
@@ -42,9 +43,15 @@ class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base): #FIX
         self.reagents.extend(Reagents) #TODO base experiment and then extend? or maybe a bit more complicated
         self.hardware.extend(Hardware)
         self.subjects.extend(Subjects)
+        self.exp_type=exp_type
 
         self.AssignID(Project)
         self.AssignID(Person)
+        if ExpType:
+            if ExpType.id:
+                self.exp_type=ExpType.id
+            else:
+                raise AttributeError
         if Methods:
             if Methods.id:
                 self.methods_id=Methods.id
@@ -52,6 +59,7 @@ class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base): #FIX
                 raise AttributeError
 
 
+'''
 class SlicePrep(Experiment): #it works better to have this first because I can create a sliceprep object and THEN pick the mouse :)
     """ Notes on the dissection and slice prep"""
     __tablename__='sliceprep'
@@ -121,6 +129,7 @@ class ChrSomWholeCell(Patch): #FIXME could do a 'HasLedStim' or something?
     led_id=Column(Integer,ForeignKey('hardware.id'))
     __mapper_args__ = {'polymorphic_identity':'chr_som_slice'}
 
+'''
 """
 class _HistologyExperiment(Experiment):
     __tablename__='histologyexperiment'

@@ -20,6 +20,7 @@ from database.models.constraints import *
 __all__.extend([
         'person_to_project',
         'HardwareType',
+        'ExperimentType',
         'File',
         'SI_PREFIX',
         'SI_UNIT',
@@ -47,8 +48,8 @@ from database.models.experiments import *
 __all__.extend([
         'person_to_project',
         'Experiment',
-        'SlicePrep',
-        'Patch'
+        #'SlicePrep',
+        #'Patch'
         #'ChrSomWholeCell',
 ])
 
@@ -58,7 +59,7 @@ __all__.extend([
         'Hardware',
         'RigHistory',
         'ReagentInventory',
-        'ReagentLot'
+        'Reagent'
         #'Stock',
         #'Solution',
 ])

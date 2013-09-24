@@ -273,7 +273,7 @@ class t_mice(TEST):
 
 class t_slice(TEST):
     def make_all(self):
-        preps=self.session.query(SlicePrep)
+        preps=self.session.query(Experiment).filter_by(exp_type='acute slice prep')
         
         self.records=[]
         [[self.records.append(Slice(Prep=prep,startDateTime=datetime.utcnow()+timedelta(hours=i))) for i in range(self.num)] for prep in preps] #FIXME amplification of numbers
@@ -282,7 +282,7 @@ class t_slice(TEST):
 class t_cell(TEST):
     def make_all(self):
         slices=[s for s in self.session.query(Slice)]
-        patches=[p for p in self.session.query(Patch)]
+        patches=[p for p in self.session.query(Experiment).filter_by(exp_type='acute slice prep')]
         headstages=[h for h in self.session.query(Hardware).filter_by(type='headstage')][:2]
         self.records=[]
         z=0
@@ -358,6 +358,7 @@ class t_experiment(TEST):
 
         mice=[m for m in self.session.query(Mouse).filter(Mouse.breedingRec==None,Mouse.dod==None)] #FIXME
 
+
         #mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
         self.records=[]
         for p in projects.records:
@@ -374,28 +375,34 @@ class t_experiment(TEST):
 class t_patch(TEST):
     def make_all(self):
         #mice=[m for m in self.session.query(Mouse).filter(Mouse.dod==None)]
-        preps=[p for p in self.session.query(SlicePrep)]
-        acsf=ReagentInventory(name='poop1')
-        internal=ReagentInventory(name='poop2')
+        preps=[p for p in self.session.query(Experiment).filter_by(exp_type='acute slice prep')]
+        project=self.session.query(Project)[0]
+        person=self.session.query(Person)[0]
+        acsf=Reagent(reagent_id='poop1')
+        internal=Reagent(reagent_id='poop2')
         self.session.add_all([acsf,internal])
         #self.session.flush() #shit not working FIXME
         self.session.commit()
+        exptype=self.session.query(ExperimentType).filter_by(abbrev='patch')[0]
 
         self.records=[]
         datetimes=self.make_datetime()
-        [self.records.extend([Patch(Prep=p,acsf=acsf,Internal=internal,startDateTime=datetimes[i]) for i in range(self.num)]) for p in preps] #FIXME classic mouse not born yet problem
+        [self.records.extend([Experiment(Project=project,Person=person,Reagents=[internal,acsf],startDateTime=datetimes[i],ExpType=exptype) for i in range(self.num)]) for p in preps] #FIXME classic mouse not born yet problem
 
 
 class t_sliceprep(TEST):
     def make_all(self):
         project=self.session.query(Project)[0]
         person=self.session.query(Person)[0]
-        self.records=[SlicePrep(Project=project,Person=person,startDateTime=datetime.utcnow()-timedelta(int(np.random.randint(1))),sucrose_id='poop') for i in range(self.num)] #FIXME need to find a way to propagate mouse w/ RI
+        sucrose=Reagent(reagent_id='poop')
+        exptype=self.session.query(ExperimentType).filter_by(abbrev='prep')[0]
+        self.records=[Experiment(Project=project,Person=person,Reagents=[sucrose,],startDateTime=datetime.utcnow()-timedelta(int(np.random.randint(1))),ExpType=exptype) for i in range(self.num)] #FIXME need to find a way to propagate mouse w/ RI
     def add_mice(self):
         mice=self.session.query(Mouse).filter_by(sex_id='u')[100:100+self.num]
         np.random.shuffle(mice)
         for i in range(self.num):
-            mice[i].experiment_id=self.records[i].id
+            #mice[i].experiment_id=self.records[i].id
+            self.records[i].subjects.append(mice[i])
         self.session.commit()
         
 
@@ -483,7 +490,11 @@ class t_hwmetadata(TEST):
 
 class t_reagent(TEST):
     def make_all(self):
-        self.records=[ReagentInventory(name='poop')]
+        self.records=[
+            ReagentInventory(name='poop'),
+            ReagentInventory(name='poop1'),
+            ReagentInventory(name='poop2')
+        ]
     
 
 def run_tests(session):
@@ -522,7 +533,13 @@ def run_tests(session):
     ds=t_datasource(session)
     h=t_hardware(session)
     hwmd=t_hwmetadata(session,5)
-    t_experiment(session,1,4) #FIXME argh, so many things can become inconsistent...
+    #t_experiment(session,1,4) #FIXME argh, so many things can become inconsistent...
+    t_people(session,20)
+    t_project(session,1)
+    #t_mice(session,300)
+    l=t_litters(session,20)
+    l.add_members()
+
 
     i=t_reagent(session)
 

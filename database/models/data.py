@@ -260,7 +260,7 @@ class DataFile(HasMetaData, Base):
         self.datasource_id=datasource_id
         #self.AssignID(Experiment) #FIXME should be subject instead?!?!
         self.AssignID(DataSource)
-        self.cell.extend(Cells) #TODO listlike #FIXME there's going to be a row for every bloody thing with HasDataFiles
+        self.patchcell.extend(Cells) #TODO listlike #FIXME there's going to be a row for every bloody thing with HasDataFiles
         #FIXME can I have an in-database check to make sure that pairs of cells match CellPairs???
         if RepoPath:
             if RepoPath.url:

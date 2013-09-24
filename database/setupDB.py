@@ -1,4 +1,4 @@
-from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, RepoPath, DataFile, DataSource, Strain
+from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, RepoPath, DataFile, DataSource, Strain, ExperimentType
 from database.imports import printD
 
 ###----------------------------
@@ -205,6 +205,10 @@ def popHardware(session): #FIXME
     session.add(Hardware(Parent=nidaq,type='led',name='470',model='M470L2',unique_id='M00277763'))
     session.commit()
 
+def popExperimentType(session):
+    session.add(ExperimentType('acute slice prep','prep'))
+    session.add(ExperimentType('in vitro patch','patch'))
+
 def popDataSources(session):
     session.add(DataSource(name='jax',unit='num',prefix=''))
     espX=None
@@ -255,6 +259,7 @@ def populateConstraints(session):
     popSIPrefix(session)
     popSex(session)
     popHardwareType(session)
+    popExperimentType(session)
     return session.commit()
 
 def populateTables(session):

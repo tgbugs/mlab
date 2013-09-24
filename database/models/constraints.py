@@ -20,6 +20,15 @@ class HardwareType(Base):
         return '\n%s\n%s%s'%(self.type, self.description, ''.join([thing.strHelper(1) for thing in self.things]))
 
 
+class ExperimentType(Base):
+    id=Column(String(20),primary_key=True)
+    abbrev=Column(String)
+    def __init__(self,id=None,abbrev=None):
+        self.id=id
+        self.abbrev=abbrev
+    def __repr__(self):
+        return super().__repr__()
+
 
 class File(Base): #FIXME reinventing the wheel here kids, detect ft don't constraint it
     id=None
