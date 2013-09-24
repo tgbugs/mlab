@@ -19,7 +19,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   edge [
     arrowsize="0.8"
   ];
-  "cell_metadata":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafile":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafiles_metadata":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafiles_metadata":"elipses":w -> "datafile":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -32,6 +31,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "hardware_datastreams":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware_metadata":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "mouse_metadata":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "patchcell_metadata":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "slice_metadata":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "users_datastreams":"elipses":w -> "datasources":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "calibrationdata" [
@@ -43,16 +43,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     </TABLE>>
     URL="calibrationdata.html"
     tooltip="calibrationdata"
-  ];
-  "cell_metadata" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cell_metadata</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="cell_metadata.html"
-    tooltip="cell_metadata"
   ];
   "datafile" [
     label=<
@@ -127,6 +117,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     </TABLE>>
     URL="mouse_metadata.html"
     tooltip="mouse_metadata"
+  ];
+  "patchcell_metadata" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">patchcell_metadata</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="patchcell_metadata.html"
+    tooltip="patchcell_metadata"
   ];
   "si_prefix" [
     label=<

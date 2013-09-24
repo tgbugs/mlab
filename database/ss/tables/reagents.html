@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>name</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>2147483647</td>
@@ -110,25 +110,25 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="patch.acsf_id refs reagents.name via patch_acsf_id_fkey"><a href='patch.html'>patch</a><span class='relatedKey'>.acsf_id</span>
     </td>
     <td class='constraint detail'>patch_acsf_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="patch.internal_id refs reagents.name via patch_internal_id_fkey"><a href='patch.html'>patch</a><span class='relatedKey'>.internal_id</span>
     </td>
     <td class='constraint detail'>patch_internal_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="reagentlot.reagent_id refs reagents.name via reagentlot_reagent_id_fkey"><a href='reagentlot.html'>reagentlot</a><span class='relatedKey'>.reagent_id</span>
     </td>
     <td class='constraint detail'>reagentlot_reagent_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="sliceprep.sucrose_id refs reagents.name via sliceprep_sucrose_id_fkey"><a href='sliceprep.html'>sliceprep</a><span class='relatedKey'>.sucrose_id</span>
     </td>
     <td class='constraint detail'>sliceprep_sucrose_id_fkey<span title='Restrict delete:
@@ -139,7 +139,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>document_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -149,7 +149,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="reagents.document_id refs citeable.id via reagents_document_id_fkey"><a href='citeable.html'>citeable</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>reagents_document_id_fkey<span title='Restrict delete:
@@ -160,7 +160,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='2 columns'>Table contained 3 rows at Mon Sep 23 19:30 PDT 2013<p/>
+<p title='2 columns'>Table contained 3 rows at Mon Sep 23 20:02 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -194,14 +194,16 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/reagents.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="chrsomsliceexperiment.html" title="chrsomsliceexperiment" alt="" coords="703,73,889,157">
-<area shape="rect" id="node2" href="patch.html" title="patch" alt="" coords="509,183,643,315">
-<area shape="rect" id="node3" href="hardware.html" title="hardware" alt="" coords="241,13,383,97">
-<area shape="rect" id="node4" href="experiments.html" title="experiments" alt="" coords="239,115,385,199">
-<area shape="rect" id="node6" href="reagents.html" title="reagents" alt="" coords="175,216,449,329">
-<area shape="rect" id="node5" href="citeable.html" title="citeable" alt="" coords="5,64,131,172">
-<area shape="rect" id="node7" href="reagentlot.html" title="reagentlot" alt="" coords="494,332,658,464">
-<area shape="rect" id="node8" href="sliceprep.html" title="sliceprep" alt="" coords="509,33,643,165">
+<area shape="rect" id="node1" href="chrsomsliceexperiment.html" title="chrsomsliceexperiment" alt="" coords="703,58,889,142">
+<area shape="rect" id="node2" href="patch.html" title="patch" alt="" coords="509,243,643,375">
+<area shape="rect" id="node3" href="hardware.html" title="hardware" alt="" coords="241,43,383,127">
+<area shape="rect" id="node4" href="experiments.html" title="experiments" alt="" coords="239,145,385,229">
+<area shape="rect" id="node6" href="reagents.html" title="reagents" alt="" coords="175,265,449,378">
+<area shape="rect" id="node5" href="citeable.html" title="citeable" alt="" coords="5,94,131,202">
+<area shape="rect" id="node7" href="patchcell.html" title="patchcell" alt="" coords="934,159,1085,243">
+<area shape="rect" id="node8" href="slice.html" title="slice" alt="" coords="725,159,867,243">
+<area shape="rect" id="node10" href="sliceprep.html" title="sliceprep" alt="" coords="509,94,643,226">
+<area shape="rect" id="node9" href="reagentlot.html" title="reagentlot" alt="" coords="494,393,658,525">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/reagents.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

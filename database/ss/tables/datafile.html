@@ -111,15 +111,15 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
    <tr class='relative even' valign='top'>
-    <td class='relatedTable detail' title="cell_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via cell_df_assoc_datafile_url_fkey"><a href='cell_df_assoc.html'>cell_df_assoc</a><span class='relatedKey'>.datafile_url</span>
-    </td>
-    <td class='constraint detail'>cell_df_assoc_datafile_url_fkey<span title='Restrict delete:
- Parent cannot be deleted if children exist'>&nbsp;R</span></td>
-   </tr>
-   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="datafiles_metadata.[url, path, filename] refs datafile.[url, path, filename] via datafiles_metadata_url_fkey"><a href='datafiles_metadata.html'>datafiles_metadata</a><span class='relatedKey'>.url</span>
     </td>
     <td class='constraint detail'>datafiles_metadata_url_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+   <tr class='relative even' valign='top'>
+    <td class='relatedTable detail' title="patchcell_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via patchcell_df_assoc_datafile_url_fkey"><a href='patchcell_df_assoc.html'>patchcell_df_assoc</a><span class='relatedKey'>.datafile_url</span>
+    </td>
+    <td class='constraint detail'>patchcell_df_assoc_datafile_url_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
   </table>
@@ -146,15 +146,15 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
    <tr class='relative odd' valign='top'>
-    <td class='relatedTable detail' title="cell_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via cell_df_assoc_datafile_url_fkey"><a href='cell_df_assoc.html'>cell_df_assoc</a><span class='relatedKey'>.datafile_path</span>
-    </td>
-    <td class='constraint detail'>cell_df_assoc_datafile_url_fkey<span title='Restrict delete:
- Parent cannot be deleted if children exist'>&nbsp;R</span></td>
-   </tr>
-   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="datafiles_metadata.[url, path, filename] refs datafile.[url, path, filename] via datafiles_metadata_url_fkey"><a href='datafiles_metadata.html'>datafiles_metadata</a><span class='relatedKey'>.path</span>
     </td>
     <td class='constraint detail'>datafiles_metadata_url_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+   <tr class='relative odd' valign='top'>
+    <td class='relatedTable detail' title="patchcell_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via patchcell_df_assoc_datafile_url_fkey"><a href='patchcell_df_assoc.html'>patchcell_df_assoc</a><span class='relatedKey'>.datafile_path</span>
+    </td>
+    <td class='constraint detail'>patchcell_df_assoc_datafile_url_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
   </table>
@@ -181,15 +181,15 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
    <tr class='relative even' valign='top'>
-    <td class='relatedTable detail' title="cell_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via cell_df_assoc_datafile_url_fkey"><a href='cell_df_assoc.html'>cell_df_assoc</a><span class='relatedKey'>.datafile_filename</span>
-    </td>
-    <td class='constraint detail'>cell_df_assoc_datafile_url_fkey<span title='Restrict delete:
- Parent cannot be deleted if children exist'>&nbsp;R</span></td>
-   </tr>
-   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="datafiles_metadata.[url, path, filename] refs datafile.[url, path, filename] via datafiles_metadata_url_fkey"><a href='datafiles_metadata.html'>datafiles_metadata</a><span class='relatedKey'>.filename</span>
     </td>
     <td class='constraint detail'>datafiles_metadata_url_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+   <tr class='relative even' valign='top'>
+    <td class='relatedTable detail' title="patchcell_df_assoc.[datafile_url, datafile_path, datafile_filename] refs datafile.[url, path, filename] via patchcell_df_assoc_datafile_url_fkey"><a href='patchcell_df_assoc.html'>patchcell_df_assoc</a><span class='relatedKey'>.datafile_filename</span>
+    </td>
+    <td class='constraint detail'>patchcell_df_assoc_datafile_url_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
   </table>
@@ -229,7 +229,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='5 columns'>Table contained 1,991 rows at Mon Sep 23 19:30 PDT 2013<p/>
+<p title='5 columns'>Table contained 1,991 rows at Mon Sep 23 20:02 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -255,31 +255,31 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from datafile'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="cell_df_assoc.html" title="cell_df_assoc" alt="" coords="581,5,765,161">
-<area shape="rect" id="node2" href="datafile.html" title="datafile" alt="" coords="212,74,529,259">
-<area shape="rect" id="node3" href="datasources.html" title="datasources" alt="" coords="6,274,167,454">
-<area shape="rect" id="node4" href="repopaths.html" title="repopaths" alt="" coords="11,53,162,257">
-<area shape="rect" id="node5" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="573,178,773,454">
+<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="212,74,529,259">
+<area shape="rect" id="node2" href="datasources.html" title="datasources" alt="" coords="6,274,167,454">
+<area shape="rect" id="node3" href="repopaths.html" title="repopaths" alt="" coords="11,53,162,257">
+<area shape="rect" id="node4" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="573,178,773,454">
+<area shape="rect" id="node5" href="patchcell_df_assoc.html" title="patchcell_df_assoc" alt="" coords="590,5,757,161">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/datafile.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="cell_df_assoc.html" title="cell_df_assoc" alt="" coords="772,298,956,454">
-<area shape="rect" id="node2" href="cell.html" title="cell" alt="" coords="486,469,637,553">
-<area shape="rect" id="node3" href="datafile.html" title="datafile" alt="" coords="403,26,720,211">
-<area shape="rect" id="node5" href="datasources.html" title="datasources" alt="" coords="197,570,358,750">
-<area shape="rect" id="node6" href="repopaths.html" title="repopaths" alt="" coords="202,5,353,209">
-<area shape="rect" id="node4" href="cell_metadata.html" title="cell_metadata" alt="" coords="793,706,935,790">
-<area shape="rect" id="node8" href="calibrationdata.html" title="calibrationdata" alt="" coords="6,743,151,827">
-<area shape="rect" id="node9" href="si_prefix.html" title="si_prefix" alt="" coords="11,541,146,625">
-<area shape="rect" id="node10" href="si_unit.html" title="si_unit" alt="" coords="13,642,144,726">
-<area shape="rect" id="node15" href="repository.html" title="repository" alt="" coords="11,29,146,113">
-<area shape="rect" id="node7" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="764,5,964,281">
-<area shape="rect" id="node11" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="470,266,653,350">
-<area shape="rect" id="node12" href="hardware_datastreams.html" title="hardware_datastreams" alt="" coords="470,367,653,451">
-<area shape="rect" id="node13" href="hardware_metadata.html" title="hardware_metadata" alt="" coords="473,570,650,654">
-<area shape="rect" id="node14" href="mouse_metadata.html" title="mouse_metadata" alt="" coords="482,671,641,755">
-<area shape="rect" id="node16" href="slice_metadata.html" title="slice_metadata" alt="" coords="487,773,635,857">
-<area shape="rect" id="node17" href="users_datastreams.html" title="users_datastreams" alt="" coords="478,874,645,958">
+<area shape="rect" id="node1" href="datafile.html" title="datafile" alt="" coords="403,45,720,230">
+<area shape="rect" id="node2" href="datasources.html" title="datasources" alt="" coords="197,525,358,705">
+<area shape="rect" id="node3" href="repopaths.html" title="repopaths" alt="" coords="202,23,353,227">
+<area shape="rect" id="node5" href="calibrationdata.html" title="calibrationdata" alt="" coords="6,698,151,782">
+<area shape="rect" id="node6" href="si_prefix.html" title="si_prefix" alt="" coords="11,495,146,579">
+<area shape="rect" id="node7" href="si_unit.html" title="si_unit" alt="" coords="13,597,144,681">
+<area shape="rect" id="node15" href="repository.html" title="repository" alt="" coords="11,47,146,131">
+<area shape="rect" id="node4" href="datafiles_metadata.html" title="datafiles_metadata" alt="" coords="764,5,964,281">
+<area shape="rect" id="node8" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="470,829,653,913">
+<area shape="rect" id="node9" href="hardware_datastreams.html" title="hardware_datastreams" alt="" coords="470,930,653,1014">
+<area shape="rect" id="node10" href="hardware_metadata.html" title="hardware_metadata" alt="" coords="473,285,650,369">
+<area shape="rect" id="node11" href="mouse_metadata.html" title="mouse_metadata" alt="" coords="482,525,641,609">
+<area shape="rect" id="node12" href="patchcell_df_assoc.html" title="patchcell_df_assoc" alt="" coords="781,298,947,454">
+<area shape="rect" id="node13" href="patchcell.html" title="patchcell" alt="" coords="486,386,637,470">
+<area shape="rect" id="node14" href="patchcell_metadata.html" title="patchcell_metadata" alt="" coords="781,471,947,555">
+<area shape="rect" id="node16" href="slice_metadata.html" title="slice_metadata" alt="" coords="487,626,635,710">
+<area shape="rect" id="node17" href="users_datastreams.html" title="users_datastreams" alt="" coords="478,727,645,811">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/datafile.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
