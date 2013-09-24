@@ -23,7 +23,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "experiments":"elipses":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware":"elipses":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware":"elipses":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "reagents":"elipses":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "reagenttypes":"elipses":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "repository":"elipses":w -> "credentials":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "strain_citeables":"elipses":w -> "citeable":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "website":"credentials_id":w -> "credentials":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -55,7 +55,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">14 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">10 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
     </TABLE>>
     URL="experiments.html"
     tooltip="experiments"
@@ -65,20 +65,20 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">hardware</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">16 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">16 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">8 &gt;</TD></TR>
     </TABLE>>
     URL="hardware.html"
     tooltip="hardware"
   ];
-  "reagents" [
+  "reagenttypes" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">reagents</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">reagenttypes</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
-    URL="reagents.html"
-    tooltip="reagents"
+    URL="reagenttypes.html"
+    tooltip="reagenttypes"
   ];
   "repository" [
     label=<

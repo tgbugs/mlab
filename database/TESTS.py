@@ -273,7 +273,7 @@ class t_mice(TEST):
 
 class t_slice(TEST):
     def make_all(self):
-        preps=self.session.query(Experiment).filter_by(exp_type='acute slice prep')
+        preps=self.session.query(Experiment).filter_by(type='acute slice prep')
         
         self.records=[]
         [[self.records.append(Slice(Prep=prep,startDateTime=datetime.utcnow()+timedelta(hours=i))) for i in range(self.num)] for prep in preps] #FIXME amplification of numbers
@@ -282,7 +282,7 @@ class t_slice(TEST):
 class t_cell(TEST):
     def make_all(self):
         slices=[s for s in self.session.query(Slice)]
-        patches=[p for p in self.session.query(Experiment).filter_by(exp_type='acute slice prep')]
+        patches=[p for p in self.session.query(Experiment).filter_by(type='acute slice prep')]
         headstages=[h for h in self.session.query(Hardware).filter_by(type='headstage')][:2]
         self.records=[]
         z=0

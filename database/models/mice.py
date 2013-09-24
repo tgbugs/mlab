@@ -302,7 +302,7 @@ class PatchCell(HasDataFiles, HasMetaData, HasNotes, Cell):
     def cells(self):
         #return self._cell_1+self._cell_2
         return self.datafiles.cell
-    def __init__(self,Slice=None,Patch=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
+    def __init__(self,Slice=None,Experiment=None,Headstage=None,slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
         self.startDateTime=startDateTime
         self.slice_id=slice_id
         self.mouse_id=mouse_id

@@ -29,7 +29,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">breeder</TD></TR>
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="sex_id" COLSPAN="3" ALIGN="LEFT">sex_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">18 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">8 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
     </TABLE>>
     URL="breeder.html"
     tooltip="breeder"
@@ -52,8 +52,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="dam_id" COLSPAN="3" ALIGN="LEFT">dam_id</TD></TR>
       <TR><TD PORT="dob_id" COLSPAN="3" ALIGN="LEFT">dob_id</TD></TR>
       <TR><TD PORT="dod" COLSPAN="3" ALIGN="LEFT">dod</TD></TR>
-      <TR><TD PORT="experiment_id" COLSPAN="3" BGCOLOR="#f4f7da" ALIGN="LEFT">experiment_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">416 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
     </TABLE>>
     URL="mouse.html"
     tooltip="mouse"
@@ -71,7 +70,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="Birthdate" COLSPAN="3" ALIGN="LEFT">Birthdate</TD></TR>
       <TR><TD PORT="Role" COLSPAN="3" ALIGN="LEFT">Role</TD></TR>
       <TR><TD PORT="neurotree_id" COLSPAN="3" BGCOLOR="#f4f7da" ALIGN="LEFT">neurotree_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">100 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">20 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
     </TABLE>>
     URL="people.html"
     tooltip="people"

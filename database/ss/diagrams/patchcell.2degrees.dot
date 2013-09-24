@@ -19,11 +19,20 @@ digraph "twoDegreesRelationshipsDiagram" {
   edge [
     arrowsize="0.8"
   ];
+  "cell":"id":w -> "subjects":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "cell":"mouse_id":w -> "mouse":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "chrsomsliceexperiment":"elipses":w -> "patch":"id":e [arrowhead=none dir=back arrowtail=teeodot];
-  "chrsomsliceexperiment":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "datafile":"elipses":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "experiments":"elipses":w -> "citeable":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments":"exp_type":w -> "experimenttype":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments":"methods_id":w -> "citeable":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments":"person_id":w -> "people":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments":"project_id":w -> "project":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments_hardware":"elipses":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments_hardware":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments_metadata":"elipses":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments_metadata":"elipses":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments_reagents":"elipses":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments_subjects":"elipses":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "experiments_subjects":"elipses":w -> "subjects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware":"blueprint_id":w -> "citeable":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware":"manual_id":w -> "citeable":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware":"type":w -> "hardwaretype":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -31,13 +40,10 @@ digraph "twoDegreesRelationshipsDiagram" {
   "hardware_datastreams":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware_metadata":"elipses":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "hardware_metadata":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "mouse":"elipses":w -> "experiments":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
-  "patch":"acsf_id":w -> "reagents":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "patch":"id":w -> "experiments":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
-  "patch":"internal_id":w -> "reagents":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "mouse":"elipses":w -> "subjects":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "patchcell":"hs_id":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "patchcell":"id":w -> "cell":"id":e [arrowhead=none dir=back arrowtail=teeodot];
-  "patchcell":"patch_id":w -> "patch":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "patchcell":"patch_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "patchcell":"slice_id":w -> "slice":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "patchcell_df_assoc":"datafile_filename":w -> "datafile":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "patchcell_df_assoc":"datafile_path":w -> "datafile":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -45,38 +51,23 @@ digraph "twoDegreesRelationshipsDiagram" {
   "patchcell_df_assoc":"patchcell_id":w -> "patchcell":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "patchcell_metadata":"datasource_id":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "patchcell_metadata":"patchcell_id":w -> "patchcell":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "reagents":"elipses":w -> "citeable":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "righistory":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "righistory":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "righistory":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "slice":"mouse_id":w -> "mouse":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "slice":"prep_id":w -> "sliceprep":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "slice":"prep_id":w -> "experiments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "slice_metadata":"elipses":w -> "datasources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "slice_metadata":"elipses":w -> "slice":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "sliceprep":"elipses":w -> "hardware":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "sliceprep":"elipses":w -> "experiments":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
-  "sliceprep":"elipses":w -> "reagents":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "cell" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">cell</TD></TR>
       <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
       <TR><TD PORT="mouse_id" COLSPAN="3" ALIGN="LEFT">mouse_id</TD></TR>
-      <TR><TD PORT="exp_type" COLSPAN="3" ALIGN="LEFT">exp_type</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">200 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">200 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
     </TABLE>>
     URL="cell.html"
     tooltip="cell"
-  ];
-  "chrsomsliceexperiment" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">chrsomsliceexperiment</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
-    </TABLE>>
-    URL="chrsomsliceexperiment.html"
-    tooltip="chrsomsliceexperiment"
   ];
   "citeable" [
     label=<
@@ -112,11 +103,67 @@ digraph "twoDegreesRelationshipsDiagram" {
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments</TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">14 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT">project_id</TD></TR>
+      <TR><TD PORT="person_id" COLSPAN="3" ALIGN="LEFT">person_id</TD></TR>
+      <TR><TD PORT="startDateTime" COLSPAN="3" ALIGN="LEFT">startDateTime</TD></TR>
+      <TR><TD PORT="endDateTime" COLSPAN="3" ALIGN="LEFT">endDateTime</TD></TR>
+      <TR><TD PORT="methods_id" COLSPAN="3" ALIGN="LEFT">methods_id</TD></TR>
+      <TR><TD PORT="exp_type" COLSPAN="3" ALIGN="LEFT">exp_type</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">10 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">6 &gt;</TD></TR>
     </TABLE>>
     URL="experiments.html"
     tooltip="experiments"
+  ];
+  "experiments_hardware" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments_hardware</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="experiments_hardware.html"
+    tooltip="experiments_hardware"
+  ];
+  "experiments_metadata" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments_metadata</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="experiments_metadata.html"
+    tooltip="experiments_metadata"
+  ];
+  "experiments_reagents" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments_reagents</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">15 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="experiments_reagents.html"
+    tooltip="experiments_reagents"
+  ];
+  "experiments_subjects" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experiments_subjects</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="experiments_subjects.html"
+    tooltip="experiments_subjects"
+  ];
+  "experimenttype" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">experimenttype</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="experimenttype.html"
+    tooltip="experimenttype"
   ];
   "hardware" [
     label=<
@@ -131,7 +178,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="company" COLSPAN="3" ALIGN="LEFT">company</TD></TR>
       <TR><TD PORT="blueprint_id" COLSPAN="3" ALIGN="LEFT">blueprint_id</TD></TR>
       <TR><TD PORT="manual_id" COLSPAN="3" ALIGN="LEFT">manual_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">16 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">9 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">16 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">8 &gt;</TD></TR>
     </TABLE>>
     URL="hardware.html"
     tooltip="hardware"
@@ -171,22 +218,10 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">mouse</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1,036 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">416 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 &gt;</TD></TR>
     </TABLE>>
     URL="mouse.html"
     tooltip="mouse"
-  ];
-  "patch" [
-    label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">patch</TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">id</TD></TR>
-      <TR><TD PORT="acsf_id" COLSPAN="3" ALIGN="LEFT">acsf_id</TD></TR>
-      <TR><TD PORT="internal_id" COLSPAN="3" ALIGN="LEFT">internal_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
-    </TABLE>>
-    URL="patch.html"
-    tooltip="patch"
   ];
   "patchcell" [
     label=<
@@ -210,7 +245,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="datafile_path" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datafile_path</TD></TR>
       <TR><TD PORT="datafile_filename" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datafile_filename</TD></TR>
       <TR><TD PORT="patchcell_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">patchcell_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3,980 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="patchcell_df_assoc.html"
     tooltip="patchcell_df_assoc"
@@ -231,15 +266,25 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="patchcell_metadata.html"
     tooltip="patchcell_metadata"
   ];
-  "reagents" [
+  "people" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">reagents</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">people</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">20 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
     </TABLE>>
-    URL="reagents.html"
-    tooltip="reagents"
+    URL="people.html"
+    tooltip="people"
+  ];
+  "project" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">project</TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">2 &gt;</TD></TR>
+    </TABLE>>
+    URL="project.html"
+    tooltip="project"
   ];
   "righistory" [
     label=<
@@ -274,14 +319,14 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="slice_metadata.html"
     tooltip="slice_metadata"
   ];
-  "sliceprep" [
+  "subjects" [
     label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">sliceprep</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">subjects</TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">5 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">616 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3 &gt;</TD></TR>
     </TABLE>>
-    URL="sliceprep.html"
-    tooltip="sliceprep"
+    URL="subjects.html"
+    tooltip="subjects"
   ];
 }

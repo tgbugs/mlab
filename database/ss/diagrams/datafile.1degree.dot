@@ -83,7 +83,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="datafile_path" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datafile_path</TD></TR>
       <TR><TD PORT="datafile_filename" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">datafile_filename</TD></TR>
       <TR><TD PORT="patchcell_id" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">patchcell_id</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">3,980 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
     </TABLE>>
     URL="patchcell_df_assoc.html"
     tooltip="patchcell_df_assoc"

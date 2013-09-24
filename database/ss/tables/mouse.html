@@ -101,40 +101,40 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>id</td>
- <td class='detail'>serial</td>
+ <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
  <td class='detail' align='center'></td>
- <td class='detail' align='center' title='Automatically updated by the database'>&nbsp;&radic;&nbsp;</td>
- <td class='detail' align='right'>nextval('mouse_id_seq'::regclass)</td>
+ <td class='detail' align='center'></td>
+ <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="breeder.id refs mouse.id via breeder_id_fkey"><a href='breeder.html'>breeder</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>breeder_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="cagetransfer.mouse_id refs mouse.id via cagetransfer_mouse_id_fkey"><a href='cagetransfer.html'>cagetransfer</a><span class='relatedKey'>.mouse_id</span>
     </td>
     <td class='constraint detail'>cagetransfer_mouse_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="cell.mouse_id refs mouse.id via cell_mouse_id_fkey"><a href='cell.html'>cell</a><span class='relatedKey'>.mouse_id</span>
     </td>
     <td class='constraint detail'>cell_mouse_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="mouse_metadata.mouse_id refs mouse.id via mouse_metadata_mouse_id_fkey"><a href='mouse_metadata.html'>mouse_metadata</a><span class='relatedKey'>.mouse_id</span>
     </td>
     <td class='constraint detail'>mouse_metadata_mouse_id_fkey<span title='Restrict delete:
  Parent cannot be deleted if children exist'>&nbsp;R</span></td>
    </tr>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="slice.mouse_id refs mouse.id via slice_mouse_id_fkey"><a href='slice.html'>slice</a><span class='relatedKey'>.mouse_id</span>
     </td>
     <td class='constraint detail'>slice_mouse_id_fkey<span title='Restrict delete:
@@ -142,10 +142,19 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
    </tr>
   </table>
 </td>
- <td class='detail'> </td>
+ <td class='detail'>
+  <table border='0' width='100%' cellspacing='0' cellpadding='0'>
+   <tr class='relative odd' valign='top'>
+    <td class='relatedTable detail' title="mouse.id refs subjects.id via mouse_id_fkey"><a href='subjects.html'>subjects</a><span class='relatedKey'>.id</span>
+    </td>
+    <td class='constraint detail'>mouse_id_fkey<span title='Restrict delete:
+ Parent cannot be deleted if children exist'>&nbsp;R</span></td>
+   </tr>
+  </table>
+ </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>eartag</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -156,7 +165,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>tattoo</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -167,7 +176,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>num_in_lit</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -178,7 +187,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>name</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>20</td>
@@ -189,7 +198,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>cage_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -199,7 +208,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="mouse.cage_id refs cage.id via mouse_cage_id_fkey"><a href='cage.html'>cage</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>mouse_cage_id_fkey<span title='Restrict delete:
@@ -209,7 +218,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>sex_id</td>
  <td class='detail'>varchar</td>
  <td class='detail' align='right'>1</td>
@@ -219,7 +228,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="mouse.sex_id refs sex.abbrev via mouse_sex_id_fkey"><a href='sex.html'>sex</a><span class='relatedKey'>.abbrev</span>
     </td>
     <td class='constraint detail'>mouse_sex_id_fkey<span title='Restrict delete:
@@ -229,7 +238,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>genotype_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -240,7 +249,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>strain_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -250,7 +259,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="mouse.strain_id refs strain.id via mouse_strain_id_fkey"><a href='strain.html'>strain</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>mouse_strain_id_fkey<span title='Restrict delete:
@@ -260,7 +269,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>litter_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -270,7 +279,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="mouse.litter_id refs litter.id via mouse_litter_id_fkey"><a href='litter.html'>litter</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>mouse_litter_id_fkey<span title='Restrict delete:
@@ -280,7 +289,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>sire_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -290,7 +299,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="mouse.sire_id refs sire.id via fk_sire"><a href='sire.html'>sire</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>fk_sire<span title='Restrict delete:
@@ -300,7 +309,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>dam_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -310,7 +319,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="mouse.dam_id refs dam.id via fk_dam"><a href='dam.html'>dam</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>fk_dam<span title='Restrict delete:
@@ -320,7 +329,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>dob_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -330,7 +339,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="mouse.dob_id refs dob.id via mouse_dob_id_fkey"><a href='dob.html'>dob</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>mouse_dob_id_fkey<span title='Restrict delete:
@@ -340,7 +349,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>dod</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -351,39 +360,18 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
- <td class='indexedColumn' title='Indexed'>experiment_id</td>
- <td class='detail'>int4</td>
- <td class='detail' align='right'>10</td>
- <td class='detail' align='center' title='nullable'>&nbsp;&radic;&nbsp;</td>
- <td class='detail' align='center'></td>
- <td class='detail' align='right'>null</td>
- <td class='detail'></td>
- <td class='detail'>
-  <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
-    <td class='relatedTable detail' title="mouse.experiment_id refs experiments.id via mouse_experiment_id_fkey"><a href='experiments.html'>experiments</a><span class='relatedKey'>.id</span>
-    </td>
-    <td class='constraint detail'>mouse_experiment_id_fkey<span title='Restrict delete:
- Parent cannot be deleted if children exist'>&nbsp;R</span></td>
-   </tr>
-  </table>
- </td>
- <td class='comment detail'></td>
-</tr>
 </table>
-<p title='15 columns'>Table contained 1,036 rows at Mon Sep 23 22:17 PDT 2013<p/>
+<p title='14 columns'>Table contained 416 rows at Tue Sep 24 00:28 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
-<table class='dataTable' border='1' rules='groups'><colgroup><colgroup><colgroup><colgroup><colgroup>
+<table class='dataTable' border='1' rules='groups'><colgroup><colgroup><colgroup><colgroup>
 <thead>
  <tr>
   <th>Column(s)</th>
   <th>Type</th>
   <th>Sort</th>
   <th class='constraint' style='text-align:left;'>Constraint Name</th>
-  <th>Anomalies</th>
  </tr>
 </thead>
 <tbody>
@@ -392,14 +380,6 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
   <td class='detail'>Primary key</td>
   <td class='detail' style='text-align:left;'><span title='Ascending'>Asc</span></td>
   <td class='constraint' style='text-align:left;'>mouse_pkey</td>
-  <td>&nbsp;</td>
- </tr>
- <tr>
-  <td class='indexedColumn'>experiment_id</td>
-  <td class='detail'>Must be unique</td>
-  <td class='detail' style='text-align:left;'><span title='Ascending'>Asc</span></td>
-  <td class='constraint' style='text-align:left;'>mouse_experiment_id_key</td>
-  <td class='detail'>This unique column is also nullable</td>
  </tr>
 </table>
 </div>
@@ -407,49 +387,46 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 <br><form action='get'><b>Close relationships</b><span class='degrees' id='degrees' title='Detail diminishes with increased separation from mouse'>
 &nbsp;within <label for='oneDegree'><input type='radio' name='degrees' id='oneDegree' checked>one</label>  <label for='twoDegrees'><input type='radio' name='degrees' id='twoDegrees'>two degrees</label> of separation</span><b>:</b></form>
 <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="736,54,879,157">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="410,295,683,698">
-<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="226,122,350,247">
-<area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="28,902,150,982">
-<area shape="rect" id="node7" href="dam.html" title="dam" alt="" coords="22,466,156,546">
-<area shape="rect" id="node8" href="litter.html" title="litter" alt="" coords="216,503,359,719">
-<area shape="rect" id="node9" href="dob.html" title="dob" alt="" coords="12,651,166,776">
-<area shape="rect" id="node10" href="sire.html" title="sire" alt="" coords="22,368,156,448">
-<area shape="rect" id="node11" href="experiments.html" title="experiments" alt="" coords="211,808,364,1024">
-<area shape="rect" id="node12" href="strain.html" title="strain" alt="" coords="230,265,346,413">
-<area shape="rect" id="node4" href="cagetransfer.html" title="cagetransfer" alt="" coords="738,942,878,1112">
-<area shape="rect" id="node6" href="cell.html" title="cell" alt="" coords="732,175,883,300">
-<area shape="rect" id="node13" href="mouse_metadata.html" title="mouse_metadata" alt="" coords="728,318,887,534">
-<area shape="rect" id="node14" href="slice.html" title="slice" alt="" coords="731,552,884,700">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="705,113,839,216">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="393,367,647,747">
+<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="214,110,338,235">
+<area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="21,878,144,958">
+<area shape="rect" id="node7" href="subjects.html" title="subjects" alt="" coords="205,253,347,356">
+<area shape="rect" id="node8" href="dam.html" title="dam" alt="" coords="15,619,150,699">
+<area shape="rect" id="node9" href="litter.html" title="litter" alt="" coords="205,575,347,791">
+<area shape="rect" id="node10" href="dob.html" title="dob" alt="" coords="6,729,159,854">
+<area shape="rect" id="node11" href="sire.html" title="sire" alt="" coords="15,507,150,587">
+<area shape="rect" id="node12" href="strain.html" title="strain" alt="" coords="218,373,334,521">
+<area shape="rect" id="node4" href="cagetransfer.html" title="cagetransfer" alt="" coords="702,817,842,987">
+<area shape="rect" id="node6" href="cell.html" title="cell" alt="" coords="697,239,847,341">
+<area shape="rect" id="node13" href="mouse_metadata.html" title="mouse_metadata" alt="" coords="693,525,851,741">
+<area shape="rect" id="node14" href="slice.html" title="slice" alt="" coords="695,359,849,507">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/mouse.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="942,105,1085,207">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="603,483,877,885">
-<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="25,5,149,131">
-<area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="223,1004,345,1084">
-<area shape="rect" id="node8" href="dam.html" title="dam" alt="" coords="19,743,154,823">
-<area shape="rect" id="node9" href="experiments.html" title="experiments" alt="" coords="405,393,558,609">
-<area shape="rect" id="node15" href="litter.html" title="litter" alt="" coords="410,663,553,879">
-<area shape="rect" id="node16" href="dob.html" title="dob" alt="" coords="10,937,163,1063">
-<area shape="rect" id="node18" href="sire.html" title="sire" alt="" coords="19,623,154,703">
-<area shape="rect" id="node19" href="strain.html" title="strain" alt="" coords="423,227,539,375">
-<area shape="rect" id="node4" href="cagerack.html" title="cagerack" alt="" coords="417,968,546,1048">
-<area shape="rect" id="node6" href="cagetransfer.html" title="cagetransfer" alt="" coords="943,1007,1083,1177">
-<area shape="rect" id="node7" href="cell.html" title="cell" alt="" coords="938,331,1089,456">
-<area shape="rect" id="node10" href="citeable.html" title="citeable" alt="" coords="225,340,343,420">
-<area shape="rect" id="node11" href="people.html" title="people" alt="" coords="209,437,359,517">
-<area shape="rect" id="node12" href="project.html" title="project" alt="" coords="217,243,351,323">
-<area shape="rect" id="node13" href="experiments_metadata.html" title="experiments_metadata" alt="" coords="922,909,1105,989">
-<area shape="rect" id="node14" href="datasources.html" title="datasources" alt="" coords="671,903,809,983">
-<area shape="rect" id="node17" href="matingrecord.html" title="matingrecord" alt="" coords="210,765,358,845">
-<area shape="rect" id="node20" href="mouse_metadata.html" title="mouse_metadata" alt="" coords="934,640,1093,856">
-<area shape="rect" id="node21" href="patch.html" title="patch" alt="" coords="673,288,807,368">
-<area shape="rect" id="node22" href="patchcell.html" title="patchcell" alt="" coords="1150,329,1301,409">
-<area shape="rect" id="node23" href="slice.html" title="slice" alt="" coords="937,474,1090,622">
-<area shape="rect" id="node24" href="sliceprep.html" title="sliceprep" alt="" coords="673,385,807,465">
-<area shape="rect" id="node25" href="slice_metadata.html" title="slice_metadata" alt="" coords="1151,657,1299,737">
-<area shape="rect" id="node26" href="strain_citeables.html" title="strain_citeables" alt="" coords="669,191,811,271">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="907,303,1042,405">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="586,549,841,929">
+<area shape="rect" id="node3" href="sex.html" title="sex" alt="" coords="217,277,341,402">
+<area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="217,1091,340,1171">
+<area shape="rect" id="node8" href="subjects.html" title="subjects" alt="" coords="398,391,541,493">
+<area shape="rect" id="node9" href="dam.html" title="dam" alt="" coords="15,786,150,866">
+<area shape="rect" id="node13" href="litter.html" title="litter" alt="" coords="398,750,541,966">
+<area shape="rect" id="node14" href="dob.html" title="dob" alt="" coords="6,889,159,1014">
+<area shape="rect" id="node16" href="sire.html" title="sire" alt="" coords="15,686,150,766">
+<area shape="rect" id="node17" href="strain.html" title="strain" alt="" coords="411,548,527,696">
+<area shape="rect" id="node4" href="cagerack.html" title="cagerack" alt="" coords="405,1127,534,1207">
+<area shape="rect" id="node6" href="cagetransfer.html" title="cagetransfer" alt="" coords="905,991,1045,1162">
+<area shape="rect" id="node7" href="cell.html" title="cell" alt="" coords="899,423,1050,525">
+<area shape="rect" id="node10" href="experiments.html" title="experiments" alt="" coords="641,43,786,123">
+<area shape="rect" id="node11" href="people.html" title="people" alt="" coords="398,257,541,337">
+<area shape="rect" id="node12" href="experiments_subjects.html" title="experiments_subjects" alt="" coords="886,39,1063,119">
+<area shape="rect" id="node15" href="matingrecord.html" title="matingrecord" alt="" coords="205,822,353,902">
+<area shape="rect" id="node18" href="mouse_metadata.html" title="mouse_metadata" alt="" coords="1109,451,1267,667">
+<area shape="rect" id="node19" href="datasources.html" title="datasources" alt="" coords="906,543,1043,623">
+<area shape="rect" id="node20" href="patchcell.html" title="patchcell" alt="" coords="1113,137,1263,217">
+<area shape="rect" id="node21" href="slice.html" title="slice" alt="" coords="898,137,1051,285">
+<area shape="rect" id="node22" href="slice_metadata.html" title="slice_metadata" alt="" coords="1114,294,1262,374">
+<area shape="rect" id="node23" href="strain_citeables.html" title="strain_citeables" alt="" coords="642,451,785,531">
 </map>
 
   <a name='diagram'><img id='twoDegreesImg' src='../diagrams/mouse.2degrees.png' usemap='#twoDegreesRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>

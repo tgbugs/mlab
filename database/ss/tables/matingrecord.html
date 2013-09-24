@@ -101,7 +101,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </tr>
 </thead>
 <tbody valign='top'>
-<tr class='even'>
+<tr class='odd'>
  <td class='primaryKey' title='Primary Key'>id</td>
  <td class='detail'>serial</td>
  <td class='detail' align='right'>10</td>
@@ -110,7 +110,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail' align='right'>nextval('matingrecord_id_seq'::regclass)</td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="litter.mr_id refs matingrecord.id via litter_mr_id_fkey"><a href='litter.html'>litter</a><span class='relatedKey'>.mr_id</span>
     </td>
     <td class='constraint detail'>litter_mr_id_fkey<span title='Restrict delete:
@@ -121,7 +121,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>sire_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -131,7 +131,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="matingrecord.sire_id refs sire.id via fk_sire"><a href='sire.html'>sire</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>fk_sire<span title='Restrict delete:
@@ -141,7 +141,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>dam_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -151,7 +151,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative even' valign='top'>
+   <tr class='relative odd' valign='top'>
     <td class='relatedTable detail' title="matingrecord.dam_id refs dam.id via fk_dam"><a href='dam.html'>dam</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>fk_dam<span title='Restrict delete:
@@ -161,7 +161,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>startDateTime</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -172,7 +172,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='even'>
+<tr class='odd'>
  <td class='detail'>stopDateTime</td>
  <td class='detail'>timestamp</td>
  <td class='detail' align='right'>29,6</td>
@@ -183,7 +183,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'> </td>
  <td class='comment detail'></td>
 </tr>
-<tr class='odd'>
+<tr class='even'>
  <td class='detail'>dob_id</td>
  <td class='detail'>int4</td>
  <td class='detail' align='right'>10</td>
@@ -193,7 +193,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='detail'></td>
  <td class='detail'>
   <table border='0' width='100%' cellspacing='0' cellpadding='0'>
-   <tr class='relative odd' valign='top'>
+   <tr class='relative even' valign='top'>
     <td class='relatedTable detail' title="matingrecord.dob_id refs dob.id via matingrecord_dob_id_fkey"><a href='dob.html'>dob</a><span class='relatedKey'>.id</span>
     </td>
     <td class='constraint detail'>matingrecord_dob_id_fkey<span title='Restrict delete:
@@ -204,7 +204,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
  <td class='comment detail'></td>
 </tr>
 </table>
-<p title='6 columns'>Table contained 50 rows at Mon Sep 23 22:17 PDT 2013<p/>
+<p title='6 columns'>Table contained 20 rows at Tue Sep 24 00:28 PDT 2013<p/>
 </td></tr></table>
 <div class='indent'>
 <b>Indexes:</b>
@@ -238,8 +238,8 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </map>
   <a name='diagram'><img id='oneDegreeImg' src='../diagrams/matingrecord.1degree.png' usemap='#oneDegreeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
 <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="897,59,1039,139">
-<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="689,144,852,224">
+<area shape="rect" id="node1" href="breeder.html" title="breeder" alt="" coords="886,59,1021,139">
+<area shape="rect" id="node2" href="mouse.html" title="mouse" alt="" coords="690,144,841,224">
 <area shape="rect" id="node3" href="dam.html" title="dam" alt="" coords="15,117,150,197">
 <area shape="rect" id="node4" href="litter.html" title="litter" alt="" coords="502,163,645,379">
 <area shape="rect" id="node5" href="cage.html" title="cage" alt="" coords="269,452,392,532">

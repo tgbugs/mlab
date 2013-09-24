@@ -33,9 +33,9 @@ class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base): #FIX
     startDateTime=Column(DateTime,default=datetime.now())
     endDateTime=Column(DateTime) #TODO extremely useful for automatically moving to the next experiment... not that that is really an issue, but also nice for evaluating my performance
     methods_id=Column(Integer,ForeignKey('citeable.id'))
-    exp_type=Column(String(20),ForeignKey('experimenttype.id'),nullable=False)
+    type=Column(String(20),ForeignKey('experimenttype.id'),nullable=False)
 
-    def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None,Reagents=[],Hardware=[],Subjects=[],ExpType=None,exp_type=None):
+    def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None,Reagents=[],Hardware=[],Subjects=[],ExpType=None,type=None):
         self.project_id=project_id
         self.person_id=person_id
         self.methods_id=methods_id
@@ -43,13 +43,13 @@ class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base): #FIX
         self.reagents.extend(Reagents) #TODO base experiment and then extend? or maybe a bit more complicated
         self.hardware.extend(Hardware)
         self.subjects.extend(Subjects)
-        self.exp_type=exp_type
+        self.type=type
 
         self.AssignID(Project)
         self.AssignID(Person)
         if ExpType:
             if ExpType.id:
-                self.exp_type=ExpType.id
+                self.type=ExpType.id
             else:
                 raise AttributeError
         if Methods:
