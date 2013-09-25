@@ -465,7 +465,7 @@ class t_datafile(TEST):
         cells=self.session.query(Cell)
         for c1,c2 in zip(cells[:-1],cells[1:]):
             for rp in repop.records:
-                data+=[DataFile(RepoPath=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiment_id,c1.id,c2.id,df),DataSource=ds,Subjects=[c1,c2]) for df in range(self.num)] 
+                data+=[DataFile(RepoPath=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiments[0].id,c1.id,c2.id,df),DataSource=ds,Subjects=[c1,c2]) for df in range(self.num)] 
         self.records=data
 
 

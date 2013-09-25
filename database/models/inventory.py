@@ -98,6 +98,8 @@ class ReagentInventory(Base): #TODO HasCitables
     #these are basically recipes or references to things I buy instead of make
     current_stock=relationship('Reagent') #FIXME this should give a count??? ala litter?
     #TODO reorder if current amount < x
+    def __repr__(self):
+        return super().__repr__('name')
 
 
 class Reagent(Base): #TODO HasReagents??!

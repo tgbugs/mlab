@@ -143,6 +143,8 @@ class Repository(Base):
     def __init__(self,url,credentials_id=None):
         self.url=URL_STAND.baseClean(url)
         self.credentials_id=credentials_id
+    def __repr__(self):
+        return super().__repr__('url')
 
 
 class RepoPath(Base): #FIXME this may be missing trailing /on path :x
@@ -176,9 +178,12 @@ class RepoPath(Base): #FIXME this may be missing trailing /on path :x
         #test to make sure the directory exists
         URL_STAND.test_url(self.url+clean_path) #FIXME may need a try in here
         self.path=clean_path
+    def __repr__(self):
+        return super().__repr__('fullpath')
 
 
 class DataFile(Base):
+    #FIXME TODO if the server is not local then file:/// only has meaning for the computer that the data was originally stored on and that has to match :/
     #TODO google docs access does not go here because those could be writeable too
     #these should point to more or less static things outside the program, every revision should add a new datafile for consistency, store the diffs?
     #how to constrain/track files so they don't get lost??
