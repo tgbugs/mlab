@@ -1,4 +1,3 @@
-from os import sep
 from database.imports import *
 from database.base import Base
 from database.mixins import HasNotes, HasMetaData
@@ -279,7 +278,7 @@ class DataFile(Base):
     def strHelper(self,depth=0):
         return super().strHelper(depth,'filename')
     def __repr__(self):
-        return '\n%s%s%s%s'%(self.url,self.path,sep,self.filename)
+        return '\n%s%s%s%s'%(self.url,self.path,'/',self.filename)
 
 
 class InDatabaseData(Base):

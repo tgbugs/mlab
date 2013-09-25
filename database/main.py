@@ -125,7 +125,7 @@ def printStuff(cons=True,mice=True,data=True,notes=True):
 ###----------
 
 def connect(echo=False):
-    return Session(postgresEng(echo=False))
+    return Session(postgresEng(echo=echo))
 
 def main(echo=True):
     #create engine
