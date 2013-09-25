@@ -65,9 +65,9 @@ class Hardware(HasMetaData, IsMetaDataSource, Base):
         except: pass
         try: parent=self.parent.strHelper()
         except: pass
-        try: children=''.join([s.strHelper() for s in self.sub_components])
+        try: children=''.join([s.strHelper(1) for s in self.sub_components])
         except: pass
-        return '\n%s %s %s son of %s father to %s with MetaData %s'%(self.type.capitalize(),name,uid,parent,children,self.metadata_)
+        return '\n%s %s %s son of %s father to %s\n\twith MetaData %s'%(self.type.capitalize(),name,uid,parent,children,''.join([m.strHelper(1) for m in self.metadata_]))
 
 class RigHistory(Base): #this is nice, but it seems better to get the current rig state and pull the relevant data and put it in cell metadata
     id=Column(Integer,primary_key=True)

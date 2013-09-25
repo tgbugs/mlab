@@ -62,4 +62,5 @@ def XMLfromDOI(doi):
     pass
 
 def XMLfromISBN(isbn):
+    pass
     
