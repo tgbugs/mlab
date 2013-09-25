@@ -182,28 +182,27 @@ class RepoPath(Base): #FIXME this may be missing trailing /on path :x
         return super().__repr__('fullpath')
 
 
-class DataFile(Base):
-    #FIXME TODO if the server is not local then file:/// only has meaning for the computer that the data was originally stored on and that has to match :/
-    #TODO google docs access does not go here because those could be writeable too
-    #these should point to more or less static things outside the program, every revision should add a new datafile for consistency, store the diffs?
-    #how to constrain/track files so they don't get lost??
-    #well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
-    #and the constraint will be populated by the DataPath table, if I have 10,000 datafiles though, that could become a NASTY change
-    #ideally we want this to be dynamic so that the DataPath can change and all the DataFile entries will learn about it
-    #it might just be better to do it by hand so UPDATE doesn't swamp everything
-    #the path cannot be the primary key of the datapath table AND accomodate path changes
-    #TODO next problem: when do we actually CREATE the DataFile and how to we get the number right even if we discard the trial? well, we DONT discard the file, we just keep it, but we need to gracefully deal with deletions/renumbering so that if something goes wrong it will alert to user
-    #RESPONSE: this record cannot be created until the file itself exists
-    #repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
-    #FIXME datafiles have substructure that requires more than one datasource ;_;
-    #although, the easiest way to fix that is to just change this to allow for an arbitrary number of channels to be saved per datafile and link the datasources to those?
-    #maybe base it on datafile type??? or configuration... but that is going to change for every fucking thing...
-    #that stuff goes in the metadata, datasource here just means 'collection software' fucking conflation
+class File(Base): #class for interfacing with things stored outside the database, whether datafiles or citables or whatever
     url=Column(String,primary_key=True,autoincrement=False)
     path=Column(String,primary_key=True,autoincrement=False)
     __table_args__=(ForeignKeyConstraint([url,path],['repopaths.url','repopaths.path']), {}) #FIXME this *could* be really fucking slow because they arent indexed, may need to revert these changes, ah well
     filename=Column(String,primary_key=True,autoincrement=False) #urp! on ext3 255 max for EACH /asdf/
-    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
+    filetype=Column(String)
+    @hybrid_property #FIXME this isn't really hybrid...
+    def filetype(self):
+        return self.filename.split('.')[-1]
+    @filetype.setter
+    def filetype(self):
+        raise AttributeError('readonly attribute, there should be a file name associate with this record?')
+    ident=Column(String)
+    __mapper_args__ = {
+        'polymorphic_on':ident,
+        'polymorphic_identity':'file',
+    }
+
+
+class DataFile(Base):
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME not clear that we need this once we move datafile apparth from file
     creationDateTime=Column(DateTime,default=datetime.now) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
 
     #FUCK this is a many to many >_< BUT I can to a similar thing as I did for metadata!
@@ -251,15 +250,8 @@ class DataFile(Base):
         cls.MetaData=DataFileMetaData
         return relationship(cls.MetaData)
 
-
     #analysis_DateTime
     #FIXME a bunch of these DateTimes should be TIMESTAMP? using the python implementation is more consistent?
-    @hybrid_property #FIXME this isn't really hybrid...
-    def filetype(self):
-        return self.filename.split('.')[-1]
-    @filetype.setter
-    def filetype(self):
-        raise AttributeError('readonly attribute, there should be a file name associate with this record?')
     def __init__(self,RepoPath=None,filename=None,DataSource=None,url=None,path=None,datasource_id=None,Subjects=[], creationDateTime=None):
         #self.url=URL_STAND.baseClean(repo_url)
         #self.repo_path=URL_STAND.pathClean(repo_path)
@@ -288,4 +280,23 @@ class InDatabaseData(Base):
     id=Column(Integer, primary_key=True)
     #TODO, need something more flexible than metadata (amazingly) that can hold stuff like calibration data not stored elsewhere?? also if I ever transition away from external datafiles or if I want to use neoio immediately to convert abf files
     pass
+
+## DataFile notes vvvvv
+
+    #FIXME TODO if the server is not local then file:/// only has meaning for the computer that the data was originally stored on and that has to match :/
+    #TODO google docs access does not go here because those could be writeable too
+    #these should point to more or less static things outside the program, every revision should add a new datafile for consistency, store the diffs?
+    #how to constrain/track files so they don't get lost??
+    #well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
+    #and the constraint will be populated by the DataPath table, if I have 10,000 datafiles though, that could become a NASTY change
+    #ideally we want this to be dynamic so that the DataPath can change and all the DataFile entries will learn about it
+    #it might just be better to do it by hand so UPDATE doesn't swamp everything
+    #the path cannot be the primary key of the datapath table AND accomodate path changes
+    #TODO next problem: when do we actually CREATE the DataFile and how to we get the number right even if we discard the trial? well, we DONT discard the file, we just keep it, but we need to gracefully deal with deletions/renumbering so that if something goes wrong it will alert to user
+    #RESPONSE: this record cannot be created until the file itself exists
+    #repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
+    #FIXME datafiles have substructure that requires more than one datasource ;_;
+    #although, the easiest way to fix that is to just change this to allow for an arbitrary number of channels to be saved per datafile and link the datasources to those?
+    #maybe base it on datafile type??? or configuration... but that is going to change for every fucking thing...
+    #that stuff goes in the metadata, datasource here just means 'collection software' fucking conflation
 

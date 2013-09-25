@@ -28,11 +28,6 @@ class ExperimentType(Base):
         return super().__repr__()
 
 
-class File(Base): #FIXME reinventing the wheel here kids, detect ft don't constraint it
-    type=Column(String(3),primary_key=True)
-    #hdf5, abf, py etc
-
-
 class SI_PREFIX(Base): #Yes, these are a good idea because they are written once, and infact I can enforce viewonly=True OR even have non-root users see those tables as read only
     symbol=Column(Unicode(2),primary_key=True)
     prefix=Column(String(5),nullable=False)
