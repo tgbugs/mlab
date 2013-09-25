@@ -5,9 +5,6 @@ class DefaultBase:
     @declared_attr
     def __tablename__(cls):
         return cls.__name__.lower() #FIXME cls.__name__ could fix?
-    id=Column(Integer, primary_key=True)
-    #__table_args__={'schema':'public'}
-    #__table_args__={}
 
     def AssignID(self,cls): #FIXME does this go here?
         if cls:

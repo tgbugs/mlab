@@ -52,6 +52,7 @@ class CageTransfer(Base):
 
 class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific 
     """Clean way to propagate dobs to litters and mice"""
+    id=Column(Integer,primary_key=True)
     dateTime=Column(DateTime,nullable=False) #on my core i7 4770k I get a mean of 1996 sdt of 329 calls of datetime.utcnow() with a unique timestamp, heavy rightward skew
     absolute_error=Column(Interval) #TODO read the doccumentation on this one to make sure it is ok
     #estimated=Column(DateTime) #transaction thingy for later
@@ -386,6 +387,7 @@ class MatingRecord(HasNotes, Base):
 
 
 class Litter(HasNotes, Base):
+    id=Column(Integer,primary_key=True)
     sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'),nullable=False) #can have mice w/o litters, but no litters w/o mice
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'),nullable=False)
     mr_id=Column(Integer, ForeignKey('matingrecord.id'),unique=True)

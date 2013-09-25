@@ -21,6 +21,7 @@ class NoteAssociation(Base): #turns out we want joined table inheritance... #I t
 
 class Note(Base):
     __tablename__='notes'
+    id=Column(Integer,primary_key=True)
     association_id=Column(Integer,ForeignKey('note_association.id'))
     source_id=Column(Integer,ForeignKey('datasources.id'))
     text=Column(Text,nullable=False)

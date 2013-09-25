@@ -8,7 +8,6 @@ from database.mixins import HasDataFiles
 ###----------
 
 class person_to_project(Base):
-    id=None
     person_id=Column(Integer,ForeignKey('people.id'),primary_key=True)
     project_id=Column(Integer,ForeignKey('project.id'),primary_key=True)
     #TODO add some nice info about what the person is doing on the project or some shit
@@ -30,6 +29,7 @@ class person_to_project(Base):
 class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a journal article
     #move to the 'data/docs' place?!??! because it is tehcnically a container for data not a table that will actively have data written to it, it is a one off reference
     #FIXME somehow experiment is dependent on this... which suggests that it doesn't quite belong in data
+    id=Column(Integer,primary_key=True)
     lab=Column(String(15),nullable=False) #this is how we are going to replace the bloodly PI, and leave at the filter Role=='pi'
     #pi_id=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc... need a check constraint on people.role=='PI', or really current role... because those could change and violate certain checks/constraints...??? maybe better just to leave it as a person
     #FIXME projects can have multiple PIs! damn it >_<, scaling this shit...
@@ -61,6 +61,7 @@ class Citeable(HasDataFiles, Base):
     #TODO base class for all citable things, such as personal communications, journal articles, books
     #this is now a wrapper for datafiles (among other things) and it should allow for easy querying
     __tablename___='citeable'
+    id=Column(Integer,primary_key=True)
     type=Column(String(15),nullable=False)
     title=None
     authors=None #relationship('Person')
@@ -99,10 +100,12 @@ class Website(Citeable):
 
 
 class IACUCProtocols(Base): #note: probs can't store them here, but just put a number and a link (frankly no sense, they are kept in good order elsewere)
+    id=Column(Integer,primary_key=True)
     pass
 
 
 class Methods(Base):
+    id=Column(Integer,primary_key=True)
     pass
 
 

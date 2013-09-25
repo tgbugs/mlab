@@ -113,6 +113,7 @@ class PharmacologyData(Base): #TODO
 
 
 class CalibrationData(Base):
+    id=Column(Integer, primary_key=True)
     #TODO base class for storing calibration data
     #examples:
     #voltage response curve for LED
@@ -131,7 +132,6 @@ class Repository(Base):
     #TODO request.urlopen works perfectly for filesystem stuff
     #file:///C: #apparently chromium uses file:///C:
     #file:///D: are technically the base
-    id=None
     url=Column(String(100),primary_key=True) #use urllib.parse for this #since these are base URLS len 100 ok
     credentials_id=Column(Integer,ForeignKey('credentials.id')) 
     blurb=Column(Text)
@@ -149,7 +149,6 @@ class RepoPath(Base): #FIXME this may be missing trailing /on path :x
     __tablename__='repopaths'
     #Assumption: repository MUST be the full path to the data, so yes, a single 'repository' might have 10 entries, but that single repository is just a NAME and has not functional purpose for storing/retrieving data
     #id=Column(Integer,primary_key=True,autoincrement=True) #to simplify passing repos? is this reasonable?
-    id=None
     name=Column(String)
     url=Column(String,ForeignKey('repository.url'),primary_key=True)
     path=Column(String,primary_key=True) #make this explicitly relative path?
@@ -190,7 +189,6 @@ class DataFile(Base):
     #the path cannot be the primary key of the datapath table AND accomodate path changes
     #TODO next problem: when do we actually CREATE the DataFile and how to we get the number right even if we discard the trial? well, we DONT discard the file, we just keep it, but we need to gracefully deal with deletions/renumbering so that if something goes wrong it will alert to user
     #RESPONSE: this record cannot be created until the file itself exists
-    id=None
     #repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
     #FIXME datafiles have substructure that requires more than one datasource ;_;
     #although, the easiest way to fix that is to just change this to allow for an arbitrary number of channels to be saved per datafile and link the datasources to those?
@@ -282,6 +280,7 @@ class DataFile(Base):
 
 
 class InDatabaseData(Base):
+    id=Column(Integer, primary_key=True)
     #TODO, need something more flexible than metadata (amazingly) that can hold stuff like calibration data not stored elsewhere?? also if I ever transition away from external datafiles or if I want to use neoio immediately to convert abf files
     pass
 

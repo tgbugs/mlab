@@ -92,7 +92,6 @@ class RigHistory(Base): #this is nice, but it seems better to get the current ri
 class ReagentInventory(Base): #TODO HasCitables
     __tablename__='reagenttypes'
     """base table for all reagents, long run could probably could interface with and inventory, but we arent anywhere near there yet"""
-    id=None
     name=Column(String,primary_key=True)
     #FIXME citeables need to be like notes...
     document_id=Column(Integer,ForeignKey('citeable.id')) #recipe msds you name it

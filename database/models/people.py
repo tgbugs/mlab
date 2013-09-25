@@ -9,6 +9,7 @@ from database.mixins import HasNotes, IsDataSource
 
 class Person(HasNotes, Base):
     __tablename__='people'
+    id=Column(Integer,primary_key=True)
     PrefixName=Column(String(50)) #BECAUSE FUCK YOU
     FirstName=Column(String(50))
     MiddleName=Column(String(50))
@@ -47,6 +48,7 @@ class Person(HasNotes, Base):
 
 class User(IsDataSource, Base):
     __tablename__='users'
+    id=Column(Integer,primary_key=True)
     person_id=Column(Integer,ForeignKey('people.id'),unique=True) #not all users are people and not all people are users
     #BUT each person can only have ONE user associated, something something auditing? I'm sure this is super insecure
     #because why the fuck not...
@@ -54,5 +56,6 @@ class User(IsDataSource, Base):
 
 
 class Credentials(Base): #FIXME table per user is safer since can restrict access by user_id?
+    id=Column(Integer,primary_key=True)
     user_id=Column(Integer,ForeignKey('users.id'))
     pass

@@ -8,7 +8,6 @@ from database.mixins    import HasDataFiles, HasCiteables
 ###----------------------------------------------------------------
 
 class HardwareType(Base):
-    id=None
     type=Column(String(30),primary_key=True)
     description=Column(Text)
 
@@ -30,13 +29,11 @@ class ExperimentType(Base):
 
 
 class File(Base): #FIXME reinventing the wheel here kids, detect ft don't constraint it
-    id=None
     type=Column(String(3),primary_key=True)
     #hdf5, abf, py etc
 
 
 class SI_PREFIX(Base): #Yes, these are a good idea because they are written once, and infact I can enforce viewonly=True OR even have non-root users see those tables as read only
-    id=None
     symbol=Column(Unicode(2),primary_key=True)
     prefix=Column(String(5),nullable=False)
     E=Column(Integer,nullable=False)
@@ -46,7 +43,6 @@ class SI_PREFIX(Base): #Yes, these are a good idea because they are written once
     
 
 class SI_UNIT(Base):
-    id=None
     symbol=Column(Unicode(3),primary_key=True)
     name=Column(String(15),nullable=False) #this is also a pk so we can accept plurals :)
     def __repr__(self):
@@ -55,7 +51,6 @@ class SI_UNIT(Base):
 
 class SEX(Base):
     """Static table for sex"""
-    id=None
     name=Column(String(14),primary_key=True) #'male','female','unknown' #FIXME do I need the autoincrement 
     symbol=Column(Unicode(1),nullable=False,unique=True) #the actual symbols
     #symbol=Column(Unicode(1)) #the actual symbols
