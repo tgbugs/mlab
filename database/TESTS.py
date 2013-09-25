@@ -4,9 +4,6 @@ import numpy as np
 
 from database.imports import printD,ploc,datetime,timedelta
 
-
-#FIXME flush instead of commit will populate primary keys! for some reason this isn't working...
-
 #FIXME TODO, make all these things use queries instead of generating you nub
 #and failover to create if absent
 
@@ -36,7 +33,7 @@ class TEST:
         from datetime import datetime,timedelta
         if not num:
             num=self.num
-        seed=datetime.utcnow()
+        seed=datetime.now()
         days=np.random.randint(0,365*years,num) #historical dates not supported in the test
         hours=np.random.randint(0,12,num) #historical dates not supported in the test
         deltas=[timedelta(days=int(d),hours=int(h)) for d,h in zip(days,hours)] #fortunately timedelta defaults to days so I dont have to read the doccumentation for map
@@ -226,7 +223,7 @@ class t_mating_record(TEST):
 
         
         mins=np.random.randint(-60,60,self.num)
-        now=datetime.utcnow()
+        now=datetime.now()
 
         self.records=[MatingRecord(Sire=sires[sire_arr[i]],Dam=dams[dam_arr[i]],startDateTime=now+timedelta(hours=i),stopDateTime=now+timedelta(hours=int(i)+12,minutes=int(mins[i]))) for i in range(self.num)]
 
@@ -276,7 +273,7 @@ class t_slice(TEST):
         preps=self.session.query(Experiment).filter_by(type='acute slice prep')
         
         self.records=[]
-        [[self.records.append(Slice(Prep=prep,startDateTime=datetime.utcnow()+timedelta(hours=i))) for i in range(self.num)] for prep in preps] #FIXME amplification of numbers
+        [[self.records.append(Slice(Prep=prep,startDateTime=datetime.now()+timedelta(hours=i))) for i in range(self.num)] for prep in preps] #FIXME amplification of numbers
 
 
 class t_cell(TEST):
@@ -396,7 +393,7 @@ class t_sliceprep(TEST):
         person=self.session.query(Person)[0]
         sucrose=Reagent(reagent_id='poop')
         exptype=self.session.query(ExperimentType).filter_by(abbrev='prep')[0]
-        self.records=[Experiment(Project=project,Person=person,Reagents=[sucrose,],startDateTime=datetime.utcnow()-timedelta(int(np.random.randint(1))),ExpType=exptype) for i in range(self.num)] #FIXME need to find a way to propagate mouse w/ RI
+        self.records=[Experiment(Project=project,Person=person,Reagents=[sucrose,],startDateTime=datetime.now()-timedelta(int(np.random.randint(1))),ExpType=exptype) for i in range(self.num)] #FIXME need to find a way to propagate mouse w/ RI
     def add_mice(self):
         mice=self.session.query(Mouse).filter_by(sex_id='u')[100:100+self.num]
         np.random.shuffle(mice)

@@ -58,30 +58,67 @@ class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a jo
 
 #FIXME how the fuck do I query for these!??!?!
 class Citeable(HasDataFiles, Base):
+    #see: http://www2.liu.edu/cwis/cwp/library/workshop/citation.htm
     #TODO base class for all citable things, such as personal communications, journal articles, books
     #this is now a wrapper for datafiles (among other things) and it should allow for easy querying
     __tablename___='citeable'
     id=Column(Integer,primary_key=True)
     type=Column(String(15),nullable=False)
+    #FIXME should this be metadata like the rest? eh... probs not
     title=None
-    authors=None #relationship('Person')
-    year=None
-    doi=None
-    version=None #for things like protocols...
+
+    version=Column(Integer) #for things like protocols... TODO can we version some of these with git??
     accessDateTime=Column(DateTime,default=datetime.now)
+
+    __mapper_args__{
+        'polymorphic_on':type,
+        'polymorphic_identity':'citeable'
+    }
+
 
     #TODO create the columns here so that they can propagate people correctly when I pass in a pubmed citation
     #once the columns are in place I can just make it so that the output format is whatever I want
 
-    #__mapper_args__={
-        #'polymorphic_on':type,
-        #'polymorphic_identity':'citeable'
-    #}
     def __init__(self,type=None,DataFiles=None,accessDateTime=None):
         self.type=type
         self.datafiles.extend(DataFiles)
         self.accessDateTime=accessDateTime
 
+
+class Citation(Base): #FIXME HasDOI mixin should make life real supe easy
+    #TODO crossref seems to have the raw xml??!
+    #fuck it man, I don't need all this shit, I just need the xml to be parsed >_<
+    #TODO delete all this shit
+    __tablename__='publication'
+    id=Column(Integer,primary_key=True)
+    authors=None #relationship('Person')
+    Date=Column(Date)
+    book_title=Column(String)
+    website_title=Column(String)
+    article_title=Column(String)
+    webpage_title=Column(String)
+    periodical_title=Column(String)
+    blog_title=Column(String)
+    volume=Column(String)
+    startPage=Column(Integer)
+    stopPage=Column(Integer)
+    pages=Column(String)
+    @hybrid_property
+    def pages(self):
+        return '%s-%s'%(self.startPage,self.stopPage)
+    place_of_publication=Column(String)
+    publisher=Column(String)
+    database=Column(String)
+    other=Column(String)
+    doi=Column(String)
+    pmid=Column(String)
+    isbn=Column(String(20)) #room to grow ;)
+    #urls shall be saved via the DataFile interface
+
+    def output(format):
+        #TODO, does this go here, I don't think it does, I think it goes somewhere else...
+        string=None
+        return string
 
 """
 class Website(Citeable):

@@ -52,3 +52,14 @@ def timeDeltaIO(tdORfloat): #FIXME postgres as INTERVAL but it has quirks
         except TypeError:
             raise TypeError('That wasn\'t a float OR a timedelta, what the hell are you feeding the poor thing!?')
 
+###-----------
+###  DOI tools
+###-----------
+
+def XMLfromDOI(doi):
+    #TODO go online and lookup the doi
+    #YOU LIVE IN INTERNET LAND DAMN IT BRAIN
+    pass
+
+def XMLfromISBN(isbn):
+    

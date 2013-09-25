@@ -2,8 +2,6 @@
 
 #TODO when thinking about staging this stuff I need a safe way to hold data incase my access to the db goes down, like pickling something or the like? ideally this shouldn't happen but better safe than sorry
 
-#TODO therefore we need a 'convert local to utc for storage'
-
 #TODO conform to MINI, NIF ontologies?, or odML terminiologies?
 
 #TODO
