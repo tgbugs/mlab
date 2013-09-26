@@ -1,4 +1,6 @@
-from database.models import *
+from database.main import *
+#from database.models import *
+from sqlalchemy.orm import aliased
 
 def q(session):
     s=session
@@ -9,3 +11,18 @@ def q(session):
 
     #FUKKEN MAGIC BABY gets all datafiles in an experiment
     s.query(DataFile).join((Subject, DataFile.subjects)).join((Experiment, Subject.experiments)).filter(Experiment.id==1).all()
+
+
+def qTree(session):
+    #fucking mess in here
+    #sub_hardware=session.query(Hardware.sub_components,Hardware.id).filter(Hardware.id==1).cte(name='sub_hardware',recursive=True)
+    sub_hardware=session.query(Hardware.id).filter(Hardware.id==1).cte(name='sub_hardware',recursive=True)
+
+    sub_a=aliased(sub_hardware, name='sh')
+    hw_a=aliased(Hardware, name='h')
+        
+    #sub_hardware=sub_hardware.union_all(session.query(hw_a.id,hw_a.sub_components).filter(hw_a.id==sub_a.c.sub_components))
+
+
+    q=session.query(sub_hardware.c.sub_components)
+    return q

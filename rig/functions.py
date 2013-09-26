@@ -146,11 +146,10 @@ class clxFuncs(kCtrlObj):
 
 
 class datFuncs(kCtrlObj): 
-    #FIXME this is not working right... it needs to be able to go out and get data on its own... eg when a new abf file appears in the directory it needs to be able to ask for the information to annotate that with... ALTERNATELY if I get the pclamp interface working then I can probably just do everything top down since I will control the entire experiment anyway and can do everything in sequce so dataman can just be a container :D I like that... having the datastructure be passive is probably a good idea, put all the stuff that deals with backup and saving and organization there, just pass data to it, which is sort of how it works right now since all the functions just play back the available data right now
-    #dataMan is the UR bot... datFuncs can get things from the dat, but dataMan should exist at the bottom
-    #esp since kbdListner is really also another kCtrlObj that coordinates all the ohter ctrl objects, witness that it also needs to readCfg...
+    #interface with the database TODO this should be able to run independently?
     """Put ANYTHING permanent that might be data in here"""
     def __init__(self, modestate):
+        from database.models import *
         super().__init__(modestate)
         self.markDict={}
         self.posDict={}
@@ -160,6 +159,16 @@ class datFuncs(kCtrlObj):
         #FIXME
         #this class should be the one to get data out of dataman
         #dataman should have a method 'saveData' that takes the source class (self) and the data and stores it
+
+    def newExperiment(self):
+
+    def newCell(self):
+
+    def newSlice(self):
+
+    def addMetaData(self):
+
+    def addDataFile(self): #FIXME not sure this should go here...
 
     def getUserInputData(self):
         """Sadly there is still some data that I can't automatically collect"""
@@ -227,6 +236,11 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
     def printMCCstate(self):
         print(re.sub('\), ',')\r\n',str(self.MCCstateDict)))
         return self
+
+    def setMCState(self,MC=None,Mode=None,Holding=None,HoldingEnable=None,): #TODO
+        #FIXME all of the experiment logic needs to be stored in one place instead of hidden in 10 files
+        selectMC,SetMode,SetHolding,SetHoldingEnable,
+        self.ctrl.selectMC(
 
     def allIeZ(self):
         self.ctrl.selectMC(0)

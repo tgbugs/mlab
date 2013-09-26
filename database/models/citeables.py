@@ -70,7 +70,7 @@ class Citeable(HasDataFiles, Base):
     version=Column(Integer) #for things like protocols... TODO can we version some of these with git??
     accessDateTime=Column(DateTime,default=datetime.now)
 
-    __mapper_args__{
+    __mapper_args__={
         'polymorphic_on':type,
         'polymorphic_identity':'citeable'
     }

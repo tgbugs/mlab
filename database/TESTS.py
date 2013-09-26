@@ -519,7 +519,7 @@ def run_tests(session):
 
     ds=t_datasource(session)
     mds=t_metadatasource(session)
-    h=t_hardware(session)
+    #h=t_hardware(session)
     hwmd=t_hwmetadata(session,5)
     #t_experiment(session,1,4) #FIXME argh, so many things can become inconsistent...
     t_people(session,20)

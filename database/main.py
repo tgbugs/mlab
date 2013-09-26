@@ -25,6 +25,7 @@ from datetime import datetime
 
 from sqlalchemy                 import create_engine
 from sqlalchemy.orm             import Session
+from sqlalchemy.orm             import aliased
 from sqlalchemy.engine          import Engine
 
 from database.models            import *
@@ -127,7 +128,7 @@ def connect(echo=False):
 
 def main(echo=True):
     #create engine
-    engine=postgresEng(echo=echo,wipe_db=False)
+    engine=postgresEng(echo=echo,wipe_db=True)
     #engine=sqliteEng(echo=echo)
 
     #create metadata
