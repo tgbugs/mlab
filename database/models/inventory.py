@@ -1,6 +1,6 @@
 from database.imports import *
-from database.base import Base
-from database.mixins import HasNotes, IsMetaDataSource, IsDataSource, HasMetaData
+from database.models.base import Base
+from database.models.mixins import HasNotes, IsMetaDataSource, IsDataSource, HasMetaData
 
 #TODO could just make this a hardware table and maybe CHECK that the type matches?
 #then just have another table for any specifics on that, could do the same for the reagents, since most of them are going to have links to urls and msdses or whatever the fuck

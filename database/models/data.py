@@ -1,6 +1,6 @@
 from database.imports import *
-from database.base import Base
-from database.mixins import HasNotes, HasMetaData
+from database.models.base import Base
+from database.models.mixins import HasNotes, HasMetaData
 from database.standards import URL_STAND
 
 #some global variables that are used here and there that would be magic otherwise
@@ -184,6 +184,11 @@ class RepoPath(Base): #FIXME this may be missing trailing /on path :x
 
 class File(Base):
     """class for interfacing with things stored outside the database, whether datafiles or citables or whatever"""
+    #TODO references to a local file should be replaced with a reference to that computer so that on retrieval if the current computer does not match we can go find other repositories for the same file damn it this is going to be a bit complicated
+    #ideally the failover version selection should be ordered by retrieval time and should be completely transparent
+    #this does mean that files need to have m-m with repositories
+    #TODO need verfication that the file is actually AT the repository
+    #fuck, what order do I do this in esp for my backup code
     __tablename__='file'
     url=Column(String,primary_key=True,autoincrement=False)
     path=Column(String,primary_key=True,autoincrement=False)

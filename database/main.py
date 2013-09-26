@@ -29,7 +29,7 @@ from sqlalchemy.orm             import aliased
 from sqlalchemy.engine          import Engine
 
 from database.models            import *
-from database.base              import Base
+from database.models.base       import Base, initDBScience
 from database.setupDB           import populateConstraints, populateTables
 from database.TESTS             import run_tests
 
@@ -128,15 +128,15 @@ def connect(echo=False):
 
 def main(echo=True):
     #create engine
-    engine=postgresEng(echo=echo,wipe_db=True)
-    #engine=sqliteEng(echo=echo)
+    #engine=postgresEng(echo=echo,wipe_db=True)
+    engine=sqliteEng(echo=echo)
 
-    #create metadata
+    #create metadata on the engine
     #Base.metadata.drop_all(engine,checkfirst=True)
-    Base.metadata.create_all(engine,checkfirst=True)
+    session=initDBScience(engine) #imported from base.py via *
 
     #create session
-    session = Session(engine)
+    #session = Session(engine)
 
     #populate constraint tables
     populateConstraints(session)

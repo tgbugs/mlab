@@ -1,6 +1,6 @@
 from database.imports import *
-from database.base import Base
-from database.mixins import HasNotes
+from database.models.base import Base
+from database.models.mixins import HasNotes
 class _Result(HasNotes, Base):
     __tablename__='results'
     id=Column(Integer,primary_key=True)

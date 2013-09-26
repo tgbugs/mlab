@@ -1,7 +1,7 @@
 from database.imports import *
-from database.base import Base
+from database.models.base import Base
 from database.standards import URL_STAND
-from database.mixins import HasFiles
+from database.models.mixins import HasFiles
 
 ###----------
 ###  Projects
@@ -63,7 +63,7 @@ class Citeable(HasFiles, Base):
     #this is now a wrapper for datafiles (among other things) and it should allow for easy querying
     __tablename___='citeable'
     id=Column(Integer,primary_key=True)
-    type=Column(String(15),nullable=False)
+    #type=Column(String(15),nullable=False) #TODO
     #FIXME should this be metadata like the rest? eh... probs not
     title=None
 
@@ -81,9 +81,9 @@ class Citeable(HasFiles, Base):
     #TODO create the columns here so that they can propagate people correctly when I pass in a pubmed citation
     #once the columns are in place I can just make it so that the output format is whatever I want
 
-    def __init__(self,type=None,DataFiles=None,accessDateTime=None):
+    def __init__(self,type=None,Files=None,accessDateTime=None):
         self.type=type
-        self.datafiles.extend(DataFiles)
+        self.files.extend(Files)
         self.accessDateTime=accessDateTime
 
 

@@ -1,7 +1,7 @@
 #contains all the constraint tables and their initial values 
 from database.imports   import *
-from database.base      import Base
-from database.mixins    import HasDataFiles, HasCiteables
+from database.models.base    import Base
+from database.models.mixins    import HasDataFiles, HasCiteables
 
 ###----------------------------------------------------------------
 ###  Helper classes/tables for mice (normalization and constraints)

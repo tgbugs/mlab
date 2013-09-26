@@ -1,4 +1,4 @@
-from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, RepoPath, DataFile, DataSource, Strain, ExperimentType, Citeable
+from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, RepoPath, File, Strain, ExperimentType, Citeable
 from database.imports import printD
 
 ###----------------------------
@@ -210,7 +210,8 @@ def popExperimentType(session):
     session.add(ExperimentType('in vitro patch','patch'))
 
 def popDataSources(session):
-    session.add(DataSource(name='jax'))
+    #session.add(DataSource(name='jax'))
+    pass
 
 def popMetaDataSources(session):
     espX=None
@@ -231,15 +232,15 @@ def popRepos(session):
     session.add(RepoPath(jax,'/strain',name='jax strain db'))
     session.commit()
     pass
-def popDataFiles(session): #FIXME this isn't a datafile, it is actually a citeable! :D look at how easy it was to make that mistake
+def popFiles(session): #FIXME this isn't a datafile, it is actually a citeable! :D look at how easy it was to make that mistake
     rep=session.query(RepoPath).filter_by(name='jax strain db')[0]
-    ds=session.query(DataSource).filter_by(name='jax')[0]
-    session.add(DataFile(rep,'003718.html',ds))
+    #ds=session.query(DataSource).filter_by(name='jax')[0]
+    session.add(File(rep,'003718.html'))
     pass
     
 def popCiteables(session):
-    df=session.query(DataFile).filter_by(filename='003718.html')[0]
-    session.add(Citeable(type='website',DataFiles=[df])) #FIXME
+    f=session.query(File).filter_by(filename='003718.html')[0]
+    session.add(Citeable(Files=[f])) #FIXME
     #session.commit()
     pass
 
@@ -269,9 +270,8 @@ def populateConstraints(session):
 def populateTables(session):
     """A run once to load current data (not existing elsewhere into the database (ie may use google docs as a web interface for entering/viewing certain types of data eg mice)"""
     popHardware(session)
-    popDataSources(session)
     popRepos(session)
-    popDataFiles(session)
+    popFiles(session)
     popCiteables(session)
     popStrains(session)
 if __name__=='__main__':

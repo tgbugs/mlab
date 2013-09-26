@@ -4,9 +4,9 @@
 from numpy import unique as np_unique
 
 from database.imports import *
-from database.base import Base
-from database.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardware
-from database.standards import frmtDT, timeDeltaIO
+from database.models.base import Base
+from database.models.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardware
+from database.standards import frmtDT
 from sqlalchemy.orm import mapper
 
 #some global variables that are used here and there that would be magic otherwise

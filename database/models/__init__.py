@@ -5,6 +5,12 @@ __all__=[]
         #Nothing to see here!
 #])
 
+from database.models.base import *
+__all__.extend([
+        #'Base',
+        #'initDBScience',
+])
+
 from database.models.citeables import *
 __all__.extend([
         'person_to_project',
@@ -17,7 +23,6 @@ __all__.extend([
 
 from database.models.constraints import *
 __all__.extend([
-        'person_to_project',
         'HardwareType',
         'ExperimentType',
         'SI_PREFIX',
@@ -28,7 +33,6 @@ __all__.extend([
 
 from database.models.data import *
 __all__.extend([
-        'person_to_project',
         'DataSource',
         'MetaDataSource',
         #'MetaData',
@@ -46,7 +50,6 @@ __all__.extend([
 
 from database.models.experiments import *
 __all__.extend([
-        'person_to_project',
         'Experiment',
         #'SlicePrep',
         #'Patch'
@@ -55,7 +58,6 @@ __all__.extend([
 
 from database.models.inventory import *
 __all__.extend([
-        'person_to_project',
         'Hardware',
         'RigHistory',
         'ReagentInventory',
@@ -66,7 +68,6 @@ __all__.extend([
 
 from database.models.mice import *
 __all__.extend([
-        'person_to_project',
         'Subject',
         'Mouse',
         'Slice',
@@ -83,14 +84,12 @@ __all__.extend([
 
 from database.models.notes import *
 __all__.extend([
-        'person_to_project',
         #'NoteAssociation',
         #'Note'
 ])
 
 from database.models.people import *
 __all__.extend([
-        'person_to_project',
         'Person',
         'User',
         'Credentials'

@@ -1,7 +1,6 @@
 from database.imports import *
-
-from database.base import Base
-from database.mixins import HasNotes, IsDataSource
+from database.models.base import Base
+from database.models.mixins import HasNotes, IsDataSource
 
 ###---------------
 ###  People tables

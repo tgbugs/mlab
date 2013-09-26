@@ -1,4 +1,5 @@
 from database.imports               import Column, Integer, declared_attr
+from sqlalchemy.orm                 import Session
 from sqlalchemy.ext.declarative     import declarative_base
 
 class DefaultBase:
@@ -21,7 +22,9 @@ class DefaultBase:
 
 Base=declarative_base(cls=DefaultBase)
 
-#def init_db(engine):
-    #Base.metadata.create_all(engine)#, checkfirst=True)
+def initDBScience(engine):
+    """function to initilize all the models"""
+    Base.metadata.create_all(engine, checkfirst=True) #FIXME check if tables match __all__ in __init__.py
+    return Session(engine)
     
 

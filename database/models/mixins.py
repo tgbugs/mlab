@@ -1,5 +1,5 @@
 from database.imports import *
-from database.base import Base
+from database.models import Base
 
 #some global variables that are used here and there that would be magic otherwise
 _plusMinus='\u00B1'
@@ -106,7 +106,7 @@ class HasDataFiles:
 
 class HasFiles:
     @declared_attr
-    def datafiles(cls):
+    def files(cls):
         datafile_association = Table('%s_f_assoc'%cls.__tablename__, cls.metadata,
             Column('file_url',String,primary_key=True),
             Column('file_path',String,primary_key=True),

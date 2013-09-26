@@ -1,7 +1,7 @@
 from database.imports import *
-from database.base import Base
-from database.mixins import HasNotes, HasMetaData, HasDataFiles
-from database.standards import frmtDT, timeDeltaIO
+from database.models.base import Base
+from database.models.mixins import HasNotes, HasMetaData, HasDataFiles
+from database.standards import frmtDT
 from sqlalchemy.orm import mapper
 
 #an attempt to simplify the the relationship of objects to data
