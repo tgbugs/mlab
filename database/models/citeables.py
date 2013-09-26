@@ -1,7 +1,7 @@
 from database.imports import *
 from database.base import Base
 from database.standards import URL_STAND
-from database.mixins import HasDataFiles
+from database.mixins import HasFiles
 
 ###----------
 ###  Projects
@@ -57,7 +57,7 @@ class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a jo
 ###------------
 
 #FIXME how the fuck do I query for these!??!?!
-class Citeable(HasDataFiles, Base):
+class Citeable(HasFiles, Base):
     #see: http://www2.liu.edu/cwis/cwp/library/workshop/citation.htm
     #TODO base class for all citable things, such as personal communications, journal articles, books
     #this is now a wrapper for datafiles (among other things) and it should allow for easy querying
@@ -69,11 +69,13 @@ class Citeable(HasDataFiles, Base):
 
     version=Column(Integer) #for things like protocols... TODO can we version some of these with git??
     accessDateTime=Column(DateTime,default=datetime.now)
-
+    
+    """
     __mapper_args__={
         'polymorphic_on':type,
         'polymorphic_identity':'citeable'
     }
+    """
 
 
     #TODO create the columns here so that they can propagate people correctly when I pass in a pubmed citation

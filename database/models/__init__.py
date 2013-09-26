@@ -10,7 +10,6 @@ __all__.extend([
         'person_to_project',
         'Project',
         'Citeable',
-        #'Website',
         'IACUCProtocols',
         'Methods',
         'Recipe'
@@ -21,7 +20,6 @@ __all__.extend([
         'person_to_project',
         'HardwareType',
         'ExperimentType',
-        'File',
         'SI_PREFIX',
         'SI_UNIT',
         'SEX',
@@ -42,6 +40,7 @@ __all__.extend([
         #'PharmacologyData',
         'Repository',
         'RepoPath',
+        'File',
         'DataFile'
 ])
 

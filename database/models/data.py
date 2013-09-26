@@ -182,13 +182,16 @@ class RepoPath(Base): #FIXME this may be missing trailing /on path :x
         return super().__repr__('fullpath')
 
 
-class File(Base): #class for interfacing with things stored outside the database, whether datafiles or citables or whatever
+class File(Base):
+    """class for interfacing with things stored outside the database, whether datafiles or citables or whatever"""
+    __tablename__='file'
     url=Column(String,primary_key=True,autoincrement=False)
     path=Column(String,primary_key=True,autoincrement=False)
     __table_args__=(ForeignKeyConstraint([url,path],['repopaths.url','repopaths.path']), {}) #FIXME this *could* be really fucking slow because they arent indexed, may need to revert these changes, ah well
-    filename=Column(String,primary_key=True,autoincrement=False) #urp! on ext3 255 max for EACH /asdf/
+    filename=Column(String,primary_key=True,autoincrement=False)
+    creationDateTime=Column(DateTime,default=datetime.now)
     filetype=Column(String)
-    @hybrid_property #FIXME this isn't really hybrid...
+    @hybrid_property #FIXME this isn't really hybrid... ie it doesnt really need to be a column
     def filetype(self):
         return self.filename.split('.')[-1]
     @filetype.setter
@@ -199,14 +202,31 @@ class File(Base): #class for interfacing with things stored outside the database
         'polymorphic_on':ident,
         'polymorphic_identity':'file',
     }
+    def __init__(self,RepoPath=None,filename=None,url=None,path=None,creationDateTime=None):
+        self.url=URL_STAND.baseClean(url)
+        self.repo_path=URL_STAND.pathClean(path) #TODO use requests
+        self.filename=filename
+        self.creationDateTime=creationDateTime
+        if RepoPath:
+            if RepoPath.url:
+                self.url=RepoPath.url
+                self.path=RepoPath.path
+            else:
+                raise AttributeError('RepoPath has no url/path! Did you commit before referencing the instance directly?')
+    def strHelper(self,depth=0):
+        return super().strHelper(depth,'filename')
+    def __repr__(self):
+        return '\n%s%s%s%s'%(self.url,self.path,'/',self.filename)
 
 
-class DataFile(Base):
-    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME not clear that we need this once we move datafile apparth from file
-    creationDateTime=Column(DateTime,default=datetime.now) #somehow this seems like reproducing filesystem data... this, repo and metadata all seem like they could be recombined down... except that md has multiple datafiles?
-
-    #FUCK this is a many to many >_< BUT I can to a similar thing as I did for metadata!
-    #FIXME 'has datafiles' is not isomorphic with subjects >_<
+class DataFile(File):
+    __tablename__='datafile'
+    url=Column(String,primary_key=True,autoincrement=False)
+    path=Column(String,primary_key=True,autoincrement=False)
+    filename=Column(String,primary_key=True,autoincrement=False)
+    __table_args__=(ForeignKeyConstraint([url,path,filename],['file.url','file.path','file.filename']), {})
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME make this many-many???!
+    __mapper_args__={'polymorphic_identity':'datafile'}
 
     @declared_attr
     def metadata_(cls): #FIXME naming...
@@ -250,30 +270,11 @@ class DataFile(Base):
         cls.MetaData=DataFileMetaData
         return relationship(cls.MetaData)
 
-    #analysis_DateTime
-    #FIXME a bunch of these DateTimes should be TIMESTAMP? using the python implementation is more consistent?
     def __init__(self,RepoPath=None,filename=None,DataSource=None,url=None,path=None,datasource_id=None,Subjects=[], creationDateTime=None):
-        #self.url=URL_STAND.baseClean(repo_url)
-        #self.repo_path=URL_STAND.pathClean(repo_path)
-        self.url=url #TODO urlparse should make it trivial to add datafiles by url, in which case path may be obsolete?
-        self.path=path
-        self.filename=filename
-        self.creationDateTime=creationDateTime
+        super().__init__(RepoPath,filename,url,path,creationDateTime)
         self.datasource_id=datasource_id
-        #self.AssignID(Experiment) #FIXME should be subject instead?!?!
         self.AssignID(DataSource)
-        self.subjects.extend(Subjects) #TODO listlike #FIXME there's going to be a row for every bloody thing with HasDataFiles
-        #FIXME can I have an in-database check to make sure that pairs of cells match CellPairs???
-        if RepoPath:
-            if RepoPath.url:
-                self.url=RepoPath.url
-                self.path=RepoPath.path
-            else:
-                raise AttributeError('RepoPath has no url/path! Did you commit before referencing the instance directly?')
-    def strHelper(self,depth=0):
-        return super().strHelper(depth,'filename')
-    def __repr__(self):
-        return '\n%s%s%s%s'%(self.url,self.path,'/',self.filename)
+        self.subjects.extend(Subjects)
 
 
 class InDatabaseData(Base):

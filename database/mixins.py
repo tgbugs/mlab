@@ -103,6 +103,27 @@ class HasDataFiles:
             backref=backref('%s'%cls.__tablename__),
         )
 
+
+class HasFiles:
+    @declared_attr
+    def datafiles(cls):
+        datafile_association = Table('%s_f_assoc'%cls.__tablename__, cls.metadata,
+            Column('file_url',String,primary_key=True),
+            Column('file_path',String,primary_key=True),
+            Column('file_filename',String,primary_key=True),
+            ForeignKeyConstraint(['file_url','file_path','file_filename'],
+                                 ['file.url','file.path','file.filename']),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__),
+                   primary_key=True),
+        )
+        return relationship('File', secondary=datafile_association,
+            primaryjoin='{0}_f_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
+            secondaryjoin='and_(File.url=={0}.file_url,File.path=={0}.file_path,File.filename=={0}.file_filename)'.format(cls.__tablename__+'_f_assoc.c'),
+            backref=backref('%s'%cls.__tablename__),
+        )
+
+
+
 ###--------------------
 ###  experiments mixins
 ###--------------------
