@@ -51,9 +51,6 @@ __all__.extend([
 from database.models.experiments import *
 __all__.extend([
         'Experiment',
-        #'SlicePrep',
-        #'Patch'
-        #'ChrSomWholeCell',
 ])
 
 from database.models.inventory import *
@@ -62,16 +59,10 @@ __all__.extend([
         'RigHistory',
         'ReagentInventory',
         'Reagent'
-        #'Stock',
-        #'Solution',
 ])
 
 from database.models.mice import *
 __all__.extend([
-        'Subject',
-        'Mouse',
-        'Slice',
-        'Cell',
         'DOB',
         'Sire',
         'Dam',
@@ -93,4 +84,12 @@ __all__.extend([
         'Person',
         'User',
         'Credentials'
+])
+
+from database.models.subjects import *
+__all__.extend([
+        'Subject',
+        'Mouse',
+        'Slice',
+        'Cell',
 ])

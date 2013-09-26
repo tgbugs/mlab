@@ -24,6 +24,8 @@ from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardwa
 
 #TODO XXX FIXME so in theory I could convert all of this joined table inheritance into metadata at the cost of connections to regents, OR better yet I could have a many-many with reagents O_0
     
+#TODO in theory what we want is for experiments to have a m-m on itself to convey logical connections, in which case a mating record is just an experiment.... HRM, think on this... we certainly want the m-m for logical depenece I think
+
 class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base): #FIXME there is in fact a o-m on subject-experiment, better fix that, lol jk, it is fixed ish :)
     #XXX datetimes, non nulls, and foreign keys go in these, metadata should be where all the non foreign key stuff goes
     __tablename__='experiments'
@@ -58,103 +60,20 @@ class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base): #FIX
             else:
                 raise AttributeError
 
-
-'''
-class SlicePrep(Experiment): #it works better to have this first because I can create a sliceprep object and THEN pick the mouse :)
-    """ Notes on the dissection and slice prep"""
-    __tablename__='sliceprep'
-    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
-    chamber_id=Column(Integer,ForeignKey('hardware.id'))
-    sucrose_id=Column(String,ForeignKey('reagents.name'),nullable=False)
-    slices=relationship('Slice',primaryjoin='SlicePrep.id==foreign(Slice.prep_id)',backref=backref('prep',uselist=False))
-    mouse=relationship('Mouse',primaryjoin='SlicePrep.id==foreign(Mouse.experiment_id)',backref=backref('prep',uselist=False),uselist=False) #FIXME mice *should* be able to be part of more than one experiment for some types damn it
-
-    __mapper_args__={'polymorphic_identity':'slice prep'}
-
-    def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None,sucrose_id=None): #FIXME
-        super().__init__(Project=Project,Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime)
-        self.sucrose_id=sucrose_id
-
-    def add_mouse(self,Mouse): #TODO make it possible to give the specific prep a mouse
-        Mouse.experiment_id=self.id #FIXME need to deal w/ experiment-subject m-o
-        return Mouse
-
-    def make_slices(self,num): #TODO do I actually want this? yeah, then just unused flag
-        pass
+#TODO: figure out the base case for experiments (ie which subjects) for
+#Slice Prep
+#Patch
+#IUEP
+#ChrSom
+#Histology
+#WaterRecords
+#TODO this does not need to be done right now, just make sure it will integrate easily
+#do we keep weight's here or somehwere else, is there any other reason why a 'normal' mouse would need to be weighed? sure the mouse HAS a weight, but does that mean that the mouse table should be where we keep it? it changes too
+#same argument applies to sex and how to deal with changes to that, and whether it is even worth noting
+#somehow this reminds me that when weaning mice need to make sure that their cages get matched up properly... well, that's the users job
+#id=None
+#mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
+#dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
+#TODO lol the way this is set up now these classes should actually proabaly DEFINE metadata records at least for simple things like this where the only associated object is a mouse which by default experiment asssociates with, maybe I SHOULD move the mouse_id to class MouseExperiment?!?!?!
 
 
-class Patch(Experiment): #FIXME should this be a o-o with slice prep???
-    """Ideally this should be able to accomadate ALL the different kinds of slice experiment???"""
-    __tablename__='patch'
-    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
-
-    #experimental conditions
-    #TODO transition these to refer to the individual lot
-    acsf_id=Column(String,ForeignKey('reagents.name'),nullable=False) #need to constrain
-    internal_id=Column(String,ForeignKey('reagents.name'),nullable=False) #FIXME ultimately this should be unique so if the internal or acsf change then it is a new experiment?
-    #TODO flowrate and the like goes in metadata
-
-    cells=relationship('PatchCell',primaryjoin='Patch.id==foreign(PatchCell.patch_id)',backref=backref('patch',uselist=False))
-
-    #pharmacology
-    #TODO might should add a pharmacology data table similar to the metadata table but with times?
-
-    __mapper_args__ = {'polymorphic_identity':'slice'}
-    
-    def __init__(self,Prep=None,acsf=None,Internal=None,Methods=None,Project=None,Person=None,project_id=None,person_id=None,prep_id=None,acsf_id=None,internal_id=None,methods_id=None,startDateTime=None):
-        super().__init__(Person=Person,Methods=Methods,project_id=project_id,person_id=person_id,methods_id=methods_id,startDateTime=startDateTime)
-        self.acsf_id=acsf_id
-        self.internal_id=internal_id
-        if Prep:
-            if Prep.id:
-                self.project_id=Prep.project_id
-                self.person_id=Prep.person_id #FIXME different person could prep vs patch
-            else:
-                raise AttributeError
-        if acsf:
-            if acsf.name:
-                self.acsf_id=acsf.name
-            else:
-                raise AttributeError
-        if Internal:
-            if Internal.name:
-                self.internal_id=Internal.name
-            else:
-                raise AttributeError
-
-
-class ChrSomWholeCell(Patch): #FIXME could do a 'HasLedStim' or something?
-    __tablename__='chrsomsliceexperiment'
-    id=Column(Integer,ForeignKey('patch.id'),primary_key=True,autoincrement=False)
-    led_id=Column(Integer,ForeignKey('hardware.id'))
-    __mapper_args__ = {'polymorphic_identity':'chr_som_slice'}
-
-'''
-"""
-class _HistologyExperiment(Experiment):
-    __tablename__='histologyexperiment'
-    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
-    __mapper_args__ = {'polymorphic_identity':'histology'}
-
-
-class _IUEPExperiment(Experiment):
-    __tablename__='iuepexperiment'
-    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
-    #dam=realationship('Mouse') #FIXME maybe don't need this, since the mouse will backprop anyway
-    matingrecord_id=Column(Integer,ForeignKey('matingrecord.id'))
-    mice=relationship('Mouse',primaryjoin='IUEPExperiment.mouse_id==foreign(Mouse.dam_id)',backref=backref('iuep',uselist=False)) #FIXME somehow mouse could also have a @hybrid_property of 'est age at iuep...'
-    __mapper_args__ = {'polymorphic_identity':'iuep'}
-
-class _WaterRecord(Experiment):
-    __tablename__='waterrecords'
-    id=Column(Integer,ForeignKey('experiments.id'),primary_key=True,autoincrement=False)
-    #TODO this does not need to be done right now, just make sure it will integrate easily
-    #do we keep weight's here or somehwere else, is there any other reason why a 'normal' mouse would need to be weighed? sure the mouse HAS a weight, but does that mean that the mouse table should be where we keep it? it changes too
-    #same argument applies to sex and how to deal with changes to that, and whether it is even worth noting
-    #somehow this reminds me that when weaning mice need to make sure that their cages get matched up properly... well, that's the users job
-    #id=None
-    #mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
-    #dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
-    #TODO lol the way this is set up now these classes should actually proabaly DEFINE metadata records at least for simple things like this where the only associated object is a mouse which by default experiment asssociates with, maybe I SHOULD move the mouse_id to class MouseExperiment?!?!?!
-
-"""
