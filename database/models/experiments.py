@@ -29,7 +29,7 @@ class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base):
     methods_id=Column(Integer,ForeignKey('citeable.id'))
     type=Column(String(20),ForeignKey('experimenttype.id'),nullable=False)
 
-    def __init__(self,Project=None,Person=None,Methods=None,project_id=None,person_id=None,methods_id=None,startDateTime=None,Reagents=[],Hardware=[],Subjects=[],ExpType=None,type=None):
+    def __init__(self,Project=None,Person=None,ExpType=None,startDateTime=None,Methods=None,Hardware=[],Reagents=[],Subjects=[],project_id=None,person_id=None,type=None,methods_id=None):
         self.project_id=project_id
         self.person_id=person_id
         self.methods_id=methods_id

@@ -175,7 +175,7 @@ def popHardwareType(session):
     )
     session.add_all([HardwareType(type=t,description=d) for t,d in _HWTYPES])
 
-def popHardware(session): #FIXME
+def popHardware(session):
     root=Hardware(type='rig',name='Tom\'s Rig')
     session.add(root)
     session.commit()
@@ -230,23 +230,22 @@ def popRepos(session):
     session.add(Repository(jax,name='jax strain db'))
     session.commit()
     pass
-def popFiles(session): #FIXME this isn't a datafile, it is actually a citeable! :D look at how easy it was to make that mistake
+
+def popFiles(session):
     rep=session.query(Repository).filter_by(name='jax strain db')[0]
-    #ds=session.query(DataSource).filter_by(name='jax')[0]
     session.add(File(rep,'003718.html'))
     pass
     
 def popCiteables(session):
     f=session.query(File).filter_by(filename='003718.html')[0]
     session.add(Citeable(Files=[f])) #FIXME
-    #session.commit()
+    session.commit()
     pass
 
 def popStrains(session):
     #session.add(Website('http://jaxmice.jax.org/strain/003718.html'))
     session.add(Strain(jax_id='003718',abbrev='dkgin'))
     session.commit()
-
 
 def popDataSourceAssociations(session):
     #TODO make this as simple as possible
