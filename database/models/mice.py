@@ -3,7 +3,8 @@
 
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData
+from database.models.mixins import HasNotes
+from database.models.subjects import Mouse
 from database.standards import frmtDT
 
 #some global variables that are used here and there that would be magic otherwise
@@ -78,7 +79,6 @@ class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific
 
 class Breeder(Base):
     id=Column(Integer,ForeignKey('mouse.id'),primary_key=True,autoincrement=False)
-    #sex=Column(String,ForeignKey('sex.id'),nullable=False) #FIXME ah balls, didn't workout...
     sex_id=Column(String(1),ForeignKey('sex.abbrev'),nullable=False) #FIXME ah balls, didn't workout...
 
     __mapper_args__ = {
@@ -108,7 +108,7 @@ class Breeder(Base):
         return base+'%s %s\n'%(''.join([mr.strHelper(1) for mr in self.matingRecords]),''.join([lit.strHelper(1) for lit in self.litters]))
 
 
-class Sire(HasNotes, Breeder):
+class Sire(Breeder):
     #__tablename__=None #used to force single table inheritance, note: exclude_properties is not needed here
     id=Column(Integer,ForeignKey('breeder.id'),primary_key=True,autoincrement=False)
     #sex=Column(String,nullable=False) #FIXME ah balls, didn't workout...
@@ -121,7 +121,7 @@ class Sire(HasNotes, Breeder):
     __mapper_args__ = {'polymorphic_identity':'m'}
 
 
-class Dam(HasNotes, Breeder):
+class Dam(Breeder):
     #__tablename__=None #used to force single table inheritance, note: exclude_properties is not needed here #turns out STI is good in one dir, but for other constraints it sucks :/
     id=Column(Integer,ForeignKey('breeder.id'),primary_key=True,autoincrement=False)
 
@@ -132,7 +132,7 @@ class Dam(HasNotes, Breeder):
     __mapper_args__ = {'polymorphic_identity':'f'}
 
 
-class MatingRecord(HasNotes, Base):
+class MatingRecord(Base):
     id=Column(Integer,primary_key=True)
     sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'))
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'))
@@ -192,7 +192,7 @@ class MatingRecord(HasNotes, Base):
         return base+'%s %s\n\tstartDateTime %s %s'%(self.sire.strHelper(1),self.dam.strHelper(1),self.startDateTime,litter)
 
 
-class Litter(HasNotes, Base):
+class Litter(Base):
     id=Column(Integer,primary_key=True)
     sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'),nullable=False) #can have mice w/o litters, but no litters w/o mice
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'),nullable=False)
@@ -205,40 +205,67 @@ class Litter(HasNotes, Base):
 
     #FIXME use @declared_attr to define size, do not need a column for that...
     #FIXME may need queries for this? ;_;
+    #FIXME all of these are SUPER slow
     @property
     def size(self):
-        return self.members.count()
+        return len(self.members)
+    @size.setter
+    def size(self):
+        raise AttributeError('readonly attribute')
     @property #you get the idea
     def males(self):
-        return self.members.filter(Mouse.sex_id=='m').count()
+        return sum([m.sex_id=='m' for m in self.members])
+    @males.setter
+    def males(self):
+        raise AttributeError('readonly attribute')
     @property #you get the idea
     def females(self):
-        return self.members.filter(Mouse.sex_id=='f').count()
+        return sum([m.sex_id=='f' for m in self.members])
+    @females.setter
+    def females(self):
+        raise AttributeError('readonly attribute')
     @property #you get the idea
     def unknowns(self):
-        return self.members.filter(Mouse.sex_id=='u').count()
+        return sum([m.sex_id=='u' for m in self.members])
+    @unknowns.setter
+    def unknowns(self):
+        raise AttributeError('readonly attribute')
 
     #TODO verify that 'remaining males' and 'remaning females' won't accidentally be negative, I think the way I have it now works best, actual records for mice instead of just numbers could use an assert in python or maybe a check? nah
     
     @property
     def m_left(self):
-        return self.members.filter(Mouse.sex_id=='m',Mouse.dod==None).count()
+        return sum([m.sex_id=='m' and m.dod==None for m in self.members])
+    @m_left.setter
+    def m_left(self):
+        raise AttributeError('readonly attribute')
+
+    @property
+    def f_left(self):
+        return sum([m.sex_id=='f' and m.dod==None for m in self.members])
+    @f_left.setter
+    def f_left(self):
+        raise AttributeError('readonly attribute')
 
     @property
     def u_left(self):
-        return self.members.filter(Mouse.sex_id=='f',Mouse.dod==None).count()
-
-    @property
+        return sum([m.sex_id=='u' and m.dod==None for m in self.members])
+    @u_left.setter
     def u_left(self):
-        return self.members.filter(Mouse.sex_id=='u',Mouse.dod==None).count()
+        raise AttributeError('readonly attribute')
 
             
 
     members=relationship('Mouse',primaryjoin='Mouse.litter_id==Litter.id',backref=backref('litter',uselist=False)) #litter stores the members and starts out with ALL unknown each mouse has its own entry
 
     def make_members(self,number):
-        """Method to generate new members of a given litter that can then be added to the database"""
-        return [Mouse(Litter=self,sex_id='u') for i in range(number)]
+        """Method to generate new members of a given litter that can then be added to the database
+
+        DEPRICATED
+        USE: Litter.members.extend([Mouse(Litter=self,sex_id='u') for i in range(number)])
+
+        """
+        pass
 
     def __init__(self, MatingRecord=None, mr_id=None, Sire=None, Dam=None, DOB=None, sire_id=None, dam_id=None, dob_id=None, name=None, cage_id=None, notes=[]):
         self.notes=notes

@@ -250,9 +250,11 @@ class t_litters(TEST):
         #ms=[self.records[i].make_members(litter_sizes[i]) for i in range(self.num)]
         #[mice.extend(m) for m in ms]
         #self.session.add_all(mice)
+        for lit,i in zip(self.records,range(self.num)):
+            lit.members.extend([Mouse(Litter=lit,sex_id='u') for i in range(litter_sizes[i])])
 
         #VS
-        [self.session.add_all(self.records[i].make_members(litter_sizes[i])) for i in range(self.num)]
+        #[self.session.add_all(self.records[i].make_members(litter_sizes[i])) for i in range(self.num)]
 
         self.session.commit()
 

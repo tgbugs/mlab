@@ -1,5 +1,5 @@
 from database.imports import *
-from database.models import Base
+from database.models.base import Base
 
 #some global variables that are used here and there that would be magic otherwise
 _plusMinus='\u00B1'

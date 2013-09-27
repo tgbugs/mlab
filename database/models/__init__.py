@@ -1,9 +1,9 @@
 __all__=[]
 
-#from database.models.analysis import \
-#__all__.extend([
+from database.models.analysis import *
+__all__.extend([
         #Nothing to see here!
-#])
+])
 
 from database.models.base import *
 __all__.extend([
@@ -35,13 +35,6 @@ from database.models.data import *
 __all__.extend([
         'DataSource',
         'MetaDataSource',
-        #'MetaData',
-        #'CellMetaData',
-        #'DFMetaData',
-        #'ExpMetaData',
-        #'HWMetaData',
-        #'CalibrationData',
-        #'PharmacologyData',
         'Repository',
         'RepoPath',
         'File',
@@ -61,9 +54,18 @@ __all__.extend([
         'Reagent'
 ])
 
+from database.models.subjects import *
+__all__.extend([
+        'Subject',
+        'Mouse', #Breeder needs this to be in the namespace first
+        'Slice',
+        'Cell'
+])
+
 from database.models.mice import *
 __all__.extend([
         'DOB',
+        #'Breeder', #not imported, is helper
         'Sire',
         'Dam',
         'MatingRecord',
@@ -84,12 +86,4 @@ __all__.extend([
         'Person',
         'User',
         'Credentials'
-])
-
-from database.models.subjects import *
-__all__.extend([
-        'Subject',
-        'Mouse',
-        'Slice',
-        'Cell',
 ])

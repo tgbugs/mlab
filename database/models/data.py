@@ -34,7 +34,7 @@ class MetaDataSource(Base):
     name=Column(String(20),nullable=False)
     prefix=Column(String(2),ForeignKey('si_prefix.symbol'),nullable=False)
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
-    ds_calibration_rec=Column(Integer,ForeignKey('calibrationdata.id')) #FIXME TODO just need a way to match the last calibration to the metadata... shouldn't be too hard
+    #TODO calibration data should *probably* be stored on the hardware as a datafile or metadata and can be filtered by datetime against experiments
     def strHelper(self):
         return '%s%s'%(self.prefix,self.unit)
     def __repr__(self):
@@ -44,16 +44,47 @@ class MetaDataSource(Base):
 ###  MetaData tables (for stuff stored internally)
 ###-----------------------------------------------
 
-class CalibrationData(Base):
-    id=Column(Integer, primary_key=True)
-    #TODO base class for storing calibration data
-    #examples:
-    #voltage response curve for LED
-    #esp grid calibration for esp300
-    #FIXME there should be a way to join these to experiments directly
-    #maybe with primaryjoin='and_(CalibrationData.datasource_id==MetaData.datasource_id,CalibrationData.dateTime < MetaData.dateTime, BUT only the most recent one of those...)' with a viewonly
-    pass
+#all the rest of the metadata tables are in mixins
+#for consistency all metadata tables should reside
+#in the namespace of their parent table
+#Thus DataFileMetaData is not exported via *
 
+class DataFileMetaData(Base):
+    __tablename__='datafiles_metadata'
+    id=Column(Integer,primary_key=True)
+    url=Column(String,nullable=False)
+    path=Column(String,nullable=False)
+    filename=Column(String,nullable=False)
+    __table_args__=(ForeignKeyConstraint([url,path,filename],['datafile.url','datafile.path','datafile.filename']), {})
+    metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False)
+    dateTime=Column(DateTime,default=datetime.now)
+    value=Column(Float(53),nullable=False)
+    sigfigs=Column(Integer) #TODO
+    abs_error=Column(Float(53)) #TODO
+    metadatasource=relationship('MetaDataSource')
+    def __init__(self,value,DataFile=None,MetaDataSource=None,metadatasource_id=None,url=None,path=None,filename=None,sigfigs=None,abs_error=None,dateTime=None):
+        self.dateTime=dateTime
+        self.url=url
+        self.path=path
+        self.filename=filename
+        self.metadatasource_id=metadatasource_id
+        self.value=value
+        self.sigfigs=sigfigs
+        self.abs_error=abs_error
+        if DataFile:
+            if DataFile.url:
+                self.url=DataFile.url
+                self.path=DataFile.path
+                self.filename=DataFile.filename
+            else:
+                raise AttributeError
+        self.AssignID(MetaDataSource)
+    def __repr__(self):
+        sigfigs=''
+        error=''
+        if self.sigfigs: sigfigs=self.sigfigs
+        if self.abs_error != None: error='%s %s'%(_plusMinus,self.abs_error)
+        return '%s %s %s %s %s'%(self.dateTime,self.value,self.datasource.strHelper(),sigfigs,error)
 
 ###-----------------------------------------------------------------------
 ###  DataFiles and repositories for data stored externally (ie filesystem)
@@ -167,43 +198,6 @@ class DataFile(File):
 
     @declared_attr
     def metadata_(cls): #FIXME naming...
-        class DataFileMetaData(Base):
-            __tablename__='datafiles_metadata'
-            id=Column(Integer,primary_key=True)
-            url=Column(String,nullable=False)
-            path=Column(String,nullable=False)
-            filename=Column(String,nullable=False)
-            __table_args__=(ForeignKeyConstraint([url,path,filename],['datafile.url','datafile.path','datafile.filename']), {})
-            metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False)
-            dateTime=Column(DateTime,default=datetime.now)
-            value=Column(Float(53),nullable=False)
-            sigfigs=Column(Integer) #TODO
-            abs_error=Column(Float(53)) #TODO
-            metadatasource=relationship('MetaDataSource')
-            def __init__(self,value,DataFile=None,MetaDataSource=None,metadatasource_id=None,url=None,path=None,filename=None,sigfigs=None,abs_error=None,dateTime=None):
-                self.dateTime=dateTime
-                self.url=url
-                self.path=path
-                self.filename=filename
-                self.metadatasource_id=metadatasource_id
-                self.value=value
-                self.sigfigs=sigfigs
-                self.abs_error=abs_error
-                if DataFile:
-                    if DataFile.url:
-                        self.url=DataFile.url
-                        self.path=DataFile.path
-                        self.filename=DataFile.filename
-                    else:
-                        raise AttributeError
-                self.AssignID(MetaDataSource)
-            def __repr__(self):
-                sigfigs=''
-                error=''
-                if self.sigfigs: sigfigs=self.sigfigs
-                if self.abs_error != None: error='%s %s'%(_plusMinus,self.abs_error)
-                return '%s %s %s %s %s'%(self.dateTime,self.value,self.datasource.strHelper(),sigfigs,error)
-
         cls.MetaData=DataFileMetaData
         return relationship(cls.MetaData)
 
