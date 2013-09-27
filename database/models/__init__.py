@@ -36,7 +36,6 @@ __all__.extend([
         'DataSource',
         'MetaDataSource',
         'Repository',
-        'RepoPath',
         'File',
         'DataFile'
 ])

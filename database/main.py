@@ -128,8 +128,8 @@ def connect(echo=False):
 
 def main(echo=True):
     #create engine
-    engine=postgresEng(echo=echo,wipe_db=False)
-    #engine=sqliteEng(echo=echo)
+    #engine=postgresEng(echo=echo,wipe_db=False)
+    engine=sqliteEng(echo=echo)
 
     #create metadata on the engine
     #Base.metadata.drop_all(engine,checkfirst=True)

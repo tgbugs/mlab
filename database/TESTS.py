@@ -414,27 +414,14 @@ class t_repo(TEST):
     def make_all(self):
         self.records=[]
         repos=(
-                    'file:///C:/',
+                    'file:///C:/asdf/test1',
+                    'file:///C:/asdf/test2//',
                     #'http://www.google.com/', #FIXME broken as expected?
                     #'https://www.google.com/' #FIXME broken as expected?
         )
         self.records+=[Repository(url=r) for r in repos]
         #FIXME for some reason adding the fully inited Repository(url='asdf') inside the list didn't work...
         #figure out why please?!
-
-
-class t_repopath(TEST):
-    def make_all(self):
-        repo=t_repo(self.session)
-        paths=(
-                '/repotest/asdf1', #yep, it caught the similarity
-                #'repotest/asdf2',
-                #'repotest/asdf3/'
-              )
-        self.records=[]
-        for r in repo.records:
-            #printD(r.url)
-            self.records+=([RepoPath(Repo=r,path=path) for path in paths])
 
 
 class t_datasource(TEST):
@@ -457,14 +444,14 @@ class t_datafile(TEST):
         #self.num_experiments=num_experiments
         #super().__init__(session,num)
     def make_all(self):
-        repop=t_repopath(self.session)
+        repo=t_repo(self.session)
         ds=self.session.query(DataSource)[0]
         data=[]
         count=0
         cells=self.session.query(Cell)
         for c1,c2 in zip(cells[:-1],cells[1:]):
-            for rp in repop.records:
-                data+=[DataFile(RepoPath=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiments[0].id,c1.id,c2.id,df),DataSource=ds,Subjects=[c1,c2]) for df in range(self.num)] 
+            for rp in repo.records:
+                data+=[DataFile(Repo=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiments[0].id,c1.id,c2.id,df),DataSource=ds,Subjects=[c1,c2]) for df in range(self.num)] 
         self.records=data
 
 

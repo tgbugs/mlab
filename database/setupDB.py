@@ -1,4 +1,4 @@
-from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, RepoPath, File, Strain, ExperimentType, Citeable
+from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, File, Strain, ExperimentType, Citeable
 from database.imports import printD
 
 ###----------------------------
@@ -226,14 +226,12 @@ def popMetaDataSources(session):
     pass
 
 def popRepos(session):
-    jax=Repository('http://jaxmice.jax.org')
-    session.add(jax)
-    session.commit()
-    session.add(RepoPath(jax,'/strain',name='jax strain db'))
+    jax='http://jaxmice.jax.org/strain'
+    session.add(Repository(jax,name='jax strain db'))
     session.commit()
     pass
 def popFiles(session): #FIXME this isn't a datafile, it is actually a citeable! :D look at how easy it was to make that mistake
-    rep=session.query(RepoPath).filter_by(name='jax strain db')[0]
+    rep=session.query(Repository).filter_by(name='jax strain db')[0]
     #ds=session.query(DataSource).filter_by(name='jax')[0]
     session.add(File(rep,'003718.html'))
     pass

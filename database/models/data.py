@@ -27,6 +27,7 @@ class DataSource(Base): #TODO
     def __repr__(self):
         return '\n%s'%(self.name)
 
+
 class MetaDataSource(Base):
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
     __tablename__='metadatasources'
@@ -49,23 +50,22 @@ class MetaDataSource(Base):
 #in the namespace of their parent table
 #Thus DataFileMetaData is not exported via *
 
+
 class DataFileMetaData(Base):
     __tablename__='datafiles_metadata'
     id=Column(Integer,primary_key=True)
     url=Column(String,nullable=False)
-    path=Column(String,nullable=False)
     filename=Column(String,nullable=False)
-    __table_args__=(ForeignKeyConstraint([url,path,filename],['datafile.url','datafile.path','datafile.filename']), {})
+    __table_args__=(ForeignKeyConstraint([url,filename],['datafile.url','datafile.filename']), {})
     metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False)
     dateTime=Column(DateTime,default=datetime.now)
     value=Column(Float(53),nullable=False)
     sigfigs=Column(Integer) #TODO
     abs_error=Column(Float(53)) #TODO
     metadatasource=relationship('MetaDataSource')
-    def __init__(self,value,DataFile=None,MetaDataSource=None,metadatasource_id=None,url=None,path=None,filename=None,sigfigs=None,abs_error=None,dateTime=None):
+    def __init__(self,value,DataFile=None,MetaDataSource=None,metadatasource_id=None,url=None,filename=None,sigfigs=None,abs_error=None,dateTime=None):
         self.dateTime=dateTime
         self.url=url
-        self.path=path
         self.filename=filename
         self.metadatasource_id=metadatasource_id
         self.value=value
@@ -74,7 +74,6 @@ class DataFileMetaData(Base):
         if DataFile:
             if DataFile.url:
                 self.url=DataFile.url
-                self.path=DataFile.path
                 self.filename=DataFile.filename
             else:
                 raise AttributeError
@@ -97,52 +96,20 @@ class Repository(Base):
     #file:///D: are technically the base
     url=Column(String(100),primary_key=True) #use urllib.parse for this #since these are base URLS len 100 ok
     credentials_id=Column(Integer,ForeignKey('credentials.id')) 
+    name=Column(String)
     blurb=Column(Text)
-    paths=relationship('RepoPath',primaryjoin='RepoPath.url==Repository.url')
-    #FIXME, move this to people/users because this is part of credentialing not data? move it to wherever I end up putting 'credential things' like users
+    assoc_program=Column(String(30)) #FIXME some of these should be automatically updated and check by the programs etc
     #TODO, if we are going to store these in a database then the db needs to pass sec tests, but it is probably better than trying to secure them in a separate file, BUT we will unify all our secure credentials management with the same system
     #TODO there should be a default folder or 
     #access_manager=Column(String) #FIXME the credentials manager will handle this all by itself
-    def __init__(self,url,credentials_id=None):
-        self.url=URL_STAND.baseClean(url)
+    def __init__(self,url,credentials_id=None,name=None,assoc_program=None):
+        self.url=URL_STAND.urlClean(url)
         self.credentials_id=credentials_id
-    def __repr__(self):
-        return super().__repr__('url')
-
-
-class RepoPath(Base): #FIXME this may be missing trailing /on path :x
-    __tablename__='repopaths'
-    #Assumption: repository MUST be the full path to the data, so yes, a single 'repository' might have 10 entries, but that single repository is just a NAME and has not functional purpose for storing/retrieving data
-    #id=Column(Integer,primary_key=True,autoincrement=True) #to simplify passing repos? is this reasonable?
-    name=Column(String)
-    url=Column(String,ForeignKey('repository.url'),primary_key=True)
-    path=Column(String,primary_key=True) #make this explicitly relative path?
-    assoc_program=Column(String(30)) #FIXME some of these should be automatically updated and check by the programs etc
-    verified=Column(Boolean,default=False) #TODO populated when the repopath has been verified to exist, should probably also check at startup for existence (will not check for datafiles)
-    fullpath=Column(String)
-    @hybrid_property
-    def fullpath(self):
-        return self.url+self.path
-    relationship('DataFile',primaryjoin='DataFile.repopath_id==RepoPath.id',backref='repopath') #FIXME datafiles can be kept in multiple repos... #FIXME can you append to relationships?! test this
-    #TODO how do we keep track of data duplication and backups!?!?!?
-    blurb=Column(Text) #a little note saying what data is stored here, eg, abf files
-    #TODO we MUST maintain synchrony between where external programs put files and where the database THINKS they put files, some programs may be able to have this specified on file creation, check the clxapi for example, note has to be done by hand for that one
-    #FIXME should the REPO HERE maintain a list of files? the filesystem KNOWS what is there
-    def __init__(self,Repo=None,path=None,url=None,assoc_program=None,name=None):
-        self.url=URL_STAND.baseClean(url)
         self.assoc_program=assoc_program
         self.name=name
-        if Repo:
-            if Repo.url:
-                self.url=Repo.url
-            else:
-                raise AttributeError('Repository has no url! Did you commit before referencing the instance directly?') #FIXME this should never trigger because url is a primary key and not an autoincrementing int...
-        clean_path=URL_STAND.pathClean(path)
-        #test to make sure the directory exists
-        URL_STAND.test_url(self.url+clean_path) #FIXME may need a try in here
-        self.path=clean_path
+        URL_STAND.test_url(self.url)
     def __repr__(self):
-        return super().__repr__('fullpath')
+        return super().__repr__('url')
 
 
 class File(Base):
@@ -153,9 +120,7 @@ class File(Base):
     #TODO need verfication that the file is actually AT the repository
     #fuck, what order do I do this in esp for my backup code
     __tablename__='file'
-    url=Column(String,primary_key=True,autoincrement=False)
-    path=Column(String,primary_key=True,autoincrement=False)
-    __table_args__=(ForeignKeyConstraint([url,path],['repopaths.url','repopaths.path']), {}) #FIXME this *could* be really fucking slow because they arent indexed, may need to revert these changes, ah well
+    url=Column(String,ForeignKey('repository.url'),primary_key=True,autoincrement=False)
     filename=Column(String,primary_key=True,autoincrement=False)
     creationDateTime=Column(DateTime,default=datetime.now)
     filetype=Column(String)
@@ -170,29 +135,27 @@ class File(Base):
         'polymorphic_on':ident,
         'polymorphic_identity':'file',
     }
-    def __init__(self,RepoPath=None,filename=None,url=None,path=None,creationDateTime=None):
-        self.url=URL_STAND.baseClean(url)
-        self.repo_path=URL_STAND.pathClean(path) #TODO use requests
+    def __init__(self,Repo=None,filename=None,url=None,creationDateTime=None):
+        self.url=URL_STAND.urlClean(url)
         self.filename=filename
         self.creationDateTime=creationDateTime
-        if RepoPath:
-            if RepoPath.url:
-                self.url=RepoPath.url
-                self.path=RepoPath.path
+        if Repo:
+            if Repo.url:
+                self.url=Repo.url
+                #TODO if it doesn't exist we should create it, thus the need for the updated urlClean
             else:
-                raise AttributeError('RepoPath has no url/path! Did you commit before referencing the instance directly?')
+                raise AttributeError('RepoPath has no url! Did you commit before referencing the instance directly?')
     def strHelper(self,depth=0):
         return super().strHelper(depth,'filename')
     def __repr__(self):
-        return '\n%s%s%s%s'%(self.url,self.path,'/',self.filename)
+        return '\n%s%s'%(self.url,self.filename)
 
 
 class DataFile(File):
     __tablename__='datafile'
     url=Column(String,primary_key=True,autoincrement=False)
-    path=Column(String,primary_key=True,autoincrement=False)
     filename=Column(String,primary_key=True,autoincrement=False)
-    __table_args__=(ForeignKeyConstraint([url,path,filename],['file.url','file.path','file.filename']), {})
+    __table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME make this many-many???!
     __mapper_args__={'polymorphic_identity':'datafile'}
 
@@ -201,11 +164,11 @@ class DataFile(File):
         cls.MetaData=DataFileMetaData
         return relationship(cls.MetaData)
 
-    def __init__(self,RepoPath=None,filename=None,DataSource=None,url=None,path=None,datasource_id=None,Subjects=[], creationDateTime=None):
-        super().__init__(RepoPath,filename,url,path,creationDateTime)
+    def __init__(self,Repo=None,filename=None,DataSource=None,url=None,datasource_id=None,Subjects=[], creationDateTime=None):
+        super().__init__(Repo,filename,url,creationDateTime)
         self.datasource_id=datasource_id
         self.AssignID(DataSource)
-        self.subjects.extend(Subjects)
+        self.subjects.extend(Subjects) #TODO in the interface.py make it so that current subjects 'auto' fill?
 
 
 class InDatabaseData(Base):
@@ -223,10 +186,8 @@ class InDatabaseData(Base):
     #and the constraint will be populated by the DataPath table, if I have 10,000 datafiles though, that could become a NASTY change
     #ideally we want this to be dynamic so that the DataPath can change and all the DataFile entries will learn about it
     #it might just be better to do it by hand so UPDATE doesn't swamp everything
-    #the path cannot be the primary key of the datapath table AND accomodate path changes
     #TODO next problem: when do we actually CREATE the DataFile and how to we get the number right even if we discard the trial? well, we DONT discard the file, we just keep it, but we need to gracefully deal with deletions/renumbering so that if something goes wrong it will alert to user
     #RESPONSE: this record cannot be created until the file itself exists
-    #repopath_id=Column(Integer,ForeignKey('repopaths.id'),primary_key=True,autoincrement=False) #FIXME this is what was causing errors previous commit, also decide if you want this or the both path and url
     #FIXME datafiles have substructure that requires more than one datasource ;_;
     #although, the easiest way to fix that is to just change this to allow for an arbitrary number of channels to be saved per datafile and link the datasources to those?
     #maybe base it on datafile type??? or configuration... but that is going to change for every fucking thing...

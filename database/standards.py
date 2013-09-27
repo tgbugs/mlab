@@ -12,11 +12,16 @@ from datetime import datetime,timedelta #ALL TIMES ARE UTC WITH tzinfo=None, CON
 ###--------------
 
 class URL_STAND:
-    """Standards for url sting termination and initiation for consistently composing paths"""
+    """Standards for url sting termination and initiation for consistently"""
+    #TODO should handle matching local files to the computer they actually came from relative to the db
     @staticmethod
-    def baseClean(base_url): return None if base_url is None else base_url.rstrip('/')
-    @staticmethod
-    def pathClean(path): return None if path is None else '/'+path.strip('/').rstrip('/')
+    def urlClean(url):
+        p=parse.urlparse(url)
+        if p.scheme is 'file':
+            #TODO get relatvie computer path #the good news is that only the database is remote, this code won't be, it will be local yay for transparency!
+            pass
+        return None if url is None else url.rstrip('/')+'/' #FIXME make it so this strips to last/
+    
     @staticmethod
     def test_url(full_url):
         #FIXME rework this to go through a full url scheme handler that can be extended with resources
