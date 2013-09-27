@@ -159,7 +159,7 @@ class HasCiteables:
 ###  Has reagents
 ###--------------
 
-class HasReagents:
+class HasReagents: #FIXME this needs to take a base reagent and get its 'live' version
     @declared_attr
     def reagents(cls):
         reagent_association = Table('%s_reagents'%cls.__tablename__,cls.metadata,

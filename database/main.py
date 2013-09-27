@@ -128,7 +128,7 @@ def connect(echo=False):
 
 def main(echo=True):
     #create engine
-    engine=postgresEng(echo=echo,wipe_db=True)
+    engine=postgresEng(echo=echo,wipe_db=False)
     #engine=sqliteEng(echo=echo)
 
     #create metadata on the engine

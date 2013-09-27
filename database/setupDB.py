@@ -176,7 +176,7 @@ def popHardwareType(session):
     session.add_all([HardwareType(type=t,description=d) for t,d in _HWTYPES])
 
 def popHardware(session): #FIXME
-    root=Hardware(type='rig',name='Tom\'s Rig',parent_id=1)
+    root=Hardware(type='rig',name='Tom\'s Rig')
     session.add(root)
     session.commit()
 

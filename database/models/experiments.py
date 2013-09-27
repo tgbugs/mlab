@@ -16,18 +16,10 @@ from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardwa
 #the only thing I might need to add is calibraiton, but I think I can control THAT at the datasource
 #ah balls, still have to have some way to track slices and cells :(
 #WAIT! TODO just make it so we can add experiments to slices and /or cells! :D yay!
-
-#INSIGHT! things that are needed to make query structure work, eg acsf_id and the like do not go in metadata, metadata is really the api for analysis, so anything not direcly used in analysis should not go in metadata
-
-#TODO FIXME need to dissociate PROCEDURE from DATA, the CONDITIONS for that day are DIFFERENT from the actual individual experimetns
-#TODO handling multiple subjects is NOT handled EXPLICITLY here, links between methods and subject type are probably probably not in the domain of things we should enforce
-
-#TODO XXX FIXME so in theory I could convert all of this joined table inheritance into metadata at the cost of connections to regents, OR better yet I could have a many-many with reagents O_0
     
 #TODO in theory what we want is for experiments to have a m-m on itself to convey logical connections, in which case a mating record is just an experiment.... HRM, think on this... we certainly want the m-m for logical depenece I think
 
-class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base): #FIXME there is in fact a o-m on subject-experiment, better fix that, lol jk, it is fixed ish :)
-    #XXX datetimes, non nulls, and foreign keys go in these, metadata should be where all the non foreign key stuff goes
+class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base):
     __tablename__='experiments'
     id=Column(Integer,primary_key=True)
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
