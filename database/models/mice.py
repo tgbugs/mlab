@@ -4,7 +4,6 @@
 from database.imports import *
 from database.models.base import Base
 from database.models.mixins import HasNotes
-from database.models.subjects import Mouse
 from database.standards import frmtDT
 
 #some global variables that are used here and there that would be magic otherwise
@@ -203,58 +202,28 @@ class Litter(Base):
 
     name=Column(String(20)) #the name by which I shall write upon their cage cards!
 
-    #FIXME use @declared_attr to define size, do not need a column for that...
-    #FIXME may need queries for this? ;_;
-    #FIXME all of these are SUPER slow
     @property
     def size(self):
         return len(self.members)
-    @size.setter
-    def size(self):
-        raise AttributeError('readonly attribute')
     @property #you get the idea
     def males(self):
         return sum([m.sex_id=='m' for m in self.members])
-    @males.setter
-    def males(self):
-        raise AttributeError('readonly attribute')
     @property #you get the idea
     def females(self):
         return sum([m.sex_id=='f' for m in self.members])
-    @females.setter
-    def females(self):
-        raise AttributeError('readonly attribute')
     @property #you get the idea
     def unknowns(self):
         return sum([m.sex_id=='u' for m in self.members])
-    @unknowns.setter
-    def unknowns(self):
-        raise AttributeError('readonly attribute')
 
-    #TODO verify that 'remaining males' and 'remaning females' won't accidentally be negative, I think the way I have it now works best, actual records for mice instead of just numbers could use an assert in python or maybe a check? nah
-    
     @property
     def m_left(self):
         return sum([m.sex_id=='m' and m.dod==None for m in self.members])
-    @m_left.setter
-    def m_left(self):
-        raise AttributeError('readonly attribute')
-
     @property
     def f_left(self):
         return sum([m.sex_id=='f' and m.dod==None for m in self.members])
-    @f_left.setter
-    def f_left(self):
-        raise AttributeError('readonly attribute')
-
     @property
     def u_left(self):
         return sum([m.sex_id=='u' and m.dod==None for m in self.members])
-    @u_left.setter
-    def u_left(self):
-        raise AttributeError('readonly attribute')
-
-            
 
     members=relationship('Mouse',primaryjoin='Mouse.litter_id==Litter.id',backref=backref('litter',uselist=False)) #litter stores the members and starts out with ALL unknown each mouse has its own entry
 
@@ -325,4 +294,4 @@ class Litter(Base):
             matingRecord='\n\tMatingRecord %s\n\t\tstartDateTime %s'%(self.matingRecord.id,frmtDT(self.matingRecord.startDateTime))
         except:
             matingRecord='\n\tMatingRecord None'
-        return base+'%s %s %s %s'%(sire,self.dam.strHelper(1),self.dob.strHelper(1),matingRecord)
+        return base+'%s %s %s %s\n\tSize %s'%(sire,self.dam.strHelper(1),self.dob.strHelper(1),matingRecord,self.size)

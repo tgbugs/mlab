@@ -433,7 +433,7 @@ class t_repopath(TEST):
               )
         self.records=[]
         for r in repo.records:
-            printD(r.url)
+            #printD(r.url)
             self.records+=([RepoPath(Repo=r,path=path) for path in paths])
 
 
