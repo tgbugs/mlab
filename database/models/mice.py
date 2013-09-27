@@ -143,16 +143,10 @@ class MatingRecord(Base):
     @hybrid_property #FIXME http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/hybrid.html
     def e0_err(self):
         return (self.stopDateTime-self.startDateTime)/2
-    @e0_err.setter
-    def e0_err(self):
-        raise AttributeError('readonly attribute, set a stopTime if you want this')
         
     @hybrid_property
     def est_e0(self):
         return self.startDateTime+self.e0_err #standard: sticks this right in the middle of the interval
-    @est_e0.setter
-    def est_e0(self):
-        raise AttributeError('readonly attribute, set a stopTime if you want this')
 
     dob_id=Column(Integer,ForeignKey('dob.id')) #FIXME the foreing key missmatch I get on update is cause by... what? check for referencing a table that does not exist
     
