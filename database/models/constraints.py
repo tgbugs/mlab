@@ -46,21 +46,18 @@ class SI_UNIT(Base):
 
 class SEX(Base):
     """Static table for sex"""
-    name=Column(String(14),primary_key=True) #'male','female','unknown' #FIXME do I need the autoincrement 
+    name=Column(String(14),primary_key=True)
     symbol=Column(Unicode(1),nullable=False,unique=True) #the actual symbols
-    #symbol=Column(Unicode(1)) #the actual symbols
     abbrev=Column(String(1),nullable=False,unique=True) #'m','f','u'
     def __repr__(self):
-        return '\n%s %s %s'%(self.name,self.abbrev,self.symbol) #FIXME somehow there are trailing chars here >_<
+        return '\n%s %s %s'%(self.name,self.abbrev,self.symbol)
 
 
 class Strain(HasCiteables, Base): #TODO HasCiteable!@? need something between citeable and datafile
     id=Column(Integer,primary_key=True) #FIXME
-    #website_id=Column(Integer,ForeignKey('website.id'))
     jax_id=Column(String(10))
     name=Column(Unicode(50)) #scrape from jax
     abbrev=Column(String(15))
-    #FIXME class for strain IDs pair up with the shorthand names that I use and make sure mappings are one to one
     #will be VERY useful when converting for real things
     #FIXME: by reflection from jax??? probably not
     #id=Column(String(20),primary_key=True,autoincrement=False)
