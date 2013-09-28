@@ -377,8 +377,8 @@ class t_patch(TEST):
         preps=[p for p in self.session.query(Experiment).filter_by(type='acute slice prep')]
         project=self.session.query(Project)[0]
         person=self.session.query(Person)[0]
-        acsf=Reagent(reagent_id='poop1')
-        internal=Reagent(reagent_id='poop2')
+        acsf=self.session.query(Reagent).filter_by(type_id=2)[0] #FIXME these are terrible useage patterns
+        internal=self.session.query(Reagent).filter_by(type_id=3)[0] #FIXME these are terrible useage patterns
         self.session.add_all([acsf,internal])
         #self.session.flush() #shit not working FIXME
         self.session.commit()
@@ -393,9 +393,9 @@ class t_sliceprep(TEST):
     def make_all(self):
         project=self.session.query(Project)[0]
         person=self.session.query(Person)[0]
-        sucrose=Reagent(reagent_id='poop')
+        sucrose=self.session.query(Reagent).filter_by(type_id=1)[0]
         exptype=self.session.query(ExperimentType).filter_by(abbrev='prep')[0]
-        self.records=[Experiment(Project=project,Person=person,Reagents=[sucrose,],startDateTime=datetime.now()-timedelta(int(np.random.randint(1))),ExpType=exptype) for i in range(self.num)] #FIXME need to find a way to propagate mouse w/ RI
+        self.records=[Experiment(Project=project,Person=person,Reagents=[sucrose],startDateTime=datetime.now()-timedelta(int(np.random.randint(1))),ExpType=exptype) for i in range(self.num)] #FIXME need to find a way to propagate mouse w/ RI
     def add_mice(self):
         mice=self.session.query(Mouse).filter_by(sex_id='u')[100:100+self.num]
         np.random.shuffle(mice)
@@ -483,14 +483,20 @@ class t_hwmetadata(TEST):
         [self.records.extend([h.MetaData(i,Parent=h,MetaDataSource=ds) for i in range(self.num)]) for h in self.session.query(Hardware)]
         
 
-class t_reagent(TEST):
+class t_reagenttype(TEST):
     def make_all(self):
         self.records=[
-            ReagentInventory(name='poop'),
-            ReagentInventory(name='poop1'),
-            ReagentInventory(name='poop2')
+            ReagentType(name='poop'),
+            ReagentType(name='poop1'),
+            ReagentType(name='poop2')
         ]
     
+
+class t_reagent(TEST):
+    def make_all(self):
+        rts=self.session.query(ReagentType)
+        self.records=[Reagent(Type=r) for r in rts]
+
 
 def run_tests(session):
     #FIXME for some reason running these sequentially causes all sorts of problems...
@@ -518,6 +524,7 @@ def run_tests(session):
     l.add_members()
 
 
+    rt=t_reagenttype(session)
     i=t_reagent(session)
 
     sp=t_sliceprep(session,5)

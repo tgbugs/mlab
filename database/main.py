@@ -129,7 +129,7 @@ def connect(echo=False):
 def main(echo=True):
     #create engine
     engine=postgresEng(echo=echo,wipe_db=True)
-    #engine=sqliteEng(echo=echo)
+    #engine=sqliteEng(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
 
     #create metadata on the engine
     #Base.metadata.drop_all(engine,checkfirst=True)

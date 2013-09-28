@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, IsMetaDataSource, IsDataSource, HasMetaData
+from database.models.mixins import HasNotes, IsMetaDataSource, IsDataSource, HasMetaData, HasCiteables
 
 #TODO could just make this a hardware table and maybe CHECK that the type matches?
 #then just have another table for any specifics on that, could do the same for the reagents, since most of them are going to have links to urls and msdses or whatever the fuck
@@ -10,22 +10,35 @@ from database.models.mixins import HasNotes, IsMetaDataSource, IsDataSource, Has
 ###-----------------------------------
 
 #FIXME this is not the right way to link subject-data
-class Hardware(HasMetaData, IsMetaDataSource, Base):
+
+class HardwareType(Base):
+    type=Column(String(30),primary_key=True)
+    description=Column(Text)
+
+    things=relationship('Hardware',primaryjoin='HardwareType.type==Hardware.type')
+    #def __init__(self,type):
+        #self.type=type
+    def __repr__(self):
+        return '\n%s\n%s%s'%(self.type, self.description, ''.join([thing.strHelper(1) for thing in self.things]))
+
+
+class Hardware(HasMetaData, HasCiteables, IsMetaDataSource, Base): #FIXME figure out what to do about calibration data :/ should that be its own experiment? probably not, there is no subject... I really think it goes under datasources??!? maybe? the fucking datafile would need to have multiple datasources to allow for calibration o f the LED stim  or something since the LED itself is not a datasource the photodiode might be
+    #NOTE: verdict, pipettes shall be hardware, but their values will be in Cell metadata
     __tablename__='hardware'
     id=Column(Integer,primary_key=True)     #this is going to be a hierarchical structure
     parent_id=Column(Integer,ForeignKey('hardware.id')) #sadly we can't make this nullable :( :( can still suggest sr
     #TODO I MUST have a way to track changes in the parent state so that datafiles will have the state when THEY were recorded...
     type=Column(String,ForeignKey('hardwaretype.type'),nullable=False)
     name=Column(String)
-    unique_id=Column(String) #FIXME fuck
-    model=Column(String)
-    company=Column(String) #TODO oh look hooks into contacts
+    unique_id=Column(String) #FIXME fuck, serial numbers
+    model=Column(String) # item numbers for repeated use stuff (sorta like a reagent... :/)
+    manufacturer=Column(String) #TODO oh look hooks into contacts
     #TODO figure out what if this is NOT going in the database and can thus go in metadata instead
     blueprint_id=Column(Integer,ForeignKey('citeable.id')) #TODO
     manual_id=Column(Integer,ForeignKey('citeable.id')) #TODO
     sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
 
-    def __init__(self,Type=None,Parent=None,type=None,Blueprint=None,parent_id=None,name=None,unique_id=None,blueprint_id=None,model=None,company=None,manual_id=None):
+    def __init__(self,Type=None,Parent=None,type=None,Blueprint=None,parent_id=None,name=None,unique_id=None,blueprint_id=None,model=None,manufacturer=None,manual_id=None):
         self.type=type
         self.parent_id=parent_id
         self.name=name
@@ -69,6 +82,7 @@ class Hardware(HasMetaData, IsMetaDataSource, Base):
         except: pass
         return '\n%s %s %s son of %s father to %s\n\twith MetaData %s'%(self.type.capitalize(),name,uid,parent,children,''.join([m.strHelper(1) for m in self.metadata_]))
 
+
 class RigHistory(Base): #this is nice, but it seems better to get the current rig state and pull the relevant data and put it in cell metadata
     id=Column(Integer,primary_key=True)
     dateTime=Column(DateTime,nullable=False) #FIXME should be timestamp
@@ -89,15 +103,15 @@ class RigHistory(Base): #this is nice, but it seems better to get the current ri
 ###  Reagent inventory
 ###-------------------
 
-class ReagentInventory(Base): #TODO HasCitables
+class ReagentType(HasCiteables, Base):
     __tablename__='reagenttypes'
     """base table for all reagents, long run could probably could interface with and inventory, but we arent anywhere near there yet"""
-    name=Column(String,primary_key=True)
-    #FIXME citeables need to be like notes...
-    document_id=Column(Integer,ForeignKey('citeable.id')) #recipe msds you name it
-    #these are basically recipes or references to things I buy instead of make
-    current_stock=relationship('Reagent') #FIXME this should give a count??? ala litter?
-    #TODO reorder if current amount < x
+    id=Column(Integer,primary_key=True) #FIXME
+    name=Column(String,unique=True)
+    iupac=Column(String,unique=True)
+    abbrev=Column(String,unique=True)
+    molarMass=None #FIXME should this be metadata?
+    #TODO: usage rate
     def __repr__(self):
         return super().__repr__('name')
 
@@ -105,11 +119,55 @@ class ReagentInventory(Base): #TODO HasCitables
 class Reagent(Base): #TODO HasReagents??!
     """actual instances of reagents that are made"""
     __tablename__='reagents'
-    id=Column(Integer,primary_key=True)
-    reagent_id=Column(String,ForeignKey('reagenttypes.name'),nullable=False)
-    creation_dateTime=Column(DateTime,default=datetime.now)
-    done_dateTime=Column(DateTime)
+    type_id=Column(Integer,ForeignKey('reagenttypes.id'),primary_key=True)
+    lotNumber=Column(Integer,primary_key=True) #XXX this is a sqlite specific problem >_<
+    creationDateTime=Column(DateTime,default=datetime.now)
+    doneDateTime=Column(DateTime)
+    type=relationship('ReagentType',backref='lots',uselist=False) #FIXME
+    #TODO reorder/remake if current amount < x
     #reagentmetadata=relationship('ReaMetaData',primaryjoin='ReagentLot.id==ReaMetaData.reagent_id',backref='reagent') #FIXME make this a m-m self referential association ? this won't let me keep track of the individual lots of stuff I use to make a solution or a stock though... think about that
+    def __init__(self,Type=None,lotNumber=None,creationDateTime=None,doneDateTime=None,type_id=None):
+        self.type_id=type_id
+        #self.lotNumber=lotNumber
+        self.creationDateTime=creationDateTime
+        self.doneDateTime=doneDateTime
+        if Type:
+            if Type.id:
+                self.type_id=Type.id
+            else:
+                raise AttributeError
+
+###----------------------------------------------
+###  Ingredient association table to make recipes
+###----------------------------------------------
+
+class Ingredient(Base): #this is actually an association table
+    #TODO figure out how to query this properly... probably via recipe in ReagentType...
+    __tablename__='ingredients'
+    reagent_id=Column(Integer,ForeignKey('reagenttypes.id'),primary_key=True)
+    product_id=Column(Integer,ForeignKey('reagenttypes.id'),primary_key=True)
+    finalValue=Column(Float(53)) #TODO enforce use of molarity or %weight...
+    finalPrefix=Column(Unicode(2),ForeignKey('si_prefix.symbol'),nullable=False)
+    finalUnits=Column(Unicode(3),ForeignKey('si_unit.symbol'),nullable=False)
+    product=relationship('ReagentType',primaryjoin='ReagentType.id==Ingredient.product_id',backref=backref('ingredients'))
+    reagent=relationship('ReagentType',primaryjoin='ReagentType.id==Ingredient.reagent_id') #if really want to see what this is used in can add backref but not needed atm
+    #FIXME do we want the reference to the ingredient to be obvious, or do we want to just make a recipe reference in the product row
+    def __init__(self,Product=None,Reagent=None,finalValue=None,finalPrefix=None,finalUnit=None,product_id=None,reagent_id=None):
+        self.product_id=product_id
+        self.reagent_id=reagent_id
+        self.finalValue=finalValue
+        self.finalPrefix=finalPrefix
+        self.finalUnit=finalUnit
+        if Product:
+            if Product.id:
+                self.product_id=Product.id
+            else:
+                raise AttributeError
+        if Reagent:
+            if Reagent.id:
+                self.reagent_id=Reagent.id
+            else:
+                raise AttributeError
 
 
 """

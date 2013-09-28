@@ -1,4 +1,4 @@
-from database.models import SI_PREFIX, SI_UNIT, SEX, HardwareType, Hardware, Repository, File, Strain, ExperimentType, Citeable
+from database.models import *
 from database.imports import printD
 
 ###----------------------------
@@ -169,7 +169,7 @@ def popHardwareType(session):
         ('camera','Pictures thing!'),
         ('digitizer','DAC, probably hooked to your computer, metadata should have how many bits it is'),
         ('signal generator','things like a master8 that can generate arbitrary waveforms without a computer'),
-        ('pipette','Do i belong here?'), #FIXME is this a reagent?@??@?
+        ('pipette','the unpulled glass cappilary tube'), #FIXME is this a reagent?@??@?
         ('pipette puller','Make that cappilary pointy!'),
         ('chamber','Box for keeping dead brain slices alive.')
     )
@@ -180,8 +180,12 @@ def popHardware(session):
     session.add(root)
     session.commit()
 
-    chamber=Hardware(type='chamber',name='interface chamber',unique_id='jim\'s',blueprint_id=None)
+    chamber=Hardware(type='chamber',name='interface chamber',model='jim\'s',blueprint_id=None)
     session.add(chamber)
+
+    patchPipette=Hardware(type='pipette',name='patch pipette',model='BF150-110-10',manufacturer='Sutter Instrument')
+    iuepPipette=Hardware(type='pipette',name='iuep pipette',model='3-000-203-G/X',manufacturer='Drummond Scientific')
+    session.add_all([patchPipette,iuepPipette])
 
     session.add(Hardware(Parent=root,type='motion controller/driver',name='ESP300'))
     digidata=Hardware(Parent=root,type='digitizer',name='Digidata 1322A',unique_id='105309')
@@ -190,8 +194,8 @@ def popHardware(session):
     session.commit()
     
     #wierd, since these can also be controlled directly, but I guess that ok?
-    session.add(Hardware(Parent=digidata,type='amplifier',name='Multiclamp 700B',unique_id='00106956'))
-    session.add(Hardware(Parent=digidata,type='amplifier',name='Multiclamp 700B',unique_id='00106382'))
+    session.add(Hardware(Parent=digidata,type='amplifier',name='mc1',model='Multiclamp 700B',unique_id='00106956'))
+    session.add(Hardware(Parent=digidata,type='amplifier',name='mc2',model='Multiclamp 700B',unique_id='00106382'))
     session.commit()
 
     amp1=session.query(Hardware).filter_by(unique_id='00106956')[0]
@@ -235,12 +239,18 @@ def popFiles(session):
     rep=session.query(Repository).filter_by(name='jax strain db')[0]
     session.add(File(rep,'003718.html'))
     pass
+
+def popCiteType(session):
+    session.add(CiteableType('publication'))
+    session.add(CiteableType('website'))
+    session.add(CiteableType('methods'))
+    session.add(CiteableType('blueprint'))
+    session.commit()
     
 def popCiteables(session):
     f=session.query(File).filter_by(filename='003718.html')[0]
-    session.add(Citeable(Files=[f])) #FIXME
+    session.add(Citeable(type='website',Files=[f])) #FIXME
     session.commit()
-    pass
 
 def popStrains(session):
     #session.add(Website('http://jaxmice.jax.org/strain/003718.html'))
@@ -269,6 +279,7 @@ def populateTables(session):
     popHardware(session)
     popRepos(session)
     popFiles(session)
+    popCiteType(session)
     popCiteables(session)
     popStrains(session)
 if __name__=='__main__':

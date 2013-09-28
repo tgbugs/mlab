@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardware, HasSubjects
+from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardware, HasSubjects, HasReagentTypes
 
 ###-------------------
 ###  Experiment tables
@@ -19,6 +19,19 @@ from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardwa
     
 #TODO in theory what we want is for experiments to have a m-m on itself to convey logical connections, in which case a mating record is just an experiment.... HRM, think on this... we certainly want the m-m for logical depenece I think
 
+
+class ExperimentType(HasReagentTypes, Base):
+    #id=Column(Integer,primary_key=True) #FIXME
+    id=Column(String(30),primary_key=True)
+    abbrev=Column(String)
+    def __init__(self,id=None,abbrev=None,ReagentTypes=[]):
+        self.id=id
+        self.abbrev=abbrev
+        self.reagenttypes.extend(ReagentTypes)
+    def __repr__(self):
+        return super().__repr__()
+
+
 class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base):
     __tablename__='experiments'
     id=Column(Integer,primary_key=True)
@@ -27,7 +40,7 @@ class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base):
     startDateTime=Column(DateTime,default=datetime.now())
     endDateTime=Column(DateTime) #TODO extremely useful for automatically moving to the next experiment... not that that is really an issue, but also nice for evaluating my performance
     methods_id=Column(Integer,ForeignKey('citeable.id'))
-    type=Column(String(20),ForeignKey('experimenttype.id'),nullable=False)
+    type=Column(String(30),ForeignKey('experimenttype.id'),nullable=False)
 
     def __init__(self,Project=None,Person=None,ExpType=None,startDateTime=None,Methods=None,Hardware=[],Reagents=[],Subjects=[],project_id=None,person_id=None,type=None,methods_id=None):
         self.project_id=project_id

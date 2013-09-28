@@ -57,13 +57,25 @@ class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a jo
 ###------------
 
 #FIXME how the fuck do I query for these!??!?!
+class CiteableType(Base):
+    __tablename__='citeabletypes'
+    id=Column(String(30),primary_key=True)
+    #publication: covers anything out in the wild that would need a citation
+    #methods
+    #blueprints
+    #TODO need a way to pull my own data out of the database to cite it
+    #in database object, such as a note, or text or something?
+    def __init__(self,id=None):
+        self.id=id
+
+
 class Citeable(HasFiles, Base):
     #see: http://www2.liu.edu/cwis/cwp/library/workshop/citation.htm
     #TODO base class for all citable things, such as personal communications, journal articles, books
     #this is now a wrapper for datafiles (among other things) and it should allow for easy querying
     __tablename___='citeable'
     id=Column(Integer,primary_key=True)
-    #type=Column(String(15),nullable=False) #TODO
+    type=Column(String(15),ForeignKey('citeabletypes.id'),nullable=False)
     #FIXME should this be metadata like the rest? eh... probs not
     title=None
 
@@ -148,10 +160,7 @@ class Methods(Base):
     pass
 
 
-class Recipe(Base):
-    id=Column(Integer,primary_key=True)
-    #acsf
-    #internal
-    #sucrose
-
+#class Recipe(Base):
+    #DEPRICATED: recipes are now linked directly to their reagents via Ingredient asociation table
+    #id=Column(Integer,primary_key=True)
 

@@ -7,27 +7,6 @@ from database.models.mixins    import HasDataFiles, HasCiteables
 ###  Helper classes/tables for mice (normalization and constraints)
 ###----------------------------------------------------------------
 
-class HardwareType(Base):
-    type=Column(String(30),primary_key=True)
-    description=Column(Text)
-
-    things=relationship('Hardware',primaryjoin='HardwareType.type==Hardware.type')
-    #def __init__(self,type):
-        #self.type=type
-    def __repr__(self):
-        return '\n%s\n%s%s'%(self.type, self.description, ''.join([thing.strHelper(1) for thing in self.things]))
-
-
-class ExperimentType(Base):
-    id=Column(String(20),primary_key=True)
-    abbrev=Column(String)
-    def __init__(self,id=None,abbrev=None):
-        self.id=id
-        self.abbrev=abbrev
-    def __repr__(self):
-        return super().__repr__()
-
-
 class SI_PREFIX(Base): #Yes, these are a good idea because they are written once, and infact I can enforce viewonly=True OR even have non-root users see those tables as read only
     symbol=Column(Unicode(2),primary_key=True)
     prefix=Column(String(5),nullable=False)

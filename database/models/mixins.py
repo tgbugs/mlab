@@ -46,6 +46,7 @@ class IsMetaDataSource:
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
         return relationship('MetaDataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
 
+
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
     dateTime=Column(DateTime,default=datetime.now)
     value=Column(Float(53),nullable=False)
@@ -157,14 +158,24 @@ class HasCiteables:
 ###  Has reagents
 ###--------------
 
-class HasReagents: #FIXME this needs to take a base reagent and get its 'live' version
+class HasReagentTypes:
+    @declared_attr
+    def reagenttypes(cls):
+        reagenttype_association = Table('%s_reagenttypes'%cls.__tablename__,cls.metadata,
+            Column('reagenttype_id', ForeignKey('reagenttypes.id'), primary_key=True),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
+        return relationship('ReagentType', secondary=reagenttype_association,backref=backref('%s_used'%cls.__tablename__))
+
+
+class HasReagents:
     @declared_attr
     def reagents(cls):
         reagent_association = Table('%s_reagents'%cls.__tablename__,cls.metadata,
-            Column('reagents_id', ForeignKey('reagents.id'), primary_key=True),
-            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
+            Column('reagent_type_id', Integer, primary_key=True),
+            Column('reagent_lot', Integer, primary_key=True),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True),
+            ForeignKeyConstraint(['reagent_type_id','reagent_lot'],['reagents.type_id','reagents.lotNumber']))
         return relationship('Reagent', secondary=reagent_association,backref=backref('%s_used'%cls.__tablename__))
-
 
 ###--------------
 ###  Has hardware

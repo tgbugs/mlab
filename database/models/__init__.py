@@ -15,15 +15,15 @@ from database.models.citeables import *
 __all__.extend([
         'person_to_project',
         'Project',
+        'CiteableType',
         'Citeable',
         'IACUCProtocols',
         'Methods',
-        'Recipe'
+        #'Recipe'
 ])
 
 from database.models.constraints import *
 __all__.extend([
-        'HardwareType',
         'ExperimentType',
         'SI_PREFIX',
         'SI_UNIT',
@@ -47,10 +47,12 @@ __all__.extend([
 
 from database.models.inventory import *
 __all__.extend([
+        'HardwareType',
         'Hardware',
         'RigHistory',
-        'ReagentInventory',
-        'Reagent'
+        'ReagentType',
+        'Reagent',
+        'Ingredient'
 ])
 
 from database.models.subjects import *
