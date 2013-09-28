@@ -85,6 +85,27 @@ def queryAll(session):
         except:
             pass
 
+def dirAll(session):
+    from database import models
+    s=session
+    #[s.query(models.__dict__[a]).all() for a in models.__all__] #AWEYISS 
+    things=models.__all__
+    things=[thing for thing in things if thing is not 'Sire' and thing is not 'Dam' and thing is not 'Mouse']
+    printD(things)
+    for a in things:
+        try:
+            thing=s.query(models.__dict__[a])[-1]
+            print('---------------------%s---------------------\n\n'%thing)
+            dir=[t for t in thing.__dir__() if t[0]!='_']
+            print([getattr(thing,attr) for attr in dir])
+        except: pass
+        try:
+            thing=s.query(models.__dict__[a].MetaData)[-1]
+            print('-----meta------------%s---------------------\n\n'%thing)
+            dir=[t for t in thing.__dir__() if t[0]!='_']
+            print([getattr(thing,attr) for attr in dir])
+        except: pass
+
 def printStuff(cons=True,mice=True,data=True,notes=True):
     if cons:
         print('\n###***constraints***')

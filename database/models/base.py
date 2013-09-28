@@ -19,6 +19,8 @@ class DefaultBase:
         return '\n%s%s %s'%(tabs,self.__class__.__name__,getattr(self,attr))
     def __repr__(self,attr='id'):
         return '\n%s %s'%(self.__class__.__name__,getattr(self,attr))
+    def __str__(self):
+        return '%s'%(self.__class__.__name__)
 
 Base=declarative_base(cls=DefaultBase)
 

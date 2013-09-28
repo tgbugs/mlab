@@ -39,15 +39,50 @@ def getJaxData(stockNOorURL):
     return url,stockNO,name,commonNames,alleleNames
 
 
-ai32='http://jaxmice.jax.org/strain/012569.html'
-gin='http://jaxmice.jax.org/strain/003718.html'
 
-adat=getJaxData(ai32)
-gdat=getJaxData(gin)
+def getMolarMass(url):
+    page=r.get(url)
+    page.close()
+    lines=page.iter_lines()
 
-print(adat)
-print(gdat)
+    flRegex=b'title="Chemical formula"'
+    fRegex=b'\>(\S+)\<'
+
+    mlRegex=b'title="Molar mass"'
+    mRegex=b'\>(\S+)\ '
+
+    for line in lines:
+        try:
+            molarMass and formula
+            break
+        except:
+            if re.search(mlRegex,line):
+                line=lines.send(None)
+                molarMass=float(re.search(mRegex,line).group(1).decode('utf-8'))
+            elif re.search(flRegex,line):
+                line=lines.send(None)
+                formula=re.search(fRegex,line).group(1).decode('utf-8')
+    #FIXME need to catch Nones here
+    return formula,molarMass
 
 
+
+
+    [lines[i+1] for i in range(len(lines)) if re.search(b'title="Molar mass"',lines[i])!= None ]
+
+
+def main():
+    ai32='http://jaxmice.jax.org/strain/012569.html'
+    gin='http://jaxmice.jax.org/strain/003718.html'
+    #adat=getJaxData(ai32)
+    #gdat=getJaxData(gin)
+    #print(adat)
+    #print(gdat)
+    nacl='http://en.wikipedia.org/wiki/Sodium_chloride'
+    ndat=getMolarMass(nacl)
+    print(ndat)
+
+if __name__ == '__main__':
+    main()
 
 

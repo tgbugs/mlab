@@ -209,6 +209,10 @@ def popHardware(session):
     session.add(Hardware(Parent=nidaq,type='led',name='470',model='M470L2',unique_id='M00277763'))
     session.commit()
 
+def popReagentType(session):
+    acsf=ReagentType(name=,iupac=,)
+
+
 def popExperimentType(session):
     session.add(ExperimentType('acute slice prep','prep'))
     session.add(ExperimentType('in vitro patch','patch'))

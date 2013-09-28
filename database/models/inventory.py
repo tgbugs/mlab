@@ -108,7 +108,7 @@ class ReagentType(HasCiteables, Base):
     """base table for all reagents, long run could probably could interface with and inventory, but we arent anywhere near there yet"""
     id=Column(Integer,primary_key=True) #FIXME
     name=Column(String,unique=True)
-    iupac=Column(String,unique=True)
+    formula=Column(String,unique=True) #iupac
     abbrev=Column(String,unique=True)
     molarMass=None #FIXME should this be metadata?
     #TODO: usage rate
