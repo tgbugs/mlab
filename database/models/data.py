@@ -94,20 +94,27 @@ class Repository(Base):
     #TODO request.urlopen works perfectly for filesystem stuff
     #file:///C: #apparently chromium uses file:///C:
     #file:///D: are technically the base
-    url=Column(String(100),primary_key=True) #use urllib.parse for this #since these are base URLS len 100 ok
+    url=Column(String,primary_key=True) #use urllib.parse for this #since these are base URLS len 100 ok
     credentials_id=Column(Integer,ForeignKey('credentials.id')) 
     name=Column(String)
     blurb=Column(Text)
     assoc_program=Column(String(30)) #FIXME some of these should be automatically updated and check by the programs etc
+    parent_url=Column(String,ForeignKey('repository.url')) #use urllib.parse for this #since these are base URLS len 100 ok
+    mirrors=relationship('Repository',primaryjoin='Repository.parent_url==Repository.url')
+
+    def getStatus(self):
+        URL_STAND.ping(self.url)
+
     #TODO, if we are going to store these in a database then the db needs to pass sec tests, but it is probably better than trying to secure them in a separate file, BUT we will unify all our secure credentials management with the same system
     #TODO there should be a default folder or 
     #access_manager=Column(String) #FIXME the credentials manager will handle this all by itself
-    def __init__(self,url,credentials_id=None,name=None,assoc_program=None):
+    def __init__(self,url,credentials_id=None,name=None,assoc_program=None,parent_url=None):
         self.url=URL_STAND.urlClean(url)
         self.credentials_id=credentials_id
         self.assoc_program=assoc_program
         self.name=name
-        URL_STAND.test_url(self.url)
+        URL_STAND.ping(self.url)
+        self.parent_url=parent_url
     def __repr__(self):
         return super().__repr__('url')
 
@@ -135,6 +142,9 @@ class File(Base):
         'polymorphic_on':ident,
         'polymorphic_identity':'file',
     }
+
+    def checkExists(self):
+
     def __init__(self,Repo=None,filename=None,url=None,creationDateTime=None):
         self.url=URL_STAND.urlClean(url)
         self.filename=filename
@@ -145,8 +155,10 @@ class File(Base):
                 #TODO if it doesn't exist we should create it, thus the need for the updated urlClean
             else:
                 raise AttributeError('RepoPath has no url! Did you commit before referencing the instance directly?')
+
     def strHelper(self,depth=0):
         return super().strHelper(depth,'filename')
+
     def __repr__(self):
         return '\n%s%s'%(self.url,self.filename)
 
