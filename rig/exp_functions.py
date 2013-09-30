@@ -29,7 +29,7 @@ tdbOff=tdb.tdbOff
 
 class kCtrlObj:
     """key controller object"""
-    def __init__(self, modestate, controller=None):
+    def __init__(self, modestate, controller=lambda:None):
         self.charBuffer=modestate.charBuffer
         self.keyHandler=modestate.keyHandler
         #I probably do not need to pass key handler to thing outside of inputManager...
@@ -38,10 +38,26 @@ class kCtrlObj:
         self.updateModeDict=modestate.updateModeDict
         self.__mode__=self.__class__.__name__
         self.keyThread=modestate.keyThread
-        self.ctrl=controller
-        #self.initController(self.controller)
+        self.ikCtrlDict=modestate.ikCtrlDict
+        self.controller=controller
+        self.initController(self.controller)
 
-    def initController(self,controller): #XXX DEPRICATED
+    def reloadControl(self): #this wont work because it wont write or something....
+        printD('reiniting controller')
+        rpdb2.setbreak()
+        try:
+            self.ctrl.cleanup()
+            del(self.ctrl)
+            from mcc import mccControl
+            self.ctrl=Control()
+            self.ikCtrlDict[self.__mode__]=self
+            self.updateModeDict()
+        except:
+            printD('FAILURE')
+            raise IOError
+        return self
+
+    def initController(self,controller):
         try:
             self.ctrl=controller()
             print('[OK]',controller.__name__,'started')
@@ -92,14 +108,9 @@ class kCtrlObj:
 
 
 class clxFuncs(kCtrlObj):
-    def __init__(self, modestate, controller):
-        try:
-            if controller.__name__ is not 'clxControl':
-                raise TypeError('wrong controller type')
-        except:
-            raise
-        #from clx import clxControl
-        super().__init__(modestate,controller)
+    def __init__(self, modestate):
+        from clx import clxControl
+        super().__init__(modestate,clxControl)
         #self.initController(clxmsg)
         #printD('clx ctrl',self.ctrl)
         #self.clxCleanup=self.cleanup
@@ -185,14 +196,9 @@ class datFuncs(kCtrlObj):
 
 
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
-    def __init__(self, modestate, controller):
-        try:
-            if controller.__name__ is not 'mccControl':
-                raise TypeError('wrong controller type')
-        except:
-            raise
-        #from mcc import mccControl
-        super().__init__(modestate,controller) #FIXME this needs better error messages
+    def __init__(self, modestate):
+        from mcc import mccControl
+        super().__init__(modestate,mccControl) #FIXME this needs better error messages
         #self.initController(mccmsg)
         self.MCCstateDict={}
         #self.wrapDoneCB()
@@ -336,16 +342,9 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
 
 
 class espFuncs(kCtrlObj):
-    def __init__(self, modestate, controller):
-        try:
-            if controller.__name__ is not 'espControl':
-                raise TypeError('wrong controller type')
-        except:
-            raise
-        #from esp import espControl
-
-
-        super().__init__(modestate,controller)
+    def __init__(self, modestate):
+        from esp import espControl
+        super().__init__(modestate,espControl)
         self.markDict={} #FIXME
         self.posDict={} #FIXME
         #self.initController(npControl)
@@ -357,8 +356,6 @@ class espFuncs(kCtrlObj):
         #associated metadatasources:
         self.EspXDataSource=None
         self.EspYDataSource=None
-
-
 
     def getPos(self):
         #may want to demand a depth input (which can be bank)
@@ -372,162 +369,13 @@ class espFuncs(kCtrlObj):
             #raise
         return self
 
-    def printPosDict(self):
-        #self.doneCB()
-        print(re.sub('\), ',')\r\n',str(self.posDict)))
-        return self
-
-    def mark(self): #FIXME
-        """mark/store the position of a cell using a character sorta like vim"""
-        stdout.write('\rmark:')
-        stdout.flush()
-        self.keyHandler(1)
-        key=self.charBuffer.get()
-        #printD('we got the key from charBuffer')
-        if key in self.markDict:
-            print('Mark %s is already being used, do you want to replace it? y/N'%(key))
-            self.keyHandler(1)
-            yeskey=self.charBuffer.get()
-            if yeskey=='y' or yeskey=='Y':
-                self.markDict[key]=self.ctrl.getPos()
-                print(key,'=',self.markDict[key])
-            else:
-                print('No mark set')
-        elif key=='\x1b':
-            self.unmark()
-        else:
-            self.markDict[key]=self.ctrl.getPos()
-            print(key,'=',self.markDict[key])
-        #self.keyHandler(getMark) #fuck, this could be alot slower...
-        return self
-
-    def unmark(self):
-        #self.doneCB()
-        try:
-            self.keyHandler(1)
-            mark=self.charBuffer.get()
-            pos=self.markDict.pop(mark)
-            print("umarked '%s' at pos %s"%(mark,pos))
-        except:
-            pass
-        return self
-
-    def gotoMark(self): #FIXME
-        #self.doneCB()
-        stdout.write('\rgoto:')
-        stdout.flush()
-        self.keyHandler(1)
-        key=self.charBuffer.get()
-        if key in self.markDict:
-            print('Moved to: ',self.ctrl.BsetPos(self.markDict[key])) #AH HA! THIS is what is printing stuff out as I mvoe FIXME I removed BsetPos at some point and now I need to add it... back? or what
-        else:
-            print('No position has been set for mark %s'%(key))
-        return self
-
-    def printMarks(self):
-        """print out all marks and their associated coordinates"""
-        print(re.sub('\), ','),\r\n ',str(self.markDict)))
-        #self.doneCB()
-        return self
-
-    def fakeMove(self):
-        #self.doneCB()
-        if self.ctrl.sim:
-            from numpy import random #only for testing remove later
-            a,b=random.uniform(-10,10,2) #DO NOT SET cX or cY manually
-            self.ctrl.setPos((a,b))
-            print(self.ctrl._cX,self.ctrl._cY)
-        else:
-            print('Not in fake mode! Not moving!')
-        return self
-
-    def getDisp(self):
-        """BLOCKING stream the displacement from a set point"""
-        #self.doneCB()
-        from numpy import sum as npsum #FIXME should these go here!?
-        from numpy import array as arr
-
-        if not len(self.markDict):
-            self.keyHandler(1)
-            key=self.charBuffer.get()
-            self.markDict[key]=self.ctrl.getPos()
-
-        dist1=1
-        print(list(self.markDict.keys()))
-        while self.keyThread.is_alive(): #FIXME may need a reentrant lock here to deal w/ keyboard control
-            self.keyHandler(1) #call this up here so the pass through is waiting
-            pos=self.markDict.values()
-            dist=(npsum((arr(self.ctrl._BgetPos()-arr(list(pos))))**2,axis=1))**.5 #FIXME the problem here is w/ _BgetPos()
-            if dist1!=dist[0]:
-                #names='%s \r'%(list(self.markDict.keys())) #FIXME sadly, it seems there is no way ;_;
-                stdout.write('\r'+''.join(map('{:1.5f} '.format,dist)))
-                stdout.flush()
-                dist1=dist[0]
-            try:
-                key=self.charBuffer.get_nowait()
-                #FIXME this should go AFTER the other bit to allow proper mode changing
-                if key=='q' or key=='\x1b': #this should be dealt with through the key handler...
-                    print('\nleaving displacement mode')
-                    break
-                elif key: #FIXME HOW DOES THIS EVEN WORK!?!??!
-                    #printD('breaking shit')
-                    try:
-                        func=self.modestate.keyActDict[key]
-                        if func.__name__ !='getDisp':
-                            from threading import Thread
-                            a=Thread(target=func)
-                            a.start()
-                    except:
-                        printD('should have keyHandled it')
-            except:
-                pass
-        return self
-
-    def setSpeedDef(self):
-        #self.doneCB()
-        self.ctrl.setSpeedDefaults()
-        return self
+    def setPos(self,x,y):
+        self.ctrl.setPos((x,y)) #FIXME may need BsetPos
 
     def cleanup(self):
         super().cleanup()
         self.ctrl.cleanup()
         return self
-
-    def setMoveDict(self,moveDict={'w':'up','s':'down','a':'left','d':'right'}):
-        self.moveDict=moveDict
-        return self
-
-    def move(self): #FIXME this does not work in displacement mode because modestate.key is always i
-        key=self.modestate.key
-        if key.isupper(): #shit, this never triggers :(
-            #printD('upper')
-            self.ctrl.move(self.moveDict[key.lower()],.2) #FIXME
-        else:
-            #printD('lower')
-            self.ctrl.move(self.moveDict[key.lower()],.1)
-        return self
-    def printError(self):
-        print('Error:',self.ctrl.getErr().decode('utf-8'))
-        return self
-    def readProgram(self):
-        #self.keyHandler(1)
-        #num=self.charBuffer.get()
-        print(self.ctrl.readProgram())
-        return self
-
-
-class keyFuncs(kCtrlObj):
-    """utility functions eg meta functions such as : cmd and the like"""
-    def __init__(self, modestate):
-        super().__init__(modestate)
-        self.modestate=modestate
-    def help(self):
-        self.modestate.updateModeDict()
-        printFD(self.modestate.helpDict)
-        #self.doneCB()
-        return self
-    def esc(self):
-        return 0
 
 
 def main():
