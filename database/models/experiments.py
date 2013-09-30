@@ -20,10 +20,16 @@ from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardwa
 #TODO in theory what we want is for experiments to have a m-m on itself to convey logical connections, in which case a mating record is just an experiment.... HRM, think on this... we certainly want the m-m for logical depenece I think
 
 
-class ExperimentType(HasReagentTypes, Base):
+class ExperimentType(HasReagentTypes, HasDataSources, HasMetaDataSources, Base):
     #id=Column(Integer,primary_key=True) #FIXME
     id=Column(String(30),primary_key=True)
     abbrev=Column(String)
+    #TODO there are simpy too many datasources and metadata sources to access them directly every time from the whole list, therefore we will include them here to make finding them easy but not to constrain them...
+    #FIXME datasources being tied directly to REAL hardware could be a problem ;_;
+    #need a way to specify the types of data without being forced to add a new experiment type every time hardware changes or loose the record of the old hardware configuration...
+    #RESPONSE: not actually a problem because atm sources are not tied directly to hardware and in theory I could just keep a history table for links between sources and hardware... or better yet just do that by linking data sources to hardware types and ha... fuck... integrety failures EVERYWHERE ;_;
+
+
     def __init__(self,id=None,abbrev=None,ReagentTypes=[]):
         self.id=id
         self.abbrev=abbrev
@@ -35,6 +41,8 @@ class ExperimentType(HasReagentTypes, Base):
 class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base):
     __tablename__='experiments'
     id=Column(Integer,primary_key=True)
+    #QUESTION: should the datafile be linked directly against the experiment >_< logically yes...
+    #that will simplify the search for valid data sources
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
     person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
     startDateTime=Column(DateTime,default=datetime.now())

@@ -15,6 +15,13 @@ printFD=tdb.printFuncDict
 tdbOff=tdb.tdbOff
 
 #file to consolidate all the different functions I want to execute using the xxx.Control classes
+#TODO this file needs a complete rework so that it can pass data to the database AND so that it can be used by keyboard AND so that it can be used by experiment scripts... means I may need to split stuff up? ;_;
+#TODO rig control vs experiment control... these are technically two different 'modes' one is keyboard controlled the other is keyboard initiated...
+#TODO ideally I want to do experiments the same way every time instead of allowing one part here and another there which is sloppy so those are highly ordered...
+#TODO BUT I need a way to fix things, for example if the slice moves and I need to recalibrate the slice position (FUCK, how is THAT going to work out in metadata)
+
+#TODO all of these are configured for terminal output only ATM, ideally they should be configged by whether they are called from keyboard or from experiment... that seems... reasonable??! not very orthogonal...
+#mostly because when I'm running an experiment I don't want to accientally hit something or cause an error
 
 class kCtrlObj:
     """key controller object"""
@@ -105,11 +112,12 @@ class clxFuncs(kCtrlObj):
         #self.clxCleanup=self.cleanup
         self.programDict={}
         #self.wrapDoneCB()
+
     def readProgDict(self,progDict):
         self.programDict=progDict
         return self
 
-    def getStatus(self):
+    def getStatus(self,outputs): #TODO outputs... should be able to output to as many things as I want... probably should be a callback to simplify things elsewhere? no?!?!
         status=self.ctrl.GetStatus()
         print(status)
         return self
@@ -118,7 +126,6 @@ class clxFuncs(kCtrlObj):
         self.ctrl.StartMembTest(120)
         self.ctrl.StartMembTest(121)
         return self
-
 
     def load(self,key=None):
         if not key:
@@ -184,6 +191,10 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         self.MCCstateDict={}
         #self.wrapDoneCB()
         self.updateModeDict()
+        
+        #associated metadata sources
+        self.state1DataSource=None
+
 
     def inpWait(self):
         #wait for keypress to move to the next program, this may need to spawn its own thread?
@@ -328,6 +339,11 @@ class espFuncs(kCtrlObj):
         self.modestate=modestate
         self.setMoveDict()
         #self.event=modestate.event
+        
+        #associated metadatasources:
+        self.EspXDataSource=None
+        self.EspYDataSource=None
+
 
 
     def getPos(self):

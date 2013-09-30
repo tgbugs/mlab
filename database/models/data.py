@@ -57,13 +57,13 @@ class DataFileMetaData(Base):
     url=Column(String,nullable=False)
     filename=Column(String,nullable=False)
     __table_args__=(ForeignKeyConstraint([url,filename],['datafile.url','datafile.filename']), {})
-    metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False)
+    metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False) #TODO how to get this?
     dateTime=Column(DateTime,default=datetime.now)
     value=Column(Float(53),nullable=False)
     sigfigs=Column(Integer) #TODO
     abs_error=Column(Float(53)) #TODO
     metadatasource=relationship('MetaDataSource')
-    def __init__(self,value,DataFile=None,MetaDataSource=None,metadatasource_id=None,url=None,filename=None,sigfigs=None,abs_error=None,dateTime=None):
+    def __init__(self,value,DataFile=None,MetaDataSource=None,abs_error=None,sigfigs=None,dateTime=None,metadatasource_id=None,url=None,filename=None):
         self.dateTime=dateTime
         self.url=url
         self.filename=filename
@@ -163,12 +163,13 @@ class File(Base):
         return '\n%s%s'%(self.url,self.filename)
 
 
-class DataFile(File):
+class DataFile(File): #TODO datafiles can only really belong to a single experiment, while subjects can belong to MANY experiments....
     __tablename__='datafile'
     url=Column(String,primary_key=True,autoincrement=False)
     filename=Column(String,primary_key=True,autoincrement=False)
     __table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
-    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False) #FIXME make this many-many???!
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
+    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
     __mapper_args__={'polymorphic_identity':'datafile'}
 
     @declared_attr
@@ -176,7 +177,7 @@ class DataFile(File):
         cls.MetaData=DataFileMetaData
         return relationship(cls.MetaData)
 
-    def __init__(self,Repo=None,filename=None,DataSource=None,url=None,datasource_id=None,Subjects=[], creationDateTime=None):
+    def __init__(self,Repo=None,filename=None,Exeperiment=None,DataSource=None,url=None,experiment_id=None,datasource_id=None,Subjects=[], creationDateTime=None):
         super().__init__(Repo,filename,url,creationDateTime)
         self.datasource_id=datasource_id
         self.AssignID(DataSource)
