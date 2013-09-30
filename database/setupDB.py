@@ -210,7 +210,7 @@ def popHardware(session):
     session.commit()
 
 def popReagentType(session):
-    acsf=ReagentType(name=,iupac=,)
+    acsf=ReagentType(name='acsf')#,iupac=None)
 
 
 def popExperimentType(session):
