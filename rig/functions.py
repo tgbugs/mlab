@@ -23,6 +23,8 @@ tdbOff=tdb.tdbOff
 #TODO all of these are configured for terminal output only ATM, ideally they should be configged by whether they are called from keyboard or from experiment... that seems... reasonable??! not very orthogonal...
 #mostly because when I'm running an experiment I don't want to accientally hit something or cause an error
 
+#TODO split in to send and recieve?!?
+
 class kCtrlObj:
     """key controller object"""
     def __init__(self, modestate, controller=lambda:None):
