@@ -6,68 +6,64 @@
 def rigDict():
     rigDict= {
         'mode':'rig',
-        'keyFuncs':
-        {
-        '\x1b':'esc',
-        'h':'help',
-        'q':
-            {'mccFuncs':{0:'cleanup'},
-             'clxFuncs':{1:'cleanup'},
-             'espFuncs':{2:'cleanup'},
-             'keyfuncs':{3:'esc'},
-            },
+        'keyFuncs':{
+                    '\x1b':'esc',
+                    'h':'help',
+                    'q': #FIXME depricated???
+                        {
+                         'mccFuncs':{0:'cleanup'},
+                         'clxFuncs':{1:'cleanup'},
+                         'espFuncs':{2:'cleanup'},
+                         'keyfuncs':{3:'esc'},
+                        },
 
-        ':':'cmd',
-        },
+                    ':':'cmd',
+                   },
 
-        'clxFuncs':
-        {
-        'r':('setMode','clx'),
-        'l':'load',
-        },
+        'clxFuncs':{
+                    'r':('setMode','clx'),
+                    'l':'load',
+                   },
 
-        'mccFuncs':
-        {
-        '1':'allIeZ',
-        '2':'allVCnoHold',
-        '3':'allVChold_60',
-        '4':'allICnoHold',
-        '5':'testZtO_75',
-        '6':'testOtZ_75',
-        '7':'zeroVChold_60',
-        '8':'oneVChold_60',
-        #'a':'printMCCstate',
-        'c':('setMode','mcc'),
-        'y':'getState',
-        },
+        'mccFuncs':{
+                    '1':'allIeZ',
+                    '2':'allVCnoHold',
+                    '3':'allVChold_60',
+                    '4':'allICnoHold',
+                    '5':'testZtO_75',
+                    '6':'testOtZ_75',
+                    '7':'zeroVChold_60',
+                    '8':'oneVChold_60',
+                    #'a':'printMCCstate',
+                    'c':('setMode','mcc'),
+                    'y':'getState',
+                   },
 
-        'espFuncs':
-        {
-        #'o':'readProgram',
-        'w':'move',
-        'a':'move',
-        's':'move',
-        'd':'move',
-        'p':'printMarks',
-        'e':'printError',
-        #'w':'printPosDict',
-        #'e':('setMode','esp'),
-        'i':'getDisp',
-        #'s':'setSpeedDef',
-        'g':'getPos',
-        'f':'gotoMark',
-        #'r':'read',
-        't':'fakeMove',
-        'm':'mark',
-        '\'':'gotoMark',
-        },
+        'espFuncs':{
+                    #'o':'readProgram',
+                    'w':'move',
+                    'a':'move',
+                    's':'move',
+                    'd':'move',
+                    'p':'printMarks',
+                    'e':'printError',
+                    #'w':'printPosDict',
+                    #'e':('setMode','esp'),
+                    'i':'getDisp',
+                    #'s':'setSpeedDef',
+                    'g':'getPos',
+                    'f':'gotoMark',
+                    #'r':'read',
+                    't':'fakeMove',
+                    'm':'mark',
+                    '\'':'gotoMark',
+                   },
 
-        'datFuncs':
-        {
-        'n':('setMode','new'),
-        #'o':'test',
-        #'d':('setMode','dat'),
-        },
+        'datFuncs':{
+                    'n':('setMode','new'),
+                    #'o':'test',
+                    #'d':('setMode','dat'),
+                   },
     }
     return rigDict
 
@@ -75,8 +71,9 @@ def rigDict():
 ##Method to convert the static dicts into their equivalent functions at runtime
 
 def clxDict():
-    protPath='C:/tom_axon/'
-    programDict={'1':protPath+'2ch_scope'+'.pro',
+    protPath='C:/tom_axon/' #FIXME this is hidden this needs to go somewhere else or be removed period
+    programDict={
+                 '1':protPath+'2ch_scope'+'.pro',
                  '2':protPath+'current_step_-100-1000'+'.pro',
                  '3':protPath+'pair_test_0-1'+'.pro',
                  '4':protPath+'pair_test_1-0'+'.pro',
@@ -107,28 +104,29 @@ def clxDict():
 def mccDict():
     mccDict={
         'mode':'mcc',
-        'mccFuncs':
-        {
-        'r':'reloadControl',
-        '1':'allIeZ',
-        '2':'allVCnoHold',
-        '3':'allVChold_60',
-        '4':'allICnoHold',
-        '5':'testZtO_75',
-        '6':'testOtZ_75',
-        '7':'zeroVChold_60',
-        '8':'oneVChold_60',
-        '0':['allIeZ','allVCnoHold','allVChold_60'],
-        '9':{'mccFuncs':{0:'allIeZ',
-                         2:'allICnoHold',
-                         4:'inpWait',
+        'mccFuncs':{
+                    'r':'reloadControl',
+                    '1':'allIeZ',
+                    '2':'allVCnoHold',
+                    '3':'allVChold_60',
+                    '4':'allICnoHold',
+                    '5':'testZtO_75',
+                    '6':'testOtZ_75',
+                    '7':'zeroVChold_60',
+                    '8':'oneVChold_60',
+                    '0':['allIeZ','allVCnoHold','allVChold_60'],
+                    '9':{'mccFuncs':{ #FIXME this is bloodly useless >_< replace w/ actual programatic control
+                                     0:'allIeZ',
+                                     2:'allICnoHold',
+                                     4:'inpWait',
+                                    },
+                         'clxFuncs':{
+                                     1:('load','0'),
+                                     3:('load','1'),
+                                    },
                         },
-             'clxFuncs':{1:('load','0'),
-                         3:('load','1'),
-                        },
-            },
-        'y':'getState',
-        },
+                    'y':'getState',
+                   },
     }
 
     return mccDict
@@ -137,11 +135,11 @@ def datDict():
     datDict={
         'mode':'new',
         'datFuncs':
-        {
-            's':'newSlice',
-            'c':'newCell',
-            'e':'newExperiment',
-        }
+            {
+                's':'newSlice',
+                'c':'newCell',
+                'e':'newExperiment',
+            }
     }
     return datDict
 
@@ -157,3 +155,24 @@ def getDicts(locs): #in theory we would like to generate this automatically...
     return dictDict
 
 keyDicts=getDicts(locals()) #This mirrors modeDict
+
+def checkDups(keyDicts):
+    for mode,DICT in keyDicts.items():
+        keys=[]
+        [keys.extend(d.keys()) for d in DICT.values() if type(d) is dict]
+        dups=[k for k in keys if keys.count(k) > 1]
+        if dups:
+            print(mode,'has duplicate key entries!',dups)
+
+def main():
+    checkDups(keyDicts)
+    
+if __name__ == '__main__':
+    main()
+
+all__=[
+    'rigDict',
+    'clxDict',
+    'mccDict',
+    'datDict'
+]

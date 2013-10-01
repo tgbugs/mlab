@@ -26,8 +26,6 @@ class ExperimentRunner:
     def newSubFromTemp(self):
 
 
-        
-
 class ExperimentState:
     #TODO I need prototypes for experiments... also, need a way to get the current rig stats and link against it
     #basically tom's rig.children or something get them all in a list and stick them in the hardware list
@@ -57,6 +55,7 @@ class ExperimentState:
     Mouse
     Slice
     Cells
+
 
 class SomChr(ExperimentRunner):
     def newSlice(self):

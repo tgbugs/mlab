@@ -122,6 +122,9 @@ def initControllers(termInputMan,progInputMan=None):
     for func in FUNCS:
         initedFunc=func(termInputMan)
         termInputMan.ikFuncDict[initedFunc.__mode__]=initedFunc
+
+    termInputMan.updateModeDict() #bind keys to functions
+
    
 def main():
     termIO=termInputMan(keyDicts)

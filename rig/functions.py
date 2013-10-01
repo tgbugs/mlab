@@ -35,57 +35,9 @@ class kCtrlObj:
         #I probably do not need to pass key handler to thing outside of inputManager...
         #yep, not used anywhere, but I supose it could be used for submodes... we'll leave it in
         self.setMode=modestate.setMode
-        self.updateModeDict=modestate.updateModeDict
         self.__mode__=self.__class__.__name__
         self.keyThread=modestate.keyThread
         self.ctrl=controller
-        #self.initController(self.controller)
-
-    def initController(self,controller): #XXX DEPRICATED
-        try:
-            self.ctrl=controller()
-            print('[OK]',controller.__name__,'started')
-        except:
-            print('[!] **LOAD ERROR**',controller.__name__,'not started, will listen for start')
-            self.ctrl=lambda:None
-            from threading import Thread
-            #self.pollThrd=Thread(target=self.pollForCtrl,args=(controller,))
-            #self.pollThrd.start()
-        self.ikCtrlDict[self.__mode__]=self
-        self.updateModeDict()
-    
-    def pollForCtrl(self,controller): #FIXME maybe we SHOULD do this here since these are more tightly integrated with modestate
-        while self.keyThread.is_alive():
-            try:
-                self.ctrl=controller()
-                printD(self)
-                print('[OK]',controller.__name__,'started')
-                #printD(self.__mode__)
-                #self.ikCtrlDict[self.__mode__]=self
-                self.updateModeDict()
-                break
-            except:
-                sleep(2)
-
-
-    def wrapDoneCB(self):
-        class wrap:
-            def __init__(self,call,pre=lambda:None,post=lambda:None):
-                self.start=pre
-                self.do=call
-                self.stop=post
-            def go(self,*args):
-                #printD('wat')
-                self.start()
-                out=self.do(*args)
-                self.stop()
-                return out
-        excluded=['cleanup','__init__','doneCB','readProgDict','updateModeDict','setMode']
-        mems=ins.getmembers(self)
-        funcs=[func for func in mems if ins.ismethod(func[1]) and func[0] not in excluded]
-        #printFD(funcs)
-        for tup in funcs:
-            setattr(self,tup[0],wrap(tup[1],self.doneCB).go)
 
     def cleanup(self):
         pass
@@ -158,7 +110,6 @@ class datFuncs(kCtrlObj):
         self.posDict={}
         self.MCCstateDict={}
         #self.wrapDoneCB()
-        self.updateModeDict()
         #FIXME
         #this class should be the one to get data out of dataman
         #dataman should have a method 'saveData' that takes the source class (self) and the data and stores it
@@ -196,10 +147,9 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         #self.initController(mccmsg)
         self.MCCstateDict={}
         #self.wrapDoneCB()
-        self.updateModeDict()
         
         #associated metadata sources
-        self.state1DataSource=None
+        #self.state1DataSource=None
 
 
     def inpWait(self):
@@ -349,14 +299,13 @@ class espFuncs(kCtrlObj):
         self.markDict={} #FIXME
         self.posDict={} #FIXME
         #self.initController(npControl)
-        self.updateModeDict()
         self.modestate=modestate
         self.setMoveDict()
         #self.event=modestate.event
         
         #associated metadatasources:
-        self.EspXDataSource=None
-        self.EspYDataSource=None
+        #self.EspXDataSource=None
+        #self.EspYDataSource=None
 
 
 
