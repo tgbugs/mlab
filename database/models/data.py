@@ -144,6 +144,7 @@ class File(Base):
     }
 
     def checkExists(self):
+        pass
 
     def __init__(self,Repo=None,filename=None,url=None,creationDateTime=None):
         self.url=URL_STAND.urlClean(url)

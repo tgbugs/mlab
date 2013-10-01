@@ -47,6 +47,14 @@ class IsMetaDataSource:
         return relationship('MetaDataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
 
 
+class HasDataSources:
+    fsda=Column(Integer)
+
+
+class HasMetaDataSources:
+    asdf=Column(Integer)
+
+
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
     dateTime=Column(DateTime,default=datetime.now)
     value=Column(Float(53),nullable=False)

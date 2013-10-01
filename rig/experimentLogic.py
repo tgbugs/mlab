@@ -1,13 +1,31 @@
+from database import interface #FIXME
+
 class ExperimentRunner:
-    def __init__(self,mcc,clx,esp,dat):
-        self.clx=clx
-        self.CLX=clx.controller
-        self.dat=dat
-        self.DAT=dat.controller
-        self.esp=esp
-        self.ESP=esp.controller
-        self.mcc=mcc
-        self.MCC=mcc.controller
+    def __init__(self,termIO,clxCtrl,espCtrl,mccCtrl,termIO):
+        self.clx=clxCtrl
+        self.esp=espCtrl
+        self.mcc=mccCtrl
+        #FIXME use input() to get terminal input for stuff like depth?
+
+        self.currentStateDict={ #this is preferable to having each thing be assigned individually to self, in fact we could even pass something like this in
+            'Experiment':None,
+            'Subjects':[], #NOTE somehow cells and slices go here for patch
+                               #slices need to be added to mouse @ sliceprep? 
+
+
+        }
+    def newExpFromLast(self):
+        pass
+    def newSubFromLast(self):
+        #TODO this needs to handle subject hierarchies transparently
+        #fortunately the orm should handle this without too much effort?
+        pass
+
+    def newExpFromTemp(self):
+        pass
+    def newSubFromTemp(self):
+
+
         
 
 class ExperimentState:

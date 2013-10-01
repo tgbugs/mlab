@@ -171,6 +171,28 @@ class espControl:
         self.write('1HX')
         return 1
 
+    def BsetPos(self,pos):
+        """set the position of the newport to tuple of floats (x,y) NOTE this command is BLOCKING"""
+        self.getPos() #need to do this first
+        if np.abs(self.cX-pos[0])>self.feLim or np.abs(self.cY-pos[1])>self.feLim:
+            print('You are farther away than your feLim! I will fix this later with KP or KD or KI!')
+            return 0
+        else: #set them to where we are going!
+            if self.cX==pos[0] and self.cY==pos[1]:
+                print('Yer already thar mate!')
+                return 0
+            self.target=pos
+            self.cX=pos[0]
+            self.cY=pos[1]
+            #group axes 1&2, velocity to two (mm/s?), acc/dec to 1, motors on, move, wait, degroup
+            self.write('1HN1,2;1HV2;1HA1;1HD1;1HO;1HL'+str(self.cY)+','+str(self.cX)) #HW also blocks
+            while 1:
+                print(self.getPos())
+                if (self.cX,self.cY)==self.target: #this SHOULD always trigger...
+                    self.write('1HX') #degroup oh man this is ugly and not transparent
+                    self.target=None
+                    return self.cX,self.cY
+
     def setPos(self,pos): #this lets the output of getPos feed directly in to set pos FIXME may need BsetPos
         """1HW and/or 1HX block the newport's queue set the position of the newport to floats x,y""" 
         self.getPos() #need to do this first

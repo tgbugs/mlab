@@ -12,7 +12,7 @@ printFD=tdb.printFuncDict
 tdbOff=tdb.tdbOff
 tdbOff()
 
-def keyListener(charBuffer,keyHandler,cleanup=lambda:0,modestate=None): #FIXME
+def keyListener(charBuffer,keyHandler,cleanup=lambda:0): #FIXME
     #http://techtonik.rainforce.org
     STD_INPUT_HANDLE = -10
     # Constant for infinite timeout in WaitForMultipleObjects()
@@ -91,18 +91,8 @@ def keyListener(charBuffer,keyHandler,cleanup=lambda:0,modestate=None): #FIXME
                     #printD(charBuffer)
                     charBuffer.put_nowait(char) #THIS WORKS because if there is a get() waiting on the stack it will tigger on the first keyHandler call, though, FIXME race conditions be here! somehow I think queue is built for this
                     #sleep(.001) #YEP IT WAS A FUCKING RACE CONDITION .0001 is too fast
-
-                    #keyRet=keyHandler()
-                    #if keyRet==2: 
-                        #modestate.doneCB()
-                        #modestate.cond.acquire()
-                        #modestate.cond.notify_all()
-                        #modestate.cond.release()
-
-                        #acquire the lock
-
-                    stopflag=not keyHandler() #no buffer, race conditions suck
-                    #stopflag=not keyHandler(char) #no buffer, race conditions suck
+                    
+                    stopflag = not keyHandler()
                     if char == '@': #emergency break
                         stopflag=1 #FIXME! this is a hack, integrate it properly
         else:
