@@ -131,10 +131,16 @@ class Slice(Subject): #FIXME slice should probably be a subject
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True) #FIXME
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
     #TODO check that there are not more slices than the thickness (from the metadta) divided by the total length of the largest know mouse brain
-    startDateTime=Column(DateTime,default=datetime.now)
+    startDateTime=Column(DateTime,default=datetime.now) #time onto rig rather than t cut
+    #just like I don't store slice -> rig time in cell we dont store cut time in slice
+    #HOWEVER we will need to store that in ExperimentMetaData
     #hemisphere
-    #slice prep data can be querried from the mouse_id alone, since there usually arent two slice preps per mouse
     #FIXME why the fuck is thickness metadata... it is linked to protocol and slice prep... ah, I guess it is sliceprep metadata that sort of needs to propagate
+    @property
+    def thickness(self):
+        exp=self.experiments[0]
+        emd=Experiment.MetaData
+        return query(emd).filter(emd.experiment_id==exp.id,emd.datasource_id=='slice thickness') #ick this is nasty to get out and this isn't even correct
 
     cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 

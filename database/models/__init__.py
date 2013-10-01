@@ -24,7 +24,6 @@ __all__.extend([
 
 from database.models.constraints import *
 __all__.extend([
-        'ExperimentType',
         'SI_PREFIX',
         'SI_UNIT',
         'SEX',
@@ -42,6 +41,7 @@ __all__.extend([
 
 from database.models.experiments import *
 __all__.extend([
+        'ExperimentType',
         'Experiment',
 ])
 

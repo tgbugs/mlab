@@ -97,7 +97,6 @@ class termInputMan:
         print('done!')
 
 
-
 def initControllers(termInputMan,progInputMan=None):
     #load the drivers so that they aren't just hidden in the Funcs
     clxCtrl=clxControl() #FIXME move all the initilization OUT of kCtrlObj an into the drivers themselves
@@ -116,7 +115,6 @@ def initControllers(termInputMan,progInputMan=None):
         obj=kfunc(termInputMan,controller)
         termInputMan.ikFuncDict[obj.__mode__]=obj
    
-
 def main():
     termIO=termInputMan(keyDicts)
     initControllers(termIO)

@@ -55,67 +55,6 @@ errdict={6000:'MCCMSG_ERROR_NOERROR', 6001:'MCCMSG_ERROR_OUTOFMEMORY',\
          6006:'MCCMSG_ERROR_MCCCOMMANDFAIL'}
 
 class mccControl:
-    def _1_init__(self):
-        #load the mcc msg dll
-        #mccDllPath='C:/Axon/MultiClamp 700B Commander/3rd Party Support/AxMultiClampMsg/' #change this to match install loc #NOTE: can't just place the DLL in random places :(
-        #mccDllPath='C:\Axon\MultiClamp 700B Commander\3rd Party Support\AxMultiClampMsg' #w7 wtf
-
-        #rpdb2.start_embedded_debugger('poop')
-
-        try:
-            if self.polling:
-                pass
-            elif not self.polling:
-                pass
-        except:
-            self.polling=0 #first call of init
-
-        if not self.polling: #FIXME this is not exactly equivlant to not running but ok
-            #load the DLL
-            self.mccDllPath='C:/Axon/MultiClamp 700B Commander/3rd Party Support/AxMultiClampMsg/'
-            #pointers etc for ffmc
-            self._puModel=byref(c_uint(0))
-            self._pszSerialNum=byref(c_char_p(b''))
-            self.uBufSize=c_uint(16) #just setting this manually, shouldn't be anything other than 16
-            self._puCOMPortID=byref(c_uint(0))
-            self._puDeviceID=byref(c_uint(0))
-            self._puChannelID=byref(c_uint(0)) #head stage, need a way to switch this quickly
-    
-        self.getDLL()
-        self._pnError=byref(c_int()) #err pointer
-        self.CreateObject() #create the dll handle NOTE: this MUST be called EVERY time
-        #FIXME need to destroy the old ones you tard
-    
-        #FIXME I'm fairly certain that the problem is that something is getting garbage collected :/
-        #one way around it MIGHT be wrapping again IF we can a 6003 error and use a callback?
-        try:
-            firstMC=self.FindFirstMultiClamp() #this is where we check
-            self.getMCS(firstMC)
-     
-            #set the system to the first multiclamp
-            self.selectMC(0)
-
-            #if everything goes well create the rest of the pointers
-            self._pnPointer=byref(c_int())
-            self._puPointer=byref(c_uint())
-            self._pbPointer=byref(c_bool())
-            self._pdPointer=byref(c_double())
-        except IOError:
-            #err=val(self._pnError,c_int_p)
-            #printD(err)
-            if not self.polling:
-                from threading import Thread
-                self.pollThread=Thread(target=self.pollForMCC)
-                self.polling=1
-                self.pollThread.start()
-            else:
-                raise IOError
-        #except IOError:
-            #if not self.polling:
-                #self.pollForMCC()
-            #else:
-                #raise IOError
-
     def __init__(self): #use this one for now
         self.mccDllPath='C:/Axon/MultiClamp 700B Commander/3rd Party Support/AxMultiClampMsg/'
         self.getDLL() #FIXME this fails silently on 64bit see if we can make it more explicit
@@ -136,9 +75,6 @@ class mccControl:
         self._puPointer=byref(c_uint())
         self._pbPointer=byref(c_bool())
         self._pdPointer=byref(c_double())
-
-
-        
 
     def errPrint(self):
         errval=val(self._pnError,c_int_p)
@@ -171,6 +107,7 @@ class mccControl:
             return errval
 
 #main class
+
     def pollForMCC(self): #FIXME make it so we go here whenever we get a 6002
         try:
             #self.lock.acquire()
