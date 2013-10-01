@@ -112,7 +112,7 @@ def mccDict():
         'r':'reloadControl',
         '1':'allIeZ',
         '2':'allVCnoHold',
-        '3':'allVChold_60'
+        '3':'allVChold_60',
         '4':'allICnoHold',
         '5':'testZtO_75',
         '6':'testOtZ_75',
@@ -135,7 +135,7 @@ def mccDict():
 
 def datDict():
     datDict={
-        'mode':'new'
+        'mode':'new',
         'datFuncs':
         {
             's':'newSlice',
@@ -143,6 +143,7 @@ def datDict():
             'e':'newExperiment',
         }
     }
+    return datDict
 
 def getDicts(locs): #in theory we would like to generate this automatically...
     from inspect import isfunction

@@ -44,6 +44,7 @@ class espControl:
         try:
             self.esp=ser.Serial(port,baudrate,bytesize,parity,stopbits,timeout) #port is now open!
             self.write('1HX\r\n')
+            self.POST()
             self.sim=0
         except IOError:
             print('No serial port found, running in sim mode.')
@@ -69,10 +70,15 @@ class espControl:
 
         #defs to control motion with the keyboard instead of the joystick, we'll find a key to toggle between them
         self.write('1TJ1;2TJ1')
-        self.getPos() #intialize the position
+        self.getPos() #intialize the position FIXME this locks up if the esp is off
 
     def POST(self):
-        print('ESP POST',self.getPos())
+        self.esp.read(100)
+        self.esp.write(b'TP2\r\n')
+        out=self.esp.read(100)
+        if not len(out):
+            raise IOError('esp300 not responding, is it on?')
+
 
     def write(self,string,writeback=0): #FIXME may need an rlock here... yep, writeTimeout doesnt work
         out=string+'\r\n'
@@ -258,7 +264,7 @@ class _fakeEsp:
         pass
 
 def main():
-    esp=Control()
+    esp=espControl()
     import inspect
     from debug import TDB
     tdb=TDB()

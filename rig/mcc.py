@@ -68,7 +68,10 @@ class mccControl:
         self._puCOMPortID=byref(c_uint())
         self._puDeviceID=byref(c_uint())
         self._puChannelID=byref(c_uint()) #head stage, need a way to switch this quickly
-        firstMC=self.FindFirstMultiClamp()
+        try:
+            firstMC=self.FindFirstMultiClamp()
+        except:
+            raise IOError('no multiclamps found, is mcc on?')
         self.getMCS(firstMC)
         self.selectMC(0)
         self._pnPointer=byref(c_int())

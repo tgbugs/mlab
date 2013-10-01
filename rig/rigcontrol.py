@@ -1,4 +1,4 @@
-from rig.functions import *
+from rig.functions import * #FIXME add __all__ to functions
 from queue import Queue,Empty
 from rig.dictMan import *
 from rig.key import keyListener
@@ -99,21 +99,29 @@ class termInputMan:
 
 def initControllers(termInputMan,progInputMan=None):
     #load the drivers so that they aren't just hidden in the Funcs
-    clxCtrl=clxControl() #FIXME move all the initilization OUT of kCtrlObj an into the drivers themselves
-    espCtrl=espControl() #FIXME make sure these drivers are threadsafe! I think they are... (by accident)
-    mccCtrl=mccControl()
+    controllers=clxControl,espControl,mccControl
+    ctrlDict={}
+    for ctrl in controllers:
+        try:
+            inited=ctrl()
+            print(inited.__class__.__name__)
+            ctrlDict[ctrl.__name__]=inited
+        except:
+            print('%s failed to init'%ctrl.__name__)
  
-    initTuples=(
-            (clxCtrl,clxFuncs),
-            (mccCtrl,mccFuncs),
-            (espCtrl,espFuncs),
-            (None,datFuncs),
-            (None,keyFuncs)
-    )
+    ctrlBindingDict={
+            'clxControl':clxFuncs,
+            'espControl':espFuncs,
+            'mccControl':mccFuncs
+    }
+    for key in ctrlDict.keys():
+        initedFunc=ctrlBindingDict[key](termInputMan,ctrlDict[key])
+        termInputMan.ikFuncDict[initedFunc.__mode__]=initedFunc
 
-    for controller,kfunc in initTuples:
-        obj=kfunc(termInputMan,controller)
-        termInputMan.ikFuncDict[obj.__mode__]=obj
+    FUNCS=datFuncs,keyFuncs
+    for func in FUNCS:
+        initedFunc=func(termInputMan)
+        termInputMan.ikFuncDict[initedFunc.__mode__]=initedFunc
    
 def main():
     termIO=termInputMan(keyDicts)

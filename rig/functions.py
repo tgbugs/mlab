@@ -94,7 +94,7 @@ class kCtrlObj:
 class clxFuncs(kCtrlObj):
     def __init__(self, modestate, controller):
         try:
-            if controller.__name__ is not 'clxControl':
+            if controller.__class__.__name__ is not 'clxControl':
                 raise TypeError('wrong controller type')
         except:
             raise
@@ -187,7 +187,7 @@ class datFuncs(kCtrlObj):
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
     def __init__(self, modestate, controller):
         try:
-            if controller.__name__ is not 'mccControl':
+            if controller.__class__.__name__ is not 'mccControl':
                 raise TypeError('wrong controller type')
         except:
             raise
@@ -338,7 +338,7 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
 class espFuncs(kCtrlObj):
     def __init__(self, modestate, controller):
         try:
-            if controller.__name__ is not 'espControl':
+            if controller.__class__.__name__ is not 'espControl':
                 raise TypeError('wrong controller type')
         except:
             raise
