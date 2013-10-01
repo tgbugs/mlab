@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardware, HasSubjects, HasReagentTypes
+from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardware, HasSubjects, HasReagentTypes, HasDataSources, HasMetaDataSources
 
 ###-------------------
 ###  Experiment tables

@@ -1,6 +1,7 @@
 from database.imports import *
 from database.models.base import Base
 from database.models.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardware
+from database.models.experiments import Experiment
 from database.standards import frmtDT
 
 #an attempt to simplify the the relationship of objects to data
@@ -136,11 +137,14 @@ class Slice(Subject): #FIXME slice should probably be a subject
     #HOWEVER we will need to store that in ExperimentMetaData
     #hemisphere
     #FIXME why the fuck is thickness metadata... it is linked to protocol and slice prep... ah, I guess it is sliceprep metadata that sort of needs to propagate
-    @property
+    #thickness=Column(Integer)
+    #thickness=relationship('Experiment.MetaData',secondary='subjects_association',primaryjoin='Experiment.MetaData.experiment_id==subjects_association.experiments_id'
+    @hybrid_property
     def thickness(self):
         exp=self.experiments[0]
         emd=Experiment.MetaData
-        return query(emd).filter(emd.experiment_id==exp.id,emd.datasource_id=='slice thickness') #ick this is nasty to get out and this isn't even correct
+        session=object_session(self)
+        return session.query(emd).filter(emd.experiment_id==exp.id,emd.datasource_id=='slice thickness') #ick this is nasty to get out and this isn't even correct
 
     cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
 
