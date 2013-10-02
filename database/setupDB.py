@@ -113,7 +113,8 @@ def popNonSIUnit(session):
 
         ('degree',_degree),
         ('degree','~o'), #also accepted
-        ('number','num') #explicitly 'of something'
+        ('number','num'), #explicitly 'of something'
+        ('boolean','bool')
     )
     session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in _NON_SI_UNITS])
 
@@ -210,12 +211,7 @@ def popHardware(session):
     session.commit()
 
 def popReagentType(session):
-<<<<<<< HEAD
     acsf=ReagentType(name='acsf')#,iupac=None)
-=======
-    acsf=ReagentType(name='acsf')#,iupac=None)
->>>>>>> rigFuncs
-
 
 def popExperimentType(session):
     session.add(ExperimentType('acute slice prep','prep'))

@@ -161,6 +161,16 @@ class espControl:
         self._cX,self._cY=float(x),float(y)
         return self._cX,self._cY
     
+    def getX(self):
+        x=self.write('2TP',1)
+        self._cX=float(x)
+        return self._cX
+
+    def getY(self):
+        y=self.write('1TP',1)
+        self._cY=float(y)
+        return self._cY
+    
     def _BgetPos(self):
         """get position and degroup if we are at the target... used when in displacement mode"""
         #do we want to consolidate all this into a single function, I think it's probably worth it since I have all the trys...

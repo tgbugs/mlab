@@ -32,9 +32,10 @@ class MetaDataSource(Base):
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
     __tablename__='metadatasources'
     id=Column(Integer,primary_key=True)
-    name=Column(String(20),nullable=False)
+    name=Column(String(20),nullable=False,unique=True)
     prefix=Column(String(2),ForeignKey('si_prefix.symbol'),nullable=False)
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
+    mantissa=Column(Integer) #TODO
     #TODO calibration data should *probably* be stored on the hardware as a datafile or metadata and can be filtered by datetime against experiments
     def strHelper(self):
         return '%s%s'%(self.prefix,self.unit)
@@ -60,16 +61,14 @@ class DataFileMetaData(Base):
     metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False) #TODO how to get this?
     dateTime=Column(DateTime,default=datetime.now)
     value=Column(Float(53),nullable=False)
-    sigfigs=Column(Integer) #TODO
     abs_error=Column(Float(53)) #TODO
     metadatasource=relationship('MetaDataSource')
-    def __init__(self,value,DataFile=None,MetaDataSource=None,abs_error=None,sigfigs=None,dateTime=None,metadatasource_id=None,url=None,filename=None):
+    def __init__(self,value,DataFile=None,MetaDataSource=None,abs_error=None,dateTime=None,metadatasource_id=None,url=None,filename=None):
         self.dateTime=dateTime
         self.url=url
         self.filename=filename
         self.metadatasource_id=metadatasource_id
         self.value=value
-        self.sigfigs=sigfigs
         self.abs_error=abs_error
         if DataFile:
             if DataFile.url:

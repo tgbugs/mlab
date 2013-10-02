@@ -208,10 +208,12 @@ class mccControl:
         print('hMCCmsg successfully removed, no memory leaks here!')
 
     def selectMC(self,num):
+        if self.mcCurrent is num:
+            return None
         try:
             if num <= (self.mcNum):
                 self.mcCurrent=num
-                return self.SelectMultiClamp(*self.mcList[num])
+                return self.SelectMultiClamp(*self.mcList[num]) #FIXME errors be here
             else:
                 print("You don't have that many multiclamps!")
                 return 0
