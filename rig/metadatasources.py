@@ -4,7 +4,7 @@ from database.models import MetaDataSource, Experiment, Subject
 class MDSource:
     @property
     def name(self):
-        return self.name=self.__class__.__name__[4:]
+        return self.__class__.__name__[4:]
     prefix=None
     unit=None
     mantissa=None #FIXME mantissa should be rounded not truncated, make sure this is implemented
@@ -61,25 +61,36 @@ class MDS_espY(MDSource):
         return self.ctrl.getY()
 
 
-class MDS_mccState(MDSource):
+class mccBase(MDSource):
     ctrl_name='mccControl'
-    def __init__(self,Controller,session,channel)
-        self.channel=channel
-        self.name=self.name+str(self.channel)
-        super().__init__(Controller,session)
+    def __init__(self,Controller,session):
+        try:
+            self.channel
+            super().__init__(Controller,session)
+        except:
+            raise AttributeError('%s requires a channel, use mccBindChan'%self.__class__.__name__)
     def record(self,Parent):
-        self.ctrl.selectMC(self.channel) #FIXME make sure this mapping is static plox, it wont be if I have two mccs...
+        self.ctrl.selectMC(self.channel) #FIXME make sure this mapping is static plox, if I have two mccs...
         super().record(Parent)
 
 
-class MDS_mccHE(MDS_mccState):
+def mccBindChan(MDS_mcc,channel): #FIXME this does not work becasue it modifies the base class instead of adding a new one...
+    out=MDS_mcc
+    out.__name__=out.__name__+str(channel)
+    out.channel=channel
+    return out
+def mccBindAll(channel):
+    pass
+
+
+class MDS_mccHE(mccBase):
     prefix=''
     unit='bool'
     def getCurrentValue(self):
         return self.ctrl.GetHoldingEnable()
 
 
-class MDS_mccH(MDS_mccState):
+class MDS_mccH(mccBase):
     prefix=''
     unit='V'
     mantissa=3
@@ -87,7 +98,7 @@ class MDS_mccH(MDS_mccState):
         return self.ctrl.GetHolding()
 
 
-class MDS_mccPS(MDS_mccState):
+class MDS_mccPS(mccBase):
     prefix=''
     unit='number' #FIXME storing these codes is going to be really really confusing
     mantissa=3
@@ -95,7 +106,7 @@ class MDS_mccPS(MDS_mccState):
         return self.ctrl.GetPrimarySignal()
 
 
-class MDS_mccPSG(MDS_mccState):
+class MDS_mccPSG(mccBase):
     """Gain for primary signal"""
     prefix=''
     unit='number'
@@ -103,7 +114,7 @@ class MDS_mccPSG(MDS_mccState):
         return self.ctrl.GetPrimarySignalGain()
 
 
-class MDS_mccPSLPF(MDS_mccState):
+class MDS_mccPSLPF(mccBase):
     """Low pass filter for primary signal"""
     prefix=''
     unit='Hz'
@@ -111,7 +122,7 @@ class MDS_mccPSLPF(MDS_mccState):
         return self.ctrl.GetPrimarySignalLPF()
 
 
-class MDS_mccPO(MDS_mccState):
+class MDS_mccPO(mccBase):
     """Pipette offset"""
     prefix=''
     unit='V'
@@ -120,7 +131,7 @@ class MDS_mccPO(MDS_mccState):
         return self.ctrl.GetPipetteOffset()
 
 
-class MDS_mccFCC(MDS_mccState):
+class MDS_mccFCC(mccBase):
     """Fast Comp Cap"""
     prefix=''
     unit='F'
@@ -129,7 +140,7 @@ class MDS_mccFCC(MDS_mccState):
         return self.ctrl.GetFastCompCap()
 
 
-class MDS_mccSCC(MDS_mccState):
+class MDS_mccSCC(mccBase):
     """Slow Comp Cap"""
     prefix=''
     unit='F'
@@ -137,7 +148,7 @@ class MDS_mccSCC(MDS_mccState):
         return self.ctrl.GetSlowCompCap()
 
 
-class MDS_mccFCT(MDS_mccState):
+class MDS_mccFCT(mccBase):
     """Fast Comp Tau"""
     prefix=''
     unit='s'
@@ -145,7 +156,7 @@ class MDS_mccFCT(MDS_mccState):
         return self.ctrl.GetFastCompCap()
 
 
-class MDS_mccSCT(MDS_mccState):
+class MDS_mccSCT(mccBase):
     """Slow Comp Tau"""
     prefix=''
     unit='s'
@@ -153,7 +164,7 @@ class MDS_mccSCT(MDS_mccState):
         return self.ctrl.GetSlowCompTau()
 
 
-class MDS_mccSCTE(MDS_mccState):
+class MDS_mccSCTE(mccBase):
     """Slow Comp Tau X20 enable"""
     prefix=''
     unit='bool'
@@ -161,7 +172,7 @@ class MDS_mccSCTE(MDS_mccState):
         return self.ctrl.GetSlowCompTauX20Enable()
 
 
-class MDS_mccBBE(MDS_mccState):
+class MDS_mccBBE(mccBase):
     """Bridge balance enable"""
     prefix=''
     unit='bool'
@@ -169,7 +180,7 @@ class MDS_mccBBE(MDS_mccState):
         return self.ctrl.GetBridgeBalEnable()
 
 
-class MDS_mccBBR(MDS_mccState):
+class MDS_mccBBR(mccBase):
     """Bridge balance resistance"""
     prefix=''
     unit='R'
@@ -178,16 +189,25 @@ class MDS_mccBBR(MDS_mccState):
 
 
 def main():
+    print(globals())
     from rig.esp import espControl
-    from database.main import sqliteEng,initDBScience,populateConstraints
-    engine=sqliteEng()
+    from rig.mcc import mccControl
+    from database.main import sqliteEng,initDBScience,populateConstraints,Experiment
+    engine=sqliteEng(False)
     session=initDBScience(engine)
     populateConstraints(session)
 
     esp=espControl()
+    mcc=mccControl()
 
     ex=MDS_espX(esp,session)
+    mccHE=mccBindChan(MDS_mccHE,0)(mcc,session)
     print(ex.name)
+    ex.record(Experiment)
+    print(mccHE.name)
+    mccHE.record(Experiment)
+    session.commit()
+    print(session.query(Experiment.MetaData).all())
 
     return ex
 

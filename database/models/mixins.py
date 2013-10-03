@@ -67,11 +67,11 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
         self.AssignID(Parent) #FIXME
         self.AssignID(MetaDataSource)
     def __repr__(self):
-        sigfigs=''
+        mantissa=''
         error=''
-        if self.sigfigs: sigfigs=self.sigfigs
+        if self.metadatasource.mantissa: mantissa='mantissa: %s'%self.metadatasource.mantissa
         if self.abs_error != None: error='%s %s'%(_plusMinus,self.abs_error)
-        return '\n%s %s %s %s %s'%(self.dateTime,self.value,self.metadatasource.strHelper(),sigfigs,error)
+        return '\n%s %s %s %s %s'%(self.dateTime,self.value,self.metadatasource.strHelper(),mantissa,error)
 
 
 class HasMetaData: #looks like we want this to be table per related

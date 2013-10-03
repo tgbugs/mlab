@@ -208,8 +208,6 @@ class mccControl:
         print('hMCCmsg successfully removed, no memory leaks here!')
 
     def selectMC(self,num):
-        if self.mcCurrent is num:
-            return None
         try:
             if num <= (self.mcNum):
                 self.mcCurrent=num

@@ -124,6 +124,8 @@ def initControllers(termInputMan,progInputMan=None):
         termInputMan.ikFuncDict[initedFunc.__mode__]=initedFunc
 
     termInputMan.updateModeDict() #bind keys to functions
+    termInputMan.ctrlDict=ctrlDict #FIXME make more explicit
+    return ctrlDict
 
    
 def main():

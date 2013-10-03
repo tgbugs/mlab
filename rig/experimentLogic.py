@@ -61,3 +61,16 @@ class SomChr(ExperimentRunner):
     def newSlice(self):
         Slice()
 
+
+
+class BaseExp:
+    #defintion of mdsDict should go up here
+    def __init__(self,termIO):
+        mdsDict={}
+        for MDS in self.mdsDict:
+            mdsDict[MDS.__name__[4:]]=MDS(termIO.ctrlDict[MDS.ctrl_name],session)
+        self.mdsDict=mdsDict
+
+class SliceExp(BaseExp):
+    self.mdsDict={}
+
