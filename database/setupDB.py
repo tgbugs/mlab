@@ -23,7 +23,7 @@ _unknown_symbol='\u26AA'
 #TODO need some way to implement sets of units? bugger
 
 
-def popSIUnit(session):
+def popSIUnit(session): #FIXME TODO switch over to quanitities for this?
     _SI_UNITS=(
         #name, symbol
         ('meter','m'),
