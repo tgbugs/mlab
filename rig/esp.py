@@ -36,7 +36,7 @@ class espControl:
     any individual scrips would need to look for an
     existing controller in memory which is frankly,
     too complicated right now, maybe in the future"""
-    def __init__(self,port=0,baudrate=19200,bytesize=8,parity='N',stopbits=1,timeout=.03,feLim=5):
+    def __init__(self,port=0,baudrate=19200,bytesize=8,parity='N',stopbits=1,timeout=.04,feLim=5):
         #self._cX, self._cY, self.feLim are READ ONLY, you can write them but you will get bugs
         #control of the serial port
         #all of these can then be referenced under self.esp for the lifetime of the npC object
@@ -70,7 +70,7 @@ class espControl:
 
         #defs to control motion with the keyboard instead of the joystick, we'll find a key to toggle between them
         self.write('1TJ1;2TJ1')
-        self.getPos() #intialize the position FIXME this locks up if the esp is off
+        self.getPos() #intialize the position FIXME this locks up if the esp is off and for some reason often doesnt work right... timeout=.04 seems to fix the occasional problems with getting position, not sure why
 
     def POST(self):
         self.esp.read(100)

@@ -64,14 +64,20 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
         self.metadatasource_id=metadatasource_id
         self.value=value
         self.abs_error=abs_error
-        self.AssignID(Parent) #FIXME
         self.AssignID(MetaDataSource)
+        if Parent: #FIXME standardize table naming and id references ftlog
+            if Parent.id:
+                #setattr(self,'%s_id'%Parent.__tablename__,Parent.id)
+                self.parent_id=Parent.id
+            else:
+                raise AttributeError
+            
     def __repr__(self):
         mantissa=''
         error=''
         if self.metadatasource.mantissa: mantissa='mantissa: %s'%self.metadatasource.mantissa
         if self.abs_error != None: error='%s %s'%(_plusMinus,self.abs_error)
-        return '\n%s %s %s %s %s'%(self.dateTime,self.value,self.metadatasource.strHelper(),mantissa,error)
+        return '\n%s %s %s %s %s %s'%(self.parent_id,self.dateTime,self.value,self.metadatasource.strHelper(),mantissa,error)
 
 
 class HasMetaData: #looks like we want this to be table per related
@@ -82,10 +88,10 @@ class HasMetaData: #looks like we want this to be table per related
                 (MetaData, Base,),
                 {   '__tablename__':'%s_metadata'%cls.__tablename__,
                     'id':Column(Integer,primary_key=True),
-                    '%s_id'%cls.__tablename__:Column(Integer, #FIXME nasty errors inbound
-                        ForeignKey('%s.id'%cls.__tablename__)),
+                    'parent_id':Column(Integer, #FIXME nasty errors inbound
+                        ForeignKey('%s.id'%cls.__tablename__),nullable=False),
                     'metadatasource_id':Column(Integer,
-                        ForeignKey('metadatasources.id')),
+                        ForeignKey('metadatasources.id'),nullable=False),
                     'metadatasource':relationship('MetaDataSource'), #keep it one way
                 }
         )

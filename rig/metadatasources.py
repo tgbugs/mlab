@@ -30,6 +30,7 @@ class MDSource:
     def record(self,Parent):
         value=self.getCurrentValue()
         abs_error=self.getAbsError()
+        #Parent.metadata_.append(Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error)) #alternate form
         self.currentRecord=Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error)
         self.session.add(self.currentRecord)
         #TODO how to commit??!
@@ -66,6 +67,7 @@ class mccBase(MDSource):
     def __init__(self,Controller,session):
         try:
             self.channel
+            #self.__class__.__name__=self.__class__.__name__[1:]+str(self.channel)
             super().__init__(Controller,session)
         except:
             raise AttributeError('%s requires a channel, use mccBindChan'%self.__class__.__name__)
@@ -75,22 +77,28 @@ class mccBase(MDSource):
 
 
 def mccBindChan(MDS_mcc,channel): #FIXME this does not work becasue it modifies the base class instead of adding a new one...
-    out=MDS_mcc
-    out.__name__=out.__name__+str(channel)
-    out.channel=channel
+    #out.__name__=out.__name__[1:]+str(channel)
+    #MDS_mcc.channel=channel
+    out=type(MDS_mcc.__name__[1:]+str(channel),
+             (MDS_mcc,),
+             {'channel':channel}
+            )
+    print(out.__name__)
+    print(out.channel)
     return out
+
 def mccBindAll(channel):
     pass
 
 
-class MDS_mccHE(mccBase):
+class _MDS_mccHE(mccBase):
     prefix=''
     unit='bool'
     def getCurrentValue(self):
         return self.ctrl.GetHoldingEnable()
 
 
-class MDS_mccH(mccBase):
+class _MDS_mccH(mccBase):
     prefix=''
     unit='V'
     mantissa=3
@@ -98,7 +106,7 @@ class MDS_mccH(mccBase):
         return self.ctrl.GetHolding()
 
 
-class MDS_mccPS(mccBase):
+class _MDS_mccPS(mccBase):
     prefix=''
     unit='number' #FIXME storing these codes is going to be really really confusing
     mantissa=3
@@ -193,21 +201,35 @@ def main():
     from rig.esp import espControl
     from rig.mcc import mccControl
     from database.main import sqliteEng,initDBScience,populateConstraints,Experiment
+    from database.TESTS import t_experiment
     engine=sqliteEng(False)
     session=initDBScience(engine)
     populateConstraints(session)
+    e=t_experiment(session,2,2)
+    exp=e.records[0]
 
     esp=espControl()
     mcc=mccControl()
 
     ex=MDS_espX(esp,session)
-    mccHE=mccBindChan(MDS_mccHE,0)(mcc,session)
+    mccHE_0=mccBindChan(_MDS_mccHE,0)
+    mccHE_1=mccBindChan(_MDS_mccHE,1)
+    print(mccHE_0.channel)
+    print(mccHE_1.channel)
+    mccHEz=mccHE_0(mcc,session)
+    mccHEo=mccHE_1(mcc,session)
     print(ex.name)
-    ex.record(Experiment)
-    print(mccHE.name)
-    mccHE.record(Experiment)
+    ex.record(exp)
+    print(mccHEz.name)
+    print(mccHEo.name)
+    mccHEz.record(exp)
+    [mccHEo.record(exp) for i in range(100)]
+    [mccHEo.record(e.records[1]) for i in range(100)]
     session.commit()
-    print(session.query(Experiment.MetaData).all())
+    emd=session.query(Experiment.MetaData)
+    #print(emd.all())
+    print(e.records[0].metadata_)
+    print(e.records[1].metadata_)
 
     return ex
 

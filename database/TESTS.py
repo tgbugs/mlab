@@ -59,7 +59,7 @@ class TEST:
 
     #methods every class should have
     def setup(self):
-        self.Thing
+        #self.Thing
         query=self.session.query(Mouse)
         if not query.count():
             pass
@@ -346,12 +346,12 @@ class t_experiment(TEST):
         self.num_projects=num_projects
         super().__init__(session,num)
     def make_all(self):
-        from time import sleep
+        #from time import sleep
         projects=t_project(self.session,self.num_projects)
         projects.add_people()
         #projects.commit() #FIXME do I need to readd? or can I just commit directly?
 
-        lits=t_litters(self.session,50)
+        lits=t_litters(self.session,1)
         lits.add_members()
         #lits.commit()
 
@@ -368,7 +368,7 @@ class t_experiment(TEST):
             exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
             datetimes=self.make_datetime()
 
-            self.records+=[Experiment(Project=p,Person=exps[i],startDateTime=datetimes[i]) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
+            self.records+=[Experiment(Project=p,Person=exps[i],startDateTime=datetimes[i],type='in vitro patch') for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
 
 class t_patch(TEST):

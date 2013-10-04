@@ -11,6 +11,7 @@ class DefaultBase:
         if cls:
             if cls.id:
                 setattr(self,'%s_id'%cls.__class__.__name__.lower(),cls.id)
+                #setattr(self,'%s_id'%cls.__tablename__,cls.id)
             else:
                 raise AttributeError('%s has no id! Did you commit before referencing the instance directly?'*cls.__class__.__name__)
 
