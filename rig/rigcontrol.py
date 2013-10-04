@@ -10,6 +10,8 @@ from keybinds import keyDicts
 from rig.clx import clxControl
 from rig.esp import espControl
 from rig.mcc import mccControl
+
+from database.interface import Session_DBScience
 try:
     import rpdb2
 except:
@@ -20,7 +22,7 @@ printD=tdb.printD
 printFD=tdb.printFuncDict
 tdbOff=tdb.tdbOff
 
-class termInputMan:
+class rigIOMan: #FIXME this is really becoming the hub for all IO for the rig
     """Terminal input manager, control the rig from a terminal window"""
     def __init__(self,keyDicts):
         self.keyDicts=keyDicts
@@ -29,6 +31,7 @@ class termInputMan:
         self.modeDict={}
         self.helpDict={}
         self.keyActDict={}
+
 
         self.keyRequest=0
         self.key=None #genius! now we don't even need have the stupid pass through!
@@ -39,9 +42,14 @@ class termInputMan:
 
         self.charBuffer=Queue()
 
-        keyThread=threading.Thread(target=keyListener,args=(self.charBuffer,self.keyHandler,self.cleanup))
-        keyThread.start()
-        self.keyThread=keyThread
+
+        self.keyThread=threading.Thread(target=keyListener,args=(self.charBuffer,self.keyHandler,self.cleanup))
+        self.keyThread.start()
+        #self.keyThread=keyThread
+
+        self.initControllers() #these need charBuffer and keyThread to work
+        self.setMode('rig')
+        self.session=Session_DBScience() #FIXME FIXME FIXME
 
         #TODO add a way for keys to enter programatic control mode, they will still need keyinput though
 
@@ -96,49 +104,47 @@ class termInputMan:
                 printD('cleaup for',kFunc,'failed')
         print('done!')
 
+    def initControllers(self,progInputMan=None): #FIXME
+        #load the drivers so that they aren't just hidden in the Funcs
+        controllers=clxControl,espControl,mccControl
+        ctrlDict={}
+        for ctrl in controllers:
+            try:
+                inited=ctrl()
+                print(inited.__class__.__name__)
+                ctrlDict[ctrl.__name__]=inited
+            except:
+                print('%s failed to init'%ctrl.__name__)
+     
+        ctrlBindingDict={
+                'clxControl':clxFuncs,
+                'espControl':espFuncs,
+                'mccControl':mccFuncs
+        }
+        for key in ctrlDict.keys():
+            initedFunc=ctrlBindingDict[key](self,ctrlDict[key])
+            self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
-def initControllers(termInputMan,progInputMan=None):
-    #load the drivers so that they aren't just hidden in the Funcs
-    controllers=clxControl,espControl,mccControl
-    ctrlDict={}
-    for ctrl in controllers:
-        try:
-            inited=ctrl()
-            print(inited.__class__.__name__)
-            ctrlDict[ctrl.__name__]=inited
-        except:
-            print('%s failed to init'%ctrl.__name__)
- 
-    ctrlBindingDict={
-            'clxControl':clxFuncs,
-            'espControl':espFuncs,
-            'mccControl':mccFuncs
-    }
-    for key in ctrlDict.keys():
-        initedFunc=ctrlBindingDict[key](termInputMan,ctrlDict[key])
-        termInputMan.ikFuncDict[initedFunc.__mode__]=initedFunc
+        FUNCS=datFuncs,keyFuncs
+        for func in FUNCS:
+            initedFunc=func(self)
+            self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
-    FUNCS=datFuncs,keyFuncs
-    for func in FUNCS:
-        initedFunc=func(termInputMan)
-        termInputMan.ikFuncDict[initedFunc.__mode__]=initedFunc
-
-    termInputMan.updateModeDict() #bind keys to functions
-    termInputMan.ctrlDict=ctrlDict #FIXME make more explicit
-    return ctrlDict
+        self.updateModeDict() #bind keys to functions
+        self.ctrlDict=ctrlDict #FIXME make more explicit
+        return ctrlDict
 
    
 def main():
-    termIO=termInputMan(keyDicts)
-    initControllers(termIO)
+    rigIO=rigIOMan(keyDicts)
 
     #once all the startup threads are done, try to set the mode to rig
-    while 1:
-        try:
-            termIO.setMode('rig')
-            break
-        except:
-            pass
+    #while 1:
+        #try:
+            #rigIO.setMode('rig')
+            #break
+        #except:
+            #pass
 
 
 if __name__=='__main__':

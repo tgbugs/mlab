@@ -1,7 +1,10 @@
 from database import interface #FIXME
+from debug import TDB
+tdb=TDB()
+printFD=tdb.printFuncDict
 
 class ExperimentRunner:
-    def __init__(self,termIO,clxCtrl,espCtrl,mccCtrl,termIO):
+    def __init__(self,termIO,clxCtrl,espCtrl,mccCtrl):
         self.clx=clxCtrl
         self.esp=espCtrl
         self.mcc=mccCtrl
@@ -24,6 +27,7 @@ class ExperimentRunner:
     def newExpFromTemp(self):
         pass
     def newSubFromTemp(self):
+        pass
 
 
 class ExperimentState:
@@ -44,17 +48,17 @@ class ExperimentState:
         self.person_id=LastExp.person_id
         self.project_id=LastExp.project_id #FIXME missing backref?
 
-    def getCurrentHardware(self,root='Tom\'s Rig')):
+    def getCurrentHardware(self,root='Tom\'s Rig'):
         self.session.query(Hardware).filter_by()
         
     def newExperiment(self):
         hardware=getCurrentHardware(root)
         experiment=Experiment(project_id=self.project_id,person_id=self.person_id)
         self.session.add
-    session.Experiment
-    Mouse
-    Slice
-    Cells
+    #termIO.session.Experiment
+    #Mouse
+    #Slice
+    #Cells
 
 
 class SomChr(ExperimentRunner):
@@ -65,12 +69,27 @@ class SomChr(ExperimentRunner):
 
 class BaseExp:
     #defintion of mdsDict should go up here
-    def __init__(self,termIO):
+    def __init__(self,rigIO):
         mdsDict={}
-        for MDS in self.mdsDict:
-            mdsDict[MDS.__name__[4:]]=MDS(termIO.ctrlDict[MDS.ctrl_name],session)
+        for MDS in self.mdsDict.values():
+            mdsDict[MDS.__name__[4:]]=MDS(rigIO.ctrlDict[MDS.ctrl_name],rigIO.session)
         self.mdsDict=mdsDict
 
 class SliceExp(BaseExp):
-    self.mdsDict={}
+    from rig.metadatasources import mccBindAll,espAll
+    mdsDict={}
+    mdsDict.update(mccBindAll(0)) #FIXME this mdsDict is nice, and we might/probably want to use it along with some of the keybinds stuff in some cases??
+    mdsDict.update(mccBindAll(1))
+    mdsDict.update(espAll())
+    #printFD(mdsDict)
+
+def main():
+    from rig.rigcontrol import rigIOMan
+    from rig.keybinds import keyDicts
+    rigIO=rigIOMan(keyDicts)
+    se=SliceExp(rigIO) #FIXME somehow this is ass backward at the moment...
+    printFD(se.mdsDict)
+
+if __name__=='__main__':
+    main()
 

@@ -23,7 +23,7 @@ class URL_STAND:
         return None if url is None else url.rstrip('/')+'/' #FIXME make it so this strips to last/
     
     @staticmethod
-    def ping(ping):
+    def ping(full_url):
         #FIXME rework this to go through a full url scheme handler that can be extended with resources
         #see if one exists, it should...
         parsed=parse.urlparse(full_url)

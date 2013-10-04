@@ -61,6 +61,13 @@ class MDS_espY(_MDSource):
     def getCurrentValue(self):
         return self.ctrl.getY()
 
+def espAll():
+    glob=globals()
+    espDict={}
+    classes=[espDict.update({name:cls}) for name,cls in glob.items() if name[4:7]=='esp']
+    #for cls in classes:
+        #espDict[cls.__name__]=cls
+    return espDict
 
 class _mccBase(_MDSource):
     ctrl_name='mccControl'
@@ -69,7 +76,7 @@ class _mccBase(_MDSource):
             self.channel
             super().__init__(Controller,session)
         except:
-            raise AttributeError('%s requires a channel, use mccBindChan'%self.__class__.__name__)
+            raise #AttributeError('%s requires a channel, use mccBindChan'%self.__class__.__name__)
     def record(self,Parent):
         self.ctrl.selectMC(self.channel) #FIXME make sure this mapping is static plox, if I have two mccs...
         super().record(Parent)
