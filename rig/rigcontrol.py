@@ -1,31 +1,22 @@
-from rig.functions import * #FIXME add __all__ to functions
-from queue import Queue,Empty
-from rig.dictMan import *
-from rig.key import keyListener
-from inspect import currentframe
 import threading
-from debug import TDB,ploc
-from keybinds import keyDicts
+from queue import Queue,Empty
 
+from rig.functions import * #FIXME add __all__ to functions
+from rig.keybinds import keyDicts
+from rig.dictMan import makeModeDict
+
+from rig.key import keyListener
 from rig.clx import clxControl
 from rig.esp import espControl
 from rig.mcc import mccControl
 from rig.trm import trmControl
 
-from database.interface import Session_DBScience #FIXME
-try:
-    import rpdb2
-except:
-    pass
+#TODO need to integrate stuff from experiments, but maybe it makes sense to do that elsewhere somehow?
+#since they will need to be integrated with keys to launch them or something
 
-tdb=TDB()
-printD=tdb.printD
-printFD=tdb.printFuncDict
-tdbOff=tdb.tdbOff
-
-class rigIOMan: #FIXME this is really becoming the hub for all IO for the rig
+class rigIOMan:
     """Terminal input manager, control the rig from a terminal window"""
-    def __init__(self,keyDicts):
+    def __init__(self,keyDicts,session_maker):
         self.keyDicts=keyDicts
 
         self.ikFuncDict={}
@@ -50,7 +41,7 @@ class rigIOMan: #FIXME this is really becoming the hub for all IO for the rig
 
         self.initControllers() #these need charBuffer and keyThread to work
         self.setMode('rig')
-        self.Session=Session_DBScience
+        self.Session=session_maker
 
         #TODO add a way for keys to enter programatic control mode, they will still need keyinput though
 
@@ -67,12 +58,12 @@ class rigIOMan: #FIXME this is really becoming the hub for all IO for the rig
         if mode:
             try:
                 self.keyActDict=self.modeDict[mode] #where mode is just defined by __mode__
-                printD('mode has been set to \'%s\' with keyActDict='%(mode))
+                print('mode has been set to \'%s\' with keyActDict='%(mode))
                 self.currentMode=mode
                 return self
             except KeyError:
                 if mode != 'init':
-                    printD('failed to set mode \'%s\' did you write a mode dict for it?'%(mode))
+                    print('failed to set mode \'%s\' did you write a mode dict for it?'%(mode))
                 self.setMode(self.currentMode)
                 return self
         else:
@@ -102,20 +93,20 @@ class rigIOMan: #FIXME this is really becoming the hub for all IO for the rig
             try:
                 kFunc.cleanup()
             except:
-                printD('cleaup for',kFunc,'failed')
+                raise Warning('cleaup for',kFunc,'failed')
         print('done!')
 
-    def initControllers(self,progInputMan=None): #FIXME
+    def initControllers(self): #FIXME
         #load the drivers so that they aren't just hidden in the Funcs
         controllers=clxControl,espControl,mccControl,trmControl
         ctrlDict={}
         for ctrl in controllers:
             try:
                 inited=ctrl()
-                print(inited.__class__.__name__)
+                print('[OK]',inited.__class__.__name__)
                 ctrlDict[ctrl.__name__]=inited
             except:
-                print('%s failed to init'%ctrl.__name__)
+                raise Warning('[!] %s failed to init'%ctrl.__name__)
      
         ctrlBindingDict={
                 'clxControl':clxFuncs,
@@ -137,15 +128,9 @@ class rigIOMan: #FIXME this is really becoming the hub for all IO for the rig
 
    
 def main():
-    rigIO=rigIOMan(keyDicts)
-
-    #once all the startup threads are done, try to set the mode to rig
-    #while 1:
-        #try:
-            #rigIO.setMode('rig')
-            #break
-        #except:
-            #pass
+    from database.engines import sqliteMem
+    Session=None #TODO
+    rigIO=rigIOMan(keyDicts,Session)
 
 
 if __name__=='__main__':

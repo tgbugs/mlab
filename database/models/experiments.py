@@ -26,8 +26,6 @@ class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSo
     id=Column(Integer,primary_key=True) #FIXME
     name=Column(String(30),nullable=False)
     abbrev=Column(String)
-    project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
-    person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
     repository_url=Column(Integer,ForeignKey('repository.url')) #FIXME does this make any sense here?
     repository=relationship('Repository',uselist=False) #these *could* change before the experiments were done... that is trouble some... BUT we can always rename and casscade the change...
     methods_id=Column(Integer,ForeignKey('citeable.id'))
@@ -43,15 +41,10 @@ class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSo
     def reagents(self):
         return [rt.getCurrentLot() for rt in self.reagenttypes] #FIXME
 
-    def __init__(self,name=None,abbrev=None,Project=None,Person=None,Repository=None,Methods=None,Hardware=[],ReagentTypes=[],MetaDataSources=[],project_id=None,person_id=None,repository_url=None,methods_id=None):
+    def __init__(self,name=None,abbrev=None,Repository=None,Methods=None,Hardware=[],ReagentTypes=[],MetaDataSources=[],repository_url=None,methods_id=None):
         self.name=name
         self.abbrev=abbrev
-        self.project_id=project_id
-        self.person_id=person_id
         self.methods_id=methods_id
-
-        self.AssignID(Project)
-        self.AssignID(Person)
 
         self.reagenttypes.extend(ReagentTypes)
         self.hardware.extend(Hardware)
@@ -70,15 +63,24 @@ class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSo
 class Experiment(HasMetaData, HasReagents, HasSubjects, Base):
     __tablename__='experiments'
     id=Column(Integer,primary_key=True)
+    project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
+    person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
     startDateTime=Column(DateTime,default=datetime.now())
     endDateTime=Column(DateTime) #TODO
     type_id=Column(Integer,ForeignKey('experimenttype.id'),nullable=False)
 
-    def __init__(self,ExpType=None,Reagents=[],Subjects=[],type_id=None,startDateTime=None):
+    def __init__(self,ExpType=None,Project=None,Person=None,Reagents=[],Subjects=[],type_id=None,project_id=None,person_id=None,startDateTime=None):
         self.startDateTime=startDateTime
+        self.project_id=project_id
+        self.person_id=person_id
+        self.type_id=type_id
+
+        self.AssignID(Project)
+        self.AssignID(Person)
+
         self.reagents.extend(Reagents)
         self.subjects.extend(Subjects)
-        self.type_id=type_id
+
         if ExpType:
             if ExpType.id:
                 self.type_id=ExpType.id

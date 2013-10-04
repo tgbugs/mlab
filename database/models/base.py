@@ -26,8 +26,7 @@ class DefaultBase:
 Base=declarative_base(cls=DefaultBase)
 
 def initDBScience(engine):
-    """function to initilize all the models"""
+    """initilize all the models in ScienceDB on the given engine"""
     Base.metadata.create_all(engine, checkfirst=True) #FIXME check if tables match __all__ in __init__.py
     return Session(engine)
     
-

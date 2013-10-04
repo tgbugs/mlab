@@ -1,6 +1,8 @@
+#XXX DEPRICATED
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database.models import *
+from database.engines import  sqliteMem, pgTest
 
 def postgresEng(echo=False,wipe_db=False):
     if wipe_db:

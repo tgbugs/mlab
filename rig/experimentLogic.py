@@ -63,8 +63,6 @@ class SomChr(ExperimentRunner):
 
 
 class BaseExp:
-    #defintion of mdsDict should go up here
-
     def __init__(self,rigIO,Experiment=None,ExperimentType=None):
         if not checkExpType(ExperimentType):
             #check for things we're supposed to have
@@ -84,13 +82,13 @@ class BaseExp:
             self.session=rigIO.Session() #a single experiment (even if long) seems like a natural scope for a session
             try:
                 self.ExperimentType=self.session.query(ExperimentType).\
-                        filter(ExperimentType.name=self.name,ExperimentType.person_id=self.person_id).\
+                        filter_by(name=self.name).\
                         order_by('-id').first() #get the latest version of the experiment type w/ this name
             except:
                 self.Persist()
 
         if Experiment: #resume experiment and override the default defined in child classes but check type
-            if Experiment.type==self.ExperimentType.id:
+            if Experiment.type_id==self.ExperimentType.id:
                 self.experiment=Experiment
             else:
                 raise TypeError('Experiment.type does not match ExperimentType for this class')
@@ -150,7 +148,7 @@ class BaseExp:
     def Persist(self):
         #TODO damn this is such a better idea...
         mds=[m.MetaDataSource for m in self.imdsDict.values()] #FIXME check for changes and update w/ version
-        self.ExperimentType=ExperimentType(id=self.name,repository_url=self.repository_url,MetaDataSources=mds)
+        self.ExperimentType=ExperimentType(name=self.name,repository_url=self.repository_url,MetaDataSources=mds)
         self.session.add(self.ExperimentType)
         self.session.commit() #FIXME/TODO as opposed to flush??!
         return self
@@ -161,15 +159,18 @@ class BaseExp:
     
     def ExpFromType(self):
         #TODO
-        Experiment(self.ExperimentType) #reagents? subjects? TODO
+        Experiment(self.ExperimentType,person_id=,project_id=) #reagents? subjects? TODO
         self.experiment=None
         return self
 
 
 
 class PatchExp(BaseExp):
-    person_id=1
-    project_id=1
+    #FIXME rigIO should be contain these? or be contained? how do we want to launch these?
+    #by giving rigIO and experiment dict with keys bound? probably not? but then we need a way to seemelessly spawn new experiments from the keyboard and recover them...
+    #there is better encapsulation if we just use an existing rigIO, but somehow that suggests that rigIO itself should be calling experiments... I think rigIO needs to be the base and these need to be added
+    #which means I need to formalize the interfaces between them
+    #RESPONSE: actually it is sort of nice to have it work both ways incase something goes wrong and I need to start where I left off I can just load up an experiment and give it an existing rigIO...
     name='in vitro patch'
     abbrev='patch'
     repository_url='file:///C:/asdf/test' #FIXME there is no verification here... and need a way to update
