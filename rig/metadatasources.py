@@ -52,8 +52,8 @@ class _MDSource:
 
 class MDS_trmZ(_MDSource):
     """objective height reading for an object""" #TODO figur out how to record surface Z...
-    prefix='G'
-    unit='Hz'
+    prefix='u'
+    unit='m'
     ctrl_name='trmControl' #this is the equivalent of key.py keyControl, but obviously is just return input()
     #ofc with special checks to make sure the datatype is correct ie float
     def getCurrentValue(self):
