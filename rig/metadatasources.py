@@ -1,6 +1,19 @@
 from database.models import MetaDataSource, Experiment, Subject
 #TODO what I need is a link between datasources and the Controller classes, that should probably be defined... here? or somewhere? or fuck what damn it one class per metadata source???!
 
+def mdsAll(channels=4):
+    """used to populate from an existing ExperimentType"""
+    glob=globals()
+    clsDict={}
+    [clsDict.update({name:cls}) for name,cls in glob.items() if name[4:7]=='esp']
+    [clsDict.update({name:cls}) for name,cls in glob.items() if name[4:7]=='trm']
+    for channel in range(channels):
+        mccs=[mccBindChan(glob[name],channel) for name in glob.keys() if name[5:8]=='mcc']
+        for cls in mccs:
+            clsDict[cls.__name__]=cls
+    return clsDict
+
+
 class _MDSource:
     @property
     def name(self):
@@ -67,7 +80,7 @@ def espAll():
     """returns a dict of all esp metadata source classes"""
     glob=globals()
     espDict={}
-    classes=[espDict.update({name:cls}) for name,cls in glob.items() if name[4:7]=='esp']
+    [espDict.update({name:cls}) for name,cls in glob.items() if name[4:7]=='esp'] #TODO profile this
     #for cls in classes:
         #espDict[cls.__name__]=cls
     return espDict
@@ -107,8 +120,7 @@ def mccBindChan(MDS_mcc,channel): #FIXME this does not work becasue it modifies 
 def mccBindAll(channel):
     """method for binding all mcc state mdses to the same channel at once"""
     glob=globals()
-    names=[name for name in glob.keys() if name[5:8]=='mcc']
-    classes=[mccBindChan(glob[name],channel) for name in names]
+    classes=[mccBindChan(glob[name],channel) for name in glob.keys() if name[5:8]=='mcc']
     mccDict={}
     for cls in classes:
         mccDict[cls.__name__]=cls

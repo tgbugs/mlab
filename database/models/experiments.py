@@ -20,63 +20,71 @@ from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardwa
 #TODO in theory what we want is for experiments to have a m-m on itself to convey logical connections, in which case a mating record is just an experiment.... HRM, think on this... we certainly want the m-m for logical depenece I think
 
 
-class ExperimentType(HasReagentTypes, HasDataSources, HasMetaDataSources, Base):
-    #id=Column(Integer,primary_key=True) #FIXME
-    id=Column(String(30),primary_key=True)
+class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSources, Base):
+    """this stores all the constant data about an experiment that will be done many times"""
+    #TODO addition of new data does not trigger version bump but any changes to existing entries should
+    id=Column(Integer,primary_key=True) #FIXME
+    name=Column(String(30),nullable=False)
     abbrev=Column(String)
-    experiments=relationship(
+    project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
+    person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
     repository_url=Column(Integer,ForeignKey('repository.url')) #FIXME does this make any sense here?
     repository=relationship('Repository',uselist=False) #these *could* change before the experiments were done... that is trouble some... BUT we can always rename and casscade the change...
+    methods_id=Column(Integer,ForeignKey('citeable.id'))
+
+    experiments=relationship('Experiment',backref=backref('type',uselist=False))
 
     #TODO there are simpy too many datasources and metadata sources to access them directly every time from the whole list, therefore we will include them here to make finding them easy but not to constrain them...
     #FIXME datasources being tied directly to REAL hardware could be a problem ;_;
     #need a way to specify the types of data without being forced to add a new experiment type every time hardware changes or loose the record of the old hardware configuration...
     #RESPONSE: not actually a problem because atm sources are not tied directly to hardware and in theory I could just keep a history table for links between sources and hardware... or better yet just do that by linking data sources to hardware types and ha... fuck... integrety failures EVERYWHERE ;_;
 
+    @property
+    def reagents(self):
+        return [rt.getCurrentLot() for rt in self.reagenttypes] #FIXME
 
-    def __init__(self,id=None,abbrev=None,ReagentTypes=[]):
-        self.id=id
+    def __init__(self,name=None,abbrev=None,Project=None,Person=None,Repository=None,Methods=None,Hardware=[],ReagentTypes=[],MetaDataSources=[],project_id=None,person_id=None,repository_url=None,methods_id=None):
+        self.name=name
         self.abbrev=abbrev
-        self.reagenttypes.extend(ReagentTypes)
-    def __repr__(self):
-        return super().__repr__()
-
-
-class Experiment(HasMetaData, HasReagents, HasHardware, HasSubjects, Base):
-    __tablename__='experiments'
-    id=Column(Integer,primary_key=True)
-    #QUESTION: should the datafile be linked directly against the experiment >_< logically yes...
-    #that will simplify the search for valid data sources
-    project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
-    person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
-    startDateTime=Column(DateTime,default=datetime.now())
-    endDateTime=Column(DateTime) #TODO extremely useful for automatically moving to the next experiment... not that that is really an issue, but also nice for evaluating my performance
-    methods_id=Column(Integer,ForeignKey('citeable.id'))
-    type=Column(String(30),ForeignKey('experimenttype.id'),nullable=False)
-
-    def __init__(self,Project=None,Person=None,ExpType=None,startDateTime=None,Methods=None,Hardware=[],Reagents=[],Subjects=[],project_id=None,person_id=None,type=None,methods_id=None):
         self.project_id=project_id
         self.person_id=person_id
         self.methods_id=methods_id
-        self.startDateTime=startDateTime
-        self.reagents.extend(Reagents) #TODO base experiment and then extend? or maybe a bit more complicated
-        self.hardware.extend(Hardware)
-        self.subjects.extend(Subjects)
-        self.type=type
 
         self.AssignID(Project)
         self.AssignID(Person)
-        if ExpType:
-            if ExpType.id:
-                self.type=ExpType.id
-            else:
-                raise AttributeError
+
+        self.reagenttypes.extend(ReagentTypes)
+        self.hardware.extend(Hardware)
+        self.metadatasources.extend(MetaDataSources)
+
         if Methods:
             if Methods.id:
                 self.methods_id=Methods.id
             else:
                 raise AttributeError
 
+    def __repr__(self):
+        return super().__repr__()
+
+
+class Experiment(HasMetaData, HasReagents, HasSubjects, Base):
+    __tablename__='experiments'
+    id=Column(Integer,primary_key=True)
+    startDateTime=Column(DateTime,default=datetime.now())
+    endDateTime=Column(DateTime) #TODO
+    type_id=Column(Integer,ForeignKey('experimenttype.id'),nullable=False)
+
+    def __init__(self,ExpType=None,Reagents=[],Subjects=[],type_id=None,startDateTime=None):
+        self.startDateTime=startDateTime
+        self.reagents.extend(Reagents)
+        self.subjects.extend(Subjects)
+        self.type_id=type_id
+        if ExpType:
+            if ExpType.id:
+                self.type_id=ExpType.id
+                self.reagents.extend(ExpType.reagents)
+            else:
+                raise AttributeError
 #TODO: figure out the base case for experiments (ie which subjects) for
 #Slice Prep
 #Patch

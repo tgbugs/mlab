@@ -65,31 +65,64 @@ class SomChr(ExperimentRunner):
 class BaseExp:
     #defintion of mdsDict should go up here
 
-    def __init__(self,rigIO,Experiment=None):
-        #check for things we're supposed to have
-        try: self.name
-        except: raise AttributeError('experiment definitions require a name')
-        try: self.abbrev
-        except: self.abbrev=None
-        try: self.repository_url
-        except: self.repository_url=None
+    def __init__(self,rigIO,Experiment=None,ExperimentType=None):
+        if not checkExpType(ExperimentType):
+            #check for things we're supposed to have
+            try: self.name
+            except: raise AttributeError('experiment definitions require a name')
+            try: self.person_id
+            except: raise AttributeError('experiment definitions require a person_id')
+            try: self.project_id
+            except: raise AttributeError('experiment definitions require a project_id')
+            try: self.mdsDict
+            except: raise AttributeError('the whole point of these is to have mdsDicts...')
+            try: self.abbrev
+            except: self.abbrev=None
+            try: self.repository_url
+            except: self.repository_url=None
 
-        self.session=rigIO.Session() #a single experiment (even if long) seems like a natural scope for a session
-        try:
-            self.ExperimentType=self.session.query(ExperimentType).filter_by(id=self.name)[0]
-        except:
-            self.Persist()
+            self.session=rigIO.Session() #a single experiment (even if long) seems like a natural scope for a session
+            try:
+                self.ExperimentType=self.session.query(ExperimentType).\
+                        filter(ExperimentType.name=self.name,ExperimentType.person_id=self.person_id).\
+                        order_by('-id').first() #get the latest version of the experiment type w/ this name
+            except:
+                self.Persist()
 
         if Experiment: #resume experiment and override the default defined in child classes but check type
             if Experiment.type==self.ExperimentType.id:
                 self.experiment=Experiment
             else:
-                self.ExpFromType()
+                raise TypeError('Experiment.type does not match ExperimentType for this class')
+        else:
+            self.ExpFromType()
+
         #self.current_subjects=[] #TODO
 
         self.imdsDict={}
         for MDS in self.mdsDict.values():
             self.imdsDict[MDS.__name__[4:]]=MDS(rigIO.ctrlDict[MDS.ctrl_name],self.session)
+
+    def checkExpType(self,ExperimentType)
+        if ExperimentType: #implies that there is a session elsewhere...
+            if ExperimentType.id:
+                names=[mds.name for mds in ExperimentType.metadatasources]
+                try:
+                    if self.name!=ExperimentType.name:
+                        raise AttributeError('Defined name does not match that of ExperimentType!')
+                    elif list(self.mdsDict.keys()).sort()!=names.sort():
+                        raise AttributeError('Defined metadatasources do not match those in ExperimentType. Create a new experiment so the updated metadatasources can be persisted in a new ExperimentType.')
+                except:
+                    from rig.metadatasources import mdsAll
+                    self.mdsDict={}
+                    [self.mdsDict.update({name:cls}) for name,cls in mdsAll().item() if names.count(name[4:])]
+                self.ExperimentType=ExperimentType
+                #TODO get session from ExperimentType
+                return 1
+            else:
+                raise AttributeError('no id')
+        else:
+            return None
 
     def record(self,Parent,keys): #keys to update from self.mdsDict #extremely granular record method
         #def record(self,mdsParentDict): << not many use cases
@@ -116,7 +149,8 @@ class BaseExp:
 
     def Persist(self):
         #TODO damn this is such a better idea...
-        self.ExperimentType=ExperimentType(id=self.name,repository_url=self.repository_url)
+        mds=[m.MetaDataSource for m in self.imdsDict.values()] #FIXME check for changes and update w/ version
+        self.ExperimentType=ExperimentType(id=self.name,repository_url=self.repository_url,MetaDataSources=mds)
         self.session.add(self.ExperimentType)
         self.session.commit() #FIXME/TODO as opposed to flush??!
         return self
@@ -127,12 +161,16 @@ class BaseExp:
     
     def ExpFromType(self):
         #TODO
+        Experiment(self.ExperimentType) #reagents? subjects? TODO
+        self.experiment=None
         return self
 
 
 
 class PatchExp(BaseExp):
-    name='in vitro patch' #FIXME this should probably match the class name???
+    person_id=1
+    project_id=1
+    name='in vitro patch'
     abbrev='patch'
     repository_url='file:///C:/asdf/test' #FIXME there is no verification here... and need a way to update
     #hardware etc can be connected up elsewhere once the basics are created here to keep things simple
