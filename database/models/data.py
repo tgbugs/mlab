@@ -37,8 +37,8 @@ class MetaDataSource(Base):
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
     mantissa=Column(Integer) #TODO
     #TODO calibration data should *probably* be stored on the hardware as a datafile or metadata and can be filtered by datetime against experiments
-    def strHelper(self):
-        return '%s%s'%(self.prefix,self.unit)
+    def strHelper(self): #TODO this is where quantities can really pay off
+        return '%s%s from %s'%(self.prefix,self.unit,self.name)
     def __repr__(self):
         return '\n%s units %s%s'%(self.name,self.prefix,self.unit)
 

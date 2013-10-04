@@ -41,9 +41,10 @@ class TEST:
 
     def make_sex(self):
         num=self.num
-        sex_seed=np.random.choice(2,num,.52)
+        #sex_seed=np.random.choice(2,num,.52)
+        #sex_seed=np.ones(num)
         sex_arr=np.array(list('m'*num))
-        sex_arr[sex_seed==0]='f'
+        sex_arr[:int(num/2)]='f'
         return sex_arr
 
     def make_NONE(self,*arrays): #FIXME very broken for strings

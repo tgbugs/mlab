@@ -77,7 +77,7 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
         error=''
         if self.metadatasource.mantissa: mantissa='mantissa: %s'%self.metadatasource.mantissa
         if self.abs_error != None: error='%s %s'%(_plusMinus,self.abs_error)
-        return '\n%s %s %s %s %s %s'%(self.parent_id,self.dateTime,self.value,self.metadatasource.strHelper(),mantissa,error)
+        return '\n%s %s %s %s %s %s'%(self.parent_id,self.dateTime,self.value,self.metadatasource.strHelper(),mantissa,error) #TODO this is where quantities really pays off
 
 
 class HasMetaData: #looks like we want this to be table per related

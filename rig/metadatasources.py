@@ -1,7 +1,7 @@
 from database.models import MetaDataSource, Experiment, Subject
 #TODO what I need is a link between datasources and the Controller classes, that should probably be defined... here? or somewhere? or fuck what damn it one class per metadata source???!
 
-class MDSource:
+class _MDSource:
     @property
     def name(self):
         return self.__class__.__name__[4:]
@@ -33,7 +33,7 @@ class MDSource:
         #Parent.metadata_.append(Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error)) #alternate form
         self.currentRecord=Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error)
         self.session.add(self.currentRecord)
-        #TODO how to commit??!
+        #commit at the end
 
     def getCurrentValue(self):
         #FIXME somehow I think I need a way to hold this until everything is collect before I commit? or should I just commit?
@@ -44,7 +44,7 @@ class MDSource:
         return None
 
 
-class MDS_espX(MDSource):
+class MDS_espX(_MDSource):
     prefix='m'
     unit='m'
     mantissa=5
@@ -53,7 +53,7 @@ class MDS_espX(MDSource):
         return self.ctrl.getX()
 
 
-class MDS_espY(MDSource):
+class MDS_espY(_MDSource):
     prefix='m'
     unit='m'
     mantissa=5
@@ -62,12 +62,11 @@ class MDS_espY(MDSource):
         return self.ctrl.getY()
 
 
-class mccBase(MDSource):
+class _mccBase(_MDSource):
     ctrl_name='mccControl'
     def __init__(self,Controller,session):
         try:
             self.channel
-            #self.__class__.__name__=self.__class__.__name__[1:]+str(self.channel)
             super().__init__(Controller,session)
         except:
             raise AttributeError('%s requires a channel, use mccBindChan'%self.__class__.__name__)
@@ -77,28 +76,33 @@ class mccBase(MDSource):
 
 
 def mccBindChan(MDS_mcc,channel): #FIXME this does not work becasue it modifies the base class instead of adding a new one...
-    #out.__name__=out.__name__[1:]+str(channel)
-    #MDS_mcc.channel=channel
+    #FIXME these names are really freeking hard to identify/remember which is why we do it by source instead of all the individual names
+    #this it might be better to have full names based on which function they implement from mcc?
     out=type(MDS_mcc.__name__[1:]+str(channel),
              (MDS_mcc,),
              {'channel':channel}
             )
-    print(out.__name__)
-    print(out.channel)
     return out
 
 def mccBindAll(channel):
-    pass
+    """method for binding all mcc state mdses to the same channel at once"""
+    glob=globals()
+    names=[name for name in glob.keys() if name[5:8]=='mcc']
+    classes=[mccBindChan(glob[name],channel) for name in names]
+    mccDict={}
+    for cls in classes:
+        mccDict[cls.__name__]=cls
+    return mccDict
 
 
-class _MDS_mccHE(mccBase):
+class _MDS_mccHE(_mccBase):
     prefix=''
     unit='bool'
     def getCurrentValue(self):
         return self.ctrl.GetHoldingEnable()
 
 
-class _MDS_mccH(mccBase):
+class _MDS_mccH(_mccBase):
     prefix=''
     unit='V'
     mantissa=3
@@ -106,23 +110,23 @@ class _MDS_mccH(mccBase):
         return self.ctrl.GetHolding()
 
 
-class _MDS_mccPS(mccBase):
+class _MDS_mccPS(_mccBase):
+    """primary signal numerical identifier"""
     prefix=''
-    unit='number' #FIXME storing these codes is going to be really really confusing
-    mantissa=3
+    unit='num' #FIXME storing these codes is going to be really really confusing
     def getCurrentValue(self):
         return self.ctrl.GetPrimarySignal()
 
 
-class MDS_mccPSG(mccBase):
+class _MDS_mccPSG(_mccBase):
     """Gain for primary signal"""
     prefix=''
-    unit='number'
+    unit='num'
     def getCurrentValue(self):
         return self.ctrl.GetPrimarySignalGain()
 
 
-class MDS_mccPSLPF(mccBase):
+class _MDS_mccPSLPF(_mccBase):
     """Low pass filter for primary signal"""
     prefix=''
     unit='Hz'
@@ -130,7 +134,7 @@ class MDS_mccPSLPF(mccBase):
         return self.ctrl.GetPrimarySignalLPF()
 
 
-class MDS_mccPO(mccBase):
+class _MDS_mccPO(_mccBase):
     """Pipette offset"""
     prefix=''
     unit='V'
@@ -139,7 +143,7 @@ class MDS_mccPO(mccBase):
         return self.ctrl.GetPipetteOffset()
 
 
-class MDS_mccFCC(mccBase):
+class _MDS_mccFCC(_mccBase):
     """Fast Comp Cap"""
     prefix=''
     unit='F'
@@ -148,7 +152,7 @@ class MDS_mccFCC(mccBase):
         return self.ctrl.GetFastCompCap()
 
 
-class MDS_mccSCC(mccBase):
+class _MDS_mccSCC(_mccBase):
     """Slow Comp Cap"""
     prefix=''
     unit='F'
@@ -156,7 +160,7 @@ class MDS_mccSCC(mccBase):
         return self.ctrl.GetSlowCompCap()
 
 
-class MDS_mccFCT(mccBase):
+class _MDS_mccFCT(_mccBase):
     """Fast Comp Tau"""
     prefix=''
     unit='s'
@@ -164,7 +168,7 @@ class MDS_mccFCT(mccBase):
         return self.ctrl.GetFastCompCap()
 
 
-class MDS_mccSCT(mccBase):
+class _MDS_mccSCT(_mccBase):
     """Slow Comp Tau"""
     prefix=''
     unit='s'
@@ -172,7 +176,7 @@ class MDS_mccSCT(mccBase):
         return self.ctrl.GetSlowCompTau()
 
 
-class MDS_mccSCTE(mccBase):
+class _MDS_mccSCTE(_mccBase):
     """Slow Comp Tau X20 enable"""
     prefix=''
     unit='bool'
@@ -180,7 +184,7 @@ class MDS_mccSCTE(mccBase):
         return self.ctrl.GetSlowCompTauX20Enable()
 
 
-class MDS_mccBBE(mccBase):
+class _MDS_mccBBE(_mccBase):
     """Bridge balance enable"""
     prefix=''
     unit='bool'
@@ -188,16 +192,14 @@ class MDS_mccBBE(mccBase):
         return self.ctrl.GetBridgeBalEnable()
 
 
-class MDS_mccBBR(mccBase):
+class _MDS_mccBBR(_mccBase):
     """Bridge balance resistance"""
     prefix=''
     unit='R'
     def getCurrentValue(self):
         return self.ctrl.GetBridgeBalResist()
 
-
-def main():
-    print(globals())
+def _main():
     from rig.esp import espControl
     from rig.mcc import mccControl
     from database.main import sqliteEng,initDBScience,populateConstraints,Experiment
@@ -232,6 +234,39 @@ def main():
     print(e.records[1].metadata_)
 
     return ex
+
+def main():
+    from rig.esp import espControl
+    from rig.mcc import mccControl
+    from database.main import sqliteEng,initDBScience,populateConstraints,Experiment
+    from database.TESTS import t_experiment
+    engine=sqliteEng(False)
+    session=initDBScience(engine)
+    populateConstraints(session)
+    e=t_experiment(session,5,5)
+    exp0=e.records[0]
+    exp1=e.records[1]
+
+    ctrlDict={
+        espControl.__name__:espControl(),
+        mccControl.__name__:mccControl()
+    }
+
+    mc0=mccBindAll(0)
+    mc1=mccBindAll(1)
+
+    imc0=[c(ctrlDict[c.ctrl_name],session) for c in mc0.values()]
+    imc1=[c(ctrlDict[c.ctrl_name],session) for c in mc1.values()]
+
+    [c.record(exp0) for c in imc0]
+    [c.record(exp0) for c in imc1]
+    [c.record(exp1) for c in imc0]
+    [c.record(exp1) for c in imc1]
+
+    session.commit()
+
+    print(exp0.metadata_)
+    print(exp1.metadata_)
 
 if __name__=='__main__':
     main()
