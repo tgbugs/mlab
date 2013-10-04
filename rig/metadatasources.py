@@ -46,6 +46,19 @@ class _MDSource:
         #TODO this is where online analysis based on calibration should go??? well we also need that somewhere else too...
         return None
 
+###-----------------------------------------------------------------------------------
+###  trm metadata sources BEWARE!! ALL trm inputs at the moment are MASSIVELY blocking
+###-----------------------------------------------------------------------------------
+
+class MDS_trmZ(_MDSource):
+    """objective height reading for an object""" #TODO figur out how to record surface Z...
+    prefix='G'
+    unit='Hz'
+    ctrl_name='trmControl' #this is the equivalent of key.py keyControl, but obviously is just return input()
+    #ofc with special checks to make sure the datatype is correct ie float
+    def getCurrentValue(self):
+        return self.ctrl.getFloatInput()
+
 ###----------------------
 ###  esp metadata sources
 ###----------------------
@@ -58,6 +71,8 @@ def espAll():
     #for cls in classes:
         #espDict[cls.__name__]=cls
     return espDict
+
+
 
 class MDS_espX(_MDSource):
     prefix='m'
@@ -98,6 +113,8 @@ def mccBindAll(channel):
     for cls in classes:
         mccDict[cls.__name__]=cls
     return mccDict
+
+
 
 class _mccBase(_MDSource):
     ctrl_name='mccControl'

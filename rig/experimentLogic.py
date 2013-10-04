@@ -66,10 +66,12 @@ class BaseExp:
 
     def __init__(self,rigIO,Experiment=None):
         #check for things we're supposed to have
-        try: self.repository_url
-        except: self.repository_url=None
         try: self.name
         except: raise AttributeError('experiment definitions require a name')
+        try: self.abbrev
+        except: self.abbrev=None
+        try: self.repository_url
+        except: self.repository_url=None
 
         self.session=rigIO.Session() #a single experiment (even if long) seems like a natural scope for a session
         try:
@@ -113,7 +115,6 @@ class BaseExp:
 
     def Persist(self):
         #TODO damn this is such a better idea...
-
         self.ExperimentType=ExperimentType(id=self.name,repository_url=self.repository_url)
         self.session.add(self.ExperimentType)
         self.session.commit() #FIXME/TODO as opposed to flush??!
@@ -131,6 +132,11 @@ class BaseExp:
 
 
 class PatchExp(BaseExp):
+    name='in vitro patch' #FIXME this should probably match the class name???
+    abbrev='patch'
+    repository_url='file:///C:/asdf/test' #FIXME there is no verification here... and need a way to update
+    #hardware etc can be connected up elsewhere once the basics are created here to keep things simple
+
     from rig.metadatasources import mccBindAll,espAll
     mdsDict={}
     mdsDict.update(mccBindAll(0)) #FIXME this mdsDict is nice, and we might/probably want to use it along with some of the keybinds stuff in some cases??
@@ -139,8 +145,6 @@ class PatchExp(BaseExp):
     #printFD(mdsDict)
 
 
-    name='in vitro patch' #FIXME this should probably match the class name???
-    repository_url='file:///C:/asdf/test' #FIXME there is no verification here... and need a way to update
 
     #experiment=Experiment() #FIXME or should this be ExperimentType... somehow I think it should...
     #experimentType=ExperimentType() #TODO make sure that we can easily construct new experiments from exptype

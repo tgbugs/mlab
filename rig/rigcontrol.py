@@ -10,6 +10,7 @@ from keybinds import keyDicts
 from rig.clx import clxControl
 from rig.esp import espControl
 from rig.mcc import mccControl
+from rig.trm import trmControl
 
 from database.interface import Session_DBScience #FIXME
 try:
@@ -106,7 +107,7 @@ class rigIOMan: #FIXME this is really becoming the hub for all IO for the rig
 
     def initControllers(self,progInputMan=None): #FIXME
         #load the drivers so that they aren't just hidden in the Funcs
-        controllers=clxControl,espControl,mccControl
+        controllers=clxControl,espControl,mccControl,trmControl
         ctrlDict={}
         for ctrl in controllers:
             try:
