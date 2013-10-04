@@ -172,6 +172,8 @@ class DataFile(File): #TODO datafiles can only really belong to a single experim
     datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
     __mapper_args__={'polymorphic_identity':'datafile'}
 
+    experiment=relationship('Experiment',backref='datafiles',uselist=False)
+
     @declared_attr
     def metadata_(cls): #FIXME naming...
         cls.MetaData=DataFileMetaData

@@ -1,5 +1,7 @@
 #Base file for creating the tables that I will use to store all my (meta)data
 
+#TODO consider sqlalchemy.orm import validates for verifying that certain input from python userland is clean?
+
 #TODO when thinking about staging this stuff I need a safe way to hold data incase my access to the db goes down, like pickling something or the like? ideally this shouldn't happen but better safe than sorry
 
 #TODO conform to MINI, NIF ontologies?, or odML terminiologies?

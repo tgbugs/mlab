@@ -32,8 +32,11 @@ class _MDSource:
         abs_error=self.getAbsError()
         #Parent.metadata_.append(Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error)) #alternate form
         self.currentRecord=Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error)
+        #FIXME is currentRecord a sufficient safety net?? could aways just get the data again...
+        #probably shouldn't worry TOO much about all these crazy failure cases
         self.session.add(self.currentRecord)
-        #commit at the end
+        #commit at the end?
+        #FIXME should this be forced to commit previous values before adding a new one? well the session has it now...
 
     def getCurrentValue(self):
         #FIXME somehow I think I need a way to hold this until everything is collect before I commit? or should I just commit?
@@ -43,6 +46,18 @@ class _MDSource:
         #TODO this is where online analysis based on calibration should go??? well we also need that somewhere else too...
         return None
 
+###----------------------
+###  esp metadata sources
+###----------------------
+
+def espAll():
+    """returns a dict of all esp metadata source classes"""
+    glob=globals()
+    espDict={}
+    classes=[espDict.update({name:cls}) for name,cls in glob.items() if name[4:7]=='esp']
+    #for cls in classes:
+        #espDict[cls.__name__]=cls
+    return espDict
 
 class MDS_espX(_MDSource):
     prefix='m'
@@ -61,26 +76,9 @@ class MDS_espY(_MDSource):
     def getCurrentValue(self):
         return self.ctrl.getY()
 
-def espAll():
-    glob=globals()
-    espDict={}
-    classes=[espDict.update({name:cls}) for name,cls in glob.items() if name[4:7]=='esp']
-    #for cls in classes:
-        #espDict[cls.__name__]=cls
-    return espDict
-
-class _mccBase(_MDSource):
-    ctrl_name='mccControl'
-    def __init__(self,Controller,session):
-        try:
-            self.channel
-            super().__init__(Controller,session)
-        except:
-            raise #AttributeError('%s requires a channel, use mccBindChan'%self.__class__.__name__)
-    def record(self,Parent):
-        self.ctrl.selectMC(self.channel) #FIXME make sure this mapping is static plox, if I have two mccs...
-        super().record(Parent)
-
+###----------------------
+###  mcc metadata sources
+###----------------------
 
 def mccBindChan(MDS_mcc,channel): #FIXME this does not work becasue it modifies the base class instead of adding a new one...
     #FIXME these names are really freeking hard to identify/remember which is why we do it by source instead of all the individual names
@@ -100,6 +98,18 @@ def mccBindAll(channel):
     for cls in classes:
         mccDict[cls.__name__]=cls
     return mccDict
+
+class _mccBase(_MDSource):
+    ctrl_name='mccControl'
+    def __init__(self,Controller,session):
+        try:
+            self.channel
+            super().__init__(Controller,session)
+        except:
+            raise #AttributeError('%s requires a channel, use mccBindChan'%self.__class__.__name__)
+    def record(self,Parent):
+        self.ctrl.selectMC(self.channel) #FIXME make sure this mapping is static plox, if I have two mccs...
+        super().record(Parent)
 
 
 class _MDS_mccHE(_mccBase):
@@ -205,6 +215,8 @@ class _MDS_mccBBR(_mccBase):
     unit='R'
     def getCurrentValue(self):
         return self.ctrl.GetBridgeBalResist()
+
+
 
 def _main():
     from rig.esp import espControl

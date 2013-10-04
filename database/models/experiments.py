@@ -24,6 +24,10 @@ class ExperimentType(HasReagentTypes, HasDataSources, HasMetaDataSources, Base):
     #id=Column(Integer,primary_key=True) #FIXME
     id=Column(String(30),primary_key=True)
     abbrev=Column(String)
+    experiments=relationship(
+    repository_url=Column(Integer,ForeignKey('repository.url')) #FIXME does this make any sense here?
+    repository=relationship('Repository',uselist=False) #these *could* change before the experiments were done... that is trouble some... BUT we can always rename and casscade the change...
+
     #TODO there are simpy too many datasources and metadata sources to access them directly every time from the whole list, therefore we will include them here to make finding them easy but not to constrain them...
     #FIXME datasources being tied directly to REAL hardware could be a problem ;_;
     #need a way to specify the types of data without being forced to add a new experiment type every time hardware changes or loose the record of the old hardware configuration...

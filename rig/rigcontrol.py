@@ -11,7 +11,7 @@ from rig.clx import clxControl
 from rig.esp import espControl
 from rig.mcc import mccControl
 
-from database.interface import Session_DBScience
+from database.interface import Session_DBScience #FIXME
 try:
     import rpdb2
 except:
@@ -49,7 +49,7 @@ class rigIOMan: #FIXME this is really becoming the hub for all IO for the rig
 
         self.initControllers() #these need charBuffer and keyThread to work
         self.setMode('rig')
-        self.session=Session_DBScience() #FIXME FIXME FIXME
+        self.Session=Session_DBScience
 
         #TODO add a way for keys to enter programatic control mode, they will still need keyinput though
 
