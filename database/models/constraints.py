@@ -17,7 +17,7 @@ class SI_PREFIX(Base): #Yes, these are a good idea because they are written once
     
 
 class SI_UNIT(Base):
-    symbol=Column(Unicode(3),primary_key=True)
+    symbol=Column(Unicode(4),primary_key=True)
     name=Column(String(15),nullable=False) #this is also a pk so we can accept plurals :)
     def __repr__(self):
         return '%s'%(self.symbol)

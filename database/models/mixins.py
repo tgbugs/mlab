@@ -37,7 +37,7 @@ class IsDataSource:
         return relationship('DataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
 
 
-class IsMetaDataSource:
+class IsMetaDataSource: #XXX I think this is depricated... ?
     #users, citeables, hardware, NO PEOPLE
     @declared_attr
     def datastreams(cls):
@@ -52,8 +52,24 @@ class HasDataSources:
 
 
 class HasMetaDataSources:
-    asdf=Column(Integer)
+    @declared_attr
+    def metadatasources(cls):
+        metadatasource_association = Table('%s_mds_assoc'%cls.__tablename__, cls.metadata,
+            Column('metadatasource_id',ForeignKey('metadatasources.id'),primary_key=True),
+            Column('%s_id'%cls.__tablename__,ForeignKey('%s.id'%cls.__tablename__), #FIXME .id may not be all?
+                   primary_key=True)
+        )
+        return relationship('MetaDataSource',secondary=metadatasource_association,
+            primaryjoin='{0}_mds_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
+            secondaryjoin='MetaDataSource.id=={0}_mds_assoc.c.metadatasource_id'.format(cls.__tablename__),
+            backref=backref('%s'%cls.__tablename__) #FIXME do we really want this?
+        )
 
+
+class _HasMetaDataSources:
+    @declared_attr
+    def metadatasources(cls):
+        return []
 
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
     dateTime=Column(DateTime,default=datetime.now)
@@ -119,7 +135,7 @@ class HasDataFiles:
 class HasFiles:
     @declared_attr
     def files(cls):
-        datafile_association = Table('%s_f_assoc'%cls.__tablename__, cls.metadata,
+        file_association = Table('%s_f_assoc'%cls.__tablename__, cls.metadata,
             Column('file_url',String,primary_key=True),
             Column('file_filename',String,primary_key=True),
             ForeignKeyConstraint(['file_url','file_filename'],
@@ -127,7 +143,7 @@ class HasFiles:
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__),
                    primary_key=True),
         )
-        return relationship('File', secondary=datafile_association,
+        return relationship('File', secondary=file_association,
             primaryjoin='{0}_f_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
             secondaryjoin='and_(File.url=={0}.file_url,File.filename=={0}.file_filename)'.format(cls.__tablename__+'_f_assoc.c'),
             backref=backref('%s'%cls.__tablename__),

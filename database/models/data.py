@@ -179,10 +179,11 @@ class DataFile(File): #TODO datafiles can only really belong to a single experim
         cls.MetaData=DataFileMetaData
         return relationship(cls.MetaData)
 
-    def __init__(self,Repo=None,filename=None,Exeperiment=None,DataSource=None,url=None,experiment_id=None,datasource_id=None,Subjects=[], creationDateTime=None):
+    def __init__(self,Repo=None,filename=None,Experiment=None,DataSource=None,url=None,experiment_id=None,datasource_id=None,Subjects=[], creationDateTime=None):
         super().__init__(Repo,filename,url,creationDateTime)
         self.datasource_id=datasource_id
         self.AssignID(DataSource)
+        self.AssignID(Experiment)
         self.subjects.extend(Subjects) #TODO in the interface.py make it so that current subjects 'auto' fill?
 
 

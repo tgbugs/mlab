@@ -14,13 +14,23 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base): #FIXME sh
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     type=Column(String,nullable=False)
+    parent_id=Column(Integer,ForeignKey('subjects.id'))
+    children=relationship('Subject',primaryjoin='Subject.id==Subject.parent_id',backref=backref('parent',uselist=False,remote_side=[id])) #this is used for running experiments intelligently w/ recursion
     __mapper_args__ = {
         'polymorphic_on':type,
         'polymorphic_identity':'subject',
     }
     def __init__(self,Experiments=[],Hardware=[]):
+        #self.parent_id=parent_id
         self.experiments.extend(Experiments)
         self.hardware.extend(Hardware)
+        #if Parent:
+            #if Parent.id:
+                #self.parent_id=Parent.id
+            #else:
+                #raise AttributeError
+
+
 
 
 class Mouse(Subject): #TODO species metadata???
@@ -66,7 +76,7 @@ class Mouse(Subject): #TODO species metadata???
     #experiment_id=Column(Integer,ForeignKey('experiments.id'),unique=True) #FIXME m-m
 
     #things that not all mice will have but that are needed for data to work out
-    slices=relationship('Slice',primaryjoin='Slice.mouse_id==Mouse.id',backref=backref('mouse',uselist=False))
+    #slices=relationship('Slice',primaryjoin='Slice.parent_id==Mouse.id',backref=backref('mouse',uselist=False))
     cells=relationship('Cell',primaryjoin='Cell.mouse_id==Mouse.id',backref=backref('mouse',uselist=False))
 
 
@@ -130,7 +140,8 @@ class Slice(Subject): #FIXME slice should probably be a subject
     #TODO experiments for slice prep might should also add these slices as their subjects? or should the slices get their data about the conditions they were generated under from the mouse?!?
     #well, mice don't refer directly to mating record... but litter's do...
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True) #FIXME
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
+    #parent_id=Column(Integer,ForeignKey('subjects.id'))
+    parent_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
     #TODO check that there are not more slices than the thickness (from the metadta) divided by the total length of the largest know mouse brain
     startDateTime=Column(DateTime,default=datetime.now) #time onto rig rather than t cut
     #just like I don't store slice -> rig time in cell we dont store cut time in slice
@@ -146,14 +157,15 @@ class Slice(Subject): #FIXME slice should probably be a subject
         session=object_session(self)
         return session.query(emd).filter(emd.experiment_id==exp.id,emd.datasource_id=='slice thickness') #ick this is nasty to get out and this isn't even correct
 
-    cells=relationship('Cell',primaryjoin='Cell.slice_id==Slice.id',backref=backref('slice',uselist=False))
+    #cells=relationship('Cell',primaryjoin='Cell.parent_id==Slice.id',backref=backref('slice',uselist=False)) #FIXME this may be duplicated by children...
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
 
     def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None,startDateTime=None,Hardware=[], Experiments=[]):
+        #super().__init__(Mouse,Experiments,Hardware,mouse_id)
         super().__init__(Experiments,Hardware)
         self.startDateTime=startDateTime
-        self.mouse_id=mouse_id
+        self.parent_id=mouse_id
         self.prep_id=prep_id
 
         #self.AssignID(Mouse)
@@ -165,12 +177,12 @@ class Slice(Subject): #FIXME slice should probably be a subject
             else:
                 raise AttributeError
             if Prep.subjects:
-                self.mouse_id=Prep.subjects[0].id
+                self.parent_id=Prep.subjects[0].id
             else:
                 raise AttributeError('your sliceprep has no mouse!')
         elif Mouse:
             if Mouse.id:
-                self.mouse_id=Mouse.id
+                self.parent_id=Mouse.id
             else:
                 raise AttributeError
     def strHelper(self,depth=0):
@@ -181,29 +193,30 @@ class Cell(Subject):
     __tablename__='cell'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
     mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME grandparent_id
-    slice_id=Column(Integer,ForeignKey('slice.id'),nullable=False) #FIXME parent_id
+    parent_id=Column(Integer,ForeignKey('slice.id'),nullable=False) #FIXME parent_id
     startDateTime=Column(DateTime,default=datetime.now)
     __mapper_args__={'polymorphic_identity':'cell'}
-    def __init__(self,Slice=None,Mouse=None,Experiments=[],Hardware=[],slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
+    def __init__(self,Slice=None,Experiments=[],Hardware=[],slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
+        #super().__init__(Slice,Experiments,Hardware,slice_id)
         super().__init__(Experiments,Hardware)
         #printD(Slice.mouse)
         self.startDateTime=startDateTime
-        self.slice_id=slice_id
+        self.parent_id=slice_id
         self.mouse_id=mouse_id
         self.experiment_id=experiment_id
         self.hs_id=hs_id
         #self.slice=Slice #FIXME extremely inconsistent behavior around this DO NOT USE
         #self.mouse=Slice.mouse #FIXME wierd
         if Slice:
-            if Slice.id:
-                self.slice_id=Slice.id
-                self.mouse_id=Slice.mouse_id
-            #else:
-                #raise AttributeError
+            if Slice.parent_id:
+                self.parent_id=Slice.id
+                self.mouse_id=Slice.parent_id
+            else:
+                raise AttributeError
     #def strHelper(self,depth=0):
         #base=super().strHelper(depth)
     def __repr__(self):
         base=super().__repr__()
-        return '%s%s%s%s'%(base,''.join([h.strHelper(1) for h in self.hardware]),self.slice.strHelper(1),''.join([c.strHelper(1) for c in self.datafiles[0].subjects]))
+        return '%s%s%s%s'%(base,''.join([h.strHelper(1) for h in self.hardware]),self.parent.strHelper(1),''.join([c.strHelper(1) for c in self.datafiles[0].subjects]))
 
 

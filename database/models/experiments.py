@@ -26,7 +26,7 @@ class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSo
     id=Column(Integer,primary_key=True) #FIXME
     name=Column(String(30),nullable=False)
     abbrev=Column(String)
-    repository_url=Column(Integer,ForeignKey('repository.url')) #FIXME does this make any sense here?
+    repository_url=Column(String,ForeignKey('repository.url')) #FIXME does this make any sense here?
     repository=relationship('Repository',uselist=False) #these *could* change before the experiments were done... that is trouble some... BUT we can always rename and casscade the change...
     methods_id=Column(Integer,ForeignKey('citeable.id'))
 

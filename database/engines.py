@@ -12,7 +12,7 @@ def sqliteMem(echo=False):
     event.listen(engine,'connect',set_sqlite_pragma)
     return engine
 
-def pgTest(echo=False,wipe_db=False,username=sqla,password=asdf,host=localhost,port=54321):
+def pgTest(echo=False,wipe_db=False,username='sqla',password='asdf',host='localhost',port=54321):
     pg='postgresql://%s:%s@%s:%s/%s'
     if wipe_db:
         engine = create_engine(pg%(username,password,host,port,'postgres'),echo=echo)
@@ -26,7 +26,7 @@ def pgTest(echo=False,wipe_db=False,username=sqla,password=asdf,host=localhost,p
         del(engine)
     return create_engine(pg%(username,password,host,port,'db_test'),echo=echo)
 
-def pgEng(username,password,host,port=5432,database='postgres',echo=False):
+def pgEng(username,password,host,port=5432,database='postgres',echo=False): #FIXME postgres probably shouldn't be default
     pg='postgresql://%s:%s@%s:%s/%s'
     return create_engine(pg%(username,password,host,port,database),echo=echo)
 

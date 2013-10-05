@@ -164,6 +164,15 @@ class BaseExp:
         return self
 
 
+    def run(self):
+        #loop make/get root subject
+            #get subject metadata
+            #record subject datafiles
+                #get datafile metadata
+            #recursive make/get nth child subject
+
+
+
 
 class PatchExp(BaseExp):
     #FIXME rigIO should be contain these? or be contained? how do we want to launch these?
@@ -183,10 +192,31 @@ class PatchExp(BaseExp):
     mdsDict.update(espAll())
     #printFD(mdsDict)
 
+    def run(self):
+        self.ExpFromType()
+        #get mouse
+        #get slice loop
+            #get slice metadata
+                #get appos
+            #get cells loops
+                #cell n 
+                    #get cell metadata
+                        #espX
+                        #espY
+                        #trmZ
+                        #trmRFP
+                        #trmGFP
+                    #someday take a picture
+                #make recordings
+                    #set mcc state
+                    #set pro file
+                    #record file
+                    #get filename
+                    #make datafile
+                    #get datafilemetadata
 
 
-    #experiment=Experiment() #FIXME or should this be ExperimentType... somehow I think it should...
-    #experimentType=ExperimentType() #TODO make sure that we can easily construct new experiments from exptype
+
 
 def main():
     from rig.rigcontrol import rigIOMan

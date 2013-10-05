@@ -32,6 +32,7 @@ from sqlalchemy.engine          import Engine
 
 from database.models            import *
 from database.models.base       import Base, initDBScience
+from database.engines           import sqliteMem, pgTest
 from database.setupDB           import populateConstraints, populateTables
 from database.TESTS             import run_tests
 
@@ -46,31 +47,6 @@ tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
 tdboff=tdb.tdbOff
-
-#start up engines
-def postgresEng(echo=False,wipe_db=False):
-    if wipe_db:
-        engine = create_engine('postgresql://sqla:asdf@localhost:54321/postgres',echo=echo)
-        con=engine.connect()
-        con.execute('commit')
-        con.execute('drop database if exists db_test')
-        con.execute('commit')
-        con.execute('create database db_test')
-        con.execute('commit')
-        con.close()
-        del(engine)
-    return create_engine('postgresql://sqla:asdf@localhost:54321/db_test',echo=echo)
-
-def sqliteEng(echo=False):
-    from sqlalchemy import event
-    @event.listens_for(Engine, 'connect')
-    def set_sqlite_pragma(dbapi_connection, connection_record):
-        cursor = dbapi_connection.cursor()
-        cursor.execute('PRAGMA foreign_keys=ON')
-        cursor.close()
-    engine = create_engine('sqlite:///:memory:',echo=echo)
-    event.listen(engine,'connect',set_sqlite_pragma)
-    return engine
 
 ###-------------
 ###  print stuff
@@ -147,12 +123,12 @@ def printStuff(cons=True,mice=True,data=True,notes=True):
 ###----------
 
 def connect(echo=False):
-    return Session(postgresEng(echo=echo))
+    return Session(pgTest(echo=echo))
 
 def main(echo=True):
     #create engine
-    engine=postgresEng(echo=echo,wipe_db=True)
-    #engine=sqliteEng(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
+    engine=pgTest(echo=echo,wipe_db=True)
+    #engine=sqliteMem(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
 
     #create metadata on the engine
     #Base.metadata.drop_all(engine,checkfirst=True)
