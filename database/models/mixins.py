@@ -73,7 +73,7 @@ class _HasMetaDataSources:
 
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
     dateTime=Column(DateTime,default=datetime.now)
-    value=Column(Float(53),nullable=False)
+    value=Column(Float(53))#,nullable=False) #NOTE nullable for time
     abs_error=Column(Float(53)) #TODO
     def __init__(self,value,Parent=None,MetaDataSource=None,metadatasource_id=None,abs_error=None,dateTime=None):
         self.dateTime=dateTime

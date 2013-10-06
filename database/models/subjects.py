@@ -143,6 +143,13 @@ class Slice(Subject): #FIXME slice should probably be a subject
     #thickness=Column(Integer)
     #thickness=relationship('Experiment.MetaData',secondary='subjects_association',primaryjoin='Experiment.MetaData.experiment_id==subjects_association.experiments_id'
     @hybrid_property
+    def dateTimeOut(self): #FIXME fuck shit got damnit it's fine :D just use a None out of bath
+        exp=self.experiments[0]
+        emd=Experiment.MetaData
+        session=object_session(self)
+        return session.query(emd).filter(emd.experiment_id==exp.id,emd.datasource_id=='dateTimeOut') #ick this is nasty to get out and this isn't even correct
+
+    @hybrid_property
     def thickness(self):
         exp=self.experiments[0]
         emd=Experiment.MetaData
@@ -153,7 +160,7 @@ class Slice(Subject): #FIXME slice should probably be a subject
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
 
-    def __init__(self,Prep=None,Mouse=None,mouse_id=None,prep_id=None,startDateTime=None,Hardware=[], Experiments=[]):
+    def __init__(self,Mouse=None,Prep=None,mouse_id=None,prep_id=None,startDateTime=None,Hardware=[], Experiments=[]):
         #super().__init__(Mouse,Experiments,Hardware,mouse_id)
         super().__init__(Experiments,Hardware)
         self.startDateTime=startDateTime

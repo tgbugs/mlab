@@ -33,7 +33,7 @@ class MetaDataSource(Base):
     __tablename__='metadatasources'
     id=Column(Integer,primary_key=True)
     name=Column(String(20),nullable=False,unique=True)
-    prefix=Column(String(2),ForeignKey('si_prefix.symbol'),nullable=False)
+    prefix=Column(String(2),ForeignKey('si_prefix.symbol'),default='')
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
     mantissa=Column(Integer) #TODO
     #TODO calibration data should *probably* be stored on the hardware as a datafile or metadata and can be filtered by datetime against experiments
@@ -60,7 +60,7 @@ class DataFileMetaData(Base):
     __table_args__=(ForeignKeyConstraint([url,filename],['datafile.url','datafile.filename']), {})
     metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False) #TODO how to get this?
     dateTime=Column(DateTime,default=datetime.now)
-    value=Column(Float(53),nullable=False)
+    value=Column(Float(53))#,nullable=False) #XXX nullable if we just want time
     abs_error=Column(Float(53)) #TODO
     metadatasource=relationship('MetaDataSource')
     def __init__(self,value,DataFile=None,MetaDataSource=None,abs_error=None,dateTime=None,metadatasource_id=None,url=None,filename=None):

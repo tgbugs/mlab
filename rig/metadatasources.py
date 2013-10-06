@@ -72,6 +72,16 @@ class MDS_trmZ(_MDSource):
     def getCurrentValue(self):
         return self.ctrl.getFloatInput()
 
+
+class MDS_trmSlicesOut(_MDSource): #FIXME this feels like a hack :/
+    """objective height reading for an object""" #TODO figur out how to record surface Z...
+    prefix=''
+    unit='time'
+    ctrl_name='trmControl' #this is the equivalent of key.py keyControl, but obviously is just return input()
+    #ofc with special checks to make sure the datatype is correct ie float
+    def getCurrentValue(self):
+        return None
+
 ###----------------------
 ###  esp metadata sources
 ###----------------------
@@ -84,7 +94,6 @@ def espAll():
     #for cls in classes:
         #espDict[cls.__name__]=cls
     return espDict
-
 
 
 class MDS_espX(_MDSource):

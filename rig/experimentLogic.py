@@ -173,27 +173,42 @@ class BaseExp:
             #recursive make/get nth child subject
 
 
-def subjectsLogic(self,subjects): #FIXME binding must occur before init otherwise the declarative style pattern will break also branching from a root that has more than one subject... :/ simultaneous recursion...
+def subjectSetLogic(self,subjects): #FIXME binding must occur before init otherwise the declarative style pattern will break also branching from a root that has more than one subject... :/ simultaneous recursion...
+    """depth first traversal of subjects with the ability to add subjects at the deepest level first and then add on the way back up and go back down opperates on sets of subjects as if they are a single subject"""
+    #FIXME there MUST be an exemplar set from which to opperate, but this fails as soon as an intermediate subject is added w/ no children???? SOLUTION: define a child type
     if not subjects.any():
         return 'DONE' #FIXME
 
-    #TODO loop over subject sets or something like that... for slices... there MUST be a way to abstract this into a single function damn it so that when we come back up...
-
-    getObjectMetaData(subjects,wait=True) #FIXME opperating on more than one subject set... :/ need to be able to get depth...
+    getObjectMetaData(subjects,wait=True)
     self.session.commit()
     getObjectDataFiles(subjects)
 
-    char=input('go to next level? y/N') #FIXME make sure this will jive with my keyinput thing :/
-    not_done=char!='y' or char!='Y'
     if not_done: #FIXME this logic does not handle depth first, for example slices that have multiple cells because recursion doesn't quite work right still need a for loop
         all_childs=[]
         [all_childs.extend(subject.children) for subject in subjects]
-        child_return=subjectsLogic(all_childs)
+        subjectSetLogic(all_childs)
     number=int(input('enter number of subjects to add')) #FIXME there is one more loop which is [[,,],[,,],[,,]] nexted lists of subjects
-    subjects=makeNewSubjects(subjects.type,number=number) #TODO
-    return subjectsLogic(subjects)
+    return subjectSetLogic(makeNewSubjects(subjects[0],number=number)) #TODO
     #TODO the way to 'loop' over multiple subjects at the same level AFTER going to a deeper level is to just have a branched return scenario
     #argh! still not quite right
+
+def subjectLogic(subjects): #all subjects here are assumed to be simultaneous
+    #collect data on all at once
+    getObjectMetaData(subjects,wait=True)
+    self.session.commit()
+    getObjectDataFiles(subjects)
+    for subject in subjects:
+        if subject.child_type:
+            num=int(input('number of %s to make'%subject.child_type.__name__))
+            if not num:
+                return 'DONE'
+            else:
+                subject.child_type(subject) #FIXME for slice this is somehow missing data...
+            
+
+    #if child_type
+        #traverse children individually
+
 
 
 def getObjectMetadata(self,objects,wait=False):
@@ -245,6 +260,8 @@ class ExampleExp(BaseExp):
 
     DataFile.metadatasource_names=['ALL THE KEYS'] #FIXME this can't handle different data files per subject type... with different metadata
     SubjectChild.DataFile=DataFile #FIXME need to do something about datafile types... or something still...
+
+    Subject.child_type=SubjectChild
 
     #declare relationships here
     #binding happens at init
