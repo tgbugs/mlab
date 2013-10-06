@@ -1,4 +1,5 @@
-from database.models import Experiment, Subject, Mouse, Slice, Cell
+#from database.models import Experiment # Subject #, Mouse, Slice, Cell
+from database.models import ExperimentType
 from database import interface #FIXME
 from debug import TDB
 
@@ -63,8 +64,8 @@ class SomChr(ExperimentRunner):
 
 
 class BaseExp:
-    def __init__(self,rigIO,Experiment=None,ExperimentType=None):
-        if not checkExpType(ExperimentType):
+    def __init__(self,rigIO,experiment=None,experimenttype=None):
+        if not checkExpType(experimenttype):
             #check for things we're supposed to have
             try: self.name
             except: raise AttributeError('experiment definitions require a name')
@@ -81,7 +82,7 @@ class BaseExp:
 
             self.session=rigIO.Session() #a single experiment (even if long) seems like a natural scope for a session
             try:
-                self.ExperimentType=self.session.query(ExperimentType).\
+                self.ExperimentType=self.session.query(experimenttype).\
                         filter_by(name=self.name).\
                         order_by('-id').first() #get the latest version of the experiment type w/ this name
             except:
@@ -97,25 +98,30 @@ class BaseExp:
 
         #self.current_subjects=[] #TODO
 
+        #create metadata sources
         self.imdsDict={}
         for MDS in self.mdsDict.values():
             self.imdsDict[MDS.__name__[4:]]=MDS(rigIO.ctrlDict[MDS.ctrl_name],self.session)
 
-    def checkExpType(self,ExperimentType)
-        if ExperimentType: #implies that there is a session elsewhere...
-            if ExperimentType.id:
-                names=[mds.name for mds in ExperimentType.metadatasources]
+        #BIND ALL THE THINGS
+        bind MDS to experiment
+        bind MDS to subject TYPE #FUCK
+
+    def checkExpType(self,experimenttype)
+        if experimenttype: #implies that there is a session elsewhere...
+            if experimenttype.id:
+                names=[mds.name for mds in experimenttype.metadatasources]
                 try:
-                    if self.name!=ExperimentType.name:
+                    if self.name!=experimenttype.name:
                         raise AttributeError('Defined name does not match that of ExperimentType!')
                     elif list(self.mdsDict.keys()).sort()!=names.sort():
-                        raise AttributeError('Defined metadatasources do not match those in ExperimentType. Create a new experiment so the updated metadatasources can be persisted in a new ExperimentType.')
+                        raise AttributeError('Defined metadatasources do not match those in experimenttype. Create a new experiment so the updated metadatasources can be persisted in a new ExperimentType.')
                 except:
                     from rig.metadatasources import mdsAll
                     self.mdsDict={}
                     [self.mdsDict.update({name:cls}) for name,cls in mdsAll().item() if names.count(name[4:])]
-                self.ExperimentType=ExperimentType
-                #TODO get session from ExperimentType
+                self.experimenttype=experimenttype
+                #TODO get session from experimenttype
                 return 1
             else:
                 raise AttributeError('no id')
@@ -153,16 +159,11 @@ class BaseExp:
         self.session.commit() #FIXME/TODO as opposed to flush??!
         return self
 
-    def getSubjects(self):
-        #TODO
-        return self
-    
     def ExpFromType(self):
         #TODO
         Experiment(self.ExperimentType,person_id=,project_id=) #reagents? subjects? TODO
         self.experiment=None
         return self
-
 
     def run(self):
         #loop make/get root subject
@@ -170,6 +171,74 @@ class BaseExp:
             #record subject datafiles
                 #get datafile metadata
             #recursive make/get nth child subject
+
+
+def subjectsLogic(self,subjects): #FIXME binding must occur before init otherwise the declarative style pattern will break also branching from a root that has more than one subject... :/ simultaneous recursion...
+    if not subjects.any():
+        return 'DONE' #FIXME
+
+    getObjectMetaData(subjects,wait=True)
+    getObjectDataFiles(subjects)
+
+    all_childs=[]
+    [all_childs.extend(subject.children) for subject in subjects]
+    return subjectsLogic(all_childs)
+
+def getObjectMetadata(self,objects,wait=False):
+    def getMD(obj,wait):
+        if wait:
+            input('press any key to start collecting metadata for %s'%obj.__class__.__name__)
+        for key in objects.metadatasource_names: #advantage here is that the list can be ordered in the order you want to collect the metadata
+            self.mdsDict[key].record(obj)
+    try:
+        for obj in objects:
+            getMD(obj)
+    except AttributeError:
+        getMD(obj)
+        
+
+
+def getObjectDataFiles(self,objects,wait=False):
+    """Assumes that all objects passed in are associated with the datafiles that will be generated and of the same type/have the same protocols"""
+    if wait:
+        input('press any key to start collecting datafiles for %s'%objects[0].__class__.__name__)
+    for protocol in objects[0].protocol:
+        datafile=protocol.run()
+        self.getObjectMetaData(datafile)
+
+
+class protocol:
+    """bind metadatasources to a runner that collects data and returns the produced datafile and gets the metadata associated w/ that datafile"""
+    def __init__(self,runner,pro_filename):
+        self.runner=runner
+        self.pro=pro_filename
+    def run(self):
+        return self.runner(self.pro_filename) #FIXME runner should commit the datafile AND have the same session as metadatasources... shit
+        
+    
+class ExampleExp(BaseExp):
+    #FIXME this pattern may not work if other parts of the program also need to use the database.models... but as long as we aren't running the same experiments then it *should* be ok to monkey patch those? it's dirty... but...
+    from database.models import Experiment
+    from database.models import Subject
+    from database.models import Subject as SubjectChild
+    from database.models import DataFile
+    from rig.metadatasources import mdsAll()
+    mdsDict=mdsAll(2)
+    Experiemnt.metadatasource_names=['ALL THE KEYS']
+    #metadata should only be collected once per subject for this kind of experiment another pattern with repeated collection would use different run logic
+    Subject.metadatasource_names=['ALL THE KEYS']  #FIXME this wont work the way I want it to? or will it? well... maybe it will!??!
+    SubjectChild.metadatasource_names=['ALL THE KEYS'] #FIXME make sure that this works, I think it will
+
+    SubjectChild.protocol_runner=['ALL THE THINGS HALP WAT']
+    SubjectChild.protocols=['ALL THE FILENAMES']
+
+    DataFile.metadatasource_names=['ALL THE KEYS'] #FIXME this can't handle different data files per subject type... with different metadata
+    SubjectChild.DataFile=DataFile #FIXME need to do something about datafile types... or something still...
+
+    #declare relationships here
+    #binding happens at init
+
+
 
 
 

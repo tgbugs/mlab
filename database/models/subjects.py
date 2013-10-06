@@ -10,7 +10,7 @@ from database.standards import frmtDT
 ###  Subjects
 ###-----------------------
 
-class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base): #FIXME should metadata all go here?
+class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     type=Column(String,nullable=False)
@@ -21,16 +21,8 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base): #FIXME sh
         'polymorphic_identity':'subject',
     }
     def __init__(self,Experiments=[],Hardware=[]):
-        #self.parent_id=parent_id
         self.experiments.extend(Experiments)
         self.hardware.extend(Hardware)
-        #if Parent:
-            #if Parent.id:
-                #self.parent_id=Parent.id
-            #else:
-                #raise AttributeError
-
-
 
 
 class Mouse(Subject): #TODO species metadata???
@@ -141,7 +133,7 @@ class Slice(Subject): #FIXME slice should probably be a subject
     #well, mice don't refer directly to mating record... but litter's do...
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True) #FIXME
     #parent_id=Column(Integer,ForeignKey('subjects.id'))
-    parent_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse
+    parent_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse #TODO this has actually been fixed with the move to parent_id...
     #TODO check that there are not more slices than the thickness (from the metadta) divided by the total length of the largest know mouse brain
     startDateTime=Column(DateTime,default=datetime.now) #time onto rig rather than t cut
     #just like I don't store slice -> rig time in cell we dont store cut time in slice
