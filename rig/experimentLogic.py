@@ -177,12 +177,24 @@ def subjectsLogic(self,subjects): #FIXME binding must occur before init otherwis
     if not subjects.any():
         return 'DONE' #FIXME
 
-    getObjectMetaData(subjects,wait=True)
+    #TODO loop over subject sets or something like that... for slices... there MUST be a way to abstract this into a single function damn it so that when we come back up...
+
+    getObjectMetaData(subjects,wait=True) #FIXME opperating on more than one subject set... :/ need to be able to get depth...
+    self.session.commit()
     getObjectDataFiles(subjects)
 
-    all_childs=[]
-    [all_childs.extend(subject.children) for subject in subjects]
-    return subjectsLogic(all_childs)
+    char=input('go to next level? y/N') #FIXME make sure this will jive with my keyinput thing :/
+    not_done=char!='y' or char!='Y'
+    if not_done: #FIXME this logic does not handle depth first, for example slices that have multiple cells because recursion doesn't quite work right still need a for loop
+        all_childs=[]
+        [all_childs.extend(subject.children) for subject in subjects]
+        child_return=subjectsLogic(all_childs)
+    number=int(input('enter number of subjects to add')) #FIXME there is one more loop which is [[,,],[,,],[,,]] nexted lists of subjects
+    subjects=makeNewSubjects(subjects.type,number=number) #TODO
+    return subjectsLogic(subjects)
+    #TODO the way to 'loop' over multiple subjects at the same level AFTER going to a deeper level is to just have a branched return scenario
+    #argh! still not quite right
+
 
 def getObjectMetadata(self,objects,wait=False):
     def getMD(obj,wait):
@@ -200,21 +212,17 @@ def getObjectMetadata(self,objects,wait=False):
 
 def getObjectDataFiles(self,objects,wait=False):
     """Assumes that all objects passed in are associated with the datafiles that will be generated and of the same type/have the same protocols"""
+    try: objects.__iter__
+    except: objects=(objects,)
+    obj=objects[0]
     if wait:
-        input('press any key to start collecting datafiles for %s'%objects[0].__class__.__name__)
-    for protocol in objects[0].protocol:
-        datafile=protocol.run()
+        input('press any key to start collecting datafiles for %s'%obj.__class__.__name__)
+    for protocol in obj.protocols:
+        datafile=obj.protocol_runner(protocol) #TODO this should commit the datafile to the database or raise an error
+        datafile.subjects.extend(objects) #TODO look up whether this actually commits...
         self.getObjectMetaData(datafile)
+        self.session.commit()
 
-
-class protocol:
-    """bind metadatasources to a runner that collects data and returns the produced datafile and gets the metadata associated w/ that datafile"""
-    def __init__(self,runner,pro_filename):
-        self.runner=runner
-        self.pro=pro_filename
-    def run(self):
-        return self.runner(self.pro_filename) #FIXME runner should commit the datafile AND have the same session as metadatasources... shit
-        
     
 class ExampleExp(BaseExp):
     #FIXME this pattern may not work if other parts of the program also need to use the database.models... but as long as we aren't running the same experiments then it *should* be ok to monkey patch those? it's dirty... but...
@@ -223,14 +231,17 @@ class ExampleExp(BaseExp):
     from database.models import Subject as SubjectChild
     from database.models import DataFile
     from rig.metadatasources import mdsAll()
+
     mdsDict=mdsAll(2)
+
     Experiemnt.metadatasource_names=['ALL THE KEYS']
+
     #metadata should only be collected once per subject for this kind of experiment another pattern with repeated collection would use different run logic
     Subject.metadatasource_names=['ALL THE KEYS']  #FIXME this wont work the way I want it to? or will it? well... maybe it will!??!
     SubjectChild.metadatasource_names=['ALL THE KEYS'] #FIXME make sure that this works, I think it will
 
-    SubjectChild.protocol_runner=['ALL THE THINGS HALP WAT']
-    SubjectChild.protocols=['ALL THE FILENAMES']
+    SubjectChild.protocol_runner=None
+    SubjectChild.protocols=['ALL THE FILENAMES OR WHATEVER THE RUNNER TAKES eg voltage time serries like I have for the LED']
 
     DataFile.metadatasource_names=['ALL THE KEYS'] #FIXME this can't handle different data files per subject type... with different metadata
     SubjectChild.DataFile=DataFile #FIXME need to do something about datafile types... or something still...
