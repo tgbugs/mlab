@@ -73,14 +73,40 @@ class MDS_trmZ(_MDSource):
         return self.ctrl.getFloatInput()
 
 
-class MDS_trmSlicesOut(_MDSource): #FIXME this feels like a hack :/
-    """objective height reading for an object""" #TODO figur out how to record surface Z...
+class MDS_trmSlicesOutTime(_MDSource): #FIXME this feels like a hack :/
+    prefix=''
+    unit='time'
+    ctrl_name='trmControl'
+    def setDateTime(self): #FIXME FUCK BREAKS AUDITING FUCK
+        return self.ctrl.getDateTimeInput() #FIXME make sure that if it returns 'None' that default is used
+
+
+class MDS_trmMRStartTime(_MDSource):
+    prefix=''
+    unit='time' #datetime FIXME we do need input for this
+    ctrl_name='trmControl' #this is the equivalent of key.py keyControl, but obviously is just return input()
+    def setDateTime(self):
+        return self.ctrl.getDateTimeInput()
+
+
+class MDS_trmMRStopTime(_MDSource):
     prefix=''
     unit='time'
     ctrl_name='trmControl' #this is the equivalent of key.py keyControl, but obviously is just return input()
-    #ofc with special checks to make sure the datatype is correct ie float
-    def getCurrentValue(self):
-        return None
+    def getDateTime(self):
+        return self.ctrl.getDateTimeInput()
+
+
+class MDS_trmDateOfBirth(_MDSource):
+    prefix=''
+    unit='h'
+    ctrl_name='trmControl'
+    def getDateTime(self):
+        return self.ctrl.getDateTimeInput()
+    def getAbsError(self): #FIXME this won't be an interval and the float needs an interpretation :/
+        return self.ctrl.getFloatInput()
+
+
 
 ###----------------------
 ###  esp metadata sources
