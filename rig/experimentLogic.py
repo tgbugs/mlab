@@ -64,7 +64,7 @@ class SomChr(ExperimentRunner):
 
 
 class BaseExp:
-    def __init__(self,rigIO,experiment=None,experimenttype=None):
+    def __init__(self,rigIO,experiment=None,experimenttype=None): #FIXME should be arbitrary IO
         if not checkExpType(experimenttype):
             #check for things we're supposed to have
             try: self.name
@@ -151,6 +151,12 @@ class BaseExp:
         for subject in self.current_subjects:
             pass
 
+    def add_subjects_by_id(self,ids): #FIXME subjects could come from elsewhere? where does the id come from
+        #think big and automated, where does the id come from
+        subjects=self.session.query(Subject).filter(Subject.id.in_(ids)).all()
+        self.experiment.subjects.extend(subjects)
+        return self
+
     def Persist(self):
         #TODO damn this is such a better idea...
         mds=[m.MetaDataSource for m in self.imdsDict.values()] #FIXME check for changes and update w/ version
@@ -159,9 +165,9 @@ class BaseExp:
         self.session.commit() #FIXME/TODO as opposed to flush??!
         return self
 
-    def ExpFromType(self):
+    def ExpFromType(self,startDateTime=None):
         #TODO
-        Experiment(self.ExperimentType,person_id=,project_id=) #reagents? subjects? TODO
+        Experiment(self.ExperimentType,person_id=,project_id=,startDateTime=startDateTime) #reagents? subjects? TODO
         self.experiment=None
         return self
 
@@ -266,6 +272,22 @@ class ExampleExp(BaseExp):
     #declare relationships here
     #binding happens at init
 
+
+
+
+class MatingRecord(BaseExp):
+    from database.models import Experiment
+    from database.models import Sire, Dam
+    name = 'mating record'
+    abbrev = 'mr'
+
+    def add_subjects_by_id(self,ids): #FIXME an extensible way to validate that the set of root subjects is valid for a given experiment TODO
+        if len(ids) != 2:
+            raise AttributeError('mrs require a male and a female subject')
+        subjects=self.session.query(Subject).filter(Subject.id.in_(ids)).all()
+        sexes=[subject.sex_id for subject in subjects]
+        if not sexes.count('m')==sexes.count('f'):
+            raise AttributeError('mrs require a male and a female subject')
 
 
 

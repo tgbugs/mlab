@@ -15,14 +15,24 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
     id=Column(Integer,primary_key=True)
     type=Column(String,nullable=False)
     parent_id=Column(Integer,ForeignKey('subjects.id'))
+    generating_experiment_id=Column(Integer,ForeignKey('experiments.id'))
+
     children=relationship('Subject',primaryjoin='Subject.id==Subject.parent_id',backref=backref('parent',uselist=False,remote_side=[id])) #this is used for running experiments intelligently w/ recursion
+    generating_experiment=relationship('Experiment',backref=backref('generated_subjects'),uselist=False)
+    generated_from_subjects=relationship('Subject',secondary='experiments_subjects',primaryjoin='',secondaryjoin='') #FIXME TODO
     __mapper_args__ = {
         'polymorphic_on':type,
         'polymorphic_identity':'subject',
     }
-    def __init__(self,Experiments=[],Hardware=[]):
+    def __init__(self,Experiments=[],Hardware=[],GeneratingExperiment=None,generating_experiment_id=None):
+        self.generating_experiment_id=generating_experiment_id
         self.experiments.extend(Experiments)
         self.hardware.extend(Hardware)
+        if GeneratingExperiment:
+            if GeneratingExperiment.id:
+                self.generating_experiment=GeneratingExperiment.id
+            else:
+                raise AttributeError
 
 
 class Mouse(Subject): #TODO species metadata???

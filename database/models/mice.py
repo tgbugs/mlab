@@ -131,7 +131,7 @@ class Dam(Breeder):
     __mapper_args__ = {'polymorphic_identity':'f'}
 
 
-class MatingRecord(Base):
+class _MatingRecord(Base): #XXX DEPRICATED
     id=Column(Integer,primary_key=True)
     sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'))
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'))
@@ -185,7 +185,7 @@ class MatingRecord(Base):
         return base+'%s %s\n\tstartDateTime %s %s'%(self.sire.strHelper(1),self.dam.strHelper(1),self.startDateTime,litter)
 
 
-class Litter(Base):
+class _Litter(Base): #FIXME replace with NameSubjectGroup or something #XXX DEPRICATED
     id=Column(Integer,primary_key=True)
     sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'),nullable=False) #can have mice w/o litters, but no litters w/o mice
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'),nullable=False)

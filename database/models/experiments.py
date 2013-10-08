@@ -69,6 +69,27 @@ class Experiment(HasMetaData, HasReagents, HasSubjects, Base):
     endDateTime=Column(DateTime) #TODO
     type_id=Column(Integer,ForeignKey('experimenttype.id'),nullable=False)
 
+    #@validates('ALL THE COLUMNS')
+
+    @endDateTime.setter
+    def endDateTime(self,value=None):
+        if not self.endDateTime:
+            now=datetime.now()
+            if type(value) != type(now):
+                self.endDateTime=now
+            else:
+                self.endDateTime=value
+        else:
+            raise Warning('endDateTime has already been set!') #FIXME this needs to be moved to databse
+
+
+    def setEndDateTime(self,dateTime=None): #TODO
+            if not dateTime:
+                self.endDateTime=datetime.now()
+            else:
+                self.endDateTime=dateTime
+        
+
     def __init__(self,ExpType=None,Project=None,Person=None,Reagents=[],Subjects=[],type_id=None,project_id=None,person_id=None,startDateTime=None):
         self.startDateTime=startDateTime
         self.project_id=project_id

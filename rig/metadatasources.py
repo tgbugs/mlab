@@ -73,40 +73,12 @@ class MDS_trmZ(_MDSource):
         return self.ctrl.getFloatInput()
 
 
-class MDS_trmSlicesOutTime(_MDSource): #FIXME this feels like a hack :/
+class MDS_trmMouseDown(_MDSource):
     prefix=''
-    unit='time'
+    unit='bool'
     ctrl_name='trmControl'
-    def setDateTime(self): #FIXME FUCK BREAKS AUDITING FUCK
-        return self.ctrl.getDateTimeInput() #FIXME make sure that if it returns 'None' that default is used
-
-
-class MDS_trmMRStartTime(_MDSource):
-    prefix=''
-    unit='time' #datetime FIXME we do need input for this
-    ctrl_name='trmControl' #this is the equivalent of key.py keyControl, but obviously is just return input()
-    def setDateTime(self):
-        return self.ctrl.getDateTimeInput()
-
-
-class MDS_trmMRStopTime(_MDSource):
-    prefix=''
-    unit='time'
-    ctrl_name='trmControl' #this is the equivalent of key.py keyControl, but obviously is just return input()
-    def getDateTime(self):
-        return self.ctrl.getDateTimeInput()
-
-
-class MDS_trmDateOfBirth(_MDSource):
-    prefix=''
-    unit='h'
-    ctrl_name='trmControl'
-    def getDateTime(self):
-        return self.ctrl.getDateTimeInput()
-    def getAbsError(self): #FIXME this won't be an interval and the float needs an interpretation :/
-        return self.ctrl.getFloatInput()
-
-
+    def getCurrentValue(self):
+        return self.ctrl.getBoolInput()
 
 ###----------------------
 ###  esp metadata sources

@@ -69,8 +69,8 @@ __all__.extend([
         #'Breeder', #not imported, is helper
         'Sire',
         'Dam',
-        'MatingRecord',
-        'Litter',
+        #'MatingRecord',
+        #'Litter',
         'CageRack',
         'Cage',
         'CageTransfer'

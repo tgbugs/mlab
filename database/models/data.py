@@ -60,7 +60,7 @@ class DataFileMetaData(Base):
     __table_args__=(ForeignKeyConstraint([url,filename],['datafile.url','datafile.filename']), {})
     metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False) #TODO how to get this?
     dateTime=Column(DateTime,default=datetime.now)
-    value=Column(Float(53))#,nullable=False) #XXX nullable if we just want time
+    value=Column(Float(53),nullable=False)
     abs_error=Column(Float(53)) #TODO
     metadatasource=relationship('MetaDataSource')
     def __init__(self,value,DataFile=None,MetaDataSource=None,abs_error=None,dateTime=None,metadatasource_id=None,url=None,filename=None):
