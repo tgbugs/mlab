@@ -60,7 +60,8 @@ class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSo
         return super().__repr__()
 
 
-class Experiment(HasMetaData, HasReagents, HasSubjects, Base):
+#in biology there are expeirments that generate data, or data and subjects, if they generate only subjects then they should probably have some data to go along with them or the science might be bad
+class Experiment(HasMetaData, HasReagents, HasSubjects, Base): #FIXME generation experiment!???!
     __tablename__='experiments'
     id=Column(Integer,primary_key=True)
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)

@@ -19,7 +19,7 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
 
     children=relationship('Subject',primaryjoin='Subject.id==Subject.parent_id',backref=backref('parent',uselist=False,remote_side=[id])) #this is used for running experiments intelligently w/ recursion
     generating_experiment=relationship('Experiment',backref=backref('generated_subjects'),uselist=False)
-    generated_from_subjects=relationship('Subject',secondary='experiments_subjects',primaryjoin='',secondaryjoin='') #FIXME TODO
+    #generated_from_subjects=relationship('Subject',secondary='experiments_subjects',primaryjoin='',secondaryjoin='') #FIXME TODO
     __mapper_args__ = {
         'polymorphic_on':type,
         'polymorphic_identity':'subject',
@@ -33,6 +33,15 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
                 self.generating_experiment=GeneratingExperiment.id
             else:
                 raise AttributeError
+
+
+class SubjectCollection(Base):
+    #litter? slices? do I really need something to match the generated from?
+    #I think I do because generation experiments are a bit different...
+    id=Column(Integer,primary_key=True)
+    
+
+
 
 
 class Mouse(Subject): #TODO species metadata???

@@ -115,7 +115,6 @@ def popNonSIUnit(session):
         ('degree','~o'), #also accepted
         ('number','num'), #explicitly 'of something'
         ('boolean','bool')
-        ('time','time') #for when you just need the time
     )
     session.add_all([SI_UNIT(name=name,symbol=symbol) for name,symbol in _NON_SI_UNITS])
 

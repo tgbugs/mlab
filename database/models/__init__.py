@@ -65,7 +65,7 @@ __all__.extend([
 
 from database.models.mice import *
 __all__.extend([
-        #'DOB',
+        'DOB',
         #'Breeder', #not imported, is helper
         #'Sire',
         #'Dam',

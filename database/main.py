@@ -127,8 +127,8 @@ def connect(echo=False):
 
 def main(echo=True):
     #create engine
-    #engine=pgTest(echo=echo,wipe_db=True)
-    engine=sqliteMem(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
+    engine=pgTest(echo=echo,wipe_db=True)
+    #engine=sqliteMem(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
 
     #create metadata on the engine
     #Base.metadata.drop_all(engine,checkfirst=True)
@@ -143,7 +143,7 @@ def main(echo=True):
 
     #do some tests!
     try:
-        run_tests(session)
+        #run_tests(session)
         pass
     except:
         raise

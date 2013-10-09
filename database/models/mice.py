@@ -25,7 +25,7 @@ class Cage(Base): #TODO this is a 'unit'
     id=Column(Integer,primary_key=True, autoincrement=False) #cage card numbers
     location=relationship('CageRack',backref=backref('cage',uselist=False),uselist=False)
     mice=relationship('Mouse',primaryjoin='Mouse.cage_id==Cage.id',backref=backref('cage',uselist=False))
-    litter=relationship('Litter',primaryjoin='Litter.cage_id==Cage.id',backref=backref('cage',uselist=False))
+    #litter=relationship('Litter',primaryjoin='Litter.cage_id==Cage.id',backref=backref('cage',uselist=False))
 
 
 class CageTransfer(Base):
