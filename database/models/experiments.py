@@ -71,6 +71,7 @@ class Experiment(HasMetaData, HasReagents, HasSubjects, Base):
 
     #@validates('ALL THE COLUMNS')
 
+    """
     @endDateTime.setter
     def endDateTime(self,value=None):
         if not self.endDateTime:
@@ -81,6 +82,7 @@ class Experiment(HasMetaData, HasReagents, HasSubjects, Base):
                 self.endDateTime=value
         else:
             raise Warning('endDateTime has already been set!') #FIXME this needs to be moved to databse
+    """
 
 
     def setEndDateTime(self,dateTime=None): #TODO

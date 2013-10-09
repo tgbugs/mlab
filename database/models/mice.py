@@ -54,8 +54,8 @@ class DOB(Base): #FIXME class DATETHING???  to keep all the dates with specific
     absolute_error=Column(Interval) #TODO read the doccumentation on this one to make sure it is ok
     #estimated=Column(DateTime) #transaction thingy for later
 
-    matingRecord=relationship('MatingRecord',primaryjoin='MatingRecord.dob_id==DOB.id',backref=backref('dob',uselist='False')) #FIXME need to force match litter/mr dob...
-    litter=relationship('Litter',primaryjoin='Litter.dob_id==DOB.id',backref=backref('dob',uselist=False)) #attempt to enforce one litter per DOB?
+    #matingRecord=relationship('MatingRecord',primaryjoin='MatingRecord.dob_id==DOB.id',backref=backref('dob',uselist='False')) #FIXME need to force match litter/mr dob...
+    #litter=relationship('Litter',primaryjoin='Litter.dob_id==DOB.id',backref=backref('dob',uselist=False)) #attempt to enforce one litter per DOB?
     mice=relationship('Mouse',primaryjoin='Mouse.dob_id==DOB.id',backref=backref('dob',uselist=False))
 
     def __init__(self,dateTime,absolute_error=None):
@@ -106,14 +106,14 @@ class Breeder(Base):
         #return base+'%s %s %s\n'%(self.mouse.strHelper(1),''.join([mr.strHelper(1) for mr in self.matingRecords]),''.join([lit.strHelper(1) for lit in self.litters]))
         return base+'%s %s\n'%(''.join([mr.strHelper(1) for mr in self.matingRecords]),''.join([lit.strHelper(1) for lit in self.litters]))
 
-
+'''
 class Sire(Breeder):
     #__tablename__=None #used to force single table inheritance, note: exclude_properties is not needed here
     id=Column(Integer,ForeignKey('breeder.id'),primary_key=True,autoincrement=False)
     #sex=Column(String,nullable=False) #FIXME ah balls, didn't workout...
     #CheckConstraint() #FIXME god damn it this won't work the way I have my sex table set up... I need two constraints there... and so will have to split out male and female >_<
 
-    matingRecords=relationship('MatingRecord',backref='sire')
+    matingRecords=relationship('Experiment',backref='sire')
     litters=relationship('Litter',backref='sire')
     offspring=relationship('Mouse',primaryjoin='Sire.id < foreign(Mouse.id)',backref=backref('sire',uselist=False),viewonly=True)
 
@@ -124,14 +124,14 @@ class Dam(Breeder):
     #__tablename__=None #used to force single table inheritance, note: exclude_properties is not needed here #turns out STI is good in one dir, but for other constraints it sucks :/
     id=Column(Integer,ForeignKey('breeder.id'),primary_key=True,autoincrement=False)
 
-    matingRecords=relationship('MatingRecord',backref='dam')
+    matingRecords=relationship('Experiment',backref='dam')
     litters=relationship('Litter',backref='dam')
     offspring=relationship('Mouse',primaryjoin='Dam.id < foreign(Mouse.id)',backref=backref('dam',uselist=False),viewonly=True)
 
     __mapper_args__ = {'polymorphic_identity':'f'}
 
 
-class _MatingRecord(Base): #XXX DEPRICATED
+class MatingRecord(Base): #XXX DEPRICATED
     id=Column(Integer,primary_key=True)
     sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'))
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'))
@@ -185,7 +185,7 @@ class _MatingRecord(Base): #XXX DEPRICATED
         return base+'%s %s\n\tstartDateTime %s %s'%(self.sire.strHelper(1),self.dam.strHelper(1),self.startDateTime,litter)
 
 
-class _Litter(Base): #FIXME replace with NameSubjectGroup or something #XXX DEPRICATED
+class Litter(Base): #FIXME replace with NameSubjectGroup or something #XXX DEPRICATED
     id=Column(Integer,primary_key=True)
     sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire'),nullable=False) #can have mice w/o litters, but no litters w/o mice
     dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam'),nullable=False)
@@ -289,3 +289,4 @@ class _Litter(Base): #FIXME replace with NameSubjectGroup or something #XXX DEPR
         except:
             matingRecord='\n\tMatingRecord None'
         return base+'%s %s %s %s\n\tSize %s'%(sire,self.dam.strHelper(1),self.dob.strHelper(1),matingRecord,self.size)
+'''

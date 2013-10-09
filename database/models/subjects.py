@@ -52,11 +52,11 @@ class Mouse(Subject): #TODO species metadata???
     genotype_id=Column(Integer) #TODO this should really be metadata, but how to constrain those metadata fields based on strain data?
     strain_id=Column(Integer,ForeignKey('strain.id')) #FIXME populating the strain ID probably won't be done in table? but can set rules that force it to match the parents, use a query, or a match or a condition on a join to prevent accidents? well, mouse strains could change via mute TODO
 
-    #geology
-    litter_id=Column(Integer, ForeignKey('litter.id')) #mice dont HAVE to have litters
+    #geology #XXX now all contained w/in experiments
+    #litter_id=Column(Integer, ForeignKey('litter.id')) #mice dont HAVE to have litters
     #FIXME there may be a way to get these from litter_id???
-    sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire')) #FIXME test the sire_id=0 hack may not work on all schemas?
-    dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam')) #FIXME delete these, they are not used anymore
+    #sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire')) #FIXME test the sire_id=0 hack may not work on all schemas?
+    #dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam')) #FIXME delete these, they are not used anymore
 
     __mapper_args__ = {'polymorphic_identity':'mouse'}
 
@@ -105,18 +105,18 @@ class Mouse(Subject): #TODO species metadata???
         self.dod=dod
 
         #autofill the ids from a parent object
-        if Litter:
-            if Litter.id:
-                self.litter_id=Litter.id
-                self.sire_id=Litter.sire_id
-                self.dam_id=Litter.dam_id
-                self.dob_id=Litter.dob_id
+        #if Litter:
+            #if Litter.id:
+                #self.litter_id=Litter.id
+                #self.sire_id=Litter.sire_id
+                #self.dam_id=Litter.dam_id
+                #self.dob_id=Litter.dob_id
                 #self.genotype=Litter.sire.mouse.genotype+Litter.dam.mouse.genotype
-                if Litter.cage_id:
-                    self.cage_id=Litter.cage_id
-            else:
-                raise AttributeError('Litter has no id! Did you commit before referencing the instance directly?')
-        elif DOB:
+                #if Litter.cage_id:
+                    #self.cage_id=Litter.cage_id
+            #else:
+                #raise AttributeError('Litter has no id! Did you commit before referencing the instance directly?')
+        if DOB:
             if DOB.id:
                 self.dob_id=DOB.id
             else:
