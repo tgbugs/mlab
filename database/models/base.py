@@ -7,6 +7,13 @@ class DefaultBase:
     def __tablename__(cls):
         return cls.__name__.lower() #FIXME cls.__name__ could fix?
 
+    #_write_once_cols=None #see if we need to define this here
+    @validates(*_write_once_cols)
+    def _write_once(self, key, value):
+        if not getattr(self, key):
+            raise ValueError('%s is write once!'%key)
+        return value
+
     def AssignID(self,cls): #FIXME does this go here?
         if cls:
             if cls.id:

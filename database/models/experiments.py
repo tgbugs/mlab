@@ -69,8 +69,9 @@ class Experiment(HasMetaData, HasReagents, HasSubjects, Base): #FIXME generation
     startDateTime=Column(DateTime,default=datetime.now())
     endDateTime=Column(DateTime) #TODO
     type_id=Column(Integer,ForeignKey('experimenttype.id'),nullable=False)
+    _write_once_cols='endDateTime','startDateTime'
 
-    #@validates('ALL THE COLUMNS')
+
 
     """
     @endDateTime.setter
@@ -86,11 +87,14 @@ class Experiment(HasMetaData, HasReagents, HasSubjects, Base): #FIXME generation
     """
 
 
-    def setEndDateTime(self,dateTime=None): #TODO
+    def setEndDateTime(self,dateTime=None):
+        if not self.endDateTime: #FIXME I should be able to do this with validates
             if not dateTime:
                 self.endDateTime=datetime.now()
             else:
                 self.endDateTime=dateTime
+        else:
+            raise Warning('endDateTime has already been set!')
         
 
     def __init__(self,ExpType=None,Project=None,Person=None,Reagents=[],Subjects=[],type_id=None,project_id=None,person_id=None,startDateTime=None):

@@ -14,7 +14,7 @@ _plusMinus='\u00B1'
 #espX, espY
 #NBQX_washin_start, concentration #by associating the data source with a reagent instead of a person... the data is there for both the acsf_id and all the drug information :), #FIXME unfortunately that leads to a massive proliferation of datasources :/, so we need to find a better way >_< since this is more along the lines of 'protocol metadata'
 
-class DataSource(Base): #TODO
+class DataSource(Base): #TODO FIXME this should be DATFILESource
     """used for doccumenting where data (NOT metadata) came form, even if I generated it, this makes a distinction between data that I have complete control over and data that I get from another source such as clampex or jax"""
     #this also works for citeables
     __tablename__='datasources'
@@ -56,13 +56,14 @@ class DataFileMetaData(Base):
     __tablename__='datafiles_metadata'
     id=Column(Integer,primary_key=True)
     url=Column(String,nullable=False)
-    filename=Column(String,nullable=False)
+    filename=Column(String,nullable=False) #FIXME you know, using datafile.id would let it change naming w/o cascade...
     __table_args__=(ForeignKeyConstraint([url,filename],['datafile.url','datafile.filename']), {})
     metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False) #TODO how to get this?
     dateTime=Column(DateTime,default=datetime.now)
     value=Column(Float(53),nullable=False)
     abs_error=Column(Float(53)) #TODO
     metadatasource=relationship('MetaDataSource')
+    _write_once_cols='url','filename','metadatasource_id','dateTime','value','abs_error'
     def __init__(self,value,DataFile=None,MetaDataSource=None,abs_error=None,dateTime=None,metadatasource_id=None,url=None,filename=None):
         self.dateTime=dateTime
         self.url=url
@@ -127,16 +128,14 @@ class File(Base):
     #fuck, what order do I do this in esp for my backup code
     __tablename__='file'
     url=Column(String,ForeignKey('repository.url'),primary_key=True,autoincrement=False)
+    mirrors=relationship('Repository',primaryjoin='Repository.parent_url==File.url') #FIXME not causal!
     filename=Column(String,primary_key=True,autoincrement=False)
     creationDateTime=Column(DateTime,default=datetime.now)
-    filetype=Column(String)
-    @hybrid_property #FIXME this isn't really hybrid... ie it doesnt really need to be a column
+
+    @property
     def filetype(self):
         return self.filename.split('.')[-1]
-    @filetype.setter
-    def filetype(self):
-        raise AttributeError('readonly attribute, there should be a file name associate with this record?')
-    ident=Column(String)
+    ident=Column(String) #FIXME wtf was I going to do with this?
     __mapper_args__ = {
         'polymorphic_on':ident,
         'polymorphic_identity':'file',

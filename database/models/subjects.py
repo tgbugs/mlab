@@ -28,6 +28,8 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
     sDT_abs_error=Column(Interval)
     endDateTime=Column(DateTime)
 
+    _write_once_cols='parent_id','generating_experiment_id','startDateTime','sDT_abs_error','endDateTime'
+
     __mapper_args__ = {
         'polymorphic_on':type,
         'polymorphic_identity':'subject',
@@ -60,6 +62,8 @@ class SubjectCollection(Base):
 
     startDateTime=Column(DateTime,default=datetime.now)
     sDT_abs_error=Column(Interval)
+
+    _write_once_cols='generating_experiment_id','startDateTime','sDT_abs_error'
 
     @property
     def size(self):
@@ -94,6 +98,7 @@ class Mouse(Subject):
     #FIXME there may be a way to get these from litter_id???
     #sire_id=Column(Integer, ForeignKey('sire.id',use_alter=True,name='fk_sire')) #FIXME test the sire_id=0 hack may not work on all schemas?
     #dam_id=Column(Integer, ForeignKey('dam.id',use_alter=True,name='fk_dam')) #FIXME delete these, they are not used anymore
+
 
     __mapper_args__ = {'polymorphic_identity':'mouse'}
 
@@ -176,7 +181,7 @@ class Slice(Subject): #FIXME slice should probably be a subject
     #well, mice don't refer directly to mating record... but litter's do...
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True) #FIXME
     #parent_id=Column(Integer,ForeignKey('subjects.id'))
-    parent_id=Column(Integer,ForeignKey('Subject.id'),nullable=False)#,primary_key=True) #works with backref from mouse #TODO this has actually been fixed with the move to parent_id...
+    #parent_id=Column(Integer,ForeignKey('Subject.id'),nullable=False)#,primary_key=True) #works with backref from mouse #TODO this has actually been fixed with the move to parent_id...
     #TODO check that there are not more slices than the thickness (from the metadta) divided by the total length of the largest know mouse brain
     #just like I don't store slice -> rig time in cell we dont store cut time in slice
     #HOWEVER we will need to store that in ExperimentMetaData
@@ -231,9 +236,9 @@ class Slice(Subject): #FIXME slice should probably be a subject
 class Cell(Subject):
     __tablename__='cell'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
-    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME grandparent_id
-    parent_id=Column(Integer,ForeignKey('slice.id'),nullable=False) #FIXME parent_id
-    startDateTime=Column(DateTime,default=datetime.now)
+    mouse_id=Column(Integer,ForeignKey('mouse.id'),nullable=False) #FIXME can we get grandparent w/o...
+    #parent_id=Column(Integer,ForeignKey('slice.id'),nullable=False)
+    #startDateTime=Column(DateTime,default=datetime.now)
     __mapper_args__={'polymorphic_identity':'cell'}
     def __init__(self,Slice=None,Experiments=[],Hardware=[],slice_id=None,mouse_id=None,experiment_id=None,hs_id=None,startDateTime=None):
         #super().__init__(Slice,Experiments,Hardware,slice_id)
