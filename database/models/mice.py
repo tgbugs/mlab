@@ -106,7 +106,7 @@ class Breeder(Base):
         #return base+'%s %s %s\n'%(self.mouse.strHelper(1),''.join([mr.strHelper(1) for mr in self.matingRecords]),''.join([lit.strHelper(1) for lit in self.litters]))
         return base+'%s %s\n'%(''.join([mr.strHelper(1) for mr in self.matingRecords]),''.join([lit.strHelper(1) for lit in self.litters]))
 
-'''
+
 class Sire(Breeder):
     #__tablename__=None #used to force single table inheritance, note: exclude_properties is not needed here
     id=Column(Integer,ForeignKey('breeder.id'),primary_key=True,autoincrement=False)
@@ -289,4 +289,4 @@ class Litter(Base): #FIXME replace with NameSubjectGroup or something #XXX DEPRI
         except:
             matingRecord='\n\tMatingRecord None'
         return base+'%s %s %s %s\n\tSize %s'%(sire,self.dam.strHelper(1),self.dob.strHelper(1),matingRecord,self.size)
-'''
+

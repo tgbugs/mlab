@@ -19,7 +19,7 @@ from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardwa
     
 #TODO in theory what we want is for experiments to have a m-m on itself to convey logical connections, in which case a mating record is just an experiment.... HRM, think on this... we certainly want the m-m for logical depenece I think
 
-
+#why experiment type instead of inheritance? because I don't want to force users to learn sqlalchemy, furthermore, doccumenting experiments in code defeats the purpose of saving all of this stuff in a database from a record keeping point of view
 class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSources, Base):
     """this stores all the constant data about an experiment that will be done many times"""
     #TODO addition of new data does not trigger version bump but any changes to existing entries should

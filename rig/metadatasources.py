@@ -1,4 +1,5 @@
 from database.models import MetaDataSource, Experiment, Subject
+from database.api import MDSource
 #TODO what I need is a link between datasources and the Controller classes, that should probably be defined... here? or somewhere? or fuck what damn it one class per metadata source???!
 
 def mdsAll(channels=4):
@@ -14,56 +15,11 @@ def mdsAll(channels=4):
     return clsDict
 
 
-class _MDSource:
-    @property
-    def name(self):
-        return self.__class__.__name__[4:]
-    prefix=None
-    unit=None
-    mantissa=None #FIXME mantissa should be rounded not truncated, make sure this is implemented
-
-    def __init__(self,Controller,session):
-        if Controller.__class__.__name__==self.ctrl_name:
-            self.ctrl=Controller
-        else:
-            raise TypeError('Wrong controller for this metadata source!')
-        
-        self.session=session #FIXME is it better to create a new session every time or better to just leave one open? read up
-
-        try:
-            self.MetaDataSource=self.session.query(MetaDataSource).filter_by(name=self.name)[0]
-        except IndexError:
-            self.Persist()
-
-    def Persist(self):
-        self.MetaDataSource=MetaDataSource(name=self.name,prefix=self.prefix,unit=self.unit,mantissa=self.mantissa)
-        self.session.add(self.MetaDataSource)
-        self.session.commit()
-
-    def record(self,Parent):
-        value=self.getCurrentValue()
-        abs_error=self.getAbsError()
-        #Parent.metadata_.append(Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error)) #alternate form
-        self.currentRecord=Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error)
-        #FIXME is currentRecord a sufficient safety net?? could aways just get the data again...
-        #probably shouldn't worry TOO much about all these crazy failure cases
-        self.session.add(self.currentRecord)
-        #commit at the end?
-        #FIXME should this be forced to commit previous values before adding a new one? well the session has it now...
-
-    def getCurrentValue(self):
-        #FIXME somehow I think I need a way to hold this until everything is collect before I commit? or should I just commit?
-        return None
-
-    def getAbsError(self):
-        #TODO this is where online analysis based on calibration should go??? well we also need that somewhere else too...
-        return None
-
 ###-----------------------------------------------------------------------------------
 ###  trm metadata sources BEWARE!! ALL trm inputs at the moment are MASSIVELY blocking
 ###-----------------------------------------------------------------------------------
 
-class MDS_trmZ(_MDSource):
+class MDS_trmZ(MDSource):
     """objective height reading for an object""" #TODO figur out how to record surface Z...
     prefix='u'
     unit='m'
@@ -73,12 +29,15 @@ class MDS_trmZ(_MDSource):
         return self.ctrl.getFloatInput()
 
 
-class MDS_trmMouseDown(_MDSource):
+class MDS_trmMouseDown(MDSource):
     prefix=''
     unit='bool'
     ctrl_name='trmControl'
     def getCurrentValue(self):
         return self.ctrl.getBoolInput()
+
+
+class MDS_trmBrainOut(MDSource):
 
 ###----------------------
 ###  esp metadata sources
@@ -94,7 +53,7 @@ def espAll():
     return espDict
 
 
-class MDS_espX(_MDSource):
+class MDS_espX(MDSource):
     prefix='m'
     unit='m'
     mantissa=5
@@ -103,7 +62,7 @@ class MDS_espX(_MDSource):
         return self.ctrl.getX()
 
 
-class MDS_espY(_MDSource):
+class MDS_espY(MDSource):
     prefix='m'
     unit='m'
     mantissa=5
@@ -134,8 +93,7 @@ def mccBindAll(channel):
     return mccDict
 
 
-
-class _mccBase(_MDSource):
+class _mccBase(MDSource):
     ctrl_name='mccControl'
     def __init__(self,Controller,session):
         try:

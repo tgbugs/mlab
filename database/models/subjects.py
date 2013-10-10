@@ -14,12 +14,20 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     type=Column(String,nullable=False)
-    parent_id=Column(Integer,ForeignKey('subjects.id'))
-    generating_experiment_id=Column(Integer,ForeignKey('experiments.id'))
 
+    parent_id=Column(Integer,ForeignKey('subjects.id'))
     children=relationship('Subject',primaryjoin='Subject.id==Subject.parent_id',backref=backref('parent',uselist=False,remote_side=[id])) #this is used for running experiments intelligently w/ recursion
+
+    generating_experiment_id=Column(Integer,ForeignKey('experiments.id'))
     generating_experiment=relationship('Experiment',backref=backref('generated_subjects'),uselist=False)
-    #generated_from_subjects=relationship('Subject',secondary='experiments_subjects',primaryjoin='',secondaryjoin='') #FIXME TODO
+    generated_from_subjects=relationship('Subject',secondary='experiments_subjects',
+            primaryjoin='Subject.generating_experiment_id==experiments_subjects.c.experiments_id',
+            secondaryjoin='Subject.id==experiments_subjects.c.subjects_id')
+
+    startDateTime=Column(DateTime,default=datetime.now)
+    sDT_abs_error=Column(Interval)
+    endDateTime=Column(DateTime)
+
     __mapper_args__ = {
         'polymorphic_on':type,
         'polymorphic_identity':'subject',
@@ -36,15 +44,34 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
 
 
 class SubjectCollection(Base):
+    """Identified collections of subjects such as litters, will have a generating experiment, but maybe shouldnt, this would allow for arbitrary groupings of subjects with all sorts of relations beyond just having the same datafile or something, eg this could keep track of pairs or groups of cells that are recorded @ same time"""
     #litter? slices? do I really need something to match the generated from?
     #I think I do because generation experiments are a bit different...
     id=Column(Integer,primary_key=True)
-    
+    name=Column(String(30),nullable=False)
+    members=relationship('Subject',primaryjoin='Subject.group_id==SubjectCollection.id',backref=backref('group',uselist=False)) #litter stores the members and starts out with ALL unknown each mouse has its own entry
 
+    #what kinds of collections wouldn't have this? well, subjects all involved in one experiment, but those groupgins are already captured by the experiment
+    generating_experiment_id=Column(Integer,ForeignKey('experiments.id')) #FIXME nullable=False?
+    generating_experiment=relationship('Experiment',backref=backref('generated_subjects'),uselist=False)
+    generated_from_subjects=relationship('Subject',secondary='experiments_subjects',
+            primaryjoin='SubjectCollection.generating_experiment_id==experiments_subjects.c.experiments_id',
+            secondaryjoin='Subject.id==experiments_subjects.c.subjects_id')
 
+    startDateTime=Column(DateTime,default=datetime.now)
+    sDT_abs_error=Column(Interval)
 
+    @property
+    def size(self):
+        return len(self.members)
+    @property
+    def remaining(self):
+        return None #sum([m.dod==None for m in self.members]) #TODO
 
-class Mouse(Subject): #TODO species metadata???
+    def makeSubjects(self): #TODO
+        return None
+
+class Mouse(Subject):
     #in addition to the id, keep track of some of the real world ways people refer to mice!
     __tablename__='mouse'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
@@ -60,6 +87,7 @@ class Mouse(Subject): #TODO species metadata???
     #relationship('Breeder',primaryjoin='',backref=backref())
     genotype_id=Column(Integer) #TODO this should really be metadata, but how to constrain those metadata fields based on strain data?
     strain_id=Column(Integer,ForeignKey('strain.id')) #FIXME populating the strain ID probably won't be done in table? but can set rules that force it to match the parents, use a query, or a match or a condition on a join to prevent accidents? well, mouse strains could change via mute TODO
+    #FIXME there are multiple strain IDS you idiot >_<
 
     #geology #XXX now all contained w/in experiments
     #litter_id=Column(Integer, ForeignKey('litter.id')) #mice dont HAVE to have litters
@@ -69,22 +97,18 @@ class Mouse(Subject): #TODO species metadata???
 
     __mapper_args__ = {'polymorphic_identity':'mouse'}
 
-    #dates and times
-    dob_id=Column(Integer, ForeignKey('dob.id'),nullable=False) #backref FIXME data integrity problem, dob_id and litter.dob_id may not match if entered manually...
     @hybrid_property #TODO
     def age(self):
-        if self.dod:
-            return self.dod-self.dob.dateTime
+        if self.endDateTime:
+            return self.endDateTime-self.startDateTime #FIXME uncertainty
         else:
-            return datetime.now()-self.dob.dateTime #FIXME
+            return datetime.now()-self.startDateTime #uncertainty plox
         
-    dod=Column(DateTime) #FIXME need to figure out how to directly link this to experiments eg, a setter for dod would just get current datetime and make the mouse dead instead of calling a completely separate killMouse method
 
-    #breeding records
-    breedingRec=relationship('Breeder',primaryjoin='Mouse.id==Breeder.id',backref=backref('mouse',uselist=False),uselist=False)
+    @property
+    def breedingRecs(self):
+        return [e for e in self.experiments if e.type.name=='mating record']
 
-    #experiments
-    #experiment_id=Column(Integer,ForeignKey('experiments.id'),unique=True) #FIXME m-m
 
     #things that not all mice will have but that are needed for data to work out
     #slices=relationship('Slice',primaryjoin='Slice.parent_id==Mouse.id',backref=backref('mouse',uselist=False))
@@ -152,9 +176,8 @@ class Slice(Subject): #FIXME slice should probably be a subject
     #well, mice don't refer directly to mating record... but litter's do...
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True) #FIXME
     #parent_id=Column(Integer,ForeignKey('subjects.id'))
-    parent_id=Column(Integer,ForeignKey('mouse.id'),nullable=False)#,primary_key=True) #works with backref from mouse #TODO this has actually been fixed with the move to parent_id...
+    parent_id=Column(Integer,ForeignKey('Subject.id'),nullable=False)#,primary_key=True) #works with backref from mouse #TODO this has actually been fixed with the move to parent_id...
     #TODO check that there are not more slices than the thickness (from the metadta) divided by the total length of the largest know mouse brain
-    startDateTime=Column(DateTime,default=datetime.now) #time onto rig rather than t cut
     #just like I don't store slice -> rig time in cell we dont store cut time in slice
     #HOWEVER we will need to store that in ExperimentMetaData
     #hemisphere
@@ -162,11 +185,9 @@ class Slice(Subject): #FIXME slice should probably be a subject
     #thickness=Column(Integer)
     #thickness=relationship('Experiment.MetaData',secondary='subjects_association',primaryjoin='Experiment.MetaData.experiment_id==subjects_association.experiments_id'
     @hybrid_property
-    def dateTimeOut(self): #FIXME fuck shit got damnit it's fine :D just use a None out of bath
+    def dateTimeOut(self):
         exp=self.experiments[0]
-        emd=Experiment.MetaData
-        session=object_session(self)
-        return session.query(emd).filter(emd.experiment_id==exp.id,emd.datasource_id=='dateTimeOut') #ick this is nasty to get out and this isn't even correct
+        return exp.endDateTime #FIXME ideally we would like to have timepoints, but that should be a mixin
 
     @hybrid_property
     def thickness(self):

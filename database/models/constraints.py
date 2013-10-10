@@ -30,24 +30,3 @@ class SEX(Base):
     abbrev=Column(String(1),nullable=False,unique=True) #'m','f','u'
     def __repr__(self):
         return '\n%s %s %s'%(self.name,self.abbrev,self.symbol)
-
-
-class Strain(HasCiteables, Base): #TODO HasCiteable!@? need something between citeable and datafile
-    id=Column(Integer,primary_key=True) #FIXME
-    jax_id=Column(String(10))
-    name=Column(Unicode(50)) #scrape from jax
-    abbrev=Column(String(15))
-    #will be VERY useful when converting for real things
-    #FIXME: by reflection from jax??? probably not
-    #id=Column(String(20),primary_key=True,autoincrement=False)
-    #TODO can just use datafiles to get the data on them via
-    #http://jaxmice.jax.org/strain/*.html
-    #make a way to put the data in via a url
-    def __init__(self,jax_id,name=None,abbrev=None,Citeables=[]):
-        #name=getJaxData(jax_id) #TODO
-        self.jax_id=jax_id
-        self.name=name
-        self.abbrev=abbrev
-        self.citeables.extend(Citeables)
-    
-

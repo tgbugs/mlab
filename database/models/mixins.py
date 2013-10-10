@@ -228,5 +228,3 @@ class HasSubjects:
             Column('subjects_id', ForeignKey('subjects.id'), primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
         return relationship('Subject', secondary=subjects_association,backref=backref('%s'%cls.__tablename__))
-
-
