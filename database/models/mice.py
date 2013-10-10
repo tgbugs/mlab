@@ -43,6 +43,7 @@ class CageTransfer(Base):
     new_cage_id=Column(Integer, ForeignKey('cage.id'))
 
 
+'''
 ###---------------------------------------------------------
 ###  Date of birth table for use with anything that needs it
 ###---------------------------------------------------------
@@ -289,4 +290,4 @@ class Litter(Base): #FIXME replace with NameSubjectGroup or something #XXX DEPRI
         except:
             matingRecord='\n\tMatingRecord None'
         return base+'%s %s %s %s\n\tSize %s'%(sire,self.dam.strHelper(1),self.dob.strHelper(1),matingRecord,self.size)
-
+'''

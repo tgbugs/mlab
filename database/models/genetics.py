@@ -1,5 +1,6 @@
 from database.imports import *
 from database.models.base import Base
+from database.models.mixins import HasCiteables
 
 
 class Genotype(Base): #TODO HasGenotype note this is an association table
@@ -38,7 +39,7 @@ class Strain(HasCiteables, Base): #TODO somehow this looks like mouse type
     name=Column(Unicode(50)) #scrape from jax
     abbrev=Column(String(15))
     background_id=Column(Integer,ForeignKey('background.id'))
-    transgene_id=Column(Integer,ForeignKey('transgene.id'))
+    gene_id=Column(Integer,ForeignKey('gene.id'))
     #will be VERY useful when converting for real things
     #FIXME: by reflection from jax??? probably not
     #id=Column(String(20),primary_key=True,autoincrement=False)

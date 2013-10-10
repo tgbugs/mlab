@@ -22,13 +22,17 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
     generating_experiment=relationship('Experiment',backref=backref('generated_subjects'),uselist=False)
     generated_from_subjects=relationship('Subject',secondary='experiments_subjects',
             primaryjoin='Subject.generating_experiment_id==experiments_subjects.c.experiments_id',
-            secondaryjoin='Subject.id==experiments_subjects.c.subjects_id')
+            secondaryjoin='Subject.id==experiments_subjects.c.subjects_id',
+            backref='generated_subjects')
+
+    group_id=Column(Integer,ForeignKey('subjectcollection.id')) #the cage card number
 
     startDateTime=Column(DateTime,default=datetime.now)
     sDT_abs_error=Column(Interval)
     endDateTime=Column(DateTime)
 
-    _write_once_cols='parent_id','generating_experiment_id','startDateTime','sDT_abs_error','endDateTime'
+    @validates('parent_id','generating_experiment_id','startDateTime','sDT_abs_error','endDateTime')
+    def _wo(self, key, value): return self._write_once(key, value)
 
     __mapper_args__ = {
         'polymorphic_on':type,
@@ -55,15 +59,17 @@ class SubjectCollection(Base):
 
     #what kinds of collections wouldn't have this? well, subjects all involved in one experiment, but those groupgins are already captured by the experiment
     generating_experiment_id=Column(Integer,ForeignKey('experiments.id')) #FIXME nullable=False?
-    generating_experiment=relationship('Experiment',backref=backref('generated_subjects'),uselist=False)
+    generating_experiment=relationship('Experiment',backref=backref('generated_collections'),uselist=False)
     generated_from_subjects=relationship('Subject',secondary='experiments_subjects',
             primaryjoin='SubjectCollection.generating_experiment_id==experiments_subjects.c.experiments_id',
-            secondaryjoin='Subject.id==experiments_subjects.c.subjects_id')
+            secondaryjoin='Subject.id==experiments_subjects.c.subjects_id',
+            backref='generated_collections')
 
     startDateTime=Column(DateTime,default=datetime.now)
     sDT_abs_error=Column(Interval)
 
-    _write_once_cols='generating_experiment_id','startDateTime','sDT_abs_error'
+    @validates('generating_experiment_id','startDateTime','sDT_abs_error')
+    def _wo(self, key, value): return self._write_once(key, value)
 
     @property
     def size(self):
@@ -83,6 +89,7 @@ class Mouse(Subject):
     tattoo=Column(Integer)
     num_in_lit=Column(Integer)  #for mice with no eartag or tattoo, numbered in litter, might replace this with mouse ID proper?
     name=Column(String(20))  #words for mice
+
 
     #cage and location information
     cage_id=Column(Integer,ForeignKey('cage.id')) #the cage card number

@@ -69,23 +69,9 @@ class Experiment(HasMetaData, HasReagents, HasSubjects, Base): #FIXME generation
     startDateTime=Column(DateTime,default=datetime.now())
     endDateTime=Column(DateTime) #TODO
     type_id=Column(Integer,ForeignKey('experimenttype.id'),nullable=False)
-    _write_once_cols='endDateTime','startDateTime'
 
-
-
-    """
-    @endDateTime.setter
-    def endDateTime(self,value=None):
-        if not self.endDateTime:
-            now=datetime.now()
-            if type(value) != type(now):
-                self.endDateTime=now
-            else:
-                self.endDateTime=value
-        else:
-            raise Warning('endDateTime has already been set!') #FIXME this needs to be moved to databse
-    """
-
+    @validates('endDateTime','startDateTime')
+    def _wo(self, key, value): return _write_once(key, value)
 
     def setEndDateTime(self,dateTime=None):
         if not self.endDateTime: #FIXME I should be able to do this with validates
@@ -95,7 +81,6 @@ class Experiment(HasMetaData, HasReagents, HasSubjects, Base): #FIXME generation
                 self.endDateTime=dateTime
         else:
             raise Warning('endDateTime has already been set!')
-        
 
     def __init__(self,ExpType=None,Project=None,Person=None,Reagents=[],Subjects=[],type_id=None,project_id=None,person_id=None,startDateTime=None):
         self.startDateTime=startDateTime

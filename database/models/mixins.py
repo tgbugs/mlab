@@ -75,6 +75,9 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
     dateTime=Column(DateTime,default=datetime.now)
     value=Column(Float(53),nullable=False)
     abs_error=Column(Float(53))
+    @validates('parent_id','metadatasource_id','dateTime','value','abs_error')
+    def _wo(self, key, value): return self._write_once(key, value)
+    
     def __init__(self,value,Parent=None,MetaDataSource=None,metadatasource_id=None,abs_error=None,dateTime=None):
         self.dateTime=dateTime
         self.metadatasource_id=metadatasource_id

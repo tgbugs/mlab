@@ -16,7 +16,7 @@ from sqlalchemy                         import Interval
 from sqlalchemy                         import ForeignKey
 from sqlalchemy                         import ForeignKeyConstraint
 
-from sqlalchemy.orm                     import relationship, backref, object_session
+from sqlalchemy.orm                     import relationship, backref, object_session, validates
 
 from sqlalchemy.ext.hybrid              import hybrid_property, hybrid_method
 

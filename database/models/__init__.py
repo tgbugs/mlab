@@ -27,7 +27,6 @@ __all__.extend([
         'SI_PREFIX',
         'SI_UNIT',
         'SEX',
-        'Strain'
 ])
 
 from database.models.data import *
@@ -65,7 +64,7 @@ __all__.extend([
 
 from database.models.mice import *
 __all__.extend([
-        'DOB',
+        #'DOB',
         #'Breeder', #not imported, is helper
         #'Sire',
         #'Dam',
@@ -87,4 +86,11 @@ __all__.extend([
         'Person',
         'User',
         'Credentials'
+])
+from database.models.genetics import *
+__all__.extend([
+        'Genotype',
+        'Gene',
+        'Background',
+        'Strain'
 ])

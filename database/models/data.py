@@ -63,7 +63,10 @@ class DataFileMetaData(Base):
     value=Column(Float(53),nullable=False)
     abs_error=Column(Float(53)) #TODO
     metadatasource=relationship('MetaDataSource')
-    _write_once_cols='url','filename','metadatasource_id','dateTime','value','abs_error'
+
+    @validates('url','filename','metadatasource_id','dateTime','value','abs_error')
+    def _wo(self, key, value): return self._write_once(key, value)
+
     def __init__(self,value,DataFile=None,MetaDataSource=None,abs_error=None,dateTime=None,metadatasource_id=None,url=None,filename=None):
         self.dateTime=dateTime
         self.url=url
@@ -131,7 +134,7 @@ class File(Base):
     #fuck, what order do I do this in esp for my backup code
     __tablename__='file'
     url=Column(String,ForeignKey('repository.url'),primary_key=True,autoincrement=False)
-    mirrors=relationship('Repository',primaryjoin='Repository.parent_url==File.url') #FIXME not causal!
+    mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
     filename=Column(String,primary_key=True,autoincrement=False)
     creationDateTime=Column(DateTime,default=datetime.now)
 
