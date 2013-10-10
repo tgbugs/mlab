@@ -105,6 +105,9 @@ class Repository(Base):
     def getStatus(self):
         URL_STAND.ping(self.url)
 
+    def validateFiles(self): #FIXME does this go here??! not really...
+        return None
+
     #TODO, if we are going to store these in a database then the db needs to pass sec tests, but it is probably better than trying to secure them in a separate file, BUT we will unify all our secure credentials management with the same system
     #TODO there should be a default folder or 
     #access_manager=Column(String) #FIXME the credentials manager will handle this all by itself
