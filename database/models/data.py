@@ -10,10 +10,6 @@ _plusMinus='\u00B1'
 ###  DataSources
 ###-------------
 
-#datasource examples:
-#espX, espY
-#NBQX_washin_start, concentration #by associating the data source with a reagent instead of a person... the data is there for both the acsf_id and all the drug information :), #FIXME unfortunately that leads to a massive proliferation of datasources :/, so we need to find a better way >_< since this is more along the lines of 'protocol metadata'
-
 class DataSource(Base): #TODO FIXME this should be DATFILESource
     """used for doccumenting where data (NOT metadata) came form, even if I generated it, this makes a distinction between data that I have complete control over and data that I get from another source such as clampex or jax"""
     #this also works for citeables
@@ -36,7 +32,6 @@ class MetaDataSource(Base):
     prefix=Column(String(2),ForeignKey('si_prefix.symbol'),default='')
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
     mantissa=Column(Integer) #TODO
-    #TODO calibration data should *probably* be stored on the hardware as a datafile or metadata and can be filtered by datetime against experiments
     def strHelper(self): #TODO this is where quantities can really pay off
         return '%s%s from %s'%(self.prefix,self.unit,self.name)
     def __repr__(self):

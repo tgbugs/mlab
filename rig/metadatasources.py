@@ -29,15 +29,28 @@ class MDS_trmZ(MDSource):
         return self.ctrl.getFloatInput()
 
 
-class MDS_trmMouseDown(MDSource):
+class MDS_trmSliceThickness(MDSource):
+    prefix='u'
+    unit='m'
+    ctrl_name='trmControl'
+    def getCurrentValue(self):
+        return self.ctrl.getFloatInput()
+
+
+class _MDS_trmBOOL(MDSource): #FIXME TODO
     prefix=''
     unit='bool'
     ctrl_name='trmControl'
     def getCurrentValue(self):
         return self.ctrl.getBoolInput()
 
-
-class MDS_trmBrainOut(MDSource):
+def trmFac(MDS_trm,name): #FIXME TODO
+    return type('MDS_'+name,
+                (MDS_trm,),
+                {}
+               )
+#FIXME figure out to make it so this doesn't break the init process..
+trmBools='trmMouseDown','trmBrainOut','trmNBQX_washed_in'
 
 ###----------------------
 ###  esp metadata sources

@@ -22,6 +22,7 @@ from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardwa
 #why experiment type instead of inheritance? because I don't want to force users to learn sqlalchemy, furthermore, doccumenting experiments in code defeats the purpose of saving all of this stuff in a database from a record keeping point of view
 class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSources, Base):
     """this stores all the constant data about an experiment that will be done many times"""
+    #TODO logical relationships between experiments could be manifest here, but THAT is a project for another day
     #TODO addition of new data does not trigger version bump but any changes to existing entries should
     id=Column(Integer,primary_key=True) #FIXME
     name=Column(String(30),nullable=False)
@@ -31,11 +32,6 @@ class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSo
     methods_id=Column(Integer,ForeignKey('citeable.id'))
 
     experiments=relationship('Experiment',backref=backref('type',uselist=False))
-
-    #TODO there are simpy too many datasources and metadata sources to access them directly every time from the whole list, therefore we will include them here to make finding them easy but not to constrain them...
-    #FIXME datasources being tied directly to REAL hardware could be a problem ;_;
-    #need a way to specify the types of data without being forced to add a new experiment type every time hardware changes or loose the record of the old hardware configuration...
-    #RESPONSE: not actually a problem because atm sources are not tied directly to hardware and in theory I could just keep a history table for links between sources and hardware... or better yet just do that by linking data sources to hardware types and ha... fuck... integrety failures EVERYWHERE ;_;
 
     @property
     def reagents(self):

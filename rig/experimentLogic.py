@@ -290,7 +290,9 @@ class MatingRecord(BaseExp):
             raise AttributeError('mrs require a male and a female subject')
 
 
-
+class ESPCalibration(BaseExp):
+    """Oh look! calibrations are just experiments on hardware! subject type! hardware! lol"""
+    pass
 
 
 class PatchExp(BaseExp):

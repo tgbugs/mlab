@@ -11,6 +11,7 @@ from database.models.mixins import HasNotes, IsMetaDataSource, IsDataSource, Has
 
 #FIXME this is not the right way to link subject-data
 
+#TODO FIXME LOL OH LOOK this is almost exactly the same as experiment type with some differences
 class HardwareType(Base):
     type=Column(String(30),primary_key=True)
     description=Column(Text)

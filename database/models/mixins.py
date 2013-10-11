@@ -94,7 +94,8 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
         return '\n%s %s %s %s %s %s'%(self.parent_id,self.dateTime,self.value,self.metadatasource.strHelper(),mantissa,error) #TODO this is where quantities really pays off
 
 
-class HasMetaData: #looks like we want this to be table per related
+class HasMetaData: #FIXME based on how I'm using this right now, the relationship should probably return a dictionary collection indexed by metadatasource_id and ordered by datetime???
+    #I intentionally do not allow explicit groupings of metadata into higher dimensions, I don't think we will need that, but getting the alignment right for multiple multidimensional measurements will be a problem FIXME
     @declared_attr
     def metadata_(cls): #FIXME naming...
         cls.MetaData = type(

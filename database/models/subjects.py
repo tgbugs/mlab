@@ -1,8 +1,6 @@
 from database.imports import *
 from database.models.base import Base
 from database.models.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardware
-from database.models.experiments import Experiment
-from database.standards import frmtDT
 
 
 ###-----------------------
@@ -72,7 +70,6 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
         'polymorphic_identity':'subject',
     }
 
-
     def nthChildren(self,n,allChilds=[]):
         if n:
             if not allChilds and self.children:
@@ -88,13 +85,12 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
         else:
             return allChilds
 
-    def __init__(self,Parent=None,GeneratingExperiment=None,Group=None,
-            startDateTime=None,sDT_abs_error=None,Experiments=[],Hardware=[],
-            parent_id=None,generating_experiment_id=None,group_id=None):
+    def __init__(self,Parent=None,GeneratingExperiment=None,startDateTime=None,
+            sDT_abs_error=None,Experiments=[],Hardware=[],
+            parent_id=None,generating_experiment_id=None):
 
         self.parent_id=parent_id
         self.generating_experiment_id=generating_experiment_id
-        group_id=group_id
         self.startDateTime=startDateTime
         self.sDT_abs_error=sDT_abs_error
 
@@ -111,44 +107,45 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
                 self.generating_experiment=GeneratingExperiment.id
             else:
                 raise AttributeError
-        if Group:
-            if Group.id:
-                self.group_id=Group.id
-            else:
-                raise AttributeError
 
 
-class SubjectCollection(Base):
-    """Identified collections of subjects such as litters, will have a generating experiment, but maybe shouldnt, this would allow for arbitrary groupings of subjects with all sorts of relations beyond just having the same datafile or something, eg this could keep track of pairs or groups of cells that are recorded @ same time"""
-    #this could be used for cages?? subject collection collection (lol?)
+class ArbitrarySubjectCollection(Base): #TODO m-m probably should just make a 'HasArbitraryCollections' mixin
     id=Column(Integer,primary_key=True)
     name=Column(String(30),nullable=False)
-    members=relationship('Subject',primaryjoin='Subject.group_id==SubjectCollection.id',backref=backref('group',uselist=False))
 
-    #not redundant because often collections will exist before the exact number of individuals are added
-    generating_experiment_id=Column(Integer,ForeignKey('experiments.id'))
-    generating_experiment=relationship('Experiment',backref=backref('generated_collections'),uselist=False)
-    generated_from_subjects=relationship('Subject',secondary='experiments_subjects',
-            primaryjoin='SubjectCollection.generating_experiment_id==experiments_subjects.c.experiments_id',
-            secondaryjoin='Subject.id==experiments_subjects.c.subjects_id',
-            backref='generated_collections')
 
-    startDateTime=Column(DateTime,default=datetime.now)
-    sDT_abs_error=Column(Interval)
+class SubjectCollection(Subject):
+    """Identified collections of subjects that have no physical form in themselves yet are still subjects and can generate subjects"""
+    __tablename__='subjectcollection'
+    id=Column(Integer,ForeignKey('subjects.id'),primary_key=True)
+    name=Column(String(30),nullable=False)
+    members=relationship('Subject',primaryjoin='Subject.parent_id==SubjectCollection.id',backref=backref('group',uselist=False))
 
     @validates('generating_experiment_id','startDateTime','sDT_abs_error')
     def _wo(self, key, value): return self._write_once(key, value)
 
     @property
-    def size(self):
-        return len(self.members)
+    def remaining(self):
+        return [m for m in self.members if not m.endDateTime]
 
     @property
-    def remaining(self): #TODO
-        return None #sum([m.dod==None for m in self.members])
+    def size(self): #FIXME just use len??
+        return len(self.members)
 
-    def makeSubjects(self): #TODO
-        return None
+    def __len__(self):
+        return len(self.members)
+
+    def __init__(self,Parent=None,GeneratingExperiment=None,name=None,
+            startDateTime=None,sDT_abs_error=None,Members=[],Experiments=[],
+            Hardware=[],parent_id=None,generating_experiment_id=None):
+
+        super().__init__(Parent=Parent,GeneratingExperiment=GeneratingExpeirment,
+                startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
+                Experiments=Experiments,Hardware=Hardware,parent_id=parent_id,
+                generating_experiment_id=generating_experiment_id)
+
+        self.name=name
+        self.members.extend(Members)
 
 ###-----------------------
 ###  Subjects
@@ -182,18 +179,15 @@ class Mouse(Subject):
     def breedingRecs(self):
         return [e for e in self.experiments if e.type.name=='mating record']
 
-    cells=relationship('Cell',primaryjoin='Cell.mouse_id==Mouse.id',backref=backref('mouse',uselist=False)) #FIXME
-    def __init__(self,GeneratingExperiment=None,Group=None,startDateTime=None,
+    def __init__(self,Parent=None,GeneratingExperiment=None,startDateTime=None,
             sDT_abs_error=None,eartag,tattoo=None,name=None,sex_id=None,
             strain_id=None,cage_id=None,Experiments=[],Hardware=[],
-            generating_experiment_id=None,group_id=None):
+            parent_id=None,generating_experiment_id=None):
 
-        super().__init__(GeneratingExperiment=GeneratingExpeirment,Group=Group,
+        super().__init__(Parent=Parent,GeneratingExperiment=GeneratingExpeirment,
                 startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
-                Experiments=Experiments,Hardware=Hardware,
-                generating_experiment_id=generating_experiment_id,group_id=group_id)
-
-        self.notes=notes
+                Experiments=Experiments,Hardware=Hardware,parent_id=parent_id
+                generating_experiment_id=generating_experiment_id)
 
         self.eartag=eartag
         self.tattoo=tattoo
@@ -229,11 +223,8 @@ class Slice(Subject): #FIXME slice should probably be a subject
         return exp.endDateTime
 
     @property
-    def thickness(self): #FIXME TODO
-        exp=self.experiments[0]
-        emd=Experiment.MetaData
-        session=object_session(self)
-        return session.query(emd).filter(emd.experiment_id==exp.id,emd.datasource_id=='slice thickness') #ick this is nasty to get out and this isn't even correct
+    def thickness(self):
+        return [m for m in self.experiments[0].metadata_ if m.metadatasource.name=='trmSliceThickness'][0] #FIXME this ok?
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
 
@@ -247,3 +238,30 @@ class Cell(Subject):
         base=super().__repr__()
         return '%s%s%s%s'%(base,''.join([h.strHelper(1) for h in self.hardware]),self.parent.strHelper(1),''.join([c.strHelper(1) for c in self.datafiles[0].subjects]))
 
+
+#FIXME the binding between data and subjects is really fucking tenuous sometimes... :/
+#FIXME think about whether we really want to bind subjects to hardware, that seems... strange???
+class HardwareSubject(Subject): #TODO we can make this ObjectSubject and bind anything we want to a subject without having to do crazy shit with Hardware-Hardware interactions and stuff like that since most hardware doesn't have generation experiments
+    """Class used to represent hardware as a subject for calibration"""
+    #hell, chemistry is just a bunch of reagent subjects...
+    #this DOES mean that I will need to come up with a way of associating subjects/people/hardware to MDSes in a transient way but still keep records, this is one of those things that fluctuates more slowly
+    __tablename__='hardwaresubject'
+    id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
+    hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False,unique=True)
+    hardware=relationship('Hardware',uselist=False) #FIXME hw-sub relationships are now fucking insane
+    __mapper_args__={'polymorphic_identity':'hardware'}
+    def __init__(self,Hardware=None,Parent=None,GeneratingExperiment=None,startDateTime=None,
+            sDT_abs_error=None,Experiments=[],
+            parent_id=None,generating_experiment_id=None):
+
+        super().__init__(GeneratingExperiment=GeneratingExpeirment,
+                startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
+                Experiments=Experiments,generating_experiment_id=generating_experiment_id)
+
+        self.hardware_id=hardware_id
+
+        if Hardware:
+            if Hardware.id:
+                self.hardware_id=Hardware.id
+            else:
+                raise AttributeError
