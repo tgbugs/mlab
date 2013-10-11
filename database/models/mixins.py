@@ -66,11 +66,6 @@ class HasMetaDataSources:
         )
 
 
-class _HasMetaDataSources:
-    @declared_attr
-    def metadatasources(cls):
-        return []
-
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
     dateTime=Column(DateTime,default=datetime.now)
     value=Column(Float(53),nullable=False)

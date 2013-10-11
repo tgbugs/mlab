@@ -39,13 +39,9 @@ class Strain(HasCiteables, Base): #TODO somehow this looks like mouse type
     name=Column(Unicode(50)) #scrape from jax
     abbrev=Column(String(15))
     background_id=Column(Integer,ForeignKey('background.id'))
-    gene_id=Column(Integer,ForeignKey('gene.id'))
-    #will be VERY useful when converting for real things
-    #FIXME: by reflection from jax??? probably not
-    #id=Column(String(20),primary_key=True,autoincrement=False)
-    #TODO can just use datafiles to get the data on them via
-    #http://jaxmice.jax.org/strain/*.html
-    #make a way to put the data in via a url
+    gene_id=Column(Integer,ForeignKey('gene.id')) #FIXME better to do a m-m here? same w/ bg?
+    #FIXME TODO how to handle the 'tree' of strains... do it in the mice? or run it parallel, I think it is better to run it parallel in its own system and just use logic to constuct the strain ID based on the parent strain ids keeps things comaprtmentalized
+
     def __init__(self,jax_id,name=None,abbrev=None,Citeables=[]):
         #name=getJaxData(jax_id) #TODO
         self.jax_id=jax_id
