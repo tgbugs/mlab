@@ -6,16 +6,6 @@ from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardwa
 ###  Experiment tables
 ###-------------------
 
-#experiments are things done on subjects (cells, mice, slices) they are referenced by the row containing the subjects, thus subject-exp is many-one, HOWEVER, for NON TERMINAL experiments the relationship could be many-many :/ #TODO
-
-#TODO new experiment from experiment, so if there is an example experiment can just use that to propagate?? those are really functions that don't go in models
-
-#FIXME do not add new experiments until you know what their parameters will be
-#furthermore, I may try to get away with just using expmetadata and df metadata for everything
-#using externally defined templates that know all the dimesions of the experiment
-#the only thing I might need to add is calibraiton, but I think I can control THAT at the datasource
-#ah balls, still have to have some way to track slices and cells :(
-#WAIT! TODO just make it so we can add experiments to slices and /or cells! :D yay!
     
 #TODO in theory what we want is for experiments to have a m-m on itself to convey logical connections, in which case a mating record is just an experiment.... HRM, think on this... we certainly want the m-m for logical depenece I think
 
@@ -56,6 +46,8 @@ class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSo
         return super().__repr__()
 
 
+#TODO on a per-experiment basis I need bindings between hardware and metadatasources
+#TODO AND I need a binding between datafiles/datafile channels and subjects
 #in biology there are expeirments that generate data, or data and subjects, if they generate only subjects then they should probably have some data to go along with them or the science might be bad
 class Experiment(HasMetaData, HasReagents, HasSubjects, Base): #FIXME generation experiment!???!
     __tablename__='experiments'

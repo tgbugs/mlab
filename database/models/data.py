@@ -10,13 +10,42 @@ _plusMinus='\u00B1'
 ###  DataSources
 ###-------------
 
-class DataSource(Base): #TODO FIXME this should be DATFILESource
-    """used for doccumenting where data (NOT metadata) came form, even if I generated it, this makes a distinction between data that I have complete control over and data that I get from another source such as clampex or jax"""
-    #this also works for citeables
-    __tablename__='datasources'
+class DataFileStructure(Base):
+    external_def_url=Column(String,ForeignKey('File.url'),primary_key=True)
+    external_def_filename=Column(String,ForeignKey('File.filename'),primary_key=True)
+    external_def_hash=None #TODO check to make sure that it hasn't changed since init, do a check if it has
+    #hashing needs to be compatible with the need to modify values of certain files for rheobase etc without changing their structure
+    channels=relationship('DataFileSource') #TODO this will be... many to many?
+    num_chans=Column(Integer)
+
+
+class MetaDataSource_Experiment_Assoc(Base): #shouldn't this be bound to whatever has the MetaData???
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
+    metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),primary_key=True)
+    hardware_id=Column(Integer,ForeignKey('hardware.id'))
+    relationship('Experiment',primaryjoin='Experiment.id==MetaDataSource_Experiment_Assoc.experiment_id')
+    @validates('hardware_id') #basically if shit breaks half way through, new experiment
+    def _wo(self, key, value): return self._write_once(key, value)
+    
+class DataFileSource_Experiment_Assoc(Base): #FIXME shouldn't this be bound to datafile
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
+    datafilesource=Column(Integer,ForeignKey('datafilesources.id'))
+    hardware_id=Column(Integer,ForeignKey('hardware.id'))
+    relationship('Experiment',primaryjoin='Experiment.id==MetaDataSource_Experiment_Assoc.experiment_id'
+                backref='datafilesources')
+    @validates('hardware_id') #basically if shit breaks half way through, new experiment
+    def _wo(self, key, value): return self._write_once(key, value)
+
+class DataFileSource(Base): #TODO use this to link subjects to datafile substructure
+    """Datafile substructure"""
+    __tablename__='datafilesources'
     id=Column(Integer,primary_key=True)
     name=Column(String(20),nullable=False)
-    #TODO
+
+    #the reason I want to connect it to the hardware is because that is what we interact with
+    #better to do that and have the association fixed than to be forced to check every time
+    #subjects connect to data through hardware, that relationship needs to be explicit
+
     def strHelper(self,depth=0):
         #return '%s%s'%(self.prefix,self.unit)
         return super().strHelper(depth,'name')
@@ -32,6 +61,8 @@ class MetaDataSource(Base):
     prefix=Column(String(2),ForeignKey('si_prefix.symbol'),default='')
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
     mantissa=Column(Integer) #TODO
+    #FIXME
+    associatedHardwareUserEtc=None #TODO this record needs to be stored with the experiment becuse it can change, this is record keeping not reflection of being
     def strHelper(self): #TODO this is where quantities can really pay off
         return '%s%s from %s'%(self.prefix,self.unit,self.name)
     def __repr__(self):
@@ -163,13 +194,14 @@ class File(Base):
         return '\n%s%s'%(self.url,self.filename)
 
 
-class DataFile(File): #TODO datafiles can only really belong to a single experiment, while subjects can belong to MANY experiments....
+class DataFile(HasDataFileSources, File): #TODO datafiles can only really belong to a single experiment, while subjects can belong to MANY experiments....
     __tablename__='datafile'
     url=Column(String,primary_key=True,autoincrement=False)
     filename=Column(String,primary_key=True,autoincrement=False)
     __table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
-    datasource_id=Column(Integer,ForeignKey('datasources.id'),nullable=False)
+    datafilesources=relationship('DataFileSource')
+    #FIXME datasources: they are equivalent to MDSes and can be channels!
     __mapper_args__={'polymorphic_identity':'datafile'}
 
     experiment=relationship('Experiment',backref='datafiles',uselist=False)

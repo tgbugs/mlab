@@ -108,11 +108,39 @@ class HasMetaData: #FIXME based on how I'm using this right now, the relationshi
                     'metadatasource_id':Column(Integer,
                         ForeignKey('metadatasources.id'),nullable=False),
                     'metadatasource':relationship('MetaDataSource'), #keep it one way
+                    #'hardware_id':Column(Integer, #FIXME I *could* put this here but it seems like overkill?
+                        #ForeignKey('hardware.id'),nullable=False), #since w/in experiment it wont change?
+                 #conflict between desire for doccumentation and need for linkage when recording data
+                 #this is the easiest solution but leads to massive data duplication
                 }
         )
         return relationship(cls.MetaData) #FIXME may need a primaryjoin on this
 
-        
+
+class MDS_HW_BIND:
+    """Class that keeps a record of what hardware was used to record the metadata"""
+    def __init__(self):
+        pass
+
+
+class HasMDS_HW_BINDS: #use for experiments since subjects change too fast
+    @declared_attr
+    def mds_hw_binds(cls):
+        cls.MDS_HW_BIND = type(
+                '%s_MDS_HW_BIND'%cls.__name__,
+                (MDS_HW_BIND, Base,),
+                {   '__tablename__':'%s_mds_hw_bind'%cls.__tablename__,
+                    'parent_id':Column(Integer,
+                        ForeignKey('%s.id'%cls.__tablename__),primary_key=True),
+                    'metadatasource_id':Column(Integer,
+                        ForeignKey('metadatasources.id'),primary_key=True),
+                    'hardware_id':Column(Integer,
+                        ForeignKey('hardware.id'))
+                }
+        )
+        return relationship(cls.MDS_HW_BIND)
+
+
 class HasDataFiles:
     @declared_attr
     def datafiles(cls):

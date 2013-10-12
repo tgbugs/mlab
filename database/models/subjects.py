@@ -9,10 +9,11 @@ from database.models.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardw
 
 #TODO make sure that generating experiment and experiments are fine to be the same experiment
 #FIXME if subjects have data about them and are generate by the same experiment there will be an infinite loop
-class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
+class Subject(HasMetaData, AssociatedDataFileSource, HasDataFile, HasHardware, HasNotes, Base):
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     type=Column(String,nullable=False)
+
 
     #whole-part relationships for all subjects
     parent_id=Column(Integer,ForeignKey('subjects.id'))
@@ -21,6 +22,8 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
     #experiment in which the subject was generated (eg a mating, or a slice prep)
     generating_experiment_id=Column(Integer,ForeignKey('experiments.id'))
     generating_experiment=relationship('Experiment',backref=backref('generated_subjects'),uselist=False)
+
+    #generative relationships, some are being preserving others are terminal (binary fision anyone?)
     generated_from_subjects=relationship('Subject',secondary='experiments_subjects',
             primaryjoin='Subject.generating_experiment_id==experiments_subjects.c.experiments_id',
             secondaryjoin='Subject.id==experiments_subjects.c.subjects_id', #FIXME this is the problem
