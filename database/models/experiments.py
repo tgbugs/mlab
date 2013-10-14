@@ -10,15 +10,15 @@ from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardwa
 #TODO in theory what we want is for experiments to have a m-m on itself to convey logical connections, in which case a mating record is just an experiment.... HRM, think on this... we certainly want the m-m for logical depenece I think
 
 #why experiment type instead of inheritance? because I don't want to force users to learn sqlalchemy, furthermore, doccumenting experiments in code defeats the purpose of saving all of this stuff in a database from a record keeping point of view
-class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSources, Base):
+class ExperimentType(HasReagentTypes, HasHardware, HasDataFileSources, HasMetaDataSources, Base):
     """this stores all the constant data about an experiment that will be done many times"""
     #TODO logical relationships between experiments could be manifest here, but THAT is a project for another day
     #TODO addition of new data does not trigger version bump but any changes to existing entries should
     id=Column(Integer,primary_key=True) #FIXME
     name=Column(String(30),nullable=False)
     abbrev=Column(String)
-    repository_url=Column(String,ForeignKey('repository.url')) #FIXME does this make any sense here?
-    repository=relationship('Repository',uselist=False) #these *could* change before the experiments were done... that is trouble some... BUT we can always rename and casscade the change...
+    #repository_url=Column(String,ForeignKey('repository.url')) #FIXME does this make any sense here?
+    #repository=relationship('Repository',uselist=False) #these *could* change before the experiments were done... that is trouble some... BUT we can always rename and casscade the change...
     methods_id=Column(Integer,ForeignKey('citeable.id'))
 
     experiments=relationship('Experiment',backref=backref('type',uselist=False))
@@ -33,7 +33,7 @@ class ExperimentType(HasReagentTypes, HasHardware, HasDataSources, HasMetaDataSo
         self.methods_id=methods_id
 
         self.reagenttypes.extend(ReagentTypes)
-        self.hardware.extend(Hardware)
+        self.hardware.extend(Hardware) #hardware can be added and subtracted here because Experiment tracks binds
         self.metadatasources.extend(MetaDataSources)
 
         if Methods:

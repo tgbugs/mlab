@@ -110,18 +110,17 @@ class BaseExp:
     def checkExpType(self,experimenttype)
         if experimenttype: #implies that there is a session elsewhere...
             if experimenttype.id:
-                names=[mds.name for mds in experimenttype.metadatasources]
                 try:
                     if self.name!=experimenttype.name:
                         raise AttributeError('Defined name does not match that of ExperimentType!')
-                    elif list(self.mdsDict.keys()).sort()!=names.sort():
-                        raise AttributeError('Defined metadatasources do not match those in experimenttype. Create a new experiment so the updated metadatasources can be persisted in a new ExperimentType.')
                 except:
-                    from rig.metadatasources import mdsAll
-                    self.mdsDict={}
-                    [self.mdsDict.update({name:cls}) for name,cls in mdsAll().item() if names.count(name[4:])]
+                    pass
+                names=[mds.name for mds in experimenttype.metadatasources]
+                from rig.metadatasources import mdsAll
+                self.mdsDict={}
+                [self.mdsDict.update({name:cls}) for name,cls in mdsAll().items() if names.count(name[4:])]
                 self.experimenttype=experimenttype
-                #TODO get session from experimenttype
+                #TODO get session from experimenttype?
                 return 1
             else:
                 raise AttributeError('no id')

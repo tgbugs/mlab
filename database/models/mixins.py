@@ -47,7 +47,7 @@ class IsMetaDataSource: #XXX I think this is depricated... ?
         return relationship('MetaDataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
 
 
-class HasDataSources:
+class HasDataFileSources:
     fsda=Column(Integer)
 
 
