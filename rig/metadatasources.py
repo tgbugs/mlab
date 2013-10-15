@@ -19,11 +19,12 @@ def mdsAll(channels=4):
 ###  trm metadata sources BEWARE!! ALL trm inputs at the moment are MASSIVELY blocking
 ###-----------------------------------------------------------------------------------
 
-class MDS_trmZ(MDSource):
+class MDS_trmScopeZ(MDSource):
     """objective height reading for an object""" #TODO figur out how to record surface Z...
     prefix='u'
     unit='m'
     ctrl_name='trmControl' #this is the equivalent of key.py keyControl, but obviously is just return input()
+    hardware_id='olympus bx51wi' #FIXME damn it... lol
     #ofc with special checks to make sure the datatype is correct ie float
     def getCurrentValue(self):
         return self.ctrl.getFloatInput()
@@ -33,6 +34,7 @@ class MDS_trmSliceThickness(MDSource):
     prefix='u'
     unit='m'
     ctrl_name='trmControl'
+    hardware_id='vibratome'
     def getCurrentValue(self):
         return self.ctrl.getFloatInput()
 
@@ -41,8 +43,10 @@ class _MDS_trmBOOL(MDSource): #FIXME TODO
     prefix=''
     unit='bool'
     ctrl_name='trmControl'
+    hardware_id='tom hitting a key'
     def getCurrentValue(self):
         return self.ctrl.getBoolInput()
+
 
 def trmFac(MDS_trm,name): #FIXME TODO
     return type('MDS_'+name,
@@ -64,7 +68,6 @@ def espAll():
     #for cls in classes:
         #espDict[cls.__name__]=cls
     return espDict
-
 
 class MDS_espX(MDSource):
     prefix='m'

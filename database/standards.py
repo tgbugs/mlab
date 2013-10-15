@@ -2,10 +2,12 @@
 #ALL functions used in __init__ to write data and their pairs for reading data from queries should go here
 
 #input sanitization goes here
-from urllib import parse,request
+from urllib import parse
 from os import listdir
 
 from datetime import datetime,timedelta #ALL TIMES ARE UTC WITH tzinfo=None, CONVERT LATER
+
+import requests as r #FIXME :(
 
 ###--------------
 ###  URL handling
@@ -29,15 +31,32 @@ class URL_STAND:
         parsed=parse.urlparse(full_url)
         if parsed.scheme is 'file':
             path=parsed.path
-            if path.count(':'): #windows, stupid / mucking with C:
+            if path[2]==(':'): #FIXME this is not actually valid... windows :/
                 path=path[1:]
             try:
                 listdir(path)
+                return path
+            except:
+                raise FileNotFoundError('Local path does not exist!') #FIXME this => wierd error handling
+        else: #TODO requests does not actually handle anything besides http/s :/
+            if not r.head(full_url).ok: #also data computer on the internet???
+                raise FileNotFoundError('Remote path is not OK!') #FIXME this => wierd error handling
+            else:
+                return path
+
+    @staticmethod
+    def getCreationDateTime(full_url):
+        parsed=parse.urlparse(full_url)
+        if parsed.scheme is file:
+            path=parsed.path
+            if path[2]==(':'): #FIXME this is not actually valid... windows :/
+                path=path[1:]
+            try:
+                datetime.fromtimestamp(getctime(path))
             except:
                 raise FileNotFoundError('Local path does not exist!') #FIXME this => wierd error handling
         else:
-            print('not a file, not implemented, will not catch')
-            #raise NotImplemented
+            return datetime.now() #FIXME ideally we want to get the remote modified date
 
 ###---------------------------------------------------------------
 ###  Datetime and timedelta functions to be reused for consistency

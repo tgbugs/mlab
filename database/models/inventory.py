@@ -113,6 +113,15 @@ class ReagentType(HasCiteables, Base):
     abbrev=Column(String,unique=True)
     molarMass=None #FIXME should this be metadata?
     #TODO: usage rate
+
+    @property
+    def unusedLots(self):
+        return [lot for lot in self.lots if not lot.endDateTime]
+
+    @property
+    def currentLot(self): #assuming oldest first
+        return sorted(self.unusedLots, key=lambda lot: lot.startDateTime)[0] #oldest not used, might also try in place if it doesnt matter
+
     def __repr__(self):
         return super().__repr__('name')
 
@@ -120,14 +129,15 @@ class ReagentType(HasCiteables, Base):
 class Reagent(Base): #TODO HasReagents??!
     """actual instances of reagents that are made"""
     __tablename__='reagents'
-    type_id=Column(Integer,ForeignKey('reagenttypes.id'),primary_key=True)
-    lotNumber=Column(Integer,primary_key=True) #XXX this is a sqlite specific problem >_<
-    creationDateTime=Column(DateTime,default=datetime.now)
-    doneDateTime=Column(DateTime)
+    id=Column(Integer,primary_key=True)
+    type_id=Column(Integer,ForeignKey('reagenttypes.id'),nullable=False)
+    lotNumber=Column(Integer) #just incase I make multiple at the same time
+    startDateTime=Column(DateTime,default=datetime.now)
+    endDateTime=Column(DateTime)
     type=relationship('ReagentType',backref='lots',uselist=False) #FIXME
     #TODO reorder/remake if current amount < x
     #reagentmetadata=relationship('ReaMetaData',primaryjoin='ReagentLot.id==ReaMetaData.reagent_id',backref='reagent') #FIXME make this a m-m self referential association ? this won't let me keep track of the individual lots of stuff I use to make a solution or a stock though... think about that
-    def __init__(self,Type=None,lotNumber=None,creationDateTime=None,doneDateTime=None,type_id=None):
+    def __init__(self,Type=None,lotNumber=None,startDateTime=None,endDateTime=None,type_id=None):
         self.type_id=type_id
         #self.lotNumber=lotNumber
         self.creationDateTime=creationDateTime

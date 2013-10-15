@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardware, HasSubjects, HasReagentTypes, HasDataSources, HasMetaDataSources
+from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardware, HasSubjects, HasReagentTypes, HasDataFileSources, HasMetaDataSources, HasMdsHwRecords, HasDfsHwRecords
 
 ###-------------------
 ###  Experiment tables
@@ -10,7 +10,7 @@ from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardwa
 #TODO in theory what we want is for experiments to have a m-m on itself to convey logical connections, in which case a mating record is just an experiment.... HRM, think on this... we certainly want the m-m for logical depenece I think
 
 #why experiment type instead of inheritance? because I don't want to force users to learn sqlalchemy, furthermore, doccumenting experiments in code defeats the purpose of saving all of this stuff in a database from a record keeping point of view
-class ExperimentType(HasReagentTypes, HasHardware, HasDataFileSources, HasMetaDataSources, Base):
+class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Base):
     """this stores all the constant data about an experiment that will be done many times"""
     #TODO logical relationships between experiments could be manifest here, but THAT is a project for another day
     #TODO addition of new data does not trigger version bump but any changes to existing entries should
@@ -25,7 +25,7 @@ class ExperimentType(HasReagentTypes, HasHardware, HasDataFileSources, HasMetaDa
 
     @property
     def reagents(self):
-        return [rt.getCurrentLot() for rt in self.reagenttypes] #FIXME
+        return [rt.currentLot for rt in self.reagenttypes] #FIXME
 
     def __init__(self,name=None,abbrev=None,Repository=None,Methods=None,Hardware=[],ReagentTypes=[],MetaDataSources=[],repository_url=None,methods_id=None):
         self.name=name
@@ -49,7 +49,7 @@ class ExperimentType(HasReagentTypes, HasHardware, HasDataFileSources, HasMetaDa
 #TODO on a per-experiment basis I need bindings between hardware and metadatasources
 #TODO AND I need a binding between datafiles/datafile channels and subjects
 #in biology there are expeirments that generate data, or data and subjects, if they generate only subjects then they should probably have some data to go along with them or the science might be bad
-class Experiment(HasMetaData, HasReagents, HasSubjects, Base): #FIXME generation experiment!???!
+class Experiment(HasMetaData, HasReagents, HasSubjects, HasMdsHwRecords, HasDfsHwRecords, Base): #FIXME generation experiment!???!
     __tablename__='experiments'
     id=Column(Integer,primary_key=True)
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
@@ -88,13 +88,8 @@ class Experiment(HasMetaData, HasReagents, HasSubjects, Base): #FIXME generation
                 self.reagents.extend(ExpType.reagents)
             else:
                 raise AttributeError
+
 #TODO: figure out the base case for experiments (ie which subjects) for
-#Slice Prep
-#Patch
-#IUEP
-#ChrSom
-#Histology
-#WaterRecords
 #TODO this does not need to be done right now, just make sure it will integrate easily
 #do we keep weight's here or somehwere else, is there any other reason why a 'normal' mouse would need to be weighed? sure the mouse HAS a weight, but does that mean that the mouse table should be where we keep it? it changes too
 #same argument applies to sex and how to deal with changes to that, and whether it is even worth noting

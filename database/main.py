@@ -1,5 +1,7 @@
 #Base file for creating the tables that I will use to store all my (meta)data
 
+#FIXME holy shit problems with using datetime.now as the default for DateTime!
+
 #TODO consider sqlalchemy.orm import validates for verifying that certain input from python userland is clean?
 
 #TODO when thinking about staging this stuff I need a safe way to hold data incase my access to the db goes down, like pickling something or the like? ideally this shouldn't happen but better safe than sorry
@@ -127,8 +129,8 @@ def connect(echo=False):
 
 def main(echo=True):
     #create engine
-    engine=pgTest(echo=echo,wipe_db=True)
-    #engine=sqliteMem(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
+    #engine=pgTest(echo=echo,wipe_db=True)
+    engine=sqliteMem(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
 
     #create metadata on the engine
     #Base.metadata.drop_all(engine,checkfirst=True)

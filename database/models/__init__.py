@@ -31,7 +31,7 @@ __all__.extend([
 
 from database.models.data import *
 __all__.extend([
-        'DataSource',
+        'DataFileSource',
         'MetaDataSource',
         'Repository',
         'File',
@@ -57,19 +57,13 @@ __all__.extend([
 from database.models.subjects import *
 __all__.extend([
         'Subject',
-        'Mouse', #Breeder needs this to be in the namespace first
+        'Mouse',
         'Slice',
         'Cell'
 ])
 
 from database.models.mice import *
 __all__.extend([
-        #'DOB',
-        #'Breeder', #not imported, is helper
-        #'Sire',
-        #'Dam',
-        #'MatingRecord',
-        #'Litter',
         'CageRack',
         'Cage',
         'CageTransfer'
@@ -77,8 +71,7 @@ __all__.extend([
 
 from database.models.notes import *
 __all__.extend([
-        #'NoteAssociation',
-        #'Note'
+        'Note'
 ])
 
 from database.models.people import *

@@ -8,20 +8,19 @@ _plusMinus='\u00B1'
 ###  notes mixins
 ###--------------
 
-class HasNotes: #FIXME
+class HasNotes: #FIXME this works ok, will allow the addition of the same note to anything basically
     @declared_attr
-    def note_association_id(cls):
-        pass
-        #return Column(Integer,ForeignKey('note_association.id'))
-        #return cls.__table__.c.get('note_association_id',Column(Integer, ForeignKey('note_association.id')))
-    @declared_attr
-    def note_association(cls):
-        pass
-        #discriminator=cls.__name__.lower()
-        #cls.notes=association_proxy('note_association','notes',creator=NoteAssociation.creator(discriminator)) #i think the problem is with the creator..
-        #return relationship('NoteAssociation',backref=backref('parents'))
-    def addNote(string): #FIXME?
-        pass
+    def notes(cls):
+        note_association = Table('%s_note_assoc'%cls.__tablename__, cls.metadata,
+            Column('note_id',ForeignKey('notes.id'),primary_key=True),
+            Column('%s_id'%cls.__tablename__,ForeignKey('%s.id'%cls.__tablename__), #FIXME .id may not be all?
+                   primary_key=True)
+        )
+        return relationship('Note',secondary=note_association,
+            primaryjoin='{0}_note_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
+            secondaryjoin='Note.id=={0}_dfs_assoc.c.note_id'.format(cls.__tablename__),
+            backref=backref('parent_%s'%cls.__tablename__) #FIXME do we really want this?
+        )
 
 ###-------------
 ###  data mixins
@@ -47,8 +46,19 @@ class IsMetaDataSource: #XXX I think this is depricated... ?
         return relationship('MetaDataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
 
 
-class HasDataFileSources:
-    fsda=Column(Integer)
+class HasDataFileSources: #FIXME LOL going to need some halp with this one since DF has no id >_<
+    @declared_attr
+    def datafilesources(cls):
+        datafilesource_association = Table('%s_dfs_assoc'%cls.__tablename__, cls.metadata,
+            Column('datafilesource_id',ForeignKey('datafilesources.id'),primary_key=True),
+            Column('%s_id'%cls.__tablename__,ForeignKey('%s.id'%cls.__tablename__), #FIXME .id may not be all?
+                   primary_key=True)
+        )
+        return relationship('DataFileSource',secondary=datafilesource_association,
+            primaryjoin='{0}_dfs_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
+            secondaryjoin='DataFileSource.id=={0}_dfs_assoc.c.datafilesource_id'.format(cls.__tablename__),
+            backref=backref('%s'%cls.__tablename__) #FIXME do we really want this?
+        )
 
 
 class HasMetaDataSources:
@@ -117,19 +127,69 @@ class HasMetaData: #FIXME based on how I'm using this right now, the relationshi
         return relationship(cls.MetaData) #FIXME may need a primaryjoin on this
 
 
+class DFS_HW_BIND:
+    #how to use to associate a cell to a channel:
+    #the cell or subcompartment will have a hardware_id
+    #join that hardware_id against the DFS_MW_BIND and then the datafile structure when unpacked must match
+    #I should come up with a way to verify the match, even if it is very simple
+    @validates('hardware_id') #basically if shit breaks half way through, new experiment
+    def _wo(self, key, value): return self._write_once(key, value)
+    def __init__(self,Parent=None,DataFileSource=None,Hardware=None,parent_id=None,datafilesource_id=None,hardware_id=None):
+        self.parent_id=parent_id
+        self.datafilesource_id=datafilesource_id
+        self.hardware_id=hardware_id #FIXME probably need hardware=relationship()
+        self.AssignID(DataFileSource)
+        self.AssignID(Hardware)
+        if Parent:
+            if Parent.id:
+                self.parent_id=Parent.id
+            else:
+                raise AttributeError
+
+
+
+class HasDfsHwRecords: #we bind DFSes to hardware that collects that datafile property
+    @declared_attr
+    def dfs_hw_records(cls):
+        cls.DfsHwRecord = type(
+                '%s_DfsHwRecord'%cls.__name__,
+                (DFS_HW_BIND, Base,),
+                {   '__tablename__':'%s_dfshwrecord'%cls.__tablename__,
+                    'parent_id':Column(Integer,
+                        ForeignKey('%s.id'%cls.__tablename__),primary_key=True),
+                    'datafilesource_id':Column(Integer,
+                        ForeignKey('datafilesources.id'),primary_key=True),
+                    'hardware_id':Column(Integer,
+                        ForeignKey('hardware.id'))
+                }
+        )
+        return relationship(cls.DfsHwRecord)
+
+
 class MDS_HW_BIND:
     """Class that keeps a record of what hardware was used to record the metadata"""
-    def __init__(self):
-        pass
+    @validates('hardware_id') #basically if shit breaks half way through, new experiment
+    def _wo(self, key, value): return self._write_once(key, value)
+    def __init__(self,Parent=None,MetaDataSource=None,Hardware=None,parent_id=None,metadatasource_id=None,hardware_id=None):
+        self.parent_id=parent_id
+        self.metadatasource_id=metadatasource_id
+        self.hardware_id=hardware_id #FIXME probably need hardware=relationship()
+        self.AssignID(MetaDataSource)
+        self.AssignID(Hardware)
+        if Parent:
+            if Parent.id:
+                self.parent_id=Parent.id
+            else:
+                raise AttributeError
 
 
-class HasMDS_HW_BINDS: #use for experiments since subjects change too fast
+class HasMdsHwRecords: #use for experiments since subjects change too fast
     @declared_attr
-    def mds_hw_binds(cls):
-        cls.MDS_HW_BIND = type(
-                '%s_MDS_HW_BIND'%cls.__name__,
+    def mds_hw_records(cls):
+        cls.MdsHwRecord = type(
+                '%s_MdsHwRecord'%cls.__name__,
                 (MDS_HW_BIND, Base,),
-                {   '__tablename__':'%s_mds_hw_bind'%cls.__tablename__,
+                {   '__tablename__':'%s_mdshwrecord'%cls.__tablename__,
                     'parent_id':Column(Integer,
                         ForeignKey('%s.id'%cls.__tablename__),primary_key=True),
                     'metadatasource_id':Column(Integer,
@@ -138,7 +198,7 @@ class HasMDS_HW_BINDS: #use for experiments since subjects change too fast
                         ForeignKey('hardware.id'))
                 }
         )
-        return relationship(cls.MDS_HW_BIND)
+        return relationship(cls.MdsHwRecord)
 
 
 class HasDataFiles:
@@ -227,7 +287,7 @@ class HasReagents:
     def reagents(cls):
         reagent_association = Table('%s_reagents'%cls.__tablename__,cls.metadata,
             Column('reagent_type_id', Integer, primary_key=True),
-            Column('reagent_lot', Integer, primary_key=True),
+            Column('reagent_lot', Integer, primary_key=True), #FIXME
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True),
             ForeignKeyConstraint(['reagent_type_id','reagent_lot'],['reagents.type_id','reagents.lotNumber']))
         return relationship('Reagent', secondary=reagent_association,backref=backref('%s_used'%cls.__tablename__))

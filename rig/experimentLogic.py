@@ -161,11 +161,12 @@ class BaseExp:
         mds=[m.MetaDataSource for m in self.imdsDict.values()] #FIXME check for changes and update w/ version
         self.ExperimentType=ExperimentType(name=self.name,repository_url=self.repository_url,MetaDataSources=mds)
         self.session.add(self.ExperimentType)
-        self.session.commit() #FIXME/TODO as opposed to flush??!
+        self.session.commit()
         return self
 
     def ExpFromType(self,startDateTime=None):
         #TODO
+        #MDS_RecordCurrentHardware
         Experiment(self.ExperimentType,person_id=,project_id=,startDateTime=startDateTime) #reagents? subjects? TODO
         self.experiment=None
         return self
@@ -336,6 +337,12 @@ class PatchExp(BaseExp):
                     #get datafilemetadata
 
 
+#Slice Prep
+#Patch
+#IUEP
+#ChrSom
+#Histology
+#WaterRecords
 
 
 def main():

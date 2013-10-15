@@ -9,7 +9,7 @@ from database.models.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardw
 
 #TODO make sure that generating experiment and experiments are fine to be the same experiment
 #FIXME if subjects have data about them and are generate by the same experiment there will be an infinite loop
-class Subject(HasMetaData, AssociatedDataFileSource, HasDataFile, HasHardware, HasNotes, Base):
+class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     type=Column(String,nullable=False)
@@ -60,7 +60,7 @@ class Subject(HasMetaData, AssociatedDataFileSource, HasDataFile, HasHardware, H
                     new_allChilds.extend(child.children)
                 except:
                     pass
-            if not new_allChilds[]:
+            if not new_allChilds:
                 return allChilds
             return lastChildren(new_allChilds)
 
@@ -148,7 +148,8 @@ class SubjectCollection(Subject):
                 generating_experiment_id=generating_experiment_id)
 
         self.name=name
-        self.members.extend(Members)
+        self.members.extend(Members) #make sure that generating experiment and parent get passed along
+        #when needed
 
 ###-----------------------
 ###  Subjects
@@ -183,13 +184,13 @@ class Mouse(Subject):
         return [e for e in self.experiments if e.type.name=='mating record']
 
     def __init__(self,Parent=None,GeneratingExperiment=None,startDateTime=None,
-            sDT_abs_error=None,eartag,tattoo=None,name=None,sex_id=None,
+            sDT_abs_error=None,eartag=None,tattoo=None,name=None,sex_id=None,
             strain_id=None,cage_id=None,Experiments=[],Hardware=[],
             parent_id=None,generating_experiment_id=None):
 
         super().__init__(Parent=Parent,GeneratingExperiment=GeneratingExpeirment,
                 startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
-                Experiments=Experiments,Hardware=Hardware,parent_id=parent_id
+                Experiments=Experiments,Hardware=Hardware,parent_id=parent_id,
                 generating_experiment_id=generating_experiment_id)
 
         self.eartag=eartag
@@ -254,7 +255,7 @@ class HardwareSubject(Subject): #TODO we can make this ObjectSubject and bind an
     hardware=relationship('Hardware',uselist=False) #FIXME hw-sub relationships are now fucking insane
     __mapper_args__={'polymorphic_identity':'hardware'}
     def __init__(self,Hardware=None,Parent=None,GeneratingExperiment=None,startDateTime=None,
-            sDT_abs_error=None,Experiments=[],
+            sDT_abs_error=None,Experiments=[], #FIXME
             parent_id=None,generating_experiment_id=None):
 
         super().__init__(GeneratingExperiment=GeneratingExpeirment,

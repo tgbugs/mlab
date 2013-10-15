@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData
+from database.models.mixins import HasNotes, HasMetaData, HasDataFileSources
 from database.standards import URL_STAND
 
 #some global variables that are used here and there that would be magic otherwise
@@ -10,7 +10,7 @@ _plusMinus='\u00B1'
 ###  DataSources
 ###-------------
 
-class DataFileStructure(Base):
+class DataFileStructure():
     external_def_url=Column(String,ForeignKey('File.url'),primary_key=True)
     external_def_filename=Column(String,ForeignKey('File.filename'),primary_key=True)
     external_def_hash=None #TODO check to make sure that it hasn't changed since init, do a check if it has
@@ -19,7 +19,7 @@ class DataFileStructure(Base):
     num_chans=Column(Integer)
 
 
-class MetaDataSource_Experiment_Assoc(Base): #shouldn't this be bound to whatever has the MetaData???
+class MetaDataSource_Experiment_Assoc(): #shouldn't this be bound to whatever has the MetaData???
     experiment_id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
     metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),primary_key=True)
     hardware_id=Column(Integer,ForeignKey('hardware.id'))
@@ -27,20 +27,23 @@ class MetaDataSource_Experiment_Assoc(Base): #shouldn't this be bound to whateve
     @validates('hardware_id') #basically if shit breaks half way through, new experiment
     def _wo(self, key, value): return self._write_once(key, value)
     
-class DataFileSource_Experiment_Assoc(Base): #FIXME shouldn't this be bound to datafile
+
+class DataFileSource_Experiment_Assoc(): #FIXME shouldn't this be bound to datafile
     experiment_id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
     datafilesource=Column(Integer,ForeignKey('datafilesources.id'))
     hardware_id=Column(Integer,ForeignKey('hardware.id'))
-    relationship('Experiment',primaryjoin='Experiment.id==MetaDataSource_Experiment_Assoc.experiment_id'
+    relationship('Experiment',primaryjoin='Experiment.id==MetaDataSource_Experiment_Assoc.experiment_id',
                 backref='datafilesources')
     @validates('hardware_id') #basically if shit breaks half way through, new experiment
     def _wo(self, key, value): return self._write_once(key, value)
 
+
 class DataFileSource(Base): #TODO use this to link subjects to datafile substructure
     """Datafile substructure"""
     __tablename__='datafilesources'
-    id=Column(Integer,primary_key=True)
-    name=Column(String(20),nullable=False)
+    id=Column(Integer,primary_key=True) #FIXME
+    name=Column(String(20),nullable=False,unique=True)
+    hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #this shall be muteable
 
     #the reason I want to connect it to the hardware is because that is what we interact with
     #better to do that and have the association fixed than to be forced to check every time
@@ -53,7 +56,22 @@ class DataFileSource(Base): #TODO use this to link subjects to datafile substruc
         return '\n%s'%(self.name)
 
 
-class MetaDataSource(Base):
+class NDArrayDataSource(): #fixme we'll worry about what imaging looks like later
+    pass
+
+
+class ArrayDataSource(): #FIXME this doesn't quite fit the problem I need to solve with binding channels to hardware to subjects
+    #somehow these have starttimes instead of date times, because they are collected for a long time after and in fact may be collected at a time OTHER than when the record of them is made...
+    __tablename__='arraydatasources'
+    id=Column(Integer,primary_key=True)
+    name=Column(String(20),nullable=False,unique=True)
+    prefix=Column(String(2),ForeignKey('si_prefix.symbol')) #nullable can accomadate external datafiles
+    unit=Column(String(3),ForeignKey('si_unit.symbol'))
+
+
+class MetaDataSource(Base): #FIXME ScalarDataSource #may be combined into a VectorDataSource
+    #FIXME TODO this can just be called 'DataSource' because it can reference array or scalar data
+    #wheter I want a flag for marking scalar or array is another question, also the segments/as from neo...
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
     __tablename__='metadatasources'
     id=Column(Integer,primary_key=True)
@@ -61,8 +79,9 @@ class MetaDataSource(Base):
     prefix=Column(String(2),ForeignKey('si_prefix.symbol'),default='')
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
     mantissa=Column(Integer) #TODO
-    #FIXME
-    associatedHardwareUserEtc=None #TODO this record needs to be stored with the experiment becuse it can change, this is record keeping not reflection of being
+    hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #this shall be muteable
+    @validates('name','prefix','unit') #FIXME
+    def _wo(self, key, value): return self._write_once(key, value)
     def strHelper(self): #TODO this is where quantities can really pay off
         return '%s%s from %s'%(self.prefix,self.unit,self.name)
     def __repr__(self):
@@ -151,7 +170,7 @@ class Repository(Base):
         return super().__repr__('url')
 
 
-class File(Base):
+class File(Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
     """class for interfacing with things stored outside the database, whether datafiles or citables or whatever"""
     #TODO references to a local file should be replaced with a reference to that computer so that on retrieval if the current computer does not match we can go find other repositories for the same file damn it this is going to be a bit complicated
     #ideally the failover version selection should be ordered by retrieval time and should be completely transparent
@@ -167,6 +186,9 @@ class File(Base):
     @property
     def filetype(self):
         return self.filename.split('.')[-1]
+    @property
+    def full_url(self):
+        return self.url+self.filename
     ident=Column(String) #FIXME wtf was I going to do with this?
     __mapper_args__ = {
         'polymorphic_on':ident,
@@ -174,18 +196,21 @@ class File(Base):
     }
 
     def checkExists(self):
-        pass
+        URL_STAND.ping(self.full_url)
 
-    def __init__(self,Repo=None,filename=None,url=None,creationDateTime=None):
+    def __init__(self,filename,Repo=None,url=None,creationDateTime=None):
         self.url=URL_STAND.urlClean(url)
         self.filename=filename
-        self.creationDateTime=creationDateTime
         if Repo:
             if Repo.url:
                 self.url=Repo.url
                 #TODO if it doesn't exist we should create it, thus the need for the updated urlClean
             else:
                 raise AttributeError('RepoPath has no url! Did you commit before referencing the instance directly?')
+        if not creationDateTime:
+            URL_STAND.getCreationDateTime(self.full_url)
+        else:
+            self.creationDateTime=creationDateTime
 
     def strHelper(self,depth=0):
         return super().strHelper(depth,'filename')
@@ -194,6 +219,19 @@ class File(Base):
         return '\n%s%s'%(self.url,self.filename)
 
 
+#FIXME TODO DataFile is currently a standin for a 'protocol' which is what we really want so that data can flexibly be stored inside or outside the program this will be the "unit of data"?? the "segment" or set of segments... basically the neoio thing that is generated from a single protocol file and may in point of fact have different metadata for each sub segment, but that at least has it in a consistent and preictable way
+class Block(): #thing with one or more segments
+    pass
+class Segment(): #thing with one or more arrays
+    pass
+class AnalogSignal(): #raw array data
+    pass
+
+class SubExperiment(): #FIXME
+    datathing_id=None #the unit of data collection over which nothing recorded directly in the database varies
+    #so a single image file in some cases, or a time serries of image files in another
+
+#FIXME something is a bit off with HDFS
 class DataFile(HasDataFileSources, File): #TODO datafiles can only really belong to a single experiment, while subjects can belong to MANY experiments....
     __tablename__='datafile'
     url=Column(String,primary_key=True,autoincrement=False)
