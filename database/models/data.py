@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData, HasDataFileSources
+from database.models.mixins import HasNotes, HasMetaData
 from database.standards import URL_STAND
 
 #some global variables that are used here and there that would be magic otherwise
@@ -166,6 +166,8 @@ class Repository(Base):
         self.name=name
         URL_STAND.ping(self.url)
         self.parent_url=parent_url
+    def __str__(self):
+        return self.url
     def __repr__(self):
         return super().__repr__('url')
 
@@ -198,15 +200,15 @@ class File(Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces 
     def checkExists(self):
         URL_STAND.ping(self.full_url)
 
-    def __init__(self,filename,Repo=None,url=None,creationDateTime=None):
-        self.url=URL_STAND.urlClean(url)
+    def __init__(self,filename,url=None,creationDateTime=None):
+        self.url=URL_STAND.urlClean(str(url)) #Repository.__str__ returns the url, so can just pass in repo :)
         self.filename=filename
-        if Repo:
-            if Repo.url:
-                self.url=Repo.url
+        #if Repo:
+            #if Repo.url:
+                #self.url=Repo.url
                 #TODO if it doesn't exist we should create it, thus the need for the updated urlClean
-            else:
-                raise AttributeError('RepoPath has no url! Did you commit before referencing the instance directly?')
+            #else:
+                #raise AttributeError('RepoPath has no url! Did you commit before referencing the instance directly?')
         if not creationDateTime:
             URL_STAND.getCreationDateTime(self.full_url)
         else:
@@ -232,17 +234,32 @@ class SubExperiment(): #FIXME
     #so a single image file in some cases, or a time serries of image files in another
 
 #FIXME something is a bit off with HDFS
-class DataFile(HasDataFileSources, File): #TODO datafiles can only really belong to a single experiment, while subjects can belong to MANY experiments....
+class DataFile(File): #TODO datafiles can only really belong to a single experiment, while subjects can belong to MANY experiments....
     __tablename__='datafile'
     url=Column(String,primary_key=True,autoincrement=False)
     filename=Column(String,primary_key=True,autoincrement=False)
     __table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
-    datafilesources=relationship('DataFileSource')
+    #datafilesources=relationship('DataFileSource')
     #FIXME datasources: they are equivalent to MDSes and can be channels!
     __mapper_args__={'polymorphic_identity':'datafile'}
 
     experiment=relationship('Experiment',backref='datafiles',uselist=False)
+
+    @declared_attr #FIXME
+    def __datafilesources(cls): #FIXME not sure this is what I want... the structure of the df should have it
+        datafilesource_association = Table('datafile_dfs_assoc', cls.metadata,
+            Column('datafilesource_id',ForeignKey('datafilesources.id'),primary_key=True),
+            Column('datafile_url', String, primary_key=True),
+            Column('datafile_filename', String, primary_key=True),
+            ForeignKeyConstraint(['datafile_url','datafile_filename'],['datafile.url','datafile.filename'])
+        )
+        return relationship('DataFileSource',secondary=datafilesource_association,
+            primaryjoin='and_({0}_dfs_assoc.c.{0}_url=={0}.c.url,{0}_dfs_assoc.c.{0}_filename=={0}.c.filename)'.format('datafile'),
+            secondaryjoin='DataFileSource.id=={0}_dfs_assoc.c.datafilesource_id'.format('datafile'),
+            backref=backref('datafile') #FIXME do we really want this?
+        )
+
 
     @declared_attr
     def metadata_(cls): #FIXME naming...

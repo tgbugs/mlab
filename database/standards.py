@@ -37,17 +37,17 @@ class URL_STAND:
                 listdir(path)
                 return path
             except:
-                raise FileNotFoundError('Local path does not exist!') #FIXME this => wierd error handling
+                raise FileNotFoundError('Local path \'%s\' does not exist!'%path) #FIXME this => wierd error handling
         else: #TODO requests does not actually handle anything besides http/s :/
-            if not r.head(full_url).ok: #also data computer on the internet???
-                raise FileNotFoundError('Remote path is not OK!') #FIXME this => wierd error handling
+            if r.head(full_url).status_code == 404: #also data computer on the internet???
+                raise FileNotFoundError('Remote url \'%s\' is not OK!'%full_url) #FIXME this => wierd error handling
             else:
-                return path
+                return full_url
 
     @staticmethod
     def getCreationDateTime(full_url):
         parsed=parse.urlparse(full_url)
-        if parsed.scheme is file:
+        if parsed.scheme is 'file':
             path=parsed.path
             if path[2]==(':'): #FIXME this is not actually valid... windows :/
                 path=path[1:]

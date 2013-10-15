@@ -27,14 +27,13 @@ class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Ba
     def reagents(self):
         return [rt.currentLot for rt in self.reagenttypes] #FIXME
 
-    def __init__(self,name=None,abbrev=None,Repository=None,Methods=None,Hardware=[],ReagentTypes=[],MetaDataSources=[],repository_url=None,methods_id=None):
+    def __init__(self,name=None,abbrev=None,Repository=None,Methods=None,ReagentTypes=[],MetaDataSources=[],repository_url=None,methods_id=None):
         self.name=name
         self.abbrev=abbrev
         self.methods_id=methods_id
 
         self.reagenttypes.extend(ReagentTypes)
-        self.hardware.extend(Hardware) #hardware can be added and subtracted here because Experiment tracks binds
-        self.metadatasources.extend(MetaDataSources)
+        self.metadatasources.extend(MetaDataSources) #hardware is handled here now
 
         if Methods:
             if Methods.id:

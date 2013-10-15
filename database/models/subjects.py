@@ -24,6 +24,8 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
     generating_experiment=relationship('Experiment',backref=backref('generated_subjects'),uselist=False)
 
     #generative relationships, some are being preserving others are terminal (binary fision anyone?)
+    #FIXME if parent_id is None then we can use this???? maybe a bit too much overlap?
+    #ontogeny vs part-whole
     generated_from_subjects=relationship('Subject',secondary='experiments_subjects',
             primaryjoin='Subject.generating_experiment_id==experiments_subjects.c.experiments_id',
             secondaryjoin='Subject.id==experiments_subjects.c.subjects_id', #FIXME this is the problem
@@ -34,7 +36,8 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
     #could also just leave off geid when they are enerated by the experiment where they are data subjects...
 
     #identified groups connector
-    group_id=Column(Integer,ForeignKey('subjectcollection.id')) #FIXME fuck, m-m on this? :/ subjects *could* belong to mupltiple identified groups, for example the jim group and the jeremy group
+    #XXX NOTE XXX we do NOT need this for subjectcollection because generating_parent_id props via exp
+    group_id=Column(Integer,ForeignKey('arbitrarysubjectcollection.id')) #FIXME fuck, m-m on this? :/ subjects *could* belong to mupltiple identified groups, for example the jim group and the jeremy group
 
     #datetime data birth/death, time on to right/ time out of rig etc
     #other time points are probably actually metadata bools
@@ -120,9 +123,12 @@ class ArbitrarySubjectCollection(Base): #TODO m-m probably should just make a 'H
 class SubjectCollection(Subject):
     """Identified collections of subjects that have no physical form in themselves yet are still subjects and can generate subjects"""
     __tablename__='subjectcollection'
-    id=Column(Integer,ForeignKey('subjects.id'),primary_key=True)
+    id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
     name=Column(String(30),nullable=False)
-    members=relationship('Subject',primaryjoin='Subject.parent_id==SubjectCollection.id',backref=backref('group',uselist=False))
+    members=relationship('Subject',primaryjoin='foreign(Subject.parent_id)==SubjectCollection.id',backref=backref('group',uselist=False))
+    __mapper_args__ = {'polymorphic_identity':'subjectcollection',
+                       'inherit_condition':id==Subject.id
+                      }
 
     @validates('generating_experiment_id','startDateTime','sDT_abs_error')
     def _wo(self, key, value): return self._write_once(key, value)

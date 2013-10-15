@@ -241,7 +241,7 @@ def popRepos(session):
 
 def popFiles(session):
     rep=session.query(Repository).filter_by(name='jax strain db')[0]
-    session.add(File(rep,'003718.html'))
+    session.add(File('003718.html',rep))
     pass
 
 def popCiteType(session):

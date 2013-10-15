@@ -1,4 +1,5 @@
 from database.imports import *
+from database.models.base import Base
 from database.standards import frmtDT
 
 #from database.base import Base
@@ -7,11 +8,10 @@ from database.standards import frmtDT
 class Note(Base):
     __tablename__='notes'
     id=Column(Integer,primary_key=True)
-    user_id=Column(Integer,ForeignKey('user.id')) #TODO
+    user_id=Column(Integer,ForeignKey('users.id')) #TODO
     text=Column(Text,nullable=False)
     dateTime=Column(DateTime,default=datetime.now) #FIXME holy butts no ntp batman O_O_O_O_O_O
     #lbRefs=Column(Integer,ForeignKey('labbook.id') #FIXME
-    self.noted=None #FIXME damnit..... that backref is irritating....
     @property
     def noted(self):
         return [getattr(self,name) for name in self.__dir__() if name[:6]=='parent']

@@ -18,7 +18,7 @@ class HasNotes: #FIXME this works ok, will allow the addition of the same note t
         )
         return relationship('Note',secondary=note_association,
             primaryjoin='{0}_note_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
-            secondaryjoin='Note.id=={0}_dfs_assoc.c.note_id'.format(cls.__tablename__),
+            secondaryjoin='Note.id=={0}_note_assoc.c.note_id'.format(cls.__tablename__),
             backref=backref('parent_%s'%cls.__tablename__) #FIXME do we really want this?
         )
 
@@ -46,7 +46,7 @@ class IsMetaDataSource: #XXX I think this is depricated... ?
         return relationship('MetaDataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
 
 
-class HasDataFileSources: #FIXME LOL going to need some halp with this one since DF has no id >_<
+class HasDataFileSources:
     @declared_attr
     def datafilesources(cls):
         datafilesource_association = Table('%s_dfs_assoc'%cls.__tablename__, cls.metadata,
