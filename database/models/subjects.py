@@ -91,36 +91,29 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
         else:
             return allChilds
 
-    def __init__(self,Parent=None,GeneratingExperiment=None,startDateTime=None,
-            sDT_abs_error=None,Experiments=[],Hardware=[],
-            parent_id=None,generating_experiment_id=None):
+    def __init__(self,parent_id=None,generating_experiment_id=None,
+            group_id=None,startDateTime=None,sDT_abs_error=None,
+            Experiments=[],Hardware=[]):
 
-        self.parent_id=parent_id
-        self.generating_experiment_id=generating_experiment_id
+        #FIXME there might be a way to do this with try:except
+        if parent_id:
+            self.parent_id=int(parent_id) #FIXME could lead to some hard to follow errors... raise earlier?
+        if generating_experiment_id:
+            self.generating_experiment_id=int(generating_experiment_id)
+        if group_id:
+            self.group_id=int(group_id)
         self.startDateTime=startDateTime
         self.sDT_abs_error=sDT_abs_error
 
         self.experiments.extend(Experiments)
         self.hardware.extend(Hardware)
 
-        if Parent:
-            if Parent.id:
-                self.parent_id=parent_id
-            else:
-                raise AttributeError
-        if GeneratingExperiment:
-            if GeneratingExperiment.id:
-                self.generating_experiment=GeneratingExperiment.id
-            else:
-                raise AttributeError
-
-
 class ArbitrarySubjectCollection(Base): #TODO m-m probably should just make a 'HasArbitraryCollections' mixin
     id=Column(Integer,primary_key=True)
     name=Column(String(30),nullable=False)
 
 
-class SubjectCollection(Subject):
+class SubjectCollection(Subject): #FIXME NOT to be used for purely logical groups eg cell tuple
     """Identified collections of subjects that have no physical form in themselves yet are still subjects and can generate subjects"""
     __tablename__='subjectcollection'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
@@ -141,14 +134,13 @@ class SubjectCollection(Subject):
     def __len__(self):
         return len(self.members)
 
-    def __init__(self,Parent=None,GeneratingExperiment=None,name=None,
-            startDateTime=None,sDT_abs_error=None,Members=[],Experiments=[],
-            Hardware=[],parent_id=None,generating_experiment_id=None):
+    def __init__(self,parent_id=None,generating_experiment_id=None,
+            group_id=None,name=None,startDateTime=None,sDT_abs_error=None,
+            Members=[],Experiments=[],Hardware=[]):
 
-        super().__init__(Parent=Parent,GeneratingExperiment=GeneratingExpeirment,
-                startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
+        super().__init__(startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
                 Experiments=Experiments,Hardware=Hardware,parent_id=parent_id,
-                generating_experiment_id=generating_experiment_id)
+                generating_experiment_id=generating_experiment_id,group_id=group_id)
 
         self.name=name
         self.members.extend(Members) #make sure that generating experiment and parent get passed along

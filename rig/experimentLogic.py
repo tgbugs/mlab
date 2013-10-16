@@ -178,6 +178,41 @@ class BaseExp:
                 #get datafile metadata
             #recursive make/get nth child subject
 
+ 
+    @class_method
+    def getPreData(subject): #FIXME this way is really convoluted and will require good doccumentation
+        if subject.preMDS is not None:
+            [self.imdsDict[name].record(subject) for name in subject.preMDS]
+        if subject.preProts is not None:
+            [prot.record(subject) for prot in subject.preProts]
+        #FIXME TODO add the equivalent for datafiles... or collapse all the data into one thing
+    @class_method
+    def getInterData(subject):
+        [self.imdsDict[name].record(subject) for name in subject.interMDS]
+    @class_method
+    def getPostData(subject):
+        [self.imdsDict[name].record(subject) for name in subject.postMDS]
+        [prot.record(subject) for prot in subject.postProts] #XXX this is where the cell pair data goes
+
+    def subjectLogic(self,subject): #TODO this one
+        self.getParams(subject) #urg, not sure this is the best/most logical pattern... the calling object is the experiment but the thing that will hold the data is the subject :/ ie: confusing that I need to put something on the subject type to tell the experiment what to do when it encounters this type
+        #subject.fillInParams() #FIXME I think the best pattern will be to have pre,post,inter, be from metadatasources and BaseExp should have the getPreData functions to keep things simple
+
+        #it reduces flexibility a bit but it will preserve the order of the data we collect
+        #and make everything standard since these are monkey patches, yes it breaks stuff up
+
+        #subject.getPreData()
+        self.getPreData(subject) #these functions basically call MDS_.record(subject) for MDS_ in subject.PreData
+        for child in subject.children:
+            self.subjectLogic(child)
+            #subject.getInterData()
+            if is last child:
+                subject.makeMoreChilds() #FIXME can't iterate over children over and over...
+                #TODO when making subjects from the EXPERMETNALLY defined one it can take Subjects as parents OR groups that have the same parent_id, CHECK TO VERIFY and there are some other problems that need to be solved
+            #FIXME what if there are no actual children only the monkey patched?
+        #subject.getPostData(subject)
+        #subject.IfLastSubjectAddNewToParent_questionmark()
+        self.getPostData(subject)
 
     def subjectSetLogic(self,subjects): #FIXME binding must occur before init otherwise the declarative style pattern will break also branching from a root that has more than one subject... :/ simultaneous recursion...
         """depth first traversal of subjects with the ability to add subjects at the deepest level first and then add on the way back up and go back down opperates on sets of subjects as if they are a single subject"""
@@ -197,50 +232,6 @@ class BaseExp:
         return subjectSetLogic(makeNewSubjects(subjects[0],number=number)) #TODO
         #TODO the way to 'loop' over multiple subjects at the same level AFTER going to a deeper level is to just have a branched return scenario
         #argh! still not quite right
-    
-    @class_method
-    def getPreData(subject): #FIXME this way is really convoluted and will require good doccumentation
-        if subject.getPreData is not None: #XXX intentionally not using try:except: here
-            subject.getPreData()
-        else: #TODO may need some try except here if some subjects don't define those...
-            if subject.preMDS is not None:
-                [mds.record(subject) for mds in subject.preMDS]
-            if subject.preProts is not None:
-                [prot.record(subject) for prot in subject.preProts]
-            #FIXME TODO add the equivalent for datafiles... or collapse all the data into one thing
-    @class_method
-    def getInterData(subject):
-        if subject.getInterData is not None: #XXX intentionally not using try:except: here
-            subject.getInterData()
-        else:
-            [mds.record(subject) for mds in subject.interMDS]
-    @class_method
-    def getPostData(subject):
-        if subject.getPostData is not None: #XXX intentionally not using try:except: here
-            subject.getPostData()
-        else:
-            [mds.record(subject) for mds in subject.postMDS]
-            [prot.record(subject) for prot in subject.postProts] #XXX this is where the cell pair data goes
-
-
-    def subjectLogic(self,subject): #TODO
-        self.getParams(subject) #urg, not sure this is the best/most logical pattern... the calling object is the experiment but the thing that will hold the data is the subject :/ ie: confusing that I need to put something on the subject type to tell the experiment what to do when it encounters this type
-        #subject.fillInParams() #FIXME I think the best pattern will be to have pre,post,inter, be from metadatasources and BaseExp should have the getPreData functions to keep things simple
-
-        #it reduces flexibility a bit but it will preserve the order of the data we collect
-        #and make everything standard since these are monkey patches, yes it breaks stuff up
-
-        #subject.getPreData()
-        self.getPreData(subject) #these functions basically call MDS_.record(subject) for MDS_ in subject.PreData
-        for child in subject.children:
-            self.subjectLogic(child)
-            #subject.getInterData()
-            if is last child:
-                subject.makeMoreChilds() #FIXME can't iterate over children over and over...
-            #FIXME what if there are no actual children only the monkey patched?
-        #subject.getPostData(subject)
-        #subject.IfLastSubjectAddNewToParent_questionmark()
-        self.getPostData(subject)
 
     def getObjectMetadata(self,objects,wait=False):
         def getMD(obj,wait):

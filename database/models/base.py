@@ -23,6 +23,13 @@ class DefaultBase:
     def strHelper(self,depth=0,attr='id'):
         tabs='\t'*depth
         return '\n%s%s %s'%(tabs,self.__class__.__name__,getattr(self,attr))
+    def __int__(self): #MAGIC when called during __init__ for the simple cases
+        #FIXME TODO make sure to override this for MetaData!
+        if type(getattr(self,'id',None)) is int:
+            return self.id
+        else:
+            raise TypeError('%s has no id or id is not an int'%self.__class__.__name__)
+            return None
     def __repr__(self,attr='id'):
         return '\n%s %s'%(self.__class__.__name__,getattr(self,attr))
     def __str__(self):
