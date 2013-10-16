@@ -10,6 +10,13 @@ _plusMinus='\u00B1'
 ###  DataSources
 ###-------------
 
+class DataSource():
+    __tablename__='datasources'
+    #it may be the case that we don't need this table
+    #the mapping between MDS_ and DFS_ to these does not have to be 1:1
+    #but it would be nice if this reflected that symmetry...
+    #FIXME this is related to the problem with sub experiments and making those protocols doccumentable along with the .pro files or the like, they ammount to the same thing... but they don't need to be experiments in the same right because everything at the higher level is constant wrt them... and doccumented there at the higher level
+
 class DataFileStructure():
     external_def_url=Column(String,ForeignKey('File.url'),primary_key=True)
     external_def_filename=Column(String,ForeignKey('File.filename'),primary_key=True)

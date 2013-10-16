@@ -125,10 +125,7 @@ class SubjectCollection(Subject):
     __tablename__='subjectcollection'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
     name=Column(String(30),nullable=False)
-    members=relationship('Subject',primaryjoin='foreign(Subject.parent_id)==SubjectCollection.id',backref=backref('group',uselist=False))
-    __mapper_args__ = {'polymorphic_identity':'subjectcollection',
-                       'inherit_condition':id==Subject.id
-                      }
+    __mapper_args__ = {'polymorphic_identity':'subjectcollection'}
 
     @validates('generating_experiment_id','startDateTime','sDT_abs_error')
     def _wo(self, key, value): return self._write_once(key, value)

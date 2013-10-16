@@ -179,70 +179,93 @@ class BaseExp:
             #recursive make/get nth child subject
 
 
-def subjectSetLogic(self,subjects): #FIXME binding must occur before init otherwise the declarative style pattern will break also branching from a root that has more than one subject... :/ simultaneous recursion...
-    """depth first traversal of subjects with the ability to add subjects at the deepest level first and then add on the way back up and go back down opperates on sets of subjects as if they are a single subject"""
-    #FIXME there MUST be an exemplar set from which to opperate, but this fails as soon as an intermediate subject is added w/ no children???? SOLUTION: define a child type
-    if not subjects.any():
-        return 'DONE' #FIXME
+    def subjectSetLogic(self,subjects): #FIXME binding must occur before init otherwise the declarative style pattern will break also branching from a root that has more than one subject... :/ simultaneous recursion...
+        """depth first traversal of subjects with the ability to add subjects at the deepest level first and then add on the way back up and go back down opperates on sets of subjects as if they are a single subject"""
+        #FIXME there MUST be an exemplar set from which to opperate, but this fails as soon as an intermediate subject is added w/ no children???? SOLUTION: define a child type
+        if not subjects.any():
+            return 'DONE' #FIXME
 
-    getObjectMetaData(subjects,wait=True)
-    self.session.commit()
-    getObjectDataFiles(subjects)
-
-    if not_done: #FIXME this logic does not handle depth first, for example slices that have multiple cells because recursion doesn't quite work right still need a for loop
-        all_childs=[]
-        [all_childs.extend(subject.children) for subject in subjects]
-        subjectSetLogic(all_childs)
-    number=int(input('enter number of subjects to add')) #FIXME there is one more loop which is [[,,],[,,],[,,]] nexted lists of subjects
-    return subjectSetLogic(makeNewSubjects(subjects[0],number=number)) #TODO
-    #TODO the way to 'loop' over multiple subjects at the same level AFTER going to a deeper level is to just have a branched return scenario
-    #argh! still not quite right
-
-def subjectLogic(subjects): #all subjects here are assumed to be simultaneous
-    #collect data on all at once
-    getObjectMetaData(subjects,wait=True)
-    self.session.commit()
-    getObjectDataFiles(subjects)
-    for subject in subjects:
-        if subject.child_type:
-            num=int(input('number of %s to make'%subject.child_type.__name__))
-            if not num:
-                return 'DONE'
-            else:
-                subject.child_type(subject) #FIXME for slice this is somehow missing data...
-            
-
-    #if child_type
-        #traverse children individually
-
-
-
-def getObjectMetadata(self,objects,wait=False):
-    def getMD(obj,wait):
-        if wait:
-            input('press any key to start collecting metadata for %s'%obj.__class__.__name__)
-        for key in objects.metadatasource_names: #advantage here is that the list can be ordered in the order you want to collect the metadata
-            self.mdsDict[key].record(obj)
-    try:
-        for obj in objects:
-            getMD(obj)
-    except AttributeError:
-        getMD(obj)
-        
-
-
-def getObjectDataFiles(self,objects,wait=False):
-    """Assumes that all objects passed in are associated with the datafiles that will be generated and of the same type/have the same protocols"""
-    try: objects.__iter__
-    except: objects=(objects,)
-    obj=objects[0]
-    if wait:
-        input('press any key to start collecting datafiles for %s'%obj.__class__.__name__)
-    for protocol in obj.protocols:
-        datafile=obj.protocol_runner(protocol) #TODO this should commit the datafile to the database or raise an error
-        datafile.subjects.extend(objects) #TODO look up whether this actually commits...
-        self.getObjectMetaData(datafile)
+        getObjectMetaData(subjects,wait=True)
         self.session.commit()
+        getObjectDataFiles(subjects)
+
+        if not_done: #FIXME this logic does not handle depth first, for example slices that have multiple cells because recursion doesn't quite work right still need a for loop
+            all_childs=[]
+            [all_childs.extend(subject.children) for subject in subjects]
+            subjectSetLogic(all_childs)
+        number=int(input('enter number of subjects to add')) #FIXME there is one more loop which is [[,,],[,,],[,,]] nexted lists of subjects
+        return subjectSetLogic(makeNewSubjects(subjects[0],number=number)) #TODO
+        #TODO the way to 'loop' over multiple subjects at the same level AFTER going to a deeper level is to just have a branched return scenario
+        #argh! still not quite right
+    
+    @class_method
+    def getPreData(subject): #FIXME this way is really convoluted and will require good doccumentation
+        if subject.getPreData is not None: #XXX intentionally not using try:except: here
+            subject.getPreData()
+        else: #TODO may need some try except here if some subjects don't define those...
+            if subject.preMDS is not None:
+                [mds.record(subject) for mds in subject.preMDS]
+            if subject.preProts is not None:
+                [prot.record(subject) for prot in subject.preProts]
+            #FIXME TODO add the equivalent for datafiles... or collapse all the data into one thing
+    @class_method
+    def getInterData(subject):
+        if subject.getInterData is not None: #XXX intentionally not using try:except: here
+            subject.getInterData()
+        else:
+            [mds.record(subject) for mds in subject.interMDS]
+    @class_method
+    def getPostData(subject):
+        if subject.getPostData is not None: #XXX intentionally not using try:except: here
+            subject.getPostData()
+        else:
+            [mds.record(subject) for mds in subject.postMDS]
+            [prot.record(subject) for prot in subject.postProts] #XXX this is where the cell pair data goes
+
+
+    def subjectLogic(self,subject): #TODO
+        self.getParams(subject) #urg, not sure this is the best/most logical pattern... the calling object is the experiment but the thing that will hold the data is the subject :/ ie: confusing that I need to put something on the subject type to tell the experiment what to do when it encounters this type
+        #subject.fillInParams() #FIXME I think the best pattern will be to have pre,post,inter, be from metadatasources and BaseExp should have the getPreData functions to keep things simple
+
+        #it reduces flexibility a bit but it will preserve the order of the data we collect
+        #and make everything standard since these are monkey patches, yes it breaks stuff up
+
+        #subject.getPreData()
+        self.getPreData(subject) #these functions basically call MDS_.record(subject) for MDS_ in subject.PreData
+        for child in subject.children:
+            self.subjectLogic(child)
+            #subject.getInterData()
+            if is last child:
+                subject.makeMoreChilds() #FIXME can't iterate over children over and over...
+            #FIXME what if there are no actual children only the monkey patched?
+        #subject.getPostData(subject)
+        #subject.IfLastSubjectAddNewToParent_questionmark()
+        self.getPostData(subject)
+
+    def getObjectMetadata(self,objects,wait=False):
+        def getMD(obj,wait):
+            if wait:
+                input('press any key to start collecting metadata for %s'%obj.__class__.__name__)
+            for key in objects.metadatasource_names: #advantage here is that the list can be ordered in the order you want to collect the metadata
+                self.mdsDict[key].record(obj)
+        try:
+            for obj in objects:
+                getMD(obj)
+        except AttributeError:
+            getMD(obj)
+
+    def getObjectDataFiles(self,objects,wait=False):
+        """Assumes that all objects passed in are associated with the datafiles that will be generated and of the same type/have the same protocols"""
+        try: objects.__iter__
+        except: objects=(objects,)
+        obj=objects[0]
+        if wait:
+            input('press any key to start collecting datafiles for %s'%obj.__class__.__name__)
+        for protocol in obj.protocols:
+            datafile=obj.protocol_runner(protocol) #TODO this should commit the datafile to the database or raise an error
+            datafile.subjects.extend(objects) #TODO look up whether this actually commits...
+            self.getObjectMetaData(datafile)
+            self.session.commit()
 
     
 class ExampleExp(BaseExp):
@@ -272,14 +295,52 @@ class ExampleExp(BaseExp):
     #declare relationships here
     #binding happens at init
 
+class AlternateExampleExp(BaseExp):
+    #FIXME this pattern may not work if other parts of the program also need to use the database.models... but as long as we aren't running the same experiments then it *should* be ok to monkey patch those? it's dirty... but...
+    from database.models import Experiment
+    from database.models import Subject
+    from database.models import Subject as SubjectChild
+    from database.models import DataFile
+    from rig.metadatasources import mdsAll()
 
+    mdsDict=mdsAll(2)
+
+    Experiemnt.metadatasource_names=['ALL THE KEYS']
+    Experiment.protocol_names=['keys of external datafiles to run or something']
+    Experiment.getPreData=lambda: None
+    Experiment.getInterData=lambda: None
+    Experiment.getPostData=lambda: None
+
+    #metadata should only be collected once per subject for this kind of experiment another pattern with repeated collection would use different run logic
+    Subject.metadatasource_names=['ALL THE KEYS']  #FIXME this wont work the way I want it to? or will it? well... maybe it will!??!
+    Experiment.protocol_names=['keys of external datafiles to run or something']
+    Subject.getPreData=lambda: None
+    Subject.getInterData=lambda: None
+    Subject.getPostData=lambda: None
+
+    #FIXME this works if I keep inheritance, what happens if that changes becasue of a proliferation of subjects?
+    SubjectChild.metadatasource_names=['ALL THE KEYS'] #FIXME make sure that this works, I think it will
+    SubjectChild.protocol_names=['keys of external datafiles to run or something']
+    SubjectChild.getPreData=lambda: None
+    SubjectChild.getInterData=lambda: None
+    SubjectChild.getPostData=lambda: None
+
+    #FIXME FIXME the protocol is what needs to have this I think, not the DataFile? because it will vary per datafile...
+
+    Subject.child_type=SubjectChild
+
+    #declare relationships here
+    #binding happens at init
 
 
 class MatingRecord(BaseExp):
     from database.models import Experiment
-    from database.models import Sire, Dam
+    from database.models import Mouse
     name = 'mating record'
     abbrev = 'mr'
+
+    #FIXME it might be nice to have an option to add a new experiment to a subject...
+    #since it might have already been found
 
     def add_subjects_by_id(self,ids): #FIXME an extensible way to validate that the set of root subjects is valid for a given experiment TODO
         if len(ids) != 2:
