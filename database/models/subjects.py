@@ -1,19 +1,54 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardware
+from database.models.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardware, HasExperiments
 
 
 ###-----------------------
 ###  Subject Base
 ###-----------------------
 
+class MappedSubjectType(Subject): #single table inheritance for subjects solves our problem nicely
+    #FUCK, then we have subtypes... eg strain_id or celltype_id, or some shit...
+    #could just implement both...?
+    #or just have a 'subtype_id'
+    #which can then have a parent subtype etc...
+    __mapper_args__={'polymorphic_identity':'urtype'}
+
+
+class SubType(): #FIXME not sure if this is a good replacement for strain or not...
+    #awe yeah type token
+    id=Column(Integer,primary_key=True)
+    parenttype_id=Column(Integer,ForeignKey('subtype.id'))
+    subtypes=relationship('SubType',primaryjoin='SubType.id==SubType.parenttype_id',backref=backref('parenttype',uselist=False,remote_side=[id])) #AARRRGGGGGG not the most helpful way to do this >_<
+
+
+class SubjectType(): #XXX not using, favoring use of STE so we can have nice python properties
+    #id=Column(Integer,primary_key=True) #FIXME may not need this
+    #name=Column(String,nullable=False,unique=True)
+    id=Column(String,primary_key=True)
+    subjects=relationship('Subject',primaryjoin='Subject.type_id==SubjectType.id',backref=backref('type',uselist=False))
+    #reference_type=None #might be a way to add something like HardwareSubject??? may need the mixin for that and just have the mixin define the type by the table name
+    #better to use HasMetaData, HasFiles, etc than to make stuff subjects... maybe change to 'HasExperiments'
+    #true it is not as explicit...
+    def __str__(self):
+        return id
+
+class SubjectProperties(Base): #FIXME 'HasKeyValueStore' #NOT to be used for notes
+    """Not for data!""" #TODO how to query this...
+    #FIXME this is hstore from postgres except slower and value is not a blob
+    id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
+    key=Column(String(50),primary_key=True) #tattoo, eartag, name, *could* use coronal/sagital for slices, seems dubious... same with putting cell types in here... since those are technically results...
+    value=Column(String(50)) #if the strings actually need to be longer than 50 we probably want something else
+    subject=relationship('Subject',primaryjoin='Subject.id==SubjectProperties.id',backref='properties',uselist=False)
+    #FIXME ideally something like subtype should go here.... but that would require quite a few columns...
+
 #TODO make sure that generating experiment and experiments are fine to be the same experiment
 #FIXME if subjects have data about them and are generate by the same experiment there will be an infinite loop
-class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
+class Subject(HasMetaData, HasDataFiles, HasExeriments, HasHardware, HasNotes, Base):
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     type=Column(String,nullable=False)
-
+    type_id=Column(String,ForeignKey('subjecttype.id'),nullable=False)
 
     #whole-part relationships for all subjects
     parent_id=Column(Integer,ForeignKey('subjects.id'))
@@ -38,6 +73,7 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
     #identified groups connector
     #XXX NOTE XXX we do NOT need this for subjectcollection because generating_parent_id props via exp
     group_id=Column(Integer,ForeignKey('arbitrarysubjectcollection.id')) #FIXME fuck, m-m on this? :/ subjects *could* belong to mupltiple identified groups, for example the jim group and the jeremy group
+    location_id=Column(Integer,ForeignKey('locations.id'))
 
     #datetime data birth/death, time on to right/ time out of rig etc
     #other time points are probably actually metadata bools
@@ -70,9 +106,9 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
     @validates('parent_id','generating_experiment_id','startDateTime','sDT_abs_error','endDateTime')
     def _wo(self, key, value): return self._write_once(key, value)
 
-
     __mapper_args__ = {
-        'polymorphic_on':type,
+        #'polymorphic_on':type,
+        'polymorphic_on':type_id,
         'polymorphic_identity':'subject',
     }
 
@@ -108,10 +144,15 @@ class Subject(HasMetaData, HasDataFiles, HasHardware, HasNotes, Base):
         self.experiments.extend(Experiments)
         self.hardware.extend(Hardware)
 
-class ArbitrarySubjectCollection(Base): #TODO m-m probably should just make a 'HasArbitraryCollections' mixin
+class SubjectGroup(Base): #TODO m-m probably should just make a 'HasArbitraryCollections' mixin
     id=Column(Integer,primary_key=True)
     name=Column(String(30),nullable=False)
+    parent_id=Column(Integer,ForeignKey('subjects.id')) #FIXME this won't join to children...
+    parent=relationship('Subject',primaryjoin='Subject.id==SubjectGroup.parent_id',backref=backref('subgroups'),uselist=False) #URG this feels REALLY ugly
+    members=relationship('Subject',primaryjoin='and_(Subject.group_id==SubjectGroup.id,Subject.parent_id==SubjectGroup.parent_id)') #m-m?
 
+    def __len__(self):
+        return len(self.members)
 
 class SubjectCollection(Subject): #FIXME NOT to be used for purely logical groups eg cell tuple
     """Identified collections of subjects that have no physical form in themselves yet are still subjects and can generate subjects"""
@@ -138,9 +179,9 @@ class SubjectCollection(Subject): #FIXME NOT to be used for purely logical group
             group_id=None,name=None,startDateTime=None,sDT_abs_error=None,
             Members=[],Experiments=[],Hardware=[]):
 
-        super().__init__(startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
-                Experiments=Experiments,Hardware=Hardware,parent_id=parent_id,
-                generating_experiment_id=generating_experiment_id,group_id=group_id)
+        super().__init__(parent_id=parent_id,generating_experiment_id=generating_experiment_id,
+            group_id=group_id,startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
+            Experiments=[],Hardware=[]):
 
         self.name=name
         self.members.extend(Members) #make sure that generating experiment and parent get passed along
@@ -178,18 +219,16 @@ class Mouse(Subject):
     def breedingRecs(self):
         return [e for e in self.experiments if e.type.name=='mating record']
 
-    def __init__(self,Parent=None,GeneratingExperiment=None,startDateTime=None,
-            sDT_abs_error=None,eartag=None,tattoo=None,name=None,sex_id=None,
-            strain_id=None,cage_id=None,Experiments=[],Hardware=[],
-            parent_id=None,generating_experiment_id=None):
+    def __init__(self,parent_id=None,generating_experiment_id=None,group_id=None,
+            startDateTime=None,sDT_abs_error=None,eartag=None,tattoo=None,name=None,
+            sex_id=None,Experiments=[],Hardware=[]):
 
-        super().__init__(Parent=Parent,GeneratingExperiment=GeneratingExpeirment,
-                startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
-                Experiments=Experiments,Hardware=Hardware,parent_id=parent_id,
-                generating_experiment_id=generating_experiment_id)
+        super().__init__(parent_id=parent_id,generating_experiment_id=generating_experiment_id,
+            group_id=group_id,startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
+            Experiments=[],Hardware=[]):
 
-        self.eartag=eartag
-        self.tattoo=tattoo
+        self.eartag=eartag #identifiers store... keywords store? these arent reused across individuals...
+        self.tattoo=tattoo #so they don't need their own table...
         self.num=num
         self.name=name
 
@@ -215,17 +254,24 @@ class Mouse(Subject):
 class Slice(Subject): #FIXME slice should probably be a subject
     __tablename__='slice'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True) #FIXME
-
     @property
-    def dateTimeOut(self):
-        exp=self.experiments[0]
-        return exp.endDateTime
+    def dateTimeToRig(self): #FIXME this seems like a REALLY bad way to make up for the undefined nature of startDateTime............ docstring maybe????
+        return self.startDateTime
 
+    @property #FIXME again, these are things that are outside the BASIC datastore that I am building here, so they should go somehwere else
+    def dateTimeOut(self):
+        exp=self.generating_experiment
+        return exp.endDateTime
+    
     @property
     def thickness(self):
         return [m for m in self.experiments[0].metadata_ if m.metadatasource.name=='trmSliceThickness'][0] #FIXME this ok?
 
     __mapper_args__ = {'polymorphic_identity':'slice'}
+
+
+class Cell(Subject):
+    __mapper_args__={'polymorphic_identity':'cell'}
 
 
 class Cell(Subject):
@@ -240,6 +286,7 @@ class Cell(Subject):
 
 #FIXME the binding between data and subjects is really fucking tenuous sometimes... :/
 #FIXME think about whether we really want to bind subjects to hardware, that seems... strange???
+#FIXME HasDataRecords places a corrisponding entry for subjects as opposed to defining a 'HasDataRecords/HasExperiments' that works for subjects and anything like subjects?
 class HardwareSubject(Subject): #TODO we can make this ObjectSubject and bind anything we want to a subject without having to do crazy shit with Hardware-Hardware interactions and stuff like that since most hardware doesn't have generation experiments
     """Class used to represent hardware as a subject for calibration"""
     #hell, chemistry is just a bunch of reagent subjects...
@@ -247,20 +294,14 @@ class HardwareSubject(Subject): #TODO we can make this ObjectSubject and bind an
     __tablename__='hardwaresubject'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
     hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False,unique=True)
-    hardware=relationship('Hardware',uselist=False) #FIXME hw-sub relationships are now fucking insane
+    hardware=relationship('Hardware',backref=backref('data_records',uselist=False),uselist=False) #FIXME hw-sub relationships are now fucking insane
     __mapper_args__={'polymorphic_identity':'hardware'}
-    def __init__(self,Hardware=None,Parent=None,GeneratingExperiment=None,startDateTime=None,
-            sDT_abs_error=None,Experiments=[], #FIXME
-            parent_id=None,generating_experiment_id=None):
+    def __init__(self,hardware_id,parent_id=None,generating_experiment_id=None,
+            group_id=None,startDateTime=None,sDT_abs_error=None,
+            Experiments=[],Hardware=[]):
 
-        super().__init__(GeneratingExperiment=GeneratingExpeirment,
-                startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
-                Experiments=Experiments,generating_experiment_id=generating_experiment_id)
+        super().__init__(parent_id=parent_id,generating_experiment_id=generating_experiment_id,
+            group_id=group_id,startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
+            Experiments=[],Hardware=[]): #Hardware=[] : somewhere down there there is a sliderule
 
-        self.hardware_id=hardware_id
-
-        if Hardware:
-            if Hardware.id:
-                self.hardware_id=Hardware.id
-            else:
-                raise AttributeError
+        self.hardware_id=int(hardware_id)

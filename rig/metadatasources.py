@@ -54,7 +54,8 @@ def trmFac(MDS_trm,name): #FIXME TODO
                 {}
                )
 #FIXME figure out to make it so this doesn't break the init process..
-trmBools='trmMouseDown','trmBrainOut','trmNBQX_washed_in'
+trmBools='trmMouseDown','trmBrainOut','trmNBQX_washed_in','trmGigaSeal','trmBreakIn'
+#neat how it is easy to record failures eg in trmGigaSeal, trmBreakIn
 
 ###----------------------
 ###  esp metadata sources

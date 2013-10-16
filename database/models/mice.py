@@ -9,8 +9,11 @@ from database.standards import frmtDT
 #some global variables that are used here and there that would be magic otherwise
 _plusMinus='\u00B1'
 
+#repositories for data, locations for real things
+#labbooks and citations for everything else
+
 ###----------------------
-###  cages and cage racks
+###  cages and cage racks #FIXME convert all of this to a hierarchical 'location' thingamabob
 ###----------------------
 
 class CageRack(Base): #TODO this a 'collection'

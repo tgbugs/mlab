@@ -311,10 +311,18 @@ class HasHardware:
 ###  Has subjects
 ###--------------
 
-class HasSubjects:
+class HasSubjects: #XXX depricated
     @declared_attr
     def subjects(cls):
         subjects_association = Table('%s_subjects'%cls.__tablename__,cls.metadata,
             Column('subjects_id', ForeignKey('subjects.id'), primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
         return relationship('Subject', secondary=subjects_association,backref=backref('%s'%cls.__tablename__))
+
+class HasExperiments:
+    @declared_attr
+    def experiments(cls):
+        experiments_association = Table('%s_experiments'%cls.__tablename__,cls.metadata,
+            Column('experiments_id', ForeignKey('experiments.id'), primary_key=True),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
+        return relationship('Experiment', secondary=experiments_association,backref=backref('%s'%cls.__tablename__))

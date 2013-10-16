@@ -267,6 +267,10 @@ class ExampleExp(BaseExp):
     from database.models import DataFile
     from rig.metadatasources import mdsAll()
 
+    #fixme I suppose, that on the fly, I could map things as follows:
+    #the class Mouse, would still map to subject, but join_on type=='mouse' WITHOUT creating a new table
+    #subject would not be mapped to a class but all the types would and would be identical but with the ability to monkey patch
+
     mdsDict=mdsAll(2)
 
     Experiemnt.metadatasource_names=['ALL THE KEYS']
@@ -282,6 +286,8 @@ class ExampleExp(BaseExp):
     SubjectChild.DataFile=DataFile #FIXME need to do something about datafile types... or something still...
 
     Subject.child_type=SubjectChild
+
+    #FIXME moneky patching doesn't work if I get rid of inheritance...
 
     #declare relationships here
     #binding happens at init
@@ -319,6 +325,10 @@ class AlternateExampleExp(BaseExp):
     #FIXME FIXME the protocol is what needs to have this I think, not the DataFile? because it will vary per datafile...
 
     Subject.child_type=SubjectChild
+    Sujbect.child_type='childtype'
+    #FIXME could make this work w/ SubjectType using a dict w/ subject type as key with a list... but that is sorta...ugly
+    #also, the child type of each subject type needs to be able to have its own associated things...
+    #so make a subject type factory that adds tables!??! seems a bit nutso and like stuff could fail really really easily
 
     #declare relationships here
     #binding happens at init
