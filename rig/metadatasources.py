@@ -19,7 +19,7 @@ def mdsAll(channels=4):
 ###  trm metadata sources BEWARE!! ALL trm inputs at the moment are MASSIVELY blocking
 ###-----------------------------------------------------------------------------------
 
-class MDS_trmScopeZ(MDSource):
+class MDS_trmScopeZ(MDSource): #the base class identifies what it is, the issue is... overlapping names... well those will be handled by the database... since the names must be unique within a class, though maybe they should all be kept unique period...
     """objective height reading for an object""" #TODO figur out how to record surface Z...
     prefix='u'
     unit='m'

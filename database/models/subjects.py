@@ -28,7 +28,9 @@ class SubjectType(Base): #XXX not using, favoring use of STE so we can have nice
 
 #TODO make sure that generating experiment and experiments are fine to be the same experiment
 #FIXME if subjects have data about them and are generate by the same experiment there will be an infinite loop
-class Subject(HasMetaData, HasDataFiles, HasExperiments, HasProperties, HasHardware, HasNotes, Base):
+#TODO TODO the best way to associate hardware to a subject is NOT by direcly linking the subject to the hardware, becuase that can change, but using the hardware present at that time with it's associated datafilesource (or the like) and associating the subject to THAT sub structure
+HasDataFileSourcePlaceHolder=type('thingamabob',(object,),{}) #a way to associated a df channel/source to a subject until I can get the data out of the datafile and into the raw data... I think this is a good way...
+class Subject(HasMetaData, HasDataFiles, HasDataFileSourcePlaceHolder, HasExperiments, HasProperties, HasHardware, HasNotes, Base):
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     #type=Column(String,nullable=False)
@@ -64,6 +66,13 @@ class Subject(HasMetaData, HasDataFiles, HasExperiments, HasProperties, HasHardw
     startDateTime=Column(DateTime,default=datetime.now)
     sDT_abs_error=Column(Interval)
     endDateTime=Column(DateTime)
+
+    #variables for running experiments #FIXME move to protocol
+    paramNames=tuple #persistable values that are not filled in at init
+    preDataNames=tuple
+    interDataNames=tuple
+    postDataNames=tuple
+    child_type=Base #FIXME?
 
     @property
     def rootParent(self): #FIXME probably faster to do this with a func to reduce queries
@@ -110,6 +119,7 @@ class Subject(HasMetaData, HasDataFiles, HasExperiments, HasProperties, HasHardw
                 return nthChildren(n-1,new_allChilds)
         else:
             return allChilds
+
 
     def __init__(self,parent_id=None,generating_experiment_id=None,
             group_id=None,startDateTime=None,sDT_abs_error=None,

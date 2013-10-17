@@ -106,4 +106,10 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
 #dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
 #TODO lol the way this is set up now these classes should actually proabaly DEFINE metadata records at least for simple things like this where the only associated object is a mouse which by default experiment asssociates with, maybe I SHOULD move the mouse_id to class MouseExperiment?!?!?!
 
+class Protocol:
+    def __init__(self,SubjectClass,order_list_of_things_to_do):
+        #the problme is that we cant just use a list of names because everything isn't a datasource...
+        #I guess they could be, but that would break stuff? maybe it wont?
+        pass
+
 

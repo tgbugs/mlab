@@ -179,10 +179,10 @@ class BaseExp:
             #recursive make/get nth child subject
 
  
+    #FIXME do I apply MDS directly to subjects at this stage or do I want it contained in a more structured protocol so that I can unify metadata and datafiles all under one thing?
     @class_method
     def getPreData(subject): #FIXME this way is really convoluted and will require good doccumentation
-        if subject.preMDS is not None:
-            [self.imdsDict[name].record(subject) for name in subject.preMDS]
+            [self.imdsDict[name].record(subject) for name in subject.preMDS if name in self.imdsDict.keys()]
         if subject.preProts is not None:
             [prot.record(subject) for prot in subject.preProts]
         #FIXME TODO add the equivalent for datafiles... or collapse all the data into one thing
@@ -195,6 +195,7 @@ class BaseExp:
         [prot.record(subject) for prot in subject.postProts] #XXX this is where the cell pair data goes
 
     def subjectLogic(self,subject): #TODO this one
+        #params are values of the subject that need to be filled in here and are blank before
         self.getParams(subject) #urg, not sure this is the best/most logical pattern... the calling object is the experiment but the thing that will hold the data is the subject :/ ie: confusing that I need to put something on the subject type to tell the experiment what to do when it encounters this type
         #subject.fillInParams() #FIXME I think the best pattern will be to have pre,post,inter, be from metadatasources and BaseExp should have the getPreData functions to keep things simple
 
@@ -203,8 +204,9 @@ class BaseExp:
 
         #subject.getPreData()
         self.getPreData(subject) #these functions basically call MDS_.record(subject) for MDS_ in subject.PreData
-        for child in subject.children:
-            self.subjectLogic(child)
+        for child in subject.children+subject.subgroups:
+            if type(child) is type(subject.child_type)
+                self.subjectLogic(child)
             #subject.getInterData()
             if is last child:
                 subject.makeMoreChilds() #FIXME can't iterate over children over and over...
@@ -259,7 +261,7 @@ class BaseExp:
             self.session.commit()
 
     
-class ExampleExp(BaseExp):
+class _ExampleExp(BaseExp):
     #FIXME this pattern may not work if other parts of the program also need to use the database.models... but as long as we aren't running the same experiments then it *should* be ok to monkey patch those? it's dirty... but...
     from database.models import Experiment
     from database.models import Subject
@@ -292,7 +294,8 @@ class ExampleExp(BaseExp):
     #declare relationships here
     #binding happens at init
 
-class AlternateExampleExp(BaseExp):
+
+class _AlternateExampleExp(BaseExp):
     #FIXME this pattern may not work if other parts of the program also need to use the database.models... but as long as we aren't running the same experiments then it *should* be ok to monkey patch those? it's dirty... but...
     from database.models import Experiment
     from database.models import Subject
@@ -333,6 +336,46 @@ class AlternateExampleExp(BaseExp):
     #declare relationships here
     #binding happens at init
 
+#NO MONKEY PATCH! BAD MONKEY
+
+
+class ExampleExp(BaseExp):
+    #FIXME this pattern may not work if other parts of the program also need to use the database.models... but as long as we aren't running the same experiments then it *should* be ok to monkey patch those? it's dirty... but...
+    from database.models import Experiment
+    from database.models import Subject
+    from database.models import Subject as SubjectChild
+    from database.models import DataFile
+    from rig.metadatasources import mdsAll()
+
+    mdsDict=mdsAll(2)
+
+    #FIXME so, this is where all the metadatasources are actually listed in an obvious place with an explicit order, yes, they are doccumented by the metadata that is collect, but reconstructing the original list/protocl could be difficult, this stuff should *probably* be stored as part of ExperimentType...
+    mds='mdsName' #used to get the mds from imdsDict
+    Experiment.paramNames=None
+    Experiment.preDataNames=mds,mds,mds
+    Experiment.interDataNames=mds,mds,mds
+    Experiment.postDataNames=mds,mds,mds
+
+    #I suppose a subject could have as many set1Data...setNData as they wanted, but then subjectLogic changes
+    #it would just be a list of tuples which is really bad for an api
+
+    Subject.paramNames=None
+    Subject.preDataNames=mds,mds,mds
+    Subject.interDataNames=mds,mds,mds
+    Subject.postDataNames=mds,mds,mds
+
+    #FIXME this works if I keep inheritance, what happens if that changes becasue of a proliferation of subjects?
+    SubjectChild.paramNames=None
+    SubjectChild.preDataNames=mds,mds,mds
+    SubjectChild.interDataNames=mds,mds,mds
+    SubjectChild.postDataNames=mds,mds,mds
+
+    #FIXME FIXME the protocol is what needs to have this I think, not the DataFile? because it will vary per datafile...
+
+    Subject.child_type=SubjectChild
+
+    #declare relationships here
+    #binding happens at init
 
 class MatingRecord(BaseExp):
     from database.models import Experiment

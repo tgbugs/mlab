@@ -1,31 +1,69 @@
+class ExpStep:
+    MappedClass=None
+    #get data from a datasource, which can be defined below
+    #the things defined here are what is important for the experiment
+    #and recording the value in the database
+    #anything defined on the subclass is what will be needed to doccument that particular object in the db
+    @property
+    def name(self):
+        #FIXME add a way to explicity name classes if you want?
+        return self.__class__.__name__[4:] #FIXME? enforcing a sensible naming scheme might make sense, but that is a really pointless abuse that is hard to doccument and communicate, use the need for unique naming within the 'step' namespace to map on to the demand for unique step names
+
+    ctrl_name=None
+    def __init__(self,Controller,session):
+        #do not allow controller to be none, because any step should be doccumented
+        #TODO using these steps it SHOULD be possible to reconstruct a timeline for each experiment
+        #and look at the temporal variance, good way to track experimenter performance
+        if Controller.__class__.__name__==self.ctrl_name:
+            self.controller_version=Controller.version #FIXME run a hash against the file find another way for external datafile soruces
+            if not self.controller_version:
+                raise BaseException('What are you doing not keeping track of what software you used! BAD SCIENTIST')
+            self.ctrl=Controller
+    #BIGGER FIXME doccumenting which version of the controller was used is now VITAL
+        else:
+            raise TypeError('Wrong controller for this step!')
+        self.session=session
+        try:
+            self.MappedObject=self.session.query(MappedClass).filter_by(name=self.name).one()
+        except NoResultFound:
+            self.Persist()
+
+    def Persist(self):
+        raise AttributeError('You MUST implement this at the subclass level')
+
+    def record(self):
+        raise AttributeError('You MUST implement this at the subclass level')
+
+class SanityCheckStep(ExpStep):
+    #make sure all the things are consistent, eg does this headstage ACTUALLY corrispond to IN 0??
+    pass
+
+class AnalysisStep(ExpStep):
+    #used for online analysis (and doccumenting it)
+    #could also be used for offline analysis probably a good idea for doccumenting the version of the code and stuff
+    from database.models import Analysis as MappedClass
+    pass
+
+class ChangeVariableStep(ExpStep):
+    #move the microscope stage
+    #set the mcc state
+    #load a clx protocl #FIXME this may not go here, but we will see about that
+    pass
+
 class MDSource:
-    from database.models import MetaDataSource #FIXME
+    from database.models import MetaDataSource as MappedClass
     """ Base class for all metadata sources
         :param: Controller, a class that has a function that will return floats,
                 __class__.__name__ must match ctrl_name
         :param: session, a sqlalchemy database session that hopefully has tables matching your mapped classes
     """
-    @property
-    def name(self):
-        return self.__class__.__name__[4:]
     prefix=None #FIXME need some way to convey that prefix and unit cannot be changed w/o changing name
     unit=None #FIXME need some way to convey that prefix and unit cannot be changed w/o changing name
     mantissa=None #FIXME mantissa should be rounded not truncated, make sure this is implemented
-    ctrl_name=None
     hardware_id=None #this will be mutable so just chagne it here
 
     def __init__(self,Controller,session):
-        if Controller.__class__.__name__==self.ctrl_name:
-            self.ctrl=Controller
-        else:
-            raise TypeError('Wrong controller for this metadata source!')
-        
-        self.session=session #FIXME is it better to create a new session every time or better to just leave one open? read up
-
-        try:
-            self.MetaDataSource=self.session.query(MetaDataSource).filter_by(name=self.name).one()
-        except NoResultFound: #FIXME probably going to need to import this
-            self.Persist()
+        super().__init__(Controller,session)
         try:
             if self.MetaDataSource.hardware_id != self.hardware_id:
                 self.MetaDataSource.hardware_id=self.hardware_id
