@@ -5,7 +5,7 @@ from database.standards import frmtDT
 #from database.base import Base
 #all I want is a many-many relationship between targets and notes but that doesn't quite work ;_; Association per tble maybe?? that way we don't need a mixin
 
-class Note(Base):
+class Note(): #xxx depreicated in favor of simplicity
     __tablename__='notes'
     id=Column(Integer,primary_key=True)
     user_id=Column(Integer,ForeignKey('users.id')) #TODO

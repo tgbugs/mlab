@@ -8,7 +8,29 @@ _plusMinus='\u00B1'
 ###  notes mixins
 ###--------------
 
+class Note: #basically metadata for text... grrrrrr why no arbitrary datatypes :/
+    id=Column(Integer,primary_key=True)
+    dateTime=Column(DateTime,default=datetime.now) #FIXME holy butts no ntp batman O_O_O_O_O_O
+    text=Column(Text,nullable=False)
+    user_id=None #Column(Integer,ForeignKey('users.id')) #TODO
+
+
 class HasNotes: #FIXME this works ok, will allow the addition of the same note to anything basically
+    @declared_attr
+    def notes(cls):
+        note_association = Table('%s_note_assoc'%cls.__tablename__, cls.metadata,
+            Column('note_id',ForeignKey('notes.id'),primary_key=True),
+            Column('%s_id'%cls.__tablename__,ForeignKey('%s.id'%cls.__tablename__), #FIXME .id may not be all?
+                   primary_key=True)
+        )
+        return relationship('Note',secondary=note_association,
+            primaryjoin='{0}_note_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
+            secondaryjoin='Note.id=={0}_note_assoc.c.note_id'.format(cls.__tablename__),
+            backref=backref('parent_%s'%cls.__tablename__) #FIXME do we really want this?
+        )
+
+
+class _HasNotes: #this implementation is depreicated in favor of a metadata style that can be query joined
     @declared_attr
     def notes(cls):
         note_association = Table('%s_note_assoc'%cls.__tablename__, cls.metadata,
@@ -289,10 +311,9 @@ class HasReagents:
     @declared_attr
     def reagents(cls):
         reagent_association = Table('%s_reagents'%cls.__tablename__,cls.metadata,
-            Column('reagent_type_id', Integer, primary_key=True),
-            Column('reagent_lot', Integer, primary_key=True), #FIXME
-            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True),
-            ForeignKeyConstraint(['reagent_type_id','reagent_lot'],['reagents.type_id','reagents.lotNumber']))
+            Column('reagent_id', ForeignKey('reagents.id'), primary_key=True),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
+            #removed foreigkeyconstraint because switched reagents to a surrogate primary key
         return relationship('Reagent', secondary=reagent_association,backref=backref('%s_used'%cls.__tablename__))
 
 ###--------------
