@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardware, HasSubjects, HasReagentTypes, HasDataFileSources, HasMetaDataSources, HasMdsHwRecords, HasDfsHwRecords
+from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardware, HasReagentTypes, HasDataFileSources, HasMetaDataSources, HasMdsHwRecords, HasDfsHwRecords
 
 ###-------------------
 ###  Experiment tables
@@ -48,16 +48,21 @@ class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Ba
 #TODO on a per-experiment basis I need bindings between hardware and metadatasources
 #TODO AND I need a binding between datafiles/datafile channels and subjects
 #in biology there are expeirments that generate data, or data and subjects, if they generate only subjects then they should probably have some data to go along with them or the science might be bad
-class Experiment(HasMetaData, HasReagents, HasSubjects, HasMdsHwRecords, HasDfsHwRecords, Base): #FIXME generation experiment!???!
+class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Base): #FIXME generation experiment!???!
+    #TODO what/who is the REAL subject of experiment data? the procedure? the experimenter? the generated subjects? probably it is actually stuff that is used as a sanity check against the protocol... hrm... HRM
     __tablename__='experiments'
     id=Column(Integer,primary_key=True)
-    project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
-    person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
-    startDateTime=Column(DateTime,default=datetime.now())
-    endDateTime=Column(DateTime) #TODO
     type_id=Column(Integer,ForeignKey('experimenttype.id'),nullable=False)
 
-    @validates('endDateTime','startDateTime')
+    project_id=Column(Integer,ForeignKey('project.id'),nullable=False) #if i keep track of these at the level of experiment type then everything becomes problematic if I want to change the project or experiment or reuse stuff, but if I want to record WHO did the experiment as an experimental variable...
+    #also the being of the experiment type is not defined by which project it is for but project_id is a nice  way to tie everything together...
+    #maybe metadata for an experiment is who did it?
+    person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
+
+    startDateTime=Column(DateTime,default=datetime.now())
+    endDateTime=Column(DateTime) #TODO
+
+    @validates('type_id','endDateTime','startDateTime')
     def _wo(self, key, value): return _write_once(key, value)
 
     def setEndDateTime(self,dateTime=None):
@@ -69,11 +74,14 @@ class Experiment(HasMetaData, HasReagents, HasSubjects, HasMdsHwRecords, HasDfsH
         else:
             raise Warning('endDateTime has already been set!')
 
-    def __init__(self,ExpType=None,Project=None,Person=None,Reagents=[],Subjects=[],type_id=None,project_id=None,person_id=None,startDateTime=None):
+    def __init__(self,type_id,project_id=None,person_id=None,Reagents=[],Subjects=[],startDateTime=None):
+        self.type_id=int(type_id)
+        if project_id: #FIXME move to experiment type? if exptype is hierarchical can duplicate...
+            self.project_id=(project_id)
+        if person_id:
+            self.person_id=int(person_id)
+
         self.startDateTime=startDateTime
-        self.project_id=project_id
-        self.person_id=person_id
-        self.type_id=type_id
 
         self.AssignID(Project)
         self.AssignID(Person)
@@ -97,5 +105,11 @@ class Experiment(HasMetaData, HasReagents, HasSubjects, HasMdsHwRecords, HasDfsH
 #mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
 #dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
 #TODO lol the way this is set up now these classes should actually proabaly DEFINE metadata records at least for simple things like this where the only associated object is a mouse which by default experiment asssociates with, maybe I SHOULD move the mouse_id to class MouseExperiment?!?!?!
+
+class Protocol:
+    def __init__(self,SubjectClass,order_list_of_things_to_do):
+        #the problme is that we cant just use a list of names because everything isn't a datasource...
+        #I guess they could be, but that would break stuff? maybe it wont?
+        pass
 
 

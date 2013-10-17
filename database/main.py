@@ -1,5 +1,7 @@
 #Base file for creating the tables that I will use to store all my (meta)data
 
+#TODO use postgres search_path to control the user so that we can share basic things such as constants and strain information, definately need to audit some of those changes... audit table...
+
 #FIXME holy shit problems with using datetime.now as the default for DateTime!
 
 #TODO consider sqlalchemy.orm import validates for verifying that certain input from python userland is clean?

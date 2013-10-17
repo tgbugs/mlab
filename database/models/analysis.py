@@ -19,4 +19,3 @@ class OfflineAnalysis(Base):
     pass
 
 
-

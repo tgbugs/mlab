@@ -8,7 +8,29 @@ _plusMinus='\u00B1'
 ###  notes mixins
 ###--------------
 
+class Note: #basically metadata for text... grrrrrr why no arbitrary datatypes :/
+    id=Column(Integer,primary_key=True)
+    dateTime=Column(DateTime,default=datetime.now) #FIXME holy butts no ntp batman O_O_O_O_O_O
+    text=Column(Text,nullable=False)
+    user_id=None #Column(Integer,ForeignKey('users.id')) #TODO
+
+
 class HasNotes: #FIXME this works ok, will allow the addition of the same note to anything basically
+    @declared_attr
+    def notes(cls):
+        note_association = Table('%s_note_assoc'%cls.__tablename__, cls.metadata,
+            Column('note_id',ForeignKey('notes.id'),primary_key=True),
+            Column('%s_id'%cls.__tablename__,ForeignKey('%s.id'%cls.__tablename__), #FIXME .id may not be all?
+                   primary_key=True)
+        )
+        return relationship('Note',secondary=note_association,
+            primaryjoin='{0}_note_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
+            secondaryjoin='Note.id=={0}_note_assoc.c.note_id'.format(cls.__tablename__),
+            backref=backref('parent_%s'%cls.__tablename__) #FIXME do we really want this?
+        )
+
+
+class _HasNotes: #this implementation is depreicated in favor of a metadata style that can be query joined
     @declared_attr
     def notes(cls):
         note_association = Table('%s_note_assoc'%cls.__tablename__, cls.metadata,
@@ -82,7 +104,7 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
     abs_error=Column(Float(53))
     @validates('parent_id','metadatasource_id','dateTime','value','abs_error')
     def _wo(self, key, value): return self._write_once(key, value)
-    
+
     def __init__(self,value,Parent=None,MetaDataSource=None,metadatasource_id=None,abs_error=None,dateTime=None):
         self.dateTime=dateTime
         self.metadatasource_id=metadatasource_id
@@ -96,6 +118,9 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
             else:
                 raise AttributeError
             
+    def __int__(self):
+        return int(self.value) #FIXME TODO think about this
+
     def __repr__(self):
         mantissa=''
         error=''
@@ -288,7 +313,7 @@ class HasReagents:
         reagent_association = Table('%s_reagents'%cls.__tablename__,cls.metadata,
             Column('reagent_id', ForeignKey('reagents.id'), primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True),
-            #ForeignKeyConstraint(['reagent_type_id','reagent_lot'],['reagents.type_id','reagents.lotNumber'])
+            #removed foreigkeyconstraint because switched reagents to a surrogate primary key
         )
         return relationship('Reagent', secondary=reagent_association,backref=backref('%s_used'%cls.__tablename__))
 
@@ -308,10 +333,54 @@ class HasHardware:
 ###  Has subjects
 ###--------------
 
-class HasSubjects:
+class HasSubjects: #XXX depricated
     @declared_attr
     def subjects(cls):
         subjects_association = Table('%s_subjects'%cls.__tablename__,cls.metadata,
             Column('subjects_id', ForeignKey('subjects.id'), primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
         return relationship('Subject', secondary=subjects_association,backref=backref('%s'%cls.__tablename__))
+
+
+###-----------------
+###  Has experiments
+###-----------------
+
+class HasExperiments:
+    @declared_attr
+    def experiments(cls):
+        experiments_association = Table('%s_experiments'%cls.__tablename__,cls.metadata,
+            Column('experiments_id', ForeignKey('experiments.id'), primary_key=True),
+            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
+        return relationship('Experiment', secondary=experiments_association,backref=backref('%s'%cls.__tablename__))
+
+###-----------------------------------------
+###  Has properties, hstore, key/value store
+###-----------------------------------------
+
+class Properties: #FIXME HasKeyValueStore
+    """Not for data!""" #TODO how to query this...
+    #FIXME this is hstore from postgres except slower and value is not a blob
+    key=Column(String(50),primary_key=True) #tattoo, eartag, name, *could* use coronal/sagital for slices, seems dubious... same with putting cell types in here... since those are technically results...
+    value=Column(String(50)) #if the strings actually need to be longer than 50 we probably want something else
+    #FIXME ideally something like subtype should go here.... but that would require quite a few columns...
+    #def __init__(self,parent_id,key,value):
+        #self.parent=int(parent_id)
+        #self.key=key
+        #self.value=value
+
+
+class HasProperties:
+    @declared_attr
+    def properties(cls):
+        cls.Properties=type(
+                '%sProperties'%cls.__name__,
+                (Properties, Base,),
+                {   '__tablename__':'%s_properties'%cls.__tablename__,
+                    'parent_id':Column(Integer, #FIXME nasty errors inbound
+                        ForeignKey('%s.id'%cls.__tablename__),primary_key=True), #FIXME check autoincrement
+                }
+        )
+        cls._properties=relationship(cls.Properties,collection_class=attribute_mapped_collection('key'))
+        return association_proxy('_properties','value',creator=lambda k,v: cls.Properties(key=k,value=v))
+    #FIXME I don't understand why I do not need to init with parent_id...

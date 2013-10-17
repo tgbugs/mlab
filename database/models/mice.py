@@ -9,18 +9,21 @@ from database.standards import frmtDT
 #some global variables that are used here and there that would be magic otherwise
 _plusMinus='\u00B1'
 
+#repositories for data, locations for real things
+#labbooks and citations for everything else
+
 ###----------------------
-###  cages and cage racks
+###  cages and cage racks #FIXME convert all of this to a hierarchical 'location' thingamabob
 ###----------------------
 
-class CageRack(Base): #TODO this a 'collection'
+class CageRack(): #TODO this a 'collection'
     id=Column(Integer,primary_key=True)
     row=Column(Integer,primary_key=True,autoincrement=False)
     col=Column(String(1),primary_key=True,autoincrement=False)
     cage_id=Column(Integer,ForeignKey('cage.id'))
 
 
-class Cage(Base): #TODO this is a 'unit'
+class Cage(): #TODO this is a 'unit'
     #the cool bit is that I can actually do all of these before hand if I print out my cage cards and get them prepped
     id=Column(Integer,primary_key=True, autoincrement=False) #cage card numbers
     location=relationship('CageRack',backref=backref('cage',uselist=False),uselist=False)
@@ -28,7 +31,7 @@ class Cage(Base): #TODO this is a 'unit'
     #litter=relationship('Litter',primaryjoin='Litter.cage_id==Cage.id',backref=backref('cage',uselist=False))
 
 
-class CageTransfer(Base):
+class CageTransfer():
     #TODO this is a transaction record for when someone changes the cage_id on a mouse
     #or does a cage.mice.append(mouse) (im not even sure that actually works???)
     #FIXME this HAS to be implemented as an event trigger!!!!
