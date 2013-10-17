@@ -319,6 +319,11 @@ class HasSubjects: #XXX depricated
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
         return relationship('Subject', secondary=subjects_association,backref=backref('%s'%cls.__tablename__))
 
+
+###-----------------
+###  Has experiments
+###-----------------
+
 class HasExperiments:
     @declared_attr
     def experiments(cls):
@@ -326,3 +331,34 @@ class HasExperiments:
             Column('experiments_id', ForeignKey('experiments.id'), primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
         return relationship('Experiment', secondary=experiments_association,backref=backref('%s'%cls.__tablename__))
+
+###-----------------------------------------
+###  Has properties, hstore, key/value store
+###-----------------------------------------
+
+class Properties: #FIXME HasKeyValueStore
+    """Not for data!""" #TODO how to query this...
+    #FIXME this is hstore from postgres except slower and value is not a blob
+    key=Column(String(50),primary_key=True) #tattoo, eartag, name, *could* use coronal/sagital for slices, seems dubious... same with putting cell types in here... since those are technically results...
+    value=Column(String(50)) #if the strings actually need to be longer than 50 we probably want something else
+    #FIXME ideally something like subtype should go here.... but that would require quite a few columns...
+    #def __init__(self,parent_id,key,value):
+        #self.parent=int(parent_id)
+        #self.key=key
+        #self.value=value
+
+
+class HasProperties:
+    @declared_attr
+    def properties(cls):
+        cls.Properties=type(
+                '%sProperties'%cls.__name__,
+                (Properties, Base,),
+                {   '__tablename__':'%s_properties'%cls.__tablename__,
+                    'parent_id':Column(Integer, #FIXME nasty errors inbound
+                        ForeignKey('%s.id'%cls.__tablename__),primary_key=True), #FIXME check autoincrement
+                }
+        )
+        cls._properties=relationship(cls.Properties,collection_class=attribute_mapped_collection('key'))
+        return association_proxy('_properties','value',creator=lambda k,v: cls.Properties(key=k,value=v))
+    #FIXME I don't understand why I do not need to init with parent_id...

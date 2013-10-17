@@ -7,14 +7,6 @@ from database.models.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardw
 ###  Subject Base
 ###-----------------------
 
-class MappedSubjectType(Subject): #single table inheritance for subjects solves our problem nicely
-    #FUCK, then we have subtypes... eg strain_id or celltype_id, or some shit...
-    #could just implement both...?
-    #or just have a 'subtype_id'
-    #which can then have a parent subtype etc...
-    __mapper_args__={'polymorphic_identity':'urtype'}
-
-
 class SubType(): #FIXME not sure if this is a good replacement for strain or not...
     #awe yeah type token
     id=Column(Integer,primary_key=True)
@@ -33,18 +25,10 @@ class SubjectType(): #XXX not using, favoring use of STE so we can have nice pyt
     def __str__(self):
         return id
 
-class SubjectProperties(Base): #FIXME 'HasKeyValueStore' #NOT to be used for notes
-    """Not for data!""" #TODO how to query this...
-    #FIXME this is hstore from postgres except slower and value is not a blob
-    id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
-    key=Column(String(50),primary_key=True) #tattoo, eartag, name, *could* use coronal/sagital for slices, seems dubious... same with putting cell types in here... since those are technically results...
-    value=Column(String(50)) #if the strings actually need to be longer than 50 we probably want something else
-    subject=relationship('Subject',primaryjoin='Subject.id==SubjectProperties.id',backref='properties',uselist=False)
-    #FIXME ideally something like subtype should go here.... but that would require quite a few columns...
 
 #TODO make sure that generating experiment and experiments are fine to be the same experiment
 #FIXME if subjects have data about them and are generate by the same experiment there will be an infinite loop
-class Subject(HasMetaData, HasDataFiles, HasExeriments, HasHardware, HasNotes, Base):
+class Subject(HasMetaData, HasDataFiles, HasExeriments, HasProperties, HasHardware, HasNotes, Base):
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     type=Column(String,nullable=False)
@@ -80,6 +64,10 @@ class Subject(HasMetaData, HasDataFiles, HasExeriments, HasHardware, HasNotes, B
     startDateTime=Column(DateTime,default=datetime.now)
     sDT_abs_error=Column(Interval)
     endDateTime=Column(DateTime)
+
+    @declared_attr
+    def properties(cls):
+        cls.Properties=
 
     @property
     def rootParent(self): #FIXME probably faster to do this with a func to reduce queries
@@ -129,7 +117,7 @@ class Subject(HasMetaData, HasDataFiles, HasExeriments, HasHardware, HasNotes, B
 
     def __init__(self,parent_id=None,generating_experiment_id=None,
             group_id=None,startDateTime=None,sDT_abs_error=None,
-            Experiments=[],Hardware=[]):
+            Experiments=[],Hardware=[],Properties={}):
 
         #FIXME there might be a way to do this with try:except
         if parent_id:
@@ -143,6 +131,8 @@ class Subject(HasMetaData, HasDataFiles, HasExeriments, HasHardware, HasNotes, B
 
         self.experiments.extend(Experiments)
         self.hardware.extend(Hardware)
+        self.properties.update(Properties)
+        #[self.Properties(self,key,value) for key,value in Properties.items()]
 
 class SubjectGroup(Base): #TODO m-m probably should just make a 'HasArbitraryCollections' mixin
     id=Column(Integer,primary_key=True)
@@ -158,11 +148,8 @@ class SubjectCollection(Subject): #FIXME NOT to be used for purely logical group
     """Identified collections of subjects that have no physical form in themselves yet are still subjects and can generate subjects"""
     __tablename__='subjectcollection'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
-    name=Column(String(30),nullable=False)
+    #name=Column(String(30),nullable=False) #should now be in properties
     __mapper_args__ = {'polymorphic_identity':'subjectcollection'}
-
-    @validates('generating_experiment_id','startDateTime','sDT_abs_error')
-    def _wo(self, key, value): return self._write_once(key, value)
 
     @property
     def remaining(self):
@@ -175,18 +162,6 @@ class SubjectCollection(Subject): #FIXME NOT to be used for purely logical group
     def __len__(self):
         return len(self.members)
 
-    def __init__(self,parent_id=None,generating_experiment_id=None,
-            group_id=None,name=None,startDateTime=None,sDT_abs_error=None,
-            Members=[],Experiments=[],Hardware=[]):
-
-        super().__init__(parent_id=parent_id,generating_experiment_id=generating_experiment_id,
-            group_id=group_id,startDateTime=startDateTime,sDT_abs_error=sDT_abs_error,
-            Experiments=[],Hardware=[]):
-
-        self.name=name
-        self.members.extend(Members) #make sure that generating experiment and parent get passed along
-        #when needed
-
 ###-----------------------
 ###  Subjects
 ###-----------------------
@@ -195,14 +170,15 @@ class Mouse(Subject):
     __tablename__='mouse'
     id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
 
-    eartag=Column(Integer)
-    tattoo=Column(Integer)
-    name=Column(String(20))  #words for mice
+    #FIXME SEND THESE TO PROPERTIES???
+    #eartag=Column(Integer)
+    #tattoo=Column(Integer)
+    #name=Column(String(20))  #words for mice
 
     #cage and location information
-    cage_id=Column(Integer,ForeignKey('cage.id')) #the cage card number
+    #cage_id=Column(Integer,ForeignKey('cage.id')) #the cage card number moved to location
 
-    sex_id=Column(String(1),ForeignKey('sex.abbrev'),nullable=False)
+    sex_id=Column(String(1),ForeignKey('sex.abbrev'),nullable=False) #FIXME properties?
 
     strain_id=Column(Integer,ForeignKey('strain.id')) #phylogeny of strains shall be handled in its own table
 
@@ -252,33 +228,21 @@ class Mouse(Subject):
 
 
 class Slice(Subject): #FIXME slice should probably be a subject
-    __tablename__='slice'
-    id=Column(Integer,ForeignKey('subjects.id'),primary_key=True) #FIXME
     @property
     def dateTimeToRig(self): #FIXME this seems like a REALLY bad way to make up for the undefined nature of startDateTime............ docstring maybe????
         return self.startDateTime
-
     @property #FIXME again, these are things that are outside the BASIC datastore that I am building here, so they should go somehwere else
     def dateTimeOut(self):
         exp=self.generating_experiment
         return exp.endDateTime
-    
     @property
     def thickness(self):
         return [m for m in self.experiments[0].metadata_ if m.metadatasource.name=='trmSliceThickness'][0] #FIXME this ok?
-
     __mapper_args__ = {'polymorphic_identity':'slice'}
 
 
 class Cell(Subject):
     __mapper_args__={'polymorphic_identity':'cell'}
-
-
-class Cell(Subject):
-    __tablename__='cell'
-    id=Column(Integer,ForeignKey('subjects.id'),primary_key=True,autoincrement=False)
-    __mapper_args__={'polymorphic_identity':'cell'}
-
     def __repr__(self):
         base=super().__repr__()
         return '%s%s%s%s'%(base,''.join([h.strHelper(1) for h in self.hardware]),self.parent.strHelper(1),''.join([c.strHelper(1) for c in self.datafiles[0].subjects]))

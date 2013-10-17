@@ -18,6 +18,8 @@ from sqlalchemy                         import ForeignKeyConstraint
 
 from sqlalchemy.orm                     import relationship, backref, object_session, validates
 
+from sqlalchemy.orm.collections         import attribute_mapped_collection
+
 from sqlalchemy.ext.hybrid              import hybrid_property, hybrid_method
 
 from sqlalchemy.ext.declarative         import declared_attr
