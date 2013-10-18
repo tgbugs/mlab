@@ -9,27 +9,32 @@
 #eg multiple df placeholders, the datafile and record datafile
 
 class ExpStep:
+    """ Base class for all experiment steps
+        This should be extended for each type of step
+        Step types should then be subclassed once more
+        To define individual records
+        :param: Controller, a class that has a function that will return floats,
+                __class__.__name__ must match ctrl_name
+        :param: session, a sqlalchemy database session that hopefully has tables matching your mapped classes
+    """
+
     MappedClass=None
-    #get data from a datasource, which can be defined below
-    #the things defined here are what is important for the experiment
-    #and recording the value in the database
-    #anything defined on the subclass is what will be needed to doccument that particular object in the db
+    ctrl_name=None
+
     @property
     def name(self):
         #FIXME add a way to explicity name classes if you want?
         return self.__class__.__name__[4:] #FIXME? enforcing a sensible naming scheme might make sense, but that is a really pointless abuse that is hard to doccument and communicate, use the need for unique naming within the 'step' namespace to map on to the demand for unique step names
 
-    ctrl_name=None
     def __init__(self,Controller,session):
-        #do not allow controller to be none, because any step should be doccumented
         #TODO using these steps it SHOULD be possible to reconstruct a timeline for each experiment
         #and look at the temporal variance, good way to track experimenter performance
         if Controller.__class__.__name__==self.ctrl_name:
             self.controller_version=Controller.version #FIXME run a hash against the file find another way for external datafile soruces
+            #BIGGER FIXME doccumenting which version of the controller was used is now VITAL
             if not self.controller_version:
                 raise BaseException('What are you doing not keeping track of what software you used! BAD SCIENTIST')
             self.ctrl=Controller
-    #BIGGER FIXME doccumenting which version of the controller was used is now VITAL
         else:
             raise TypeError('Wrong controller for this step!')
         self.session=session
@@ -41,7 +46,7 @@ class ExpStep:
     def Persist(self):
         raise AttributeError('You MUST implement this at the subclass level')
 
-    def record(self):
+    def doStep(self):
         raise AttributeError('You MUST implement this at the subclass level')
 
 class SanityCheckStep(ExpStep):
@@ -72,11 +77,6 @@ class GetDataFileStep(ExpStep):
 
 class MDSource:
     from database.models import MetaDataSource as MappedClass
-    """ Base class for all metadata sources
-        :param: Controller, a class that has a function that will return floats,
-                __class__.__name__ must match ctrl_name
-        :param: session, a sqlalchemy database session that hopefully has tables matching your mapped classes
-    """
     prefix=None #FIXME need some way to convey that prefix and unit cannot be changed w/o changing name
     unit=None #FIXME need some way to convey that prefix and unit cannot be changed w/o changing name
     mantissa=None #FIXME mantissa should be rounded not truncated, make sure this is implemented
@@ -85,18 +85,18 @@ class MDSource:
     def __init__(self,Controller,session):
         super().__init__(Controller,session)
         try:
-            if self.MetaDataSource.hardware_id != self.hardware_id:
-                self.MetaDataSource.hardware_id=self.hardware_id
+            if self.MappedObject.hardware_id != self.hardware_id:
+                self.MappedObject.hardware_id=self.hardware_id
                 self.session.commit() #FIXME make sure this works right
         except:
             raise AttributeError('wtf has you done!?')
 
     def Persist(self):
-        self.MetaDataSource=MetaDataSource(name=self.name,prefix=self.prefix,unit=self.unit,mantissa=self.mantissa,hardware_id=hardware_id)
-        self.session.add(self.MetaDataSource)
+        self.MappedObject=MappedClass(name=self.name,prefix=self.prefix,unit=self.unit,mantissa=self.mantissa,hardware_id=hardware_id)
+        self.session.add(self.MappedObject)
         self.session.commit()
 
-    def record(self,Parent,autocommit=False):
+    def doStep(self,Parent,autocommit=False):
         """ adds the product of getCurrentValue and getAbsError to the session but does NOT commit by default"""
         value=self.getCurrentValue()
         abs_error=self.getAbsError()
@@ -117,28 +117,19 @@ class MDSource:
         return None
 
 class DFSource: #TODO
-    from database.models import DataFileSource #FIXME check to see if already imported?
-    @property
-    def name(self):
-        return self.__class__.__name__[4:]
-    #FIXME TODO need some way to keep track of the placeholder/pointer to df substructure
-    #WAIT, I can just define those, stick them all in a datafile... damn it.. doesnt fix problem
-
-    def __init__(self,session):
-        self.session=session #FIXME is it better to create a new session every time or better to just leave one open? read up
+    from database.models import DataFileSource as MappedClass #FIXME check to see if already imported?
+    hardware_id=None #this will be mutable so just chagne it here
+    def __init__(self,Controller,session):
+        super().__init__(Controller,session)
         try:
-            self.DataFileSource=self.session.query(DataFileSource).filter_by(name=self.name).one()
-        except NoResultFound: #FIXME probably going to need to import this
-            self.Persist()
-        try:
-            if self.DataFileSource.hardware_id != self.hardware_id:
-                self.DataFileSource.hardware_id=self.hardware_id
+            if self.MappedObject.hardware_id != self.hardware_id:
+                self.MappedObject.hardware_id=self.hardware_id
                 self.session.commit() #FIXME make sure this works right
         except:
             raise AttributeError('wtf has you done!?')
 
     def Persist(self):
-        self.DataFileSource=DataFileSource(name=self.name,hardware_id=hardware_id)
+        self.MappedObject=MappedClass(name=self.name,hardware_id=hardware_id)
         self.session.add(self.DataFileSource)
         self.session.commit()
     #yay! this is the base class to define datasources for where datafiles come from
