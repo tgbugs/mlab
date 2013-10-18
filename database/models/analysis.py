@@ -8,13 +8,18 @@ class _Result(HasNotes, Base):
     analysis_id=None
     output_id=None
 
-class OnlineAnalysis(Base):
+
+class Analysis(Base):
+    id=Column(Integer,primary_key=True)
+
+
+class OnlineAnalysis():
     id=Column(Integer,primary_key=True)
     #TODO these should probably be mixins!???! or something per cell type halp!
     #should probably look like metadata tables
-    pass
 
-class OfflineAnalysis(Base):
+
+class OfflineAnalysis():
     id=Column(Integer,primary_key=True)
     pass
 

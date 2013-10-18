@@ -64,8 +64,9 @@ def errPrint(pnErr):
     if errval==4000:
         return 1
     else:
-        printD(errdict[errval],context=5)
-        return 0
+        raise(errdict[errval])
+        #printD(errdict[errval],context=5)
+        #return 0
 
 #main class
 class clxControl: #clxmsg
@@ -111,6 +112,7 @@ class clxControl: #clxmsg
         self._puPointer=byref(c_uint(0))
         self._pbPointer=byref(c_bool(0))
         self._pdPointer=byref(c_double(0))
+
     def POST(self):
         print('CLX POST',self.GetStatus())
         return self.GetStatus()
