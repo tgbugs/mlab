@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardware, HasExperiments, HasProperties
+from database.models.mixins import HasNotes, HasMetaData, HasDataFiles, HasHardware, HasExperiments, HasProperties, HasSwcHwRecords
 
 
 ###-----------------------
@@ -29,8 +29,7 @@ class SubjectType(Base): #XXX not using, favoring use of STE so we can have nice
 #TODO make sure that generating experiment and experiments are fine to be the same experiment
 #FIXME if subjects have data about them and are generate by the same experiment there will be an infinite loop
 #TODO TODO the best way to associate hardware to a subject is NOT by direcly linking the subject to the hardware, becuase that can change, but using the hardware present at that time with it's associated datafilesource (or the like) and associating the subject to THAT sub structure
-HasDataFileSourcePlaceHolder=type('thingamabob',(object,),{}) #a way to associated a df channel/source to a subject until I can get the data out of the datafile and into the raw data... I think this is a good way...
-class Subject(HasMetaData, HasDataFiles, HasSwcHwRecord, HasExperiments, HasProperties, HasHardware, HasNotes, Base):
+class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasProperties, HasHardware, HasNotes, Base):
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     #type=Column(String,nullable=False)
@@ -144,6 +143,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecord, HasExperiments, HasProp
         self.properties.update(Properties)
         #[self.Properties(self,key,value) for key,value in Properties.items()]
 
+
 class SubjectGroup(Base): #TODO m-m probably should just make a 'HasArbitraryCollections' mixin
     id=Column(Integer,primary_key=True)
     name=Column(String(30),nullable=False)
@@ -153,6 +153,7 @@ class SubjectGroup(Base): #TODO m-m probably should just make a 'HasArbitraryCol
 
     def __len__(self):
         return len(self.members)
+
 
 class SubjectCollection(Subject): #FIXME NOT to be used for purely logical groups eg cell tuple
     """Identified collections of subjects that have no physical form in themselves yet are still subjects and can generate subjects"""

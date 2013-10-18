@@ -13,21 +13,25 @@ class Note: #basically metadata for text... grrrrrr why no arbitrary datatypes :
     dateTime=Column(DateTime,default=datetime.now) #FIXME holy butts no ntp batman O_O_O_O_O_O
     text=Column(Text,nullable=False)
     user_id=None #Column(Integer,ForeignKey('users.id')) #TODO
+    def __init__(self,text,parent_id,dateTime=None):
+        self.text=text
+        self.parent_id=int(parent_id)
+        self.dateTime=dateTime #FIXME may not want this...
 
 
 class HasNotes: #FIXME this works ok, will allow the addition of the same note to anything basically
     @declared_attr
     def notes(cls):
-        note_association = Table('%s_note_assoc'%cls.__tablename__, cls.metadata,
-            Column('note_id',ForeignKey('notes.id'),primary_key=True),
-            Column('%s_id'%cls.__tablename__,ForeignKey('%s.id'%cls.__tablename__), #FIXME .id may not be all?
-                   primary_key=True)
+        tname=cls.__tablename__
+        cls.Note=type(
+            '%sNote'%cls.__name__,
+            (Note, Base, ),
+            {   '__tablename__':'%s_notes'%tname,
+                'parent_id':Column(Integer, #FIXME nasty errors inbound
+                    ForeignKey('%s.id'%tname),nullable=False),
+            }
         )
-        return relationship('Note',secondary=note_association,
-            primaryjoin='{0}_note_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
-            secondaryjoin='Note.id=={0}_note_assoc.c.note_id'.format(cls.__tablename__),
-            backref=backref('parent_%s'%cls.__tablename__) #FIXME do we really want this?
-        )
+        return relationship(cls.Note,backref=backref('parent',uselist=False))
 
 
 class _HasNotes: #this implementation is depreicated in favor of a metadata style that can be query joined
@@ -99,27 +103,25 @@ class HasMetaDataSources:
 
 
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
+    #this stuff is not vectorized... a VectorizedData might be worth considering ala ArrayData
     dateTime=Column(DateTime,default=datetime.now)
     value=Column(Float(53),nullable=False)
     abs_error=Column(Float(53))
     @validates('parent_id','metadatasource_id','dateTime','value','abs_error')
     def _wo(self, key, value): return self._write_once(key, value)
 
-    def __init__(self,value,Parent=None,MetaDataSource=None,metadatasource_id=None,abs_error=None,dateTime=None):
-        self.dateTime=dateTime
-        self.metadatasource_id=metadatasource_id
+    def __init__(self,value,parent_id,metadatasource_id,abs_error=None,dateTime=None):
         self.value=value
         self.abs_error=abs_error
-        self.AssignID(MetaDataSource)
-        if Parent: #FIXME standardize table naming and id references ftlog
-            if Parent.id:
-                #setattr(self,'%s_id'%Parent.__tablename__,Parent.id)
-                self.parent_id=Parent.id
-            else:
-                raise AttributeError
+        parent_id=int(parent_id)
+        self.dateTime=dateTime
+        self.metadatasource_id=int(metadatasource_id)
             
     def __int__(self):
         return int(self.value) #FIXME TODO think about this
+    
+    def __round__(self):
+        return round(self.value)
 
     def __repr__(self):
         mantissa=''
@@ -152,24 +154,46 @@ class HasMetaData: #FIXME based on how I'm using this right now, the relationshi
         return relationship(cls.MetaData) #FIXME may need a primaryjoin on this
 
 
-class SwcHwRecords(Base): #TODO
-    """Record of what hardware collected which software channel for which datafilesource/type for a given experiment and the subject that was associated with it what a mess, actually this is a reasonable solution"""
-    parent_id=Column(ForeignKey('%s.id'%cls.__tablename__), primary_key=True) #has to be here
-    experiment_id=Column(ForeignKey('experiments.id'), primary_key=True)
-
-    #software channels are not independent of datafilesources 
-    datafilesource_id=Column(Integer, primary_key=True) #pull these from subject.hardware
-    channel_id=Column(String(20), primary_key=True) #too bad I can't just add these to subject directly
-    ForeignKeyConstraint([datafilesource_id,channel_id],['',''])
-
-    hardware_id=Column(ForeignKey,nullable=False) #not a pk because it is 1:1 with channel_id
-
-    #the datafile can always find the subject, so we dont need the datafile
-
+class SWC_HW_EXP_BIND:
+    datafile_subdata_id=None #TODO? as long as I can get to the things needed for analysis it should be ok
     @validates('hardware_id')
     def _wo(self, key, value): return self._write_once(key, value)
+    def __init__(self,parent_id,experiment_id,datafilesource_id,channel_id,hardware_id):
+        self.parent_id=int(parent_id)
+        self.experiment_id=int(experiment_id)
+        self.datafilesource_id=int(datafilesource_id) #this works fine, you just have to pass in SWC twice
+        self.channel_id=str(channel_id)
 
-    datafile_subdata_id=None #TODO? as long as I can get to the things needed for analysis it should be ok
+class HasSwcHwRecords: #TODO
+    """Record of what hardware collected which software channel for which datafilesource/type for a given experiment and the subject that was associated with it what a mess, actually this is a reasonable solution"""
+    @declared_attr
+    def swc_hw_records(cls):
+        tname=cls.__tablename__
+        cls.SwcHwRecord=type(
+                '%s_SwcHwRecord'%cls.__name__,
+                (SWC_HW_EXP_BIND, Base,),
+                {   '__tablename__':'%s_swchwrecords'%tname,
+                    'parent_id':Column(Integer,ForeignKey('%s.id'%tname), primary_key=True), #has to be here
+                    'experiment_id':Column(Integer,ForeignKey('experiments.id'), primary_key=True),
+                    'datafilesource_id':Column(Integer, primary_key=True), #pull these from subject.hardware
+                    'channel_id':Column(String(20), primary_key=True),
+                    '__table_args__':(
+                        ForeignKeyConstraint(['datafilesource_id', 'channel_id'],
+                            ['softwarechannel.datafilesource_id','softwarechannel.channel_id']), {}),
+                    'datafilesource':relationship('DataFileSource',
+                        primaryjoin='foreign(DataFileSource.id)==%s_swchwrecords.c.datafilesource_id'%tname,
+                        uselist=False),
+                    'channel':relationship('SoftwareChannel',
+                        primaryjoin=('and_(SoftwareChannel.datafilesource_id=='
+                            '%s_swchwrecords.c.datafilesource_id,'
+                            'SoftwareChannel.channel_id==%s_swchwrecords.c.channel_id)')%(tname,tname),
+                        uselist=False),
+                    'hardware_id':Column(ForeignKey('hardware.id'),nullable=False),
+                }
+        )
+        return relationship(cls.SwcHwRecord)
+
+
 
 
 class DFS_HW_BIND:
@@ -203,8 +227,8 @@ class HasDfsHwRecords: #we bind DFSes to hardware that collects that datafile pr
                         ForeignKey('%s.id'%cls.__tablename__),primary_key=True),
                     'datafilesource_id':Column(Integer,
                         ForeignKey('datafilesources.id'),primary_key=True),
-                    'hardware_id':Column(Integer,
-                        ForeignKey('hardware.id'))
+                    'hardware_id':Column(Integer, #FIXME relationship()
+                        ForeignKey('hardware.id')) #FIXME there are multiple hardwares!
                 }
         )
         return relationship(cls.DfsHwRecord) #FIXME ideally this should trigger... :/
@@ -214,17 +238,10 @@ class MDS_HW_BIND:
     """Class that keeps a record of what hardware was used to record the metadata"""
     @validates('hardware_id') #basically if shit breaks half way through, new experiment
     def _wo(self, key, value): return self._write_once(key, value)
-    def __init__(self,Parent=None,MetaDataSource=None,Hardware=None,parent_id=None,metadatasource_id=None,hardware_id=None):
-        self.parent_id=parent_id
-        self.metadatasource_id=metadatasource_id
-        self.hardware_id=hardware_id #FIXME probably need hardware=relationship()
-        self.AssignID(MetaDataSource)
-        self.AssignID(Hardware)
-        if Parent:
-            if Parent.id:
-                self.parent_id=Parent.id
-            else:
-                raise AttributeError
+    def __init__(self,parent_id,metadatasource_id,hardware_id):
+        self.parent_id=int(parent_id) #experiment_id
+        self.metadatasource_id=int(metadatasource_id) #FIXME watchout on the switch to string pk
+        self.hardware_id=int(hardware_id) #FIXME probably need hardware=relationship()
 
 
 class HasMdsHwRecords: #use for experiments since subjects change too fast
@@ -234,12 +251,12 @@ class HasMdsHwRecords: #use for experiments since subjects change too fast
                 '%s_MdsHwRecord'%cls.__name__,
                 (MDS_HW_BIND, Base,),
                 {   '__tablename__':'%s_mdshwrecord'%cls.__tablename__,
-                    'parent_id':Column(Integer,
+                    'parent_id':Column(Integer, #experiment_id
                         ForeignKey('%s.id'%cls.__tablename__),primary_key=True),
                     'metadatasource_id':Column(Integer,
                         ForeignKey('metadatasources.id'),primary_key=True),
                     'hardware_id':Column(Integer,
-                        ForeignKey('hardware.id'))
+                        ForeignKey('hardware.id'),nullable=False)
                 }
         )
         return relationship(cls.MdsHwRecord)

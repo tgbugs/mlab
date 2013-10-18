@@ -222,13 +222,16 @@ class SubExperiment(): #FIXME
 
 class SoftwareChannel(Base):
     """Closely related to MetaDataSource"""
-    datafilesource_id=Column(Integer,ForeignKey,primary_key=True) #FIXME may need to generalize for nidaq?
+    datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),primary_key=True) #FIXME may need to generalize for nidaq?
     channel_id=Column(String(20),primary_key=True) #could be useful for out too...
     hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #muteable!
     #FIXME CRITICAL MUST implement something similar to the record keeping for MDS
     #because the hardware/swc association can and will change
     #the persistence for the Subject needs to come from the history table that gets recorded on a per experiment basis, this would allow a subject to have a single hardware_id and resolve the convlict of having to figure out which piece of hardware to use for analysis if for example, 2 different extracellular probes were used on the same animal on different days and inserted into the opposite locations
-
+    def __int__(self):
+        return self.datafilesource_id
+    def __str__(self):
+        return self.channel_id
 
 class DataFileSource(Base): #TODO stop and think about how this generalizes to other experiments, specifically imaging
     """Basic structure of a datafile based on the piece of software that writes it"""
@@ -238,7 +241,7 @@ class DataFileSource(Base): #TODO stop and think about how this generalizes to o
 
     @declared_attr
     def channels(cls):
-        cls.SoftwareChannels=SoftwareChannels
+        cls.SoftwareChannel=SoftwareChannel
         return relationship(cls.SoftwareChannel)
 
     def strHelper(self,depth=0):
@@ -253,7 +256,7 @@ class DataFile(File): #TODO datafiles can only really belong to a single experim
     url=Column(String,primary_key=True,autoincrement=False)
     filename=Column(String,primary_key=True,autoincrement=False)
     __table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
-    datafilesource_id=Column(Integer,ForeignKey('datafiletype.id'),nullable=False)
+    datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),nullable=False)
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
     datafilesource=relationship('DataFileSource',uselist=False) #backref=backref('datafiles'),
     #FIXME datasources: they are equivalent to MDSes and can be channels!
