@@ -6,8 +6,7 @@ def mdsAll(channels=4):
     """used to populate from an existing ExperimentType"""
     glob=globals()
     clsDict={}
-    [clsDict.update({name:cls}) for name,cls in glob.items() if name[4:7]=='esp']
-    [clsDict.update({name:cls}) for name,cls in glob.items() if name[4:7]=='trm']
+    clsDict={name: cls for name,cls in glob.items() if name[4:7] is 'esp' or name[4:7] is 'trm'}
     for channel in range(channels):
         mccs=[mccBindChan(glob[name],channel) for name in glob.keys() if name[5:8]=='mcc']
         for cls in mccs:

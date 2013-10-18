@@ -152,6 +152,26 @@ class HasMetaData: #FIXME based on how I'm using this right now, the relationshi
         return relationship(cls.MetaData) #FIXME may need a primaryjoin on this
 
 
+class SwcHwRecords(Base): #TODO
+    """Record of what hardware collected which software channel for which datafilesource/type for a given experiment and the subject that was associated with it what a mess, actually this is a reasonable solution"""
+    parent_id=Column(ForeignKey('%s.id'%cls.__tablename__), primary_key=True) #has to be here
+    experiment_id=Column(ForeignKey('experiments.id'), primary_key=True)
+
+    #software channels are not independent of datafilesources 
+    datafilesource_id=Column(Integer, primary_key=True) #pull these from subject.hardware
+    channel_id=Column(String(20), primary_key=True) #too bad I can't just add these to subject directly
+    ForeignKeyConstraint([datafilesource_id,channel_id],['',''])
+
+    hardware_id=Column(ForeignKey,nullable=False) #not a pk because it is 1:1 with channel_id
+
+    #the datafile can always find the subject, so we dont need the datafile
+
+    @validates('hardware_id')
+    def _wo(self, key, value): return self._write_once(key, value)
+
+    datafile_subdata_id=None #TODO? as long as I can get to the things needed for analysis it should be ok
+
+
 class DFS_HW_BIND:
     #how to use to associate a cell to a channel:
     #the cell or subcompartment will have a hardware_id
@@ -172,7 +192,6 @@ class DFS_HW_BIND:
                 raise AttributeError
 
 
-
 class HasDfsHwRecords: #we bind DFSes to hardware that collects that datafile property
     @declared_attr
     def dfs_hw_records(cls):
@@ -188,7 +207,7 @@ class HasDfsHwRecords: #we bind DFSes to hardware that collects that datafile pr
                         ForeignKey('hardware.id'))
                 }
         )
-        return relationship(cls.DfsHwRecord)
+        return relationship(cls.DfsHwRecord) #FIXME ideally this should trigger... :/
 
 
 class MDS_HW_BIND:
