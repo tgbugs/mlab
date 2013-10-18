@@ -9,45 +9,69 @@
 #eg multiple df placeholders, the datafile and record datafile
 
 class ExpStep:
-    """ Base class for all experiment steps
+    """ 
+        Base class for all experiment steps
         This should be extended for each type of step
-        Step types should then be subclassed once more
-        To define individual records
-        :param: Controller, a class that has a function that will return floats,
-                __class__.__name__ must match ctrl_name
-        :param: session, a sqlalchemy database session that hopefully has tables matching your mapped classes
+        Step types should then be extended once more
+        To define individual records/steps
+
+        :attr::class:`.MappedClass` should appear in local namespace via
+            `from database.models import ModelName as MappedClass`. These
+            classes are things that ususally will not need to be queried
+            within the scope of datacollection.
+        :attr::string:`.ctrl_name`
+        :attr::list:`.prereqList`
+
+        :param: Controller, a class instance w/ function that can return floats,
+            Controller.__class__.__name__ must match ctrl_name
+        :param: session, a sqlalchemy database session that
+            (hopefully) has tables matching your mapped classes
+
+        :meth:`.Persist`
+        :meth:`.doStep`
     """
 
     MappedClass=None
     ctrl_name=None
+    prereqList=[]
 
     @property
     def name(self):
         #FIXME add a way to explicity name classes if you want?
-        return self.__class__.__name__[4:] #FIXME? enforcing a sensible naming scheme might make sense, but that is a really pointless abuse that is hard to doccument and communicate, use the need for unique naming within the 'step' namespace to map on to the demand for unique step names
+        return self.__class__.__name__[4:]
 
-    def __init__(self,Controller,session):
+    def __init__(self,Controller,session,prereqsToCheck=[]):
         #TODO using these steps it SHOULD be possible to reconstruct a timeline for each experiment
         #and look at the temporal variance, good way to track experimenter performance
+        setToCheck=set(prereqsToCheck)
+        [raise KeyError('Missing Prerequisite!') for prerec in self.prereqList if prerec not in setToCheck]
         if Controller.__class__.__name__==self.ctrl_name:
             self.controller_version=Controller.version #FIXME run a hash against the file find another way for external datafile soruces
             #BIGGER FIXME doccumenting which version of the controller was used is now VITAL
             if not self.controller_version:
-                raise BaseException('What are you doing not keeping track of what software you used! BAD SCIENTIST')
+                raise AttributeError('What are you doing not keeping track of what software you used! BAD SCIENTIST')
             self.ctrl=Controller
         else:
             raise TypeError('Wrong controller for this step!')
         self.session=session
         try:
-            self.MappedObject=self.session.query(MappedClass).filter_by(name=self.name).one()
+            self.MappedInstance=self.session.query(MappedClass).filter_by(name=self.name).one()
         except NoResultFound:
             self.Persist()
 
     def Persist(self):
-        raise AttributeError('You MUST implement this at the subclass level')
+        """
+        Returns None
+        Creates an instance of :class:`.MappedClass` according to other defined
+        params, assigns it to :instance:`.MappedInstance` and commits it to the database.
+            
+        """
+        raise NotImplementedError('You MUST implement this at the subclass level')
 
-    def doStep(self):
-        raise AttributeError('You MUST implement this at the subclass level')
+    def doStep(self,Parent,autocommit=False): #the assertion that this data is about this object happens here... it is doccumented via the data not via the subject... TODO need to doccument MDSes...
+        raise NotImplementedError('You MUST implement this at the subclass level')
+        #FIXME ideally this step should raise an error if a variable being assigned will not persist
+
 
 class SanityCheckStep(ExpStep):
     #make sure all the things are consistent, eg does this headstage ACTUALLY corrispond to IN 0??
@@ -56,6 +80,7 @@ class SanityCheckStep(ExpStep):
 class AnalysisStep(ExpStep):
     #used for online analysis (and doccumenting it)
     #could also be used for offline analysis probably a good idea for doccumenting the version of the code and stuff
+    #TODO set up a check at creation time that verifies that the analysis step has the data it will need
     from database.models import Analysis as MappedClass
     def getResult(self):
         pass
@@ -68,11 +93,35 @@ class ChangeVariableStep(ExpStep):
 
 
 class GetDataStep(ExpStep):
-    pass
+    def doStep(self,Parent,autocommit=False):
+        pass
 
 
 class GetDataFileStep(ExpStep):
-    pass
+    #should be preceeded by a ChangeVariableStep... TODO add a check for this
+    protocol_filename=None #FIXME may not need this
+    def doStep(self,SubjectCollection,autocommit=False): #FIXME problem with Parent not being in tree? or no?
+        datafile=self.runProtocol()
+        datafile.subjects.extend(SubjectCollection)
+        #[subject.datafiles.extend(datafile) for subject in SubjectGroup.members] #FIXME? right way to do?
+        #is subject group redundant here with DataFile itself the only issue being priority in time???
+    def runProtocol(self):
+        """Return a DataFile instance"""
+        raise NotImplementedError('Each datafile type you are going to collect needs to implement this')
+
+
+class GetSoftwareChanStep(ExpStep):
+    #I SHOULD BE ABLE TO MAKE THIS WORK OFF OF HASHARDWARE???
+    #I suppose it *could* just go in metadata, but I want it to be relational
+    #FIXME is this a getParams-like step???
+    #the problem is that the equivalent is 'HasMetaDataSources'
+    #these are all things that we must know aprior, which is simply not possible for certain things...
+    hardware_id=None #TODO do I DEMAND that a certain headstage be used, or to I allow assignment?
+    def doStep(self,Parent,autocommit=False):
+        #unfortunately the way this is set up this class is 1:1 WITH the channel itself...
+        pass
+    def getAssociatedSoftwareChannel(self): #FIXME Subject should somehow inherit df_type from group ?
+        
 
 
 class MDSource:
@@ -85,15 +134,15 @@ class MDSource:
     def __init__(self,Controller,session):
         super().__init__(Controller,session)
         try:
-            if self.MappedObject.hardware_id != self.hardware_id:
-                self.MappedObject.hardware_id=self.hardware_id
+            if self.MappedInstance.hardware_id != self.hardware_id:
+                self.MappedInstance.hardware_id=self.hardware_id
                 self.session.commit() #FIXME make sure this works right
         except:
             raise AttributeError('wtf has you done!?')
 
     def Persist(self):
-        self.MappedObject=MappedClass(name=self.name,prefix=self.prefix,unit=self.unit,mantissa=self.mantissa,hardware_id=hardware_id)
-        self.session.add(self.MappedObject)
+        self.MappedInstance=MappedClass(name=self.name,prefix=self.prefix,unit=self.unit,mantissa=self.mantissa,hardware_id=hardware_id)
+        self.session.add(self.MappedInstance)
         self.session.commit()
 
     def doStep(self,Parent,autocommit=False):
@@ -122,14 +171,14 @@ class DFSource: #TODO
     def __init__(self,Controller,session):
         super().__init__(Controller,session)
         try:
-            if self.MappedObject.hardware_id != self.hardware_id:
-                self.MappedObject.hardware_id=self.hardware_id
+            if self.MappedInstance.hardware_id != self.hardware_id:
+                self.MappedInstance.hardware_id=self.hardware_id
                 self.session.commit() #FIXME make sure this works right
         except:
             raise AttributeError('wtf has you done!?')
 
     def Persist(self):
-        self.MappedObject=MappedClass(name=self.name,hardware_id=hardware_id)
+        self.MappedInstance=MappedClass(name=self.name,hardware_id=hardware_id)
         self.session.add(self.DataFileSource)
         self.session.commit()
     #yay! this is the base class to define datasources for where datafiles come from

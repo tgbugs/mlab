@@ -30,7 +30,7 @@ class SubjectType(Base): #XXX not using, favoring use of STE so we can have nice
 #FIXME if subjects have data about them and are generate by the same experiment there will be an infinite loop
 #TODO TODO the best way to associate hardware to a subject is NOT by direcly linking the subject to the hardware, becuase that can change, but using the hardware present at that time with it's associated datafilesource (or the like) and associating the subject to THAT sub structure
 HasDataFileSourcePlaceHolder=type('thingamabob',(object,),{}) #a way to associated a df channel/source to a subject until I can get the data out of the datafile and into the raw data... I think this is a good way...
-class Subject(HasMetaData, HasDataFiles, HasDataFileSourcePlaceHolder, HasExperiments, HasProperties, HasHardware, HasNotes, Base):
+class Subject(HasMetaData, HasDataFiles, HasSwcHwRecord, HasExperiments, HasProperties, HasHardware, HasNotes, Base):
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     #type=Column(String,nullable=False)
@@ -39,6 +39,10 @@ class Subject(HasMetaData, HasDataFiles, HasDataFileSourcePlaceHolder, HasExperi
     #whole-part relationships for all subjects
     parent_id=Column(Integer,ForeignKey('subjects.id'))
     children=relationship('Subject',primaryjoin='Subject.id==Subject.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
+
+    #imagine you could patch the same cell multiple times with different headstages, what would be needed
+    #or hell, the same cell with multiple headstages (some serious assertions here wrt dendrite patching)
+    #FIXME HasHardware needs to be mutable and work on a single experiment basis
 
     #experiment in which the subject was generated (eg a mating, or a slice prep)
     generating_experiment_id=Column(Integer,ForeignKey('experiments.id'))
@@ -69,9 +73,9 @@ class Subject(HasMetaData, HasDataFiles, HasDataFileSourcePlaceHolder, HasExperi
 
     #variables for running experiments #FIXME move to protocol
     paramNames=tuple #persistable values that are not filled in at init
-    preDataNames=tuple
-    interDataNames=tuple
-    postDataNames=tuple
+    preStepNames=tuple
+    interStepNames=tuple
+    postStepNames=tuple
     child_type=Base #FIXME?
 
     @property

@@ -32,6 +32,7 @@ __all__.extend((
 from database.models.data import *
 __all__.extend((
         'DataFileSource',
+        'SoftwareChannel',
         'MetaDataSource',
         'Repository',
         'File',

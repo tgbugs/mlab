@@ -101,7 +101,7 @@ class BaseExp:
         #create metadata sources
         self.imdsDict={}
         for MDS in self.mdsDict.values():
-            self.imdsDict[MDS.__name__[4:]]=MDS(rigIO.ctrlDict[MDS.ctrl_name],self.session)
+            self.imdsDict[MDS.__name__[4:]]=MDS(Parent,rigIO.ctrlDict[MDS.ctrl_name],self.session)
 
         #BIND ALL THE THINGS
         bind MDS to experiment
@@ -181,16 +181,16 @@ class BaseExp:
  
     #FIXME do I apply MDS directly to subjects at this stage or do I want it contained in a more structured protocol so that I can unify metadata and datafiles all under one thing?
     @class_method
-    def getPreData(subject): #FIXME this way is really convoluted and will require good doccumentation
+    def getPreSteps(subject): #FIXME this way is really convoluted and will require good doccumentation
             [self.imdsDict[name].record(subject) for name in subject.preMDS if name in self.imdsDict.keys()]
         if subject.preProts is not None:
             [prot.record(subject) for prot in subject.preProts]
         #FIXME TODO add the equivalent for datafiles... or collapse all the data into one thing
     @class_method
-    def getInterData(subject):
+    def getInterSteps(subject):
         [self.imdsDict[name].record(subject) for name in subject.interMDS]
     @class_method
-    def getPostData(subject):
+    def getPostSteps(subject):
         [self.imdsDict[name].record(subject) for name in subject.postMDS]
         [prot.record(subject) for prot in subject.postProts] #XXX this is where the cell pair data goes
 
@@ -203,18 +203,17 @@ class BaseExp:
         #and make everything standard since these are monkey patches, yes it breaks stuff up
 
         #subject.getPreData()
-        self.getPreData(subject) #these functions basically call MDS_.record(subject) for MDS_ in subject.PreData
+        self.doPreSteps(subject) #these functions basically call MDS_.record(subject) for MDS_ in subject.PreData
         for child in subject.children+subject.subgroups:
             if type(child) is type(subject.child_type)
                 self.subjectLogic(child)
-            #subject.getInterData()
+            self.doInterSteps(subject)
             if is last child:
                 subject.makeMoreChilds() #FIXME can't iterate over children over and over...
                 #TODO when making subjects from the EXPERMETNALLY defined one it can take Subjects as parents OR groups that have the same parent_id, CHECK TO VERIFY and there are some other problems that need to be solved
             #FIXME what if there are no actual children only the monkey patched?
-        #subject.getPostData(subject)
+        self.doPostSteps(subject)
         #subject.IfLastSubjectAddNewToParent_questionmark()
-        self.getPostData(subject)
 
     def subjectSetLogic(self,subjects): #FIXME binding must occur before init otherwise the declarative style pattern will break also branching from a root that has more than one subject... :/ simultaneous recursion...
         """depth first traversal of subjects with the ability to add subjects at the deepest level first and then add on the way back up and go back down opperates on sets of subjects as if they are a single subject"""
@@ -376,6 +375,7 @@ class ExampleExp(BaseExp):
 
     #declare relationships here
     #binding happens at init
+
 
 class MatingRecord(BaseExp):
     from database.models import Experiment

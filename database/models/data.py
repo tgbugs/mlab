@@ -45,22 +45,6 @@ class DataFileSource_Experiment_Assoc(): #FIXME shouldn't this be bound to dataf
     def _wo(self, key, value): return self._write_once(key, value)
 
 
-class DataFileSource(Base): #TODO use this to link subjects to datafile substructure
-    """Datafile substructure"""
-    __tablename__='datafilesources'
-    id=Column(Integer,primary_key=True) #FIXME
-    name=Column(String(20),nullable=False,unique=True)
-    hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #this shall be muteable
-
-    #the reason I want to connect it to the hardware is because that is what we interact with
-    #better to do that and have the association fixed than to be forced to check every time
-    #subjects connect to data through hardware, that relationship needs to be explicit
-
-    def strHelper(self,depth=0):
-        #return '%s%s'%(self.prefix,self.unit)
-        return super().strHelper(depth,'name')
-    def __repr__(self):
-        return '\n%s'%(self.name)
 
 
 class NDArrayDataSource(): #fixme we'll worry about what imaging looks like later
@@ -229,25 +213,49 @@ class File(Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces 
 
 
 #FIXME TODO DataFile is currently a standin for a 'protocol' which is what we really want so that data can flexibly be stored inside or outside the program this will be the "unit of data"?? the "segment" or set of segments... basically the neoio thing that is generated from a single protocol file and may in point of fact have different metadata for each sub segment, but that at least has it in a consistent and preictable way
-class Block(): #thing with one or more segments
-    pass
-class Segment(): #thing with one or more arrays
-    pass
-class AnalogSignal(): #raw array data
-    pass
-
 class SubExperiment(): #FIXME
     datathing_id=None #the unit of data collection over which nothing recorded directly in the database varies
     #so a single image file in some cases, or a time serries of image files in another
 
 #FIXME something is a bit off with HDFS
+
+
+class SoftwareChannel(Base):
+    """Closely related to MetaDataSource"""
+    datafilesource_id=Column(Integer,ForeignKey,primary_key=True) #FIXME may need to generalize for nidaq?
+    channel_id=Column(String(20),primary_key=True) #could be useful for out too...
+    hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #muteable!
+    #FIXME CRITICAL MUST implement something similar to the record keeping for MDS
+    #because the hardware/swc association can and will change
+    #the persistence for the Subject needs to come from the history table that gets recorded on a per experiment basis, this would allow a subject to have a single hardware_id and resolve the convlict of having to figure out which piece of hardware to use for analysis if for example, 2 different extracellular probes were used on the same animal on different days and inserted into the opposite locations
+
+
+class DataFileSource(Base): #TODO stop and think about how this generalizes to other experiments, specifically imaging
+    """Basic structure of a datafile based on the piece of software that writes it"""
+    __tablename__='datafilesources'
+    id=Column(Integer,primary_key=True) #FIXME
+    name=Column(String(20),nullable=False,unique=True)
+
+    @declared_attr
+    def channels(cls):
+        cls.SoftwareChannels=SoftwareChannels
+        return relationship(cls.SoftwareChannel)
+
+    def strHelper(self,depth=0):
+        #return '%s%s'%(self.prefix,self.unit)
+        return super().strHelper(depth,'name')
+    def __repr__(self):
+        return '\n%s'%(self.name)
+
+
 class DataFile(File): #TODO datafiles can only really belong to a single experiment, while subjects can belong to MANY experiments....
     __tablename__='datafile'
     url=Column(String,primary_key=True,autoincrement=False)
     filename=Column(String,primary_key=True,autoincrement=False)
     __table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
+    datafilesource_id=Column(Integer,ForeignKey('datafiletype.id'),nullable=False)
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
-    #datafilesources=relationship('DataFileSource')
+    datafilesource=relationship('DataFileSource',uselist=False) #backref=backref('datafiles'),
     #FIXME datasources: they are equivalent to MDSes and can be channels!
     __mapper_args__={'polymorphic_identity':'datafile'}
 
@@ -273,9 +281,10 @@ class DataFile(File): #TODO datafiles can only really belong to a single experim
         cls.MetaData=DataFileMetaData
         return relationship(cls.MetaData)
 
-    def __init__(self,Repo=None,filename=None,Experiment=None,DataSource=None,url=None,experiment_id=None,datasource_id=None,Subjects=[], creationDateTime=None):
+    def __init__(self,filename,url,datafilesource_id,experiment_id=None,Subjects=[], creationDateTime=None):
         super().__init__(Repo,filename,url,creationDateTime)
-        self.datasource_id=datasource_id
+        self.datafilesource_id=datafilesource_id
+        datafilesource_id=int(datafilesource_id)
         self.AssignID(DataSource)
         self.AssignID(Experiment)
         self.subjects.extend(Subjects) #TODO in the interface.py make it so that current subjects 'auto' fill?
