@@ -59,6 +59,7 @@ from database.models.subjects import *
 __all__.extend((
         'SubjectType',
         'Subject',
+        'Litter',
         'Mouse',
         'Slice',
         'Cell',

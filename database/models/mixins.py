@@ -94,10 +94,10 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
     def _wo(self, key, value): return self._write_once(key, value)
 
 
-    def __init__(self,value,parent_id,metadatasource_id,abs_error=None,dateTime=None):
+    def __init__(self,value,parent_id,metadatasource_id,abs_error=None,dateTime=None): #FIXME want *args @ all?
         self.value=value
         self.abs_error=abs_error
-        parent_id=int(parent_id)
+        self.parent_id=int(parent_id)
         self.dateTime=dateTime
         self.metadatasource_id=int(metadatasource_id)
             

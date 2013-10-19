@@ -29,7 +29,7 @@ class URL_STAND:
         #FIXME rework this to go through a full url scheme handler that can be extended with resources
         #see if one exists, it should...
         parsed=parse.urlparse(full_url)
-        if parsed.scheme is 'file':
+        if parsed.scheme == 'file':
             path=parsed.path
             if path[2]==(':'): #FIXME this is not actually valid... windows :/
                 path=path[1:]

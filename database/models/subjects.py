@@ -86,7 +86,8 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
     postStepNames=tuple
     child_type=Base #FIXME?
 
-    @validates('parent_id','generating_experiment_id','startDateTime','sDT_abs_error','endDateTime')
+    #@validates('parent_id','generating_experiment_id','startDateTime','sDT_abs_error','endDateTime')
+    @validates('generating_experiment_id','startDateTime','sDT_abs_error','endDateTime') #FIXME FIXME
     def _wo(self, key, value): return self._write_once(key, value)
 
     @validates('properties') #FIXME validates only works on actual values in the table
@@ -116,6 +117,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
 
         #FIXME there might be a way to do this with try:except
         if parent_id:
+            #printD(self.parent_id)
             self.parent_id=int(parent_id) #FIXME could lead to some hard to follow errors... raise earlier?
         if generating_experiment_id:
             self.generating_experiment_id=int(generating_experiment_id)
@@ -151,9 +153,9 @@ class Litter(Subject):
         return [m for m in self.members if not m.endDateTime]
     @property
     def size(self): #FIXME just use len??
-        return len(self.members)
+        return len(self.children)
     def __len__(self):
-        return len(self.members)
+        return len(self.children)
 
 class Mouse(Subject):
     #FIXME  some way to add rows to SubjectType automatically?
@@ -193,7 +195,8 @@ class Cell(Subject):
     __mapper_args__={'polymorphic_identity':'cell'}
     def __repr__(self):
         base=super().__repr__()
-        return '%s%s%s%s'%(base,''.join([h.strHelper(1) for h in self.hardware]),self.parent.strHelper(1),''.join([c.strHelper(1) for c in self.datafiles[0].subjects]))
+        return base
+        #return '%s%s%s%s'%(base,''.join([h.strHelper(1) for h in self.hardware]),self.parent.strHelper(1),''.join([c.strHelper(1) for c in self.datafiles[0].subjects]))
 
 
 class HardwareSubject(Subject): #TODO we can make this ObjectSubject and bind anything we want to a subject without having to do crazy shit with Hardware-Hardware interactions and stuff like that since most hardware doesn't have generation experiments

@@ -15,7 +15,6 @@ from sqlalchemy                         import DateTime
 from sqlalchemy                         import Interval
 from sqlalchemy                         import ForeignKey
 from sqlalchemy                         import ForeignKeyConstraint
-from sqlalchemy                         import event
 
 from sqlalchemy.orm                     import relationship, backref, object_session, validates
 

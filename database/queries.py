@@ -1,5 +1,5 @@
-from database.main import *
-#from database.models import *
+#from database.main import *
+from database.models import *
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import object_session
 
@@ -35,8 +35,8 @@ def qTree(session):
 
 #queries to sort subjects by whether they have a certain property
 def hasProperty(session,Object,key):
-    return session.query(Object).join((Object.Properties,Object.properties.local_attr)).filter_by(key=key).all()
+    return session.query(Object).join((Object.Properties,Object.properties.local_attr)).filter_by(key=key)
 
 def hasKVPair(session,Object,key,value):
-    return session.query(Object).join((Object.Properties,Object.properties.local_attr)).filter(Object.Properties.key==key,Object.Properties.value==value).all()
+    return session.query(Object).join((Object.Properties,Object.properties.local_attr)).filter(Object.Properties.key==key,Object.Properties.value==value)
 

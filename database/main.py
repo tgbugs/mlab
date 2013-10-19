@@ -1,3 +1,11 @@
+"""Main file for database stuff
+Usage:
+    main.py [-e]
+
+Options:
+    -h      show this
+    -e      enable echo
+"""
 #Base file for creating the tables that I will use to store all my (meta)data
 
 #TODO use postgres search_path to control the user so that we can share basic things such as constants and strain information, definately need to audit some of those changes... audit table...
@@ -26,6 +34,7 @@
 #if needs be the code used to analyize the data can be stored and any updates/diffs can be added to track how numbers were produced
 #this means that this database stays flexible in terms of what kinds of experiments it can handle
 #it also maximizes poratbility between different backend databases
+from docopt import docopt
 
 from datetime import datetime
 
@@ -129,10 +138,10 @@ def printStuff(cons=True,mice=True,data=True,notes=True):
 def connect(echo=False):
     return Session(pgTest(echo=echo))
 
-def main(echo=True):
+def main(echo=False):
     #create engine
-    engine=pgTest(echo=echo,wipe_db=True)
-    #engine=sqliteMem(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
+    #engine=pgTest(echo=echo,wipe_db=True)
+    engine=sqliteMem(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
 
     #create metadata on the engine
     #Base.metadata.drop_all(engine,checkfirst=True)
@@ -147,7 +156,7 @@ def main(echo=True):
 
     #do some tests!
     try:
-        #run_tests(session)
+        run_tests(session)
         pass
     except:
         raise
@@ -163,4 +172,6 @@ def main(echo=True):
     return session
     
 if __name__=='__main__':
-    main()
+    args=docopt(__doc__, version='Main .0001')
+    printD(args)
+    main(args['-e']) #WOW THAT WAS EASY

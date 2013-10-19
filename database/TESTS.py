@@ -1,8 +1,11 @@
 from database.models import *
+from database.queries import hasKVPair
 
 import numpy as np
 
-from database.imports import printD,ploc,datetime,timedelta
+from database.imports import printD,ploc,datetime,timedelta,_tdb
+
+#_tdb.tdbOff()
 
 #FIXME TODO, make all these things use queries instead of generating you nub
 #and failover to create if absent
@@ -185,12 +188,12 @@ class t_people(TEST):
 
     def query(self):
         #print([p.Gender for p in self.session.query(Person)])
-        print([p for p in self.session.query(Person)])
+        printD([p for p in self.session.query(Person)])
 
 ###------
 ###  Mice
 ###------
-
+'''
 class t_dob(TEST):
     def __init__(self,session,num=None,datetimes=None):
         self.datetimes=datetimes
@@ -210,23 +213,31 @@ class t_breeders(TEST):
         sires=self.session.query(Mouse).filter(Mouse.sex_id=='m')
         dams=self.session.query(Mouse).filter(Mouse.sex_id=='f')
         self.records=[Sire(sire) for sire in sires[:self.num]]+[Dam(dam) for dam in dams[:self.num]]
-
+'''
 
 class t_mating_record(TEST):
+    def setup(self):
+        self.sires=[s for s in hasKVPair(self.session,Mouse,'sex','m')]
+        self.dams=[d for d in hasKVPair(self.session,Mouse,'sex','f')]
+        s=[Mouse(Properties={'sex':'m'}) for i in range(self.num-len(self.sires))]
+        d=[Mouse(Properties={'sex':'f'}) for i in range(self.num-len(self.dams))]
+        self.session.add_all(s+d)
+        self.session.flush()
+        self.sires.extend(s)
+        self.dams.extend(d)
+
     def make_all(self):
         from datetime import datetime,timedelta
-        breeders=t_breeders(self.session,int(self.num/6)+1)
-
-        sires=[s for s in self.session.query(Sire)]
-        dams=[d for d in self.session.query(Dam)]
-        sire_arr=np.random.choice(len(sires),self.num)
-        dam_arr=np.random.choice(len(sires),self.num)
+        
+        sire_arr=np.random.choice(len(self.sires),self.num)
+        dam_arr=np.random.choice(len(self.dams),self.num)
 
         
         mins=np.random.randint(-60,60,self.num)
         now=datetime.now()
+        type_=self.session.query(ExperimentType).filter_by(name='Mating Record')[0]
 
-        self.records=[MatingRecord(Sire=sires[sire_arr[i]],Dam=dams[dam_arr[i]],startDateTime=now+timedelta(hours=i),stopDateTime=now+timedelta(hours=int(i)+12,minutes=int(mins[i]))) for i in range(self.num)]
+        self.records=[Experiment(project_id=1,person_id=1,type_id=type_,Subjects=[self.sires[sire_arr[i]],self.dams[dam_arr[i]]],startDateTime=now+timedelta(hours=i),endDateTime=now+timedelta(hours=int(i)+12,minutes=int(mins[i]))) for i in range(self.num)]
 
 
 class t_litters(TEST):
@@ -234,13 +245,12 @@ class t_litters(TEST):
         from datetime import timedelta
         mrs=t_mating_record(self.session,self.num)
 
-        td=timedelta(days=19)
-        dts=[mr.est_e0+td for mr in mrs.records]
-        dobs=t_dob(self.session,datetimes=dts)
-        for mr,dob in zip(mrs.records,dobs.records):
-            mr.dob_id=dob.id 
+        def getBD(exp,days=19):
+            durd2=(exp.endDateTime-exp.startDateTime)/2
+            conception=exp.startDateTime+durd2
+            return conception+timedelta(days)
 
-        self.records=[Litter(mr) for mr in mrs.records]
+        self.records=[Litter(generating_experiment_id=mr,startDateTime=getBD(mr)) for mr in mrs.records]
     def add_members(self):
         mice=[] #FIXME there has to be a better way
         #litter_sizes=np.random.randint(6,20,self.num) #randomize litter size
@@ -252,7 +262,7 @@ class t_litters(TEST):
         #[mice.extend(m) for m in ms]
         #self.session.add_all(mice)
         for lit,i in zip(self.records,range(self.num)):
-            lit.members.extend([Mouse(Litter=lit,sex_id='u') for i in range(litter_sizes[i])])
+            lit.children.extend([Mouse(generating_experiment_id=lit.generating_experiment_id,Properties={'sex':'u'},startDateTime=lit.startDateTime) for i in range(litter_sizes[i])])
 
         #VS
         #[self.session.add_all(self.records[i].make_members(litter_sizes[i])) for i in range(self.num)]
@@ -262,10 +272,11 @@ class t_litters(TEST):
 
 class t_mice(TEST):
     def make_all(self):
-        dobs=t_dob(self.session,self.num)
+        #dobs=t_dob(self.session,self.num)
         tags=np.random.randint(0,1000,self.num)
         sexes=self.make_sex()
-        self.records=[Mouse(eartag=int(tags[i]),sex_id=sexes[i],DOB=dobs.records[i]) for i in range(self.num)]
+        dts=self.make_datetime(years=2)
+        self.records=[Mouse(Properties={'eartag':int(tags[i]),'sex':sexes[i]},startDateTime=dts[i]) for i in range(self.num)]
 
 ###--------------------
 ###  subjects continued
@@ -276,28 +287,30 @@ class t_slice(TEST):
         preps=self.session.query(Experiment).filter(Experiment.type==self.session.query(ExperimentType).filter_by(name='acute slice prep')[0])
         
         self.records=[]
-        [[self.records.append(Slice(Prep=prep,startDateTime=datetime.now()+timedelta(hours=i))) for i in range(self.num)] for prep in preps] #FIXME amplification of numbers
+        [[self.records.append(Slice(generating_experiment_id=prep,startDateTime=datetime.now()+timedelta(hours=i))) for i in range(self.num)] for prep in preps] #FIXME amplification of numbers
 
 
 class t_cell(TEST):
     def make_all(self):
-        slices=[s for s in self.session.query(Slice)]
-        printD([s.parent_id for s in slices])
+        slices=[s for s in self.session.query(Slice) if s.parent_id is not None]
+        #printD([s.parent_id for s in slices])
         #patches=[p for p in self.session.query(Experiment).filter_by(type='acute slice prep')]
         patches=[p for p in self.session.query(Experiment).filter(Experiment.type==self.session.query(ExperimentType).filter_by(name='acute slice prep')[0])] #FIXME clearly this expeirment type is wrong and I havent been catching it FIXME FIXME
         headstages=[h for h in self.session.query(Hardware).filter_by(type='headstage')][:2]
         self.records=[]
         z=0
         for p in patches:
+            printD(p)
             for i in range(z,len(slices)): #120 #FIXME pretty sure RI is broken here
                 s=slices[i]
                 for j in range(self.num):
-                    self.records.extend([Cell(Hardware=[h],Slice=s,Experiments=[p]) for h in headstages])
+                    self.records.extend([Cell(Hardware=[h],parent_id=s,Experiments=[p]) for h in headstages])
                 try:
                     if slices[i+1].parent_id != s.parent_id: #FIXME this should catch automatically when using session.add
                         z=i+1 #FIXME constraint!!!!
                         break
                 except IndexError: pass
+        printD([c.experiments for c in self.records])
 
 
 class t_c2c(TEST):
@@ -344,6 +357,15 @@ class t_project(TEST):
         self.session.commit()
 
 
+class t_exptype(TEST):
+    def make_all(self):
+        self.records=[
+            ExperimentType(name='Mating Record'),
+            ExperimentType(name='acute slice prep',abbrev='prep'),
+            ExperimentType(name='in vitro patch',abbrev='patch'),
+        ]
+
+
 class t_experiment(TEST):
     def __init__(self,session,num=None,num_projects=None):
         self.num_projects=num_projects
@@ -370,8 +392,9 @@ class t_experiment(TEST):
             #TODO need to test with bad inputs
             exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
             datetimes=self.make_datetime()
+            exptype=self.sesison.query(ExperimentType).filter_by(name='in vitro patch')[0]
 
-            self.records+=[Experiment(Project=p,Person=exps[i],startDateTime=datetimes[i],type='in vitro patch') for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
+            self.records+=[Experiment(project_id=p,Person=exps[i],startDateTime=datetimes[i],type_id=exptype) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
 
 class t_patch(TEST):
@@ -391,7 +414,7 @@ class t_patch(TEST):
 
         self.records=[]
         datetimes=self.make_datetime()
-        [self.records.extend([Experiment(Project=project,Person=person,Reagents=[],startDateTime=datetimes[i],ExpType=exptype) for i in range(self.num)]) for p in preps] #FIXME classic mouse not born yet problem
+        [self.records.extend([Experiment(type_id=exptype,project_id=project,person_id=person,Reagents=[],startDateTime=datetimes[i]) for i in range(self.num)]) for p in preps] #FIXME classic mouse not born yet problem
 
 
 class t_sliceprep(TEST):
@@ -400,9 +423,12 @@ class t_sliceprep(TEST):
         person=self.session.query(Person)[0]
         #sucrose=self.session.query(Reagent).filter_by(type_id=1)[0]
         exptype=self.session.query(ExperimentType).filter_by(abbrev='prep')[0]
-        self.records=[Experiment(Project=project,Person=person,Reagents=[],startDateTime=datetime.now()-timedelta(int(np.random.randint(1))),ExpType=exptype) for i in range(self.num)] #FIXME need to find a way to propagate mouse w/ RI
+        self.records=[Experiment(type_id=exptype,project_id=project,person_id=person,Reagents=[],startDateTime=datetime.now()-timedelta(int(np.random.randint(1)))) for i in range(self.num)] #FIXME need to find a way to propagate mouse w/ RI
     def add_mice(self):
-        mice=self.session.query(Mouse).filter_by(sex_id='u')[100:100+self.num]
+        #mice=self.session.query(Mouse).filter_by(sex_id='u')[100:100+self.num]
+        mice=[s for s in hasKVPair(self.session,Mouse,'sex','u')]
+        printD(len(mice))
+        printD(len(self.records))
         np.random.shuffle(mice)
         for i in range(self.num):
             #mice[i].experiment_id=self.records[i].id
@@ -421,25 +447,32 @@ class t_repo(TEST):
         repos=(
                     'file:///C:/asdf/test1',
                     'file:///C:/asdf/test2//',
-                    #'http://www.google.com/', #FIXME broken as expected?
-                    #'https://www.google.com/' #FIXME broken as expected?
+                    'file:///T:/db/Dropbox//',
+                    'http://www.google.com/', #FIXME broken as expected?
+                    'https://www.google.com/' #FIXME broken as expected?
         )
-        self.records+=[Repository(url=r) for r in repos]
+        for r in repos:
+            try:
+                self.records.append(Repository(url=r))
+            except:
+                #raise Warning('Local path \'%s\' does not exist!'%r)
+                print('Local path \'%s\' does not exist!'%r)
         #FIXME for some reason adding the fully inited Repository(url='asdf') inside the list didn't work...
         #figure out why please?!
 
 
-class t_datasource(TEST):
+class t_datafilesource(TEST):
     def make_all(self):
         self.records=[
-            DataSource(name='tom'),
+            DataFileSource(name='test',extension='data'),
         ]
 
 
 class t_metadatasource(TEST):
     def make_all(self):
+        hw=self.session.query(Hardware).filter_by(name='the void')[0]
         self.records=[
-            MetaDataSource(name='the void',prefix='T',unit='Pa'),
+            MetaDataSource(name='the void',prefix='T',unit='Pa',hardware_id=hw),
         ]
 
 
@@ -450,13 +483,20 @@ class t_datafile(TEST):
         #super().__init__(session,num)
     def make_all(self):
         repo=t_repo(self.session)
-        ds=self.session.query(DataSource)[0]
+        dfs=self.session.query(DataFileSource).filter_by(name='test')[0]
         data=[]
-        count=0
-        cells=self.session.query(Cell)
-        for c1,c2 in zip(cells[:-1],cells[1:]):
-            for rp in repo.records:
-                data+=[DataFile(Repo=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiments[0].id,c1.id,c2.id,df),Experiment=c1.experiments[0],DataSource=ds,Subjects=[c1,c2]) for df in range(self.num)] 
+        #cells=self.session.query(Cell)
+        #for c1,c2 in zip(cells[:-1],cells[1:]):
+        subjects=self.session.query(Cell)#.filter(Subject.experiments.any()).all()
+        printD(subjects)
+        for subject in subjects:
+            printD(subject.experiments)
+            for url in repo.records:
+                bn='exp%s_subs_%s_'%(subject.experiments[0].id,subject.id)
+                name=bn+'%s.data'
+                data+=[DataFile(name%df,url,dfs,experiment_id=subject.experiments[0],
+    Subjects=[subject]) for df in range(self.num)] #FIXME this use pattern is clearly broken
+                #data+=[DataFile(Repo=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiments[0].id,c1.id,c2.id,df),Experiment=c1.experiments[0],DataSource=ds,Subjects=[c1,c2]) for df in range(self.num)] 
         self.records=data
 
 
@@ -478,6 +518,7 @@ class t_hardware(TEST):
     def make_all(self):
         self.records=[]
         [[self.records.append(Hardware(type='headstage',unique_id='%s'%i, Parent=amp)) for i in range(2)] for amp in self.amps]
+        self.records.append(Hardware(type='digitizer',name='the void'))
         #printD(self.records) #FIXME this whole make all is broken
 
 
@@ -485,7 +526,7 @@ class t_hwmetadata(TEST):
     def make_all(self):
         ds=self.session.query(MetaDataSource)[0] #TODO make sure this breaks, FIXME it breaks but not where expected...
         self.records=[]
-        [self.records.extend([h.MetaData(i,Parent=h,MetaDataSource=ds) for i in range(self.num)]) for h in self.session.query(Hardware)]
+        [self.records.extend([h.MetaData(i,h,ds) for i in range(self.num)]) for h in self.session.query(Hardware)]
         
 
 class t_reagenttype(TEST):
@@ -517,14 +558,16 @@ def run_tests(session):
     
     #[print(df.creation_DateTime) for df in session.query(DataFile)]
 
-    ds=t_datasource(session)
+    expt=t_exptype(session)
+    hw=t_hardware(session)
+    ds=t_datafilesource(session)
     mds=t_metadatasource(session)
     #h=t_hardware(session)
     hwmd=t_hwmetadata(session,5)
     #t_experiment(session,1,4) #FIXME argh, so many things can become inconsistent...
     t_people(session,20)
     t_project(session,1)
-    #t_mice(session,300)
+    t_mice(session,20)
     l=t_litters(session,20)
     l.add_members()
 

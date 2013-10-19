@@ -217,9 +217,8 @@ def popExperimentType(session):
     session.add(ExperimentType('acute slice prep','prep'))
     session.add(ExperimentType('in vitro patch','patch'))
 
-def popDataSources(session):
-    #session.add(DataSource(name='jax'))
-    pass
+def popDataFileSources(session):
+    session.add(DataFileSource(name='clampex9_scope',extension='abf'))
 
 def popMetaDataSources(session):
     espX=None
@@ -257,6 +256,7 @@ def popCiteables(session):
     session.commit()
 
 def popSubjectType(session):
+    session.add(SubjectType('litter'))
     session.add(SubjectType('mouse',has_sex=True))
     session.add(SubjectType('cell'))
     session.add(SubjectType('slice'))

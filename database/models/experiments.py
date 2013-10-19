@@ -27,19 +27,15 @@ class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Ba
     def reagents(self):
         return [rt.currentLot for rt in self.reagenttypes] #FIXME
 
-    def __init__(self,name=None,abbrev=None,Repository=None,Methods=None,ReagentTypes=[],MetaDataSources=[],repository_url=None,methods_id=None):
+
+    def __init__(self,name=None,abbrev=None,methods_id=None,ReagentTypes=[],MetaDataSources=[]):
         self.name=name
         self.abbrev=abbrev
-        self.methods_id=methods_id
+        if methods_id is not None:
+            self.methods_id=int(methods_id)
 
         self.reagenttypes.extend(ReagentTypes)
         self.metadatasources.extend(MetaDataSources) #hardware is handled here now
-
-        if Methods:
-            if Methods.id:
-                self.methods_id=Methods.id
-            else:
-                raise AttributeError
 
     def __repr__(self):
         return super().__repr__()
@@ -74,17 +70,25 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
         else:
             raise Warning('endDateTime has already been set!')
 
-    def __init__(self,type_id,project_id=None,person_id=None,Reagents=[],Subjects=[],startDateTime=None):
+    def __init__(self,type_id=None,project_id=None,person_id=None,Reagents=[],Subjects=[],startDateTime=None,endDateTime=None):
         self.type_id=int(type_id)
         if project_id: #FIXME move to experiment type? if exptype is hierarchical can duplicate...
-            self.project_id=(project_id)
+            self.project_id=int(project_id)
         if person_id:
             self.person_id=int(person_id)
 
         self.startDateTime=startDateTime
+        self.endDateTime=endDateTime
 
         self.reagents.extend(Reagents)
         self.subjects.extend(Subjects)
+
+#TODO single table inheritance for experiments too to and all the nifty functions??? YES TODO
+#TODO enforcing type that way and then ste works pretty well... ExperimentType instances could become factories... that might be VERY handy... well, not really, because what we need are the fucntions, work on it...
+
+
+
+
 
 #TODO: figure out the base case for experiments (ie which subjects) for
 #TODO this does not need to be done right now, just make sure it will integrate easily
