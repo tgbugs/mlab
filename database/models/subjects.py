@@ -157,6 +157,7 @@ class Litter(Subject):
     def __len__(self):
         return len(self.children)
 
+
 class Mouse(Subject):
     #FIXME  some way to add rows to SubjectType automatically?
     #TODO consider using 'include_properties':[] and/or 'exclude_properties':[]
@@ -176,6 +177,7 @@ class Mouse(Subject):
     @property
     def sire(self):
         return [m for m in self.generated_from_subjects if m.properties['sex'] is 'f'][0]
+
 
 class Slice(Subject): #FIXME slice should probably be a subject
     __mapper_args__ = {'polymorphic_identity':'slice'}

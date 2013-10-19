@@ -310,7 +310,7 @@ class t_cell(TEST):
                         z=i+1 #FIXME constraint!!!!
                         break
                 except IndexError: pass
-        printD([c.experiments for c in self.records])
+        #printD([c.experiments for c in self.records])
 
 
 class t_c2c(TEST):
@@ -487,15 +487,17 @@ class t_datafile(TEST):
         data=[]
         #cells=self.session.query(Cell)
         #for c1,c2 in zip(cells[:-1],cells[1:]):
-        subjects=self.session.query(Cell)#.filter(Subject.experiments.any()).all()
-        printD(subjects)
+        subjects=self.session.query(Cell).filter(Cell.experiments.any()).all()
+        cells=self.session.query(Cell).all()
+        printD(cells)
+        #printD([(subject,subject.experiments) for subject in subjects])
         for subject in subjects:
-            printD(subject.experiments)
+            #printD(subject.experiments)
             for url in repo.records:
                 bn='exp%s_subs_%s_'%(subject.experiments[0].id,subject.id)
                 name=bn+'%s.data'
                 data+=[DataFile(name%df,url,dfs,experiment_id=subject.experiments[0],
-    Subjects=[subject]) for df in range(self.num)] #FIXME this use pattern is clearly broken
+                        Subjects=[subject]) for df in range(self.num)] #FIXME this use pattern is clearly broken
                 #data+=[DataFile(Repo=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiments[0].id,c1.id,c2.id,df),Experiment=c1.experiments[0],DataSource=ds,Subjects=[c1,c2]) for df in range(self.num)] 
         self.records=data
 
@@ -583,8 +585,8 @@ def run_tests(session):
     c=t_cell(session,5)
     #c2c=t_c2c(session) #no longer used
 
-    d=t_datafile(session,5)#,2,1) #FIXME eating memory
-    dfmd=t_dfmetadata(session,10) #as in 8 gigs of memory...
+    #d=t_datafile(session,5)#,2,1) #FIXME eating memory
+    #dfmd=t_dfmetadata(session,10) #as in 8 gigs of memory...
 
     #session.commit()
 

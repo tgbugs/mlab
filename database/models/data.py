@@ -17,6 +17,7 @@ class DataSource():
     #but it would be nice if this reflected that symmetry...
     #FIXME this is related to the problem with sub experiments and making those protocols doccumentable along with the .pro files or the like, they ammount to the same thing... but they don't need to be experiments in the same right because everything at the higher level is constant wrt them... and doccumented there at the higher level
 
+
 class DataFileStructure():
     external_def_url=Column(String,ForeignKey('File.url'),primary_key=True)
     external_def_filename=Column(String,ForeignKey('File.filename'),primary_key=True)
@@ -108,7 +109,7 @@ class DataFileSource(Base): #TODO stop and think about how this generalizes to o
     __tablename__='datafilesources'
     id=Column(Integer,primary_key=True) #FIXME
     name=Column(String(20),nullable=False,unique=True) #FIXME these could get really fucking complicated...
-    extension=Column(String(3),nullable=False)
+    extension=Column(String(32),nullable=False) #FIXME technically unlimited but WTF m8
 
     @declared_attr
     def channels(cls):

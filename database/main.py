@@ -1,18 +1,25 @@
 """Main file for database stuff
 Usage:
-    main.py [-e]
+    main.py [-e -p -w -s -t -i]
+    main.py (-h | --help )
 
 Options:
-    -h      show this
-    -e      enable echo
+    -h --help   show this
+    -e          enable echo
+    -p          use postgres
+    -w          wipe the database
+    -s          setupDB
+    -t          run tests
+    -i          open ipython and run everything in it
 """
+#FIXME many of the options only apply if postgres is used...
+#TODO ipython
+
 #Base file for creating the tables that I will use to store all my (meta)data
 
 #TODO use postgres search_path to control the user so that we can share basic things such as constants and strain information, definately need to audit some of those changes... audit table...
 
 #FIXME holy shit problems with using datetime.now as the default for DateTime!
-
-#TODO consider sqlalchemy.orm import validates for verifying that certain input from python userland is clean?
 
 #TODO when thinking about staging this stuff I need a safe way to hold data incase my access to the db goes down, like pickling something or the like? ideally this shouldn't happen but better safe than sorry
 
@@ -138,29 +145,38 @@ def printStuff(cons=True,mice=True,data=True,notes=True):
 def connect(echo=False):
     return Session(pgTest(echo=echo))
 
-def main(echo=False):
+def main(echo=False,postgres=False,wipe_db=False,setupDB=False,test=False):
     #create engine
-    #engine=pgTest(echo=echo,wipe_db=True)
-    engine=sqliteMem(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
+    if postgres:
+        engine=pgTest(echo=echo,wipe_db=wipe_db)
+        if setupDB:
+            session=initDBScience(engine) #imported from base.py via *
+            populateConstraints(session)
+            populateTables(session)
+        else:
+            session=Session(engine) #imported from base.py via *
+    else:
+        engine=sqliteMem(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
+        session=initDBScience(engine) #imported from base.py via *
+        populateConstraints(session)
+        populateTables(session)
 
     #create metadata on the engine
     #Base.metadata.drop_all(engine,checkfirst=True)
-    session=initDBScience(engine) #imported from base.py via *
 
     #create session
     #session = Session(engine)
 
     #populate constraint tables
-    populateConstraints(session)
-    populateTables(session)
 
     #do some tests!
-    try:
-        run_tests(session)
-        pass
-    except:
-        raise
-        print('tests failed')
+    if test:
+        try:
+            run_tests(session)
+            pass
+        except:
+            raise
+            print('tests failed')
 
     #print stuff!
     printStuff(cons=0,mice=0,data=0,notes=0)
@@ -174,4 +190,4 @@ def main(echo=False):
 if __name__=='__main__':
     args=docopt(__doc__, version='Main .0001')
     printD(args)
-    main(args['-e']) #WOW THAT WAS EASY
+    main(args['-e'],args['-p'],args['-w'],args['-s'],args['-t']) #WOW THAT WAS EASY
