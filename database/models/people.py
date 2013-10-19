@@ -7,6 +7,7 @@ from database.models.mixins import HasNotes
 ###---------------
 
 class Person(Base):
+    """__init__(self,pre,first,middle,last,gender,bd,role,ntid,experiments)"""
     __tablename__='people'
     id=Column(Integer,primary_key=True)
     PrefixName=Column(String(50)) #BECAUSE FUCK YOU
@@ -24,6 +25,7 @@ class Person(Base):
     experiments=relationship('Experiment',backref=backref('person',uselist=False)) #SOMETHING SOMETHING ACCESS CONTROL also in theory this might be m-m in some wierd situation where >1 person involved
     p2p_assoc=relationship('person_to_project',backref='people')
     projects=association_proxy('p2p_assoc','projects')
+
     def __repr__(self):
         def xstr(string):
             return '' if string is None else str(string)
@@ -44,6 +46,7 @@ class Person(Base):
             return out
         name,role,date,ntid=cols((name,role,date,ntid),(35,15,10,10))
         return '\n%s%s\t%s\t%s%s '%(name,xstr(self.Gender),date,role,ntid)
+    
 
 class User(Base): #FIXME no longer a datasource, the person_id shall be assumed for the time being?
     __tablename__='users'

@@ -62,7 +62,7 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
     startDateTime=Column(DateTime,default=datetime.now())
     endDateTime=Column(DateTime) #TODO
 
-    @validates('type_id','endDateTime','startDateTime')
+    @validates('type_id','person_id','endDateTime','startDateTime')
     def _wo(self, key, value): return self._write_once(key, value)
 
     def setEndDateTime(self,dateTime=None):

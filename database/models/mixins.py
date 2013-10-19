@@ -244,27 +244,11 @@ class HasMdsHwRecords: #TODO how to enforce a trigger on __init__ unforunately c
                 }
         )
         return relationship(cls.MdsHwRecord)
-
-    
-    def __init__(self):
-        #FIXME FOR NOW all mdeses are added from ExperimentType THAT WILL CHANGE
-        #when it does, I need to make sure THIS is safe from MDSES being added AFTER
-        #and experiment has had its id set
-        def set_id_listener(target,value,oldvalue,initiator):
-            session=object_session(self)
-            for mds in self.type.metadatasources:
-                session.add(target.MdsHwRecord(self.id,mds.id,mds.hardware_id))
-            session.commit()
-            event.remove(self.id,'set',set_id_listener)
-
-        event.listen(self.id,'set',set_id_listener)
-
-        #def attribute_instrument_listener(cls,key,inst):
-            #session=object_session(inst)
-            #for mds in inst.metadatasources:
-                #session.add(inst.MdsHwRecord(inst.id,mds.id,mds.hardware_id))
-        #listen(self.__class__,'attribute_instrument',attribute_instrument_listener)
-
+    def __init__(self): #FIXME >_<
+        session=object_session(self)
+        mdses=session.query(self.type_id)[0].metadatasources
+        [session.add(self.MdsHwRecord(self.id,mds.id,mds.hardware_id)) for mds in mdses]
+    #who the fuck knows how to get event listeners to work for this >_<
 
 
 class HasDataFiles:
