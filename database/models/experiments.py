@@ -63,7 +63,7 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
     endDateTime=Column(DateTime) #TODO
 
     @validates('type_id','endDateTime','startDateTime')
-    def _wo(self, key, value): return _write_once(key, value)
+    def _wo(self, key, value): return self._write_once(key, value)
 
     def setEndDateTime(self,dateTime=None):
         if not self.endDateTime: #FIXME I should be able to do this with validates
@@ -83,18 +83,8 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
 
         self.startDateTime=startDateTime
 
-        self.AssignID(Project)
-        self.AssignID(Person)
-
         self.reagents.extend(Reagents)
         self.subjects.extend(Subjects)
-
-        if ExpType:
-            if ExpType.id:
-                self.type_id=ExpType.id
-                self.reagents.extend(ExpType.reagents)
-            else:
-                raise AttributeError
 
 #TODO: figure out the base case for experiments (ie which subjects) for
 #TODO this does not need to be done right now, just make sure it will integrate easily

@@ -31,3 +31,12 @@ def qTree(session):
 
     q=session.query(sub_hardware.c.sub_components)
     return q
+
+
+#queries to sort subjects by whether they have a certain property
+def hasProperty(session,Object,key):
+    return session.query(Object).join((Object.Properties,Object.properties.local_attr)).filter_by(key=key).all()
+
+def hasKVPair(session,Object,key,value):
+    return session.query(Object).join((Object.Properties,Object.properties.local_attr)).filter(Object.Properties.key==key,Object.Properties.value==value).all()
+

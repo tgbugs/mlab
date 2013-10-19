@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, IsMetaDataSource, IsDataSource, HasMetaData, HasCiteables
+from database.models.mixins import HasNotes, HasMetaData, HasCiteables, HasTreeStructure, HasExperiments
 
 #TODO could just make this a hardware table and maybe CHECK that the type matches?
 #then just have another table for any specifics on that, could do the same for the reagents, since most of them are going to have links to urls and msdses or whatever the fuck
@@ -23,7 +23,7 @@ class HardwareType(Base):
         return '\n%s\n%s%s'%(self.type, self.description, ''.join([thing.strHelper(1) for thing in self.things]))
 
 
-class Hardware(HasMetaData, HasCiteables, IsMetaDataSource, Base): #FIXME figure out what to do about calibration data :/ should that be its own experiment? probably not, there is no subject... I really think it goes under datasources??!? maybe? the fucking datafile would need to have multiple datasources to allow for calibration o f the LED stim  or something since the LED itself is not a datasource the photodiode might be
+class Hardware(HasMetaData, HasCiteables, HasExperiments, Base): #FIXME figure out what to do about calibration data :/ should that be its own experiment? probably not, there is no subject... I really think it goes under datasources??!? maybe? the fucking datafile would need to have multiple datasources to allow for calibration o f the LED stim  or something since the LED itself is not a datasource the photodiode might be
     #NOTE: verdict, pipettes shall be hardware, but their values will be in Cell metadata
     __tablename__='hardware'
     id=Column(Integer,primary_key=True)     #this is going to be a hierarchical structure
@@ -37,7 +37,7 @@ class Hardware(HasMetaData, HasCiteables, IsMetaDataSource, Base): #FIXME figure
     #TODO figure out what if this is NOT going in the database and can thus go in metadata instead
     blueprint_id=Column(Integer,ForeignKey('citeable.id')) #TODO
     manual_id=Column(Integer,ForeignKey('citeable.id')) #TODO
-    sub_components=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
+    children=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
 
     def __init__(self,Type=None,Parent=None,type=None,Blueprint=None,parent_id=None,name=None,unique_id=None,blueprint_id=None,model=None,manufacturer=None,manual_id=None):
         self.type=type
@@ -79,7 +79,7 @@ class Hardware(HasMetaData, HasCiteables, IsMetaDataSource, Base): #FIXME figure
         except: pass
         try: parent=self.parent.strHelper()
         except: pass
-        try: children=''.join([s.strHelper(1) for s in self.sub_components])
+        try: children=''.join([s.strHelper(1) for s in self.children])
         except: pass
         return '\n%s %s %s son of %s father to %s\n\twith MetaData %s'%(self.type.capitalize(),name,uid,parent,children,''.join([m.strHelper(1) for m in self.metadata_]))
 
@@ -126,7 +126,8 @@ class ReagentType(HasCiteables, Base):
         return super().__repr__('name')
 
 
-class Reagent(Base): #TODO HasReagents??!
+#TODO how to use experiments on reagents to optimize a solution/procedure
+class Reagent(HasExperiments, Base): #TODO HasReagents??!
     """actual instances of reagents that are made"""
     __tablename__='reagents'
     id=Column(Integer,primary_key=True)
@@ -137,16 +138,11 @@ class Reagent(Base): #TODO HasReagents??!
     type=relationship('ReagentType',backref='lots',uselist=False) #FIXME
     #TODO reorder/remake if current amount < x
     #reagentmetadata=relationship('ReaMetaData',primaryjoin='ReagentLot.id==ReaMetaData.reagent_id',backref='reagent') #FIXME make this a m-m self referential association ? this won't let me keep track of the individual lots of stuff I use to make a solution or a stock though... think about that
-    def __init__(self,Type=None,lotNumber=None,startDateTime=None,endDateTime=None,type_id=None):
-        self.type_id=type_id
+    def __init__(self,type_id=None,lotNumber=None,startDateTime=None,endDateTime=None):
+        self.type_id=int(type_id)
         #self.lotNumber=lotNumber
-        self.creationDateTime=creationDateTime
-        self.doneDateTime=doneDateTime
-        if Type:
-            if Type.id:
-                self.type_id=Type.id
-            else:
-                raise AttributeError
+        self.startDateTime=startDateTime
+        self.endDateTime=endDateTime
 
 ###----------------------------------------------
 ###  Ingredient association table to make recipes

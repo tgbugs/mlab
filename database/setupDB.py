@@ -256,6 +256,11 @@ def popCiteables(session):
     session.add(Citeable(type='website',Files=[f])) #FIXME
     session.commit()
 
+def popSubjectType(session):
+    session.add(SubjectType('mouse',has_sex=True))
+    session.add(SubjectType('cell'))
+    session.add(SubjectType('slice'))
+    session.commit()
 def popStrains(session):
     #session.add(Website('http://jaxmice.jax.org/strain/003718.html'))
     session.add(Strain(jax_id='003718',abbrev='dkgin'))
@@ -276,6 +281,7 @@ def populateConstraints(session):
     popSex(session)
     popHardwareType(session)
     popExperimentType(session)
+    popSubjectType(session)
     return session.commit()
 
 def populateTables(session):

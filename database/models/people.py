@@ -1,12 +1,12 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, IsDataSource
+from database.models.mixins import HasNotes
 
 ###---------------
 ###  People tables
 ###---------------
 
-class Person(HasNotes, Base):
+class Person(Base):
     __tablename__='people'
     id=Column(Integer,primary_key=True)
     PrefixName=Column(String(50)) #BECAUSE FUCK YOU

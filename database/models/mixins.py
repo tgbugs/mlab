@@ -13,7 +13,7 @@ class Note: #basically metadata for text... grrrrrr why no arbitrary datatypes :
     dateTime=Column(DateTime,default=datetime.now) #FIXME holy butts no ntp batman O_O_O_O_O_O
     text=Column(Text,nullable=False)
     user_id=None #Column(Integer,ForeignKey('users.id')) #TODO
-    def __init__(self,text,parent_id,dateTime=None):
+    def __init__(self,text,parent_id=None,dateTime=None):
         self.text=text
         self.parent_id=int(parent_id)
         self.dateTime=dateTime #FIXME may not want this...
@@ -29,9 +29,12 @@ class HasNotes: #FIXME this works ok, will allow the addition of the same note t
             {   '__tablename__':'%s_notes'%tname,
                 'parent_id':Column(Integer, #FIXME nasty errors inbound
                     ForeignKey('%s.id'%tname),nullable=False),
+                'parent':relationship('%s'%cls.__name__, uselist=False, #FIXME uselist???
+                    backref=backref('__notes')),
             }
         )
-        return relationship(cls.Note,backref=backref('parent',uselist=False))
+        #return relationship(cls.Note,backref=backref('parent',uselist=False))
+        return association_proxy('__notes','text',creator=lambda text: cls.Note(text))
 
 
 class _HasNotes: #this implementation is depreicated in favor of a metadata style that can be query joined
@@ -51,26 +54,6 @@ class _HasNotes: #this implementation is depreicated in favor of a metadata styl
 ###-------------
 ###  data mixins
 ###-------------
-
-class IsDataSource:
-    #users, citeables, hardware, NO PEOPLE
-    @declared_attr
-    def datastreams(cls):
-        datasource_association = Table('%s_datastreams'%cls.__tablename__, cls.metadata,
-            Column('datasource_id', ForeignKey('datasources.id'), primary_key=True),
-            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
-        return relationship('DataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
-
-
-class IsMetaDataSource: #XXX I think this is depricated... ?
-    #users, citeables, hardware, NO PEOPLE
-    @declared_attr
-    def datastreams(cls):
-        datasource_association = Table('%s_metadatastreams'%cls.__tablename__, cls.metadata,
-            Column('metadatasource_id', ForeignKey('metadatasources.id'), primary_key=True),
-            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
-        return relationship('MetaDataSource', secondary=datasource_association,backref=backref('%s_source'%cls.__tablename__)) #FIXME these should all be able to append to source!??! check the examples
-
 
 class HasDataFileSources:
     @declared_attr
@@ -109,6 +92,7 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
     abs_error=Column(Float(53))
     @validates('parent_id','metadatasource_id','dateTime','value','abs_error')
     def _wo(self, key, value): return self._write_once(key, value)
+
 
     def __init__(self,value,parent_id,metadatasource_id,abs_error=None,dateTime=None):
         self.value=value
@@ -164,6 +148,7 @@ class SWC_HW_EXP_BIND:
         self.datafilesource_id=int(datafilesource_id) #this works fine, you just have to pass in SWC twice
         self.channel_id=str(channel_id)
 
+
 class HasSwcHwRecords: #TODO
     """Record of what hardware collected which software channel for which datafilesource/type for a given experiment and the subject that was associated with it what a mess, actually this is a reasonable solution"""
     @declared_attr
@@ -194,8 +179,6 @@ class HasSwcHwRecords: #TODO
         return relationship(cls.SwcHwRecord)
 
 
-
-
 class DFS_HW_BIND:
     #how to use to associate a cell to a channel:
     #the cell or subcompartment will have a hardware_id
@@ -216,7 +199,7 @@ class DFS_HW_BIND:
                 raise AttributeError
 
 
-class HasDfsHwRecords: #we bind DFSes to hardware that collects that datafile property
+class HasDfsHwRecords: #we bind DFSes to hardware that collects that datafile property #FIXME multiple hardware
     @declared_attr
     def dfs_hw_records(cls):
         cls.DfsHwRecord = type(
@@ -244,7 +227,8 @@ class MDS_HW_BIND:
         self.hardware_id=int(hardware_id) #FIXME probably need hardware=relationship()
 
 
-class HasMdsHwRecords: #use for experiments since subjects change too fast
+class HasMdsHwRecords: #TODO how to enforce a trigger on __init__ unforunately cant because parent_id is needed
+    #SessionEvents.after_flush()
     @declared_attr
     def mds_hw_records(cls):
         cls.MdsHwRecord = type(
@@ -260,6 +244,27 @@ class HasMdsHwRecords: #use for experiments since subjects change too fast
                 }
         )
         return relationship(cls.MdsHwRecord)
+
+    
+    def __init__(self):
+        #FIXME FOR NOW all mdeses are added from ExperimentType THAT WILL CHANGE
+        #when it does, I need to make sure THIS is safe from MDSES being added AFTER
+        #and experiment has had its id set
+        def set_id_listener(target,value,oldvalue,initiator):
+            session=object_session(self)
+            for mds in self.type.metadatasources:
+                session.add(target.MdsHwRecord(self.id,mds.id,mds.hardware_id))
+            session.commit()
+            event.remove(self.id,'set',set_id_listener)
+
+        event.listen(self.id,'set',set_id_listener)
+
+        #def attribute_instrument_listener(cls,key,inst):
+            #session=object_session(inst)
+            #for mds in inst.metadatasources:
+                #session.add(inst.MdsHwRecord(inst.id,mds.id,mds.hardware_id))
+        #listen(self.__class__,'attribute_instrument',attribute_instrument_listener)
+
 
 
 class HasDataFiles:
@@ -345,13 +350,13 @@ class HasReagentTypes:
 
 class HasReagents:
     @declared_attr
-    def reagents(cls):
+    def reagents_used(cls): #FIXME figure out if we can get away with having only one things...
         reagent_association = Table('%s_reagents'%cls.__tablename__,cls.metadata,
             Column('reagent_id', ForeignKey('reagents.id'), primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True),
             #removed foreigkeyconstraint because switched reagents to a surrogate primary key
         )
-        return relationship('Reagent', secondary=reagent_association,backref=backref('%s_used'%cls.__tablename__))
+        return relationship('Reagent', secondary=reagent_association,backref=backref('used_in_%s'%cls.__tablename__))
 
 ###--------------
 ###  Has hardware
@@ -397,26 +402,78 @@ class HasExperiments:
 class Properties: #FIXME HasKeyValueStore
     """Not for data!""" #TODO how to query this...
     #FIXME this is hstore from postgres except slower and value is not a blob
-    key=Column(String(50),primary_key=True) #tattoo, eartag, name, *could* use coronal/sagital for slices, seems dubious... same with putting cell types in here... since those are technically results...
+    key=Column(String(50),primary_key=True) #tattoo, eartag, name, *could* use coronal/sagital for slices, seems dubious... same with putting cell types in here... since those are technically results... #FIXME for some reason this accepts ints for a key... FIXME WATCH OUT for the type change on commit! it doesn't update the instace!
     value=Column(String(50)) #if the strings actually need to be longer than 50 we probably want something else
     #FIXME ideally something like subtype should go here.... but that would require quite a few columns...
     #def __init__(self,parent_id,key,value):
         #self.parent=int(parent_id)
         #self.key=key
         #self.value=value
+    def __repr__(self):
+        return '%s %s {%s,%s}'%(self,self.parent_id,self.key,self.value)
 
 
 class HasProperties:
     @declared_attr
-    def properties(cls):
+    def properties(cls): #FIXME this is an UNVALIDATED STORE
         cls.Properties=type(
                 '%sProperties'%cls.__name__,
                 (Properties, Base,),
                 {   '__tablename__':'%s_properties'%cls.__tablename__,
                     'parent_id':Column(Integer, #FIXME nasty errors inbound
                         ForeignKey('%s.id'%cls.__tablename__),primary_key=True), #FIXME check autoincrement
+                    'parent':relationship('%s'%cls.__name__, uselist=False,
+                        backref=backref('__properties',collection_class=attribute_mapped_collection('key')))
                 }
         )
-        cls._properties=relationship(cls.Properties,collection_class=attribute_mapped_collection('key'))
-        return association_proxy('_properties','value',creator=lambda k,v: cls.Properties(key=k,value=v))
-    #FIXME I don't understand why I do not need to init with parent_id...
+        #FIXME I don't understand why I do not need to init with parent_id...
+        return association_proxy('__properties','value',creator=lambda k,v: cls.Properties(key=k,value=v))
+        #return relationship(cls.Properties,collection_class=attribute_mapped_collection('key'))
+
+
+###-------------------------------------------
+###  Class for things that have tree structure
+###-------------------------------------------
+
+class HasTreeStructure:
+    """useful methods for objects w/ tree structure defined by parent and children"""
+    @property
+    def rootParent(self): #FIXME probably faster to do this with a func to reduce queries
+        if self.parent:
+            return parent.getRootParent()
+        else:
+            return self
+
+    @property
+    def lastChildren(self,allChilds=[]):
+        if not allChilds and self.children:
+            return lastChildren(self.children)
+        else:
+            new_allChilds=[]
+            for child in allChilds:
+                try:
+                    new_allChilds.extend(child.children)
+                except:
+                    pass
+            if not new_allChilds:
+                return allChilds
+            return lastChildren(new_allChilds)
+
+    def nthChildren(self,n,allChilds=[]):
+        if n:
+            if not allChilds and self.children:
+                return nthChildren(n-1,self.children)
+            else:
+                new_allChilds=[]
+                for child in allChilds:
+                    try:
+                        new_allChilds.extend(child.children)
+                    except:
+                        pass
+                return nthChildren(n-1,new_allChilds)
+        else:
+            return allChilds
+
+
+
+

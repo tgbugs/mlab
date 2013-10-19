@@ -12,7 +12,8 @@ class DefaultBase:
             raise ValueError('%s is write once!'%key)
         return value
 
-    def AssignID(self,cls): #FIXME does this go here?
+    def AssignID(self,cls): #XXX DEPREICATED
+        raise DeprecationWarning('please transition to __int__ or __str__')
         if cls:
             if cls.id:
                 setattr(self,'%s_id'%cls.__class__.__name__.lower(),cls.id)
