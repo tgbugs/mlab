@@ -1,0 +1,106 @@
+----------main.py
+#TODO repeated func calls: itertools repeatfunc starmap
+#FIXME many of the options only apply if postgres is used...
+#TODO ipython
+
+#Base file for creating the tables that I will use to store all my (meta)data
+
+#TODO use postgres search_path to control the user so that we can share basic things such as constants and strain information, definately need to audit some of those changes... audit table...
+
+#FIXME holy shit problems with using datetime.now as the default for DateTime!
+
+#TODO when thinking about staging this stuff I need a safe way to hold data incase my access to the db goes down, like pickling something or the like? ideally this shouldn't happen but better safe than sorry
+
+#TODO conform to MINI, NIF ontologies?, or odML terminiologies?
+
+#TODO
+### Create an IsLoggable class or the like to manage logging changes to fields
+#see: http://stackoverflow.com/questions/141612/database-structure-to-track-change-history
+#TODO transaction log will have a first entry for...
+#internal doccumentation of the creation date may not be needed if I have refs to transactions
+
+#TODO transfer logs for mice can now be done and incorporated directly with the system for weening etc
+
+#TODO reimplement notes so that they can apply to multiple things like I do with classDOB, but check the overhead, join inheritance might work
+#make sure to set the 'existing table' option or something?
+
+#TODO neo io for dealing with abf files, but that comes later
+#OBJECTIVE raw data format agnostic, this database does not house the raw data, it houses the assumptions and the results and POINTS to the analysis code and the raw data
+#if needs be the code used to analyize the data can be stored and any updates/diffs can be added to track how numbers were produced
+#this means that this database stays flexible in terms of what kinds of experiments it can handle
+#it also maximizes poratbility between different backend databases
+
+----------data.py
+one thing way up on the list is allowing for multi dimensional or array data under the same type of heading as datadatsource and combining it in to a single thing all of which will have units etc pulled from datafiles or the like, could just blob it for sqlite...
+#TODO how to persist protocols may not even need this... though there are worse ideas than storing versions of the python code in the database, it might just be better to store the git commit and filename
+#FIXME TODO DataFiles have an associated experiment, doesn't metadata ALSO need an experiment, or can we associate MD to exp some other way? that is the scope is the experiment, disticnt from actual experiment metadata
+#FIXME TODO this can just be called 'DataSource' because it can reference array or scalar data
+#wheter I want a flag for marking scalar or array is another question, also the segments/as from neo...
+#FIXME TODO if the server is not local then file:/// only has meaning for the computer that the data was originally stored on and that has to match :/
+#TODO quantities integration
+#FIXME CRITICAL MUST implement something similar to the record keeping for MDS
+#because the hardware/swc association can and will change
+#the persistence for the Subject needs to come from the history table that gets recorded on a per experiment basis, this would allow a subject to have a single hardware_id and resolve the convlict of having to figure out which piece of hardware to use for analysis if for example, 2 different extracellular probes were used on the same animal on different days and inserted into the opposite locations
+#TODO request.urlopen works perfectly for filesystem stuff
+#FIXME TODO DataFile is currently a standin for a 'protocol' which is what we really want so that data can flexibly be stored inside or outside the program this will be the "unit of data"?? the "segment" or set of segments... basically the neoio thing that is generated from a single protocol file and may in point of fact have different metadata for each sub segment, but that at least has it in a consistent and preictable way
+#FIXME something is a bit off with HDFS
+#TODO InDatabaseData need something more flexible than metadata (amazingly) that can hold
+#stuff like calibration data not stored elsewhere?? also if I ever
+#transition away from external datafiles or if I want to use neoio
+#immediately to convert abf files
+#also, integration with neo's structure migth be rather important
+#can probably just map directly on to their class structure...
+#TODO, if we are going to store credentials in a database then the db needs to pass sec tests, but it is probably better than trying to secure them in a separate file, BUT we will unify all our secure credentials management with the same system
+#TODO google docs access does not go here because those could be writeable too
+#these should point to more or less static things outside the program, every revision should add a new datafile for consistency, store the diffs?
+#how to constrain/track files so they don't get lost??
+#well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
+#and the constraint will be populated by the DataPath table, if I have 10,000 datafiles though, that could become a NASTY change
+#ideally we want this to be dynamic so that the DataPath can change and all the DataFile entries will learn about it
+#it might just be better to do it by hand so UPDATE doesn't swamp everything
+#TODO next problem: when do we actually CREATE the DataFile and how to we get the number right even if we discard the trial? well, we DONT discard the file, we just keep it, but we need to gracefully deal with deletions/renumbering so that if something goes wrong it will alert to user
+#RESPONSE: this record cannot be created until the file itself exists
+#FIXME datafiles have substructure that requires more than one datasource ;_;
+#although, the easiest way to fix that is to just change this to allow for an arbitrary number of channels to be saved per datafile and link the datasources to those?
+#maybe base it on datafile type??? or configuration... but that is going to change for every fucking thing...
+#that stuff goes in the metadata, datasource here just means 'collection software' fucking conflation
+
+----------experiment.py    
+sub experiments that keep track of what was held constant at their level? this is related to what to do about projects
+
+#FIXME generation experiment!???! basically fix the ven diagram problem with gen subjects and data subjects
+#TODO what/who is the REAL subject of experiment data? the procedure? the experimenter? the generated subjects? probably it is actually stuff that is used as a sanity check against the protocol... hrm... HRM
+#TODO logical relationships between experiments could be manifest here, but THAT is a project for another day
+#TODO addition of new data does not trigger version bump but any changes to existing entries should
+
+#TODO in theory what we want is for experiments to have a m-m on itself to convey logical connections, in which case a mating record is just an experiment.... HRM, think on this... we certainly want the m-m for logical depenece I think
+
+#why experiment type instead of inheritance? because I don't want to force users to learn sqlalchemy, furthermore, doccumenting experiments in code defeats the purpose of saving all of this stuff in a database from a record keeping point of view
+
+#TODO on a per-experiment basis I need bindings between hardware and metadatasources
+#TODO AND I need a binding between datafiles/datafile channels and subjects
+#in biology there are expeirments that generate data, or data and subjects, if they generate only subjects then they should probably have some data to go along with them or the science might be bad
+
+#TODO single table inheritance for experiments too to and all the nifty functions??? YES TODO
+#TODO enforcing type that way and then ste works pretty well... ExperimentType instances could become factories... that might be VERY handy... well, not really, because what we need are the fucntions, work on it...
+
+#TODO: figure out the base case for experiments (ie which subjects) for
+#TODO this does not need to be done right now, just make sure it will integrate easily
+#do we keep weight's here or somehwere else, is there any other reason why a 'normal' mouse would need to be weighed? sure the mouse HAS a weight, but does that mean that the mouse table should be where we keep it? it changes too
+#same argument applies to sex and how to deal with changes to that, and whether it is even worth noting
+#somehow this reminds me that when weaning mice need to make sure that their cages get matched up properly... well, that's the users job
+#id=None
+#mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
+#dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
+#TODO lol the way this is set up now these classes should actually proabaly DEFINE metadata records at least for simple things like this where the only associated object is a mouse which by default experiment asssociates with, maybe I SHOULD move the mouse_id to class MouseExperiment?!?!?!
+
+ #TODO project_id if i keep track of these at the level of experiment type then everything becomes problematic if I want to change the project or experiment or reuse stuff, but if I want to record WHO did the experiment as an experimental variable...
+    #also the being of the experiment type is not defined by which project it is for but project_id is a nice  way to tie everything together...
+    #maybe metadata for an experiment is who did it?
+
+
+----------analysis.py
+hybrid attributes could be REALLY REALLY handy for computing stuff on the fly... like... results
+the analysis object can hold references to all the objects it needs and then bam hybrid_property
+obviously a bit trickier for datafiles
+

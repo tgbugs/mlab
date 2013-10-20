@@ -6,68 +6,15 @@ from database.standards import URL_STAND
 #some global variables that are used here and there that would be magic otherwise
 _plusMinus='\u00B1'
 
+class Protocol:
+    pass
+
+
 ###-------------
 ###  DataSources
 ###-------------
 
-class DataSource():
-    __tablename__='datasources'
-    #it may be the case that we don't need this table
-    #the mapping between MDS_ and DFS_ to these does not have to be 1:1
-    #but it would be nice if this reflected that symmetry...
-    #FIXME this is related to the problem with sub experiments and making those protocols doccumentable along with the .pro files or the like, they ammount to the same thing... but they don't need to be experiments in the same right because everything at the higher level is constant wrt them... and doccumented there at the higher level
-
-
-class DataFileStructure():
-    external_def_url=Column(String,ForeignKey('File.url'),primary_key=True)
-    external_def_filename=Column(String,ForeignKey('File.filename'),primary_key=True)
-    external_def_hash=None #TODO check to make sure that it hasn't changed since init, do a check if it has
-    #hashing needs to be compatible with the need to modify values of certain files for rheobase etc without changing their structure
-    channels=relationship('DataFileSource') #TODO this will be... many to many?
-    num_chans=Column(Integer)
-
-
-class MetaDataSource_Experiment_Assoc(): #shouldn't this be bound to whatever has the MetaData???
-    experiment_id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
-    metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),primary_key=True)
-    hardware_id=Column(Integer,ForeignKey('hardware.id'))
-    relationship('Experiment',primaryjoin='Experiment.id==MetaDataSource_Experiment_Assoc.experiment_id')
-    @validates('hardware_id') #basically if shit breaks half way through, new experiment
-    def _wo(self, key, value): return self._write_once(key, value)
-    
-
-class DataFileSource_Experiment_Assoc(): #FIXME shouldn't this be bound to datafile
-    experiment_id=Column(Integer,ForeignKey('experiments.id'),primary_key=True)
-    datafilesource=Column(Integer,ForeignKey('datafilesources.id'))
-    hardware_id=Column(Integer,ForeignKey('hardware.id'))
-    relationship('Experiment',primaryjoin='Experiment.id==MetaDataSource_Experiment_Assoc.experiment_id',
-                backref='datafilesources')
-    @validates('hardware_id') #basically if shit breaks half way through, new experiment
-    def _wo(self, key, value): return self._write_once(key, value)
-
-
-class NDArrayDataSource(): #fixme we'll worry about what imaging looks like later
-    pass
-
-
-class ArrayDataSource(): #FIXME this doesn't quite fit the problem I need to solve with binding channels to hardware to subjects
-    #somehow these have starttimes instead of date times, because they are collected for a long time after and in fact may be collected at a time OTHER than when the record of them is made...
-    __tablename__='arraydatasources'
-    id=Column(Integer,primary_key=True)
-    name=Column(String(20),nullable=False,unique=True)
-    prefix=Column(String(2),ForeignKey('si_prefix.symbol')) #nullable can accomadate external datafiles
-    unit=Column(String(3),ForeignKey('si_unit.symbol'))
-
-
-class SubExperiment(): #FIXME
-    datathing_id=None #the unit of data collection over which nothing recorded directly in the database varies
-    #so a single image file in some cases, or a time serries of image files in another
-
-
-
-class MetaDataSource(Base): #FIXME ScalarDataSource #may be combined into a VectorDataSource
-    #FIXME TODO this can just be called 'DataSource' because it can reference array or scalar data
-    #wheter I want a flag for marking scalar or array is another question, also the segments/as from neo...
+class MetaDataSource(Base): #FIXME naming
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
     __tablename__='metadatasources'
     id=Column(Integer,primary_key=True)
@@ -92,22 +39,19 @@ class MetaDataSource(Base): #FIXME ScalarDataSource #may be combined into a Vect
 
 class SoftwareChannel(Base):
     """Closely related to MetaDataSource"""
-    datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),primary_key=True) #FIXME may need to generalize for nidaq?
-    channel_id=Column(String(20),primary_key=True) #could be useful for out too...
+    datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),primary_key=True) #FIXME generalize for nidaq?
+    channel_id=Column(String(20),primary_key=True) #handles input and output?
     hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #muteable!
-    #FIXME CRITICAL MUST implement something similar to the record keeping for MDS
-    #because the hardware/swc association can and will change
-    #the persistence for the Subject needs to come from the history table that gets recorded on a per experiment basis, this would allow a subject to have a single hardware_id and resolve the convlict of having to figure out which piece of hardware to use for analysis if for example, 2 different extracellular probes were used on the same animal on different days and inserted into the opposite locations
     def __int__(self):
         return self.datafilesource_id
     def __str__(self):
         return self.channel_id
 
 
-class DataFileSource(Base): #TODO stop and think about how this generalizes to other experiments, specifically imaging
+class DataFileSource(Base): #TODO think about how generalizing to other experiments, specifically imaging
     """Basic structure of a datafile based on the piece of software that writes it"""
     __tablename__='datafilesources'
-    id=Column(Integer,primary_key=True) #FIXME
+    id=Column(Integer,primary_key=True) #FIXME switch over to name for pk?
     name=Column(String(20),nullable=False,unique=True) #FIXME these could get really fucking complicated...
     extension=Column(String(32),nullable=False) #FIXME technically unlimited but WTF m8
 
@@ -117,7 +61,6 @@ class DataFileSource(Base): #TODO stop and think about how this generalizes to o
         return relationship(cls.SoftwareChannel)
 
     def strHelper(self,depth=0):
-        #return '%s%s'%(self.prefix,self.unit)
         return super().strHelper(depth,'name')
     def __repr__(self):
         return '\n%s'%(self.name)
@@ -132,7 +75,7 @@ class DataFileSource(Base): #TODO stop and think about how this generalizes to o
 #Thus DataFileMetaData is not exported via *
 
 
-class DataFileMetaData(Base):
+class DataFileMetaData(Base): #FIXME naming
     __tablename__='datafiles_metadata'
     id=Column(Integer,primary_key=True)
     url=Column(String,nullable=False)
@@ -173,16 +116,11 @@ class DataFileMetaData(Base):
 ###-----------------------------------------------------------------------
 
 class Repository(Base):
-    #TODO urllib parse, these will go elsewhere in the actual analysis code or something
-    #TODO request.urlopen works perfectly for filesystem stuff
-    #file:///C: #apparently chromium uses file:///C:
-    #file:///D: are technically the base
-    url=Column(String,primary_key=True) #use urllib.parse for this #since these are base URLS len 100 ok
+    url=Column(String,primary_key=True)
     credentials_id=Column(Integer,ForeignKey('credentials.id')) 
     name=Column(String)
     blurb=Column(Text)
-    assoc_program=Column(String(30)) #FIXME some of these should be automatically updated and check by the programs etc
-    parent_url=Column(String,ForeignKey('repository.url')) #use urllib.parse for this #since these are base URLS len 100 ok
+    parent_url=Column(String,ForeignKey('repository.url'))
     mirrors=relationship('Repository',primaryjoin='Repository.parent_url==Repository.url')
 
     def getStatus(self):
@@ -191,9 +129,6 @@ class Repository(Base):
     def validateFiles(self): #FIXME does this go here??! not really...
         return None
 
-    #TODO, if we are going to store these in a database then the db needs to pass sec tests, but it is probably better than trying to secure them in a separate file, BUT we will unify all our secure credentials management with the same system
-    #TODO there should be a default folder or 
-    #access_manager=Column(String) #FIXME the credentials manager will handle this all by itself
     def __init__(self,url=None,credentials_id=None,name=None,assoc_program=None,parent_url=None):
         self.url=URL_STAND.urlClean(url)
         self.credentials_id=credentials_id
@@ -201,8 +136,10 @@ class Repository(Base):
         self.name=name
         URL_STAND.ping(self.url)
         self.parent_url=parent_url
+
     def __str__(self):
         return self.url
+
     def __repr__(self):
         return super().__repr__('url')
 
@@ -215,36 +152,29 @@ class File(Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces 
     #TODO need verfication that the file is actually AT the repository
     #fuck, what order do I do this in esp for my backup code
     __tablename__='file'
-    url=Column(String,ForeignKey('repository.url'),primary_key=True,autoincrement=False)
+    url=Column(String,ForeignKey('repository.url'),primary_key=True)
     mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
-    filename=Column(String,primary_key=True,autoincrement=False)
+    filename=Column(String,primary_key=True)
     creationDateTime=Column(DateTime,default=datetime.now)
-
     @property
     def filetype(self):
         return self.filename.split('.')[-1]
     @property
     def full_url(self):
         return self.url+self.filename
-    ident=Column(String) #FIXME wtf was I going to do with this?
     __mapper_args__ = {
         'polymorphic_on':ident,
         'polymorphic_identity':'file',
     }
 
-    def checkExists(self):
+    def checkExists(self): #TODO
         URL_STAND.ping(self.full_url)
 
     def __init__(self,filename,url=None,creationDateTime=None):
-        self.url=URL_STAND.urlClean(str(url)) #Repository.__str__ returns the url, so can just pass in repo :)
+        self.url=URL_STAND.urlClean(str(url))
         self.filename=filename
-        #if Repo:
-            #if Repo.url:
-                #self.url=Repo.url
-                #TODO if it doesn't exist we should create it, thus the need for the updated urlClean
-            #else:
-                #raise AttributeError('RepoPath has no url! Did you commit before referencing the instance directly?')
-        if not creationDateTime:
+
+        if not creationDateTime: #FIXME implementation not complete
             URL_STAND.getCreationDateTime(self.full_url)
         else:
             self.creationDateTime=creationDateTime
@@ -256,11 +186,7 @@ class File(Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces 
         return '\n%s%s'%(self.url,self.filename)
 
 
-#FIXME TODO DataFile is currently a standin for a 'protocol' which is what we really want so that data can flexibly be stored inside or outside the program this will be the "unit of data"?? the "segment" or set of segments... basically the neoio thing that is generated from a single protocol file and may in point of fact have different metadata for each sub segment, but that at least has it in a consistent and preictable way
-#FIXME something is a bit off with HDFS
-
-
-class DataFile(File): #TODO datafiles can only really belong to a single experiment, while subjects can belong to MANY experiments....
+class DataFile(File): #data should be collected in the scope of an experiment
     __tablename__='datafile'
     url=Column(String,primary_key=True,autoincrement=False)
     filename=Column(String,primary_key=True,autoincrement=False)
@@ -268,32 +194,15 @@ class DataFile(File): #TODO datafiles can only really belong to a single experim
     datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),nullable=False)
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
     datafilesource=relationship('DataFileSource',uselist=False) #backref=backref('datafiles'),
-    #FIXME datasources: they are equivalent to MDSes and can be channels!
     __mapper_args__={'polymorphic_identity':'datafile'}
 
     experiment=relationship('Experiment',backref='datafiles',uselist=False)
 
-    #TODO verify that datafile isnt being fed garbage filenames by accident!
-
-    @validates('_filename')
+    @validates('_filename')#TODO verify that datafile isnt being fed garbage filenames by accident!
     def _fileextension_matchs_dfs(self, key, value): #FIXME... aint loaded...
         dfe=self.datafilesource.extension
         assert filename[-3:]==dfe, 'file extension does not match %s'%dfe
         return value
-
-    @declared_attr #FIXME
-    def __datafilesources(cls): #FIXME not sure this is what I want... the structure of the df should have it
-        datafilesource_association = Table('datafile_dfs_assoc', cls.metadata,
-            Column('datafilesource_id',ForeignKey('datafilesources.id'),primary_key=True),
-            Column('datafile_url', String, primary_key=True),
-            Column('datafile_filename', String, primary_key=True),
-            ForeignKeyConstraint(['datafile_url','datafile_filename'],['datafile.url','datafile.filename'])
-        )
-        return relationship('DataFileSource',secondary=datafilesource_association,
-            primaryjoin='and_({0}_dfs_assoc.c.{0}_url=={0}.c.url,{0}_dfs_assoc.c.{0}_filename=={0}.c.filename)'.format('datafile'),
-            secondaryjoin='DataFileSource.id=={0}_dfs_assoc.c.datafilesource_id'.format('datafile'),
-            backref=backref('datafile') #FIXME do we really want this?
-        )
 
     @declared_attr
     def metadata_(cls): #FIXME naming...
@@ -302,32 +211,12 @@ class DataFile(File): #TODO datafiles can only really belong to a single experim
 
     def __init__(self,filename,url,datafilesource_id,experiment_id=None,Subjects=[], creationDateTime=None):
         super().__init__(filename,url,creationDateTime)
-        #self.datafilesource_id=datafilesource_id
         datafilesource_id=int(datafilesource_id)
         if experiment_id is not None:
             self.experiment_id=experiment_id
         self.subjects.extend(Subjects) #TODO in the interface.py make it so that current subjects 'auto' fill?
 
 
-class InDatabaseData(Base):
+class InDatabaseData(Base): #TODO
     id=Column(Integer, primary_key=True)
-    #TODO, need something more flexible than metadata (amazingly) that can hold stuff like calibration data not stored elsewhere?? also if I ever transition away from external datafiles or if I want to use neoio immediately to convert abf files
-    pass
-
-## DataFile notes vvvvv
-
-    #FIXME TODO if the server is not local then file:/// only has meaning for the computer that the data was originally stored on and that has to match :/
-    #TODO google docs access does not go here because those could be writeable too
-    #these should point to more or less static things outside the program, every revision should add a new datafile for consistency, store the diffs?
-    #how to constrain/track files so they don't get lost??
-    #well, it is pretty simple you force the user to add them, this prevents all kinds of problems down the road
-    #and the constraint will be populated by the DataPath table, if I have 10,000 datafiles though, that could become a NASTY change
-    #ideally we want this to be dynamic so that the DataPath can change and all the DataFile entries will learn about it
-    #it might just be better to do it by hand so UPDATE doesn't swamp everything
-    #TODO next problem: when do we actually CREATE the DataFile and how to we get the number right even if we discard the trial? well, we DONT discard the file, we just keep it, but we need to gracefully deal with deletions/renumbering so that if something goes wrong it will alert to user
-    #RESPONSE: this record cannot be created until the file itself exists
-    #FIXME datafiles have substructure that requires more than one datasource ;_;
-    #although, the easiest way to fix that is to just change this to allow for an arbitrary number of channels to be saved per datafile and link the datasources to those?
-    #maybe base it on datafile type??? or configuration... but that is going to change for every fucking thing...
-    #that stuff goes in the metadata, datasource here just means 'collection software' fucking conflation
 

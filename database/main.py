@@ -1,47 +1,17 @@
 """Main file for database stuff
 Usage:
-    main.py [(-e | --echo) (-p | --pgsql) (-w | --wipe) (-s | --setup) (-t | --test) -i]
+    main.py [(-e | --echo) (-p | --pgsql) (-w | --wipe) (-s | --setup) (-t | --test) (-i | --ipython)]
     main.py (-h | --help )
 
 Options:
-    -h --help   show this
-    -e --echo   enable echo
-    -p --pgsql  use postgres
-    -w --wipe   wipe the database
-    -s --setup  setupDB
-    -t --test   run tests
-    -i          open ipython and run everything in it
+    -h --help       show this
+    -e --echo       enable echo
+    -p --pgsql      use postgres
+    -w --wipe       wipe the database
+    -s --setup      setupDB
+    -t --test       run tests
+    -i --ipython    drop into ipython after everything else is done
 """
-#TODO repeated func calls: itertools repeatfunc starmap
-#FIXME many of the options only apply if postgres is used...
-#TODO ipython
-
-#Base file for creating the tables that I will use to store all my (meta)data
-
-#TODO use postgres search_path to control the user so that we can share basic things such as constants and strain information, definately need to audit some of those changes... audit table...
-
-#FIXME holy shit problems with using datetime.now as the default for DateTime!
-
-#TODO when thinking about staging this stuff I need a safe way to hold data incase my access to the db goes down, like pickling something or the like? ideally this shouldn't happen but better safe than sorry
-
-#TODO conform to MINI, NIF ontologies?, or odML terminiologies?
-
-#TODO
-### Create an IsLoggable class or the like to manage logging changes to fields
-#see: http://stackoverflow.com/questions/141612/database-structure-to-track-change-history
-#TODO transaction log will have a first entry for...
-#internal doccumentation of the creation date may not be needed if I have refs to transactions
-
-#TODO transfer logs for mice can now be done and incorporated directly with the system for weening etc
-
-#TODO reimplement notes so that they can apply to multiple things like I do with classDOB, but check the overhead, join inheritance might work
-#make sure to set the 'existing table' option or something?
-
-#TODO neo io for dealing with abf files, but that comes later
-#OBJECTIVE raw data format agnostic, this database does not house the raw data, it houses the assumptions and the results and POINTS to the analysis code and the raw data
-#if needs be the code used to analyize the data can be stored and any updates/diffs can be added to track how numbers were produced
-#this means that this database stays flexible in terms of what kinds of experiments it can handle
-#it also maximizes poratbility between different backend databases
 from docopt import docopt
 
 from datetime import datetime
@@ -143,15 +113,13 @@ def printStuff(cons=True,mice=True,data=True,notes=True):
 ###  Test it!
 ###----------
 
-def connect(echo=False):
-    return Session(pgTest(echo=echo))
-
 def main(echo=False,postgres=False,wipe_db=False,setupDB=False,test=False):
     #create engine
     if postgres:
         engine=pgTest(echo=echo,wipe_db=wipe_db)
         if setupDB:
             session=initDBScience(engine) #imported from base.py via *
+            #populate constraint tables
             populateConstraints(session)
             populateTables(session)
         else:
@@ -159,16 +127,9 @@ def main(echo=False,postgres=False,wipe_db=False,setupDB=False,test=False):
     else:
         engine=sqliteMem(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
         session=initDBScience(engine) #imported from base.py via *
+        #populate constraint tables
         populateConstraints(session)
         populateTables(session)
-
-    #create metadata on the engine
-    #Base.metadata.drop_all(engine,checkfirst=True)
-
-    #create session
-    #session = Session(engine)
-
-    #populate constraint tables
 
     #do some tests!
     if test:
@@ -185,10 +146,13 @@ def main(echo=False,postgres=False,wipe_db=False,setupDB=False,test=False):
     #query stuff
     #queryAll(session)
     #session.query(Cell).all()
-
     return session
+
     
 if __name__=='__main__':
-    args=docopt(__doc__, version='Main .0001')
-    printD(args)
-    main(args['--echo'],args['--pgsql'],args['--wipe'],args['--setup'],args['--test']) #WOW THAT WAS EASY
+    args=docopt(__doc__, version='Main .0002')
+    global ipython #FIXME LOL MASSIVE HACK
+    session=main(args['--echo'],args['--pgsql'],args['--wipe'],args['--setup'],args['--test']) #THAT WAS EASY
+    if args['--ipython']:
+        from IPython import embed
+        embed()

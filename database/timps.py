@@ -1,3 +1,4 @@
+from IPython import embed
 from database.TESTS import *
 from database.models import *
 from database.engines import *
@@ -7,5 +8,4 @@ from sqlalchemy.orm import Session
 engine=pgTest(True)
 session=Session(engine)
 s=session
-#stop=listenForThings(s)
-
+embed()
