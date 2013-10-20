@@ -292,7 +292,7 @@ class t_slice(TEST):
 
 class t_cell(TEST):
     def make_all(self):
-        slices=[s for s in self.session.query(Slice) if s.parent_id is not None]
+        slices=[s for s in self.session.query(Subject).filter_by(type_id='slice') if s.parent_id is not None]
         #printD([s.parent_id for s in slices])
         #patches=[p for p in self.session.query(Experiment).filter_by(type='acute slice prep')]
         patches=[p for p in self.session.query(Experiment).filter(Experiment.type==self.session.query(ExperimentType).filter_by(name='acute slice prep')[0])] #FIXME clearly this expeirment type is wrong and I havent been catching it FIXME FIXME
@@ -585,8 +585,8 @@ def run_tests(session):
     c=t_cell(session,5)
     #c2c=t_c2c(session) #no longer used
 
-    #d=t_datafile(session,5)#,2,1) #FIXME eating memory
-    #dfmd=t_dfmetadata(session,10) #as in 8 gigs of memory...
+    d=t_datafile(session,5)#,2,1) #FIXME eating memory
+    dfmd=t_dfmetadata(session,10) #as in 8 gigs of memory...
 
     #session.commit()
 
