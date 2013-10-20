@@ -1,3 +1,8 @@
+1. Finish cleaning up the rest of the comments
+2. Break my own classes out into their own files/folders
+3. Finish the steps api, keeping corrispondence with database tables
+4. convert the TODO list into something that is actually readable
+
 ----------main.py
 #TODO repeated func calls: itertools repeatfunc starmap
 #FIXME many of the options only apply if postgres is used...
@@ -89,9 +94,6 @@ sub experiments that keep track of what was held constant at their level? this i
 #do we keep weight's here or somehwere else, is there any other reason why a 'normal' mouse would need to be weighed? sure the mouse HAS a weight, but does that mean that the mouse table should be where we keep it? it changes too
 #same argument applies to sex and how to deal with changes to that, and whether it is even worth noting
 #somehow this reminds me that when weaning mice need to make sure that their cages get matched up properly... well, that's the users job
-#id=None
-#mouse_id=Column(Integer,ForeignKey('mouse.id'),primary_key=True)
-#dateTime=Column(DateTime, primary_key=True) #NOTE: in this case a dateTime IS a valid pk since these are only updated once a day
 #TODO lol the way this is set up now these classes should actually proabaly DEFINE metadata records at least for simple things like this where the only associated object is a mouse which by default experiment asssociates with, maybe I SHOULD move the mouse_id to class MouseExperiment?!?!?!
 
  #TODO project_id if i keep track of these at the level of experiment type then everything becomes problematic if I want to change the project or experiment or reuse stuff, but if I want to record WHO did the experiment as an experimental variable...
