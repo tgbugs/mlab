@@ -34,6 +34,7 @@ class SubjectType(Base): #XXX not using, favoring use of STE so we can have nice
 #FIXME if subjects have data about them and are generate by the same experiment there will be an infinite loop
 #TODO TODO the best way to associate hardware to a subject is NOT by direcly linking the subject to the hardware, becuase that can change, but using the hardware present at that time with it's associated datafilesource (or the like) and associating the subject to THAT sub structure
 class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasProperties, HasHardware, HasNotes, HasTreeStructure, Base):
+    """ Please see Subject for basic __init__ kwargs"""
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     type_id=Column(String,ForeignKey('subjecttype.id'),nullable=False)
@@ -164,29 +165,35 @@ class UsesJTI:
     def __mapper_args__(cls):
         return {'polymorphic_identity':cls.__name__.lower()} #FIXME
     #__mapper_args__ = {'polymorphic_identity':type_string}
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
 
 
-class HasSex(UsesJTI):
-    @declared_attr
-    def sex_id(cls):
-        return Column(String(1),ForeignKey('sex.abbrev'),nullable=False)
-
+class HasSexOntogeny(UsesJTI): #TODO composite subjects can have sex ontogoeny w/o having a sex
     @property
     def sire(self):
         return [m for m in self.generated_from_subjects if m.sex_id == 'm'][0]
     @property
     def dam(self):
         return [m for m in self.generated_from_subjects if m.sex_id == 'f'][0]
-    @declared_attr
-    def sire(cls): #TODO
-        pass
+    #@declared_attr
+    #def sire(cls): #TODO
+        #pass
         #cn=cls.__name__
         #return relationship('%s'%cn,primaryjoin='',secondaryjoin='',uselist=False)
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+
+class HasSex(HasSexOntogeny):
+    @declared_attr
+    def sex_id(cls):
+        return Column(String(1),ForeignKey('sex.abbrev'),nullable=False)
     @property
     def breedingRecs(self):
         return [e for e in self.experiments if e.type.name=='Mating Record'] #FIXME does this go here?
     def __init__(self,**kwargs): #FIXME how to do this cooperatively
-        self.sex_id=str(sex_id)
+        self.sex_id=str(kwargs.pop('sex_id')) #FIXME also varargs is a danger?
+        super().__init__(**kwargs)
 
 class HasGeneratingExperiment(UsesJTI):
     #all subjects may have this...
@@ -201,15 +208,20 @@ class HasGenetics(UsesJTI):
     def somethingYouDoWithStrain(self):
         return None
     def __init__(self,**kwargs):
-        self.strain_id=int(strain_id)
+        self.strain_id=int(kwargs.pop('strain_id'))
+        super().__init__(**kwargs)
 
 class HasLocation(UsesJTI):
     @declared_attr
     def location_id(cls):
         return Column(Integer,ForeignKey('locations.id'))
     def __init__(self,**kwargs):
-        if location_id is not None:
-            self.location_id=int(location_id)
+        try:
+            location_id=kwargs.pop('location_id')
+            self.location_id=int(location_id) #FIXME if someone passes in location_id=None... twill error
+        except KeyError:
+            pass
+        super().__init__(**kwargs)
 
 #FIXME Mixins MUST Implement ForeignKey constraints otherwise they should not be a mixin
 
@@ -220,7 +232,7 @@ class HasLocation(UsesJTI):
 class NewSubjectType(UsesJTI, Subject):
     pass
 
-class Litter(UsesJTI, Subject):
+class Litter(HasSexOntogeny, Subject):
     @property
     def remaining(self):
         return [m for m in self.members if not m.endDateTime]

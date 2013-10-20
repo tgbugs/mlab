@@ -1,17 +1,18 @@
 """Main file for database stuff
 Usage:
-    main.py [-e -p -w -s -t -i]
+    main.py [(-e | --echo) (-p | --pgsql) (-w | --wipe) (-s | --setup) (-t | --test) -i]
     main.py (-h | --help )
 
 Options:
     -h --help   show this
-    -e          enable echo
-    -p          use postgres
-    -w          wipe the database
-    -s          setupDB
-    -t          run tests
+    -e --echo   enable echo
+    -p --pgsql  use postgres
+    -w --wipe   wipe the database
+    -s --setup  setupDB
+    -t --test   run tests
     -i          open ipython and run everything in it
 """
+#TODO repeated func calls: itertools repeatfunc starmap
 #FIXME many of the options only apply if postgres is used...
 #TODO ipython
 
@@ -190,4 +191,4 @@ def main(echo=False,postgres=False,wipe_db=False,setupDB=False,test=False):
 if __name__=='__main__':
     args=docopt(__doc__, version='Main .0001')
     printD(args)
-    main(args['-e'],args['-p'],args['-w'],args['-s'],args['-t']) #WOW THAT WAS EASY
+    main(args['--echo'],args['--pgsql'],args['--wipe'],args['--setup'],args['--test']) #WOW THAT WAS EASY

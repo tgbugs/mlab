@@ -42,7 +42,13 @@ class Strain(HasCiteables, Base): #TODO somehow this looks like mouse type
     gene_id=Column(Integer,ForeignKey('gene.id')) #FIXME better to do a m-m here? same w/ bg?
     #FIXME TODO how to handle the 'tree' of strains... do it in the mice? or run it parallel, I think it is better to run it parallel in its own system and just use logic to constuct the strain ID based on the parent strain ids keeps things comaprtmentalized
 
-    def __init__(self,jax_id,name=None,abbrev=None,Citeables=[]):
+    def getFromParents(self,*parents): #TODO trying to implement this reveals that strain needs way more thought
+        for p in parents:
+            pass
+        return 1
+
+
+    def __init__(self,jax_id=None,name=None,abbrev=None,Citeables=[]):
         #name=getJaxData(jax_id) #TODO
         self.jax_id=jax_id
         self.name=name

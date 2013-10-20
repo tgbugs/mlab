@@ -71,9 +71,9 @@ class TEST:
     def make_all(self):
         pass
 
-    def commit(self):
+    def commit(self): #XXX now flush, but hey...
         self.session.add_all(self.records)
-        self.session.commit()
+        self.session.flush()
 
 
 ###--------
@@ -219,8 +219,9 @@ class t_mating_record(TEST):
     def setup(self):
         self.sires=[s for s in hasKVPair(self.session,Mouse,'sex','m')]
         self.dams=[d for d in hasKVPair(self.session,Mouse,'sex','f')]
-        s=[Mouse(Properties={'sex':'m'}) for i in range(self.num-len(self.sires))]
-        d=[Mouse(Properties={'sex':'f'}) for i in range(self.num-len(self.dams))]
+        strain=self.session.query(Strain)[0]
+        s=[Mouse(sex_id='m',strain_id=strain) for i in range(self.num-len(self.sires))]
+        d=[Mouse(sex_id='f',strain_id=strain) for i in range(self.num-len(self.dams))]
         self.session.add_all(s+d)
         self.session.flush()
         self.sires.extend(s)
@@ -261,22 +262,28 @@ class t_litters(TEST):
         #ms=[self.records[i].make_members(litter_sizes[i]) for i in range(self.num)]
         #[mice.extend(m) for m in ms]
         #self.session.add_all(mice)
+        strain=self.session.query(Strain)[0] #FIXME
         for lit,i in zip(self.records,range(self.num)):
-            lit.children.extend([Mouse(generating_experiment_id=lit.generating_experiment_id,Properties={'sex':'u'},startDateTime=lit.startDateTime) for i in range(litter_sizes[i])])
+            lit.children.extend([Mouse(generating_experiment_id=lit.generating_experiment_id,sex_id='u',strain_id=strain,startDateTime=lit.startDateTime) for i in range(litter_sizes[i])])
 
         #VS
         #[self.session.add_all(self.records[i].make_members(litter_sizes[i])) for i in range(self.num)]
 
         self.session.commit()
 
+class t_strain(TEST):
+    def make_all(self):
+        self.records=[Strain() for i in range(self.num)] #TODO itertools starmap
+        printD(self.records)
 
 class t_mice(TEST):
     def make_all(self):
         #dobs=t_dob(self.session,self.num)
         tags=np.random.randint(0,1000,self.num)
         sexes=self.make_sex()
+        strain=self.session.query(Strain)[0]
         dts=self.make_datetime(years=2)
-        self.records=[Mouse(Properties={'eartag':int(tags[i]),'sex':sexes[i]},startDateTime=dts[i]) for i in range(self.num)]
+        self.records=[Mouse(Properties={'eartag':int(tags[i])},sex_id=sexes[i],strain_id=strain,startDateTime=dts[i]) for i in range(self.num)]
 
 ###--------------------
 ###  subjects continued
@@ -425,8 +432,8 @@ class t_sliceprep(TEST):
         exptype=self.session.query(ExperimentType).filter_by(abbrev='prep')[0]
         self.records=[Experiment(type_id=exptype,project_id=project,person_id=person,Reagents=[],startDateTime=datetime.now()-timedelta(int(np.random.randint(1)))) for i in range(self.num)] #FIXME need to find a way to propagate mouse w/ RI
     def add_mice(self):
-        #mice=self.session.query(Mouse).filter_by(sex_id='u')[100:100+self.num]
-        mice=[s for s in hasKVPair(self.session,Mouse,'sex','u')]
+        mice=self.session.query(Mouse).filter_by(sex_id='u')[:self.num]
+        #mice=[s for s in hasKVPair(self.session,Mouse,'sex','u')]
         printD(len(mice))
         printD(len(self.records))
         np.random.shuffle(mice)
@@ -560,6 +567,7 @@ def run_tests(session):
     
     #[print(df.creation_DateTime) for df in session.query(DataFile)]
 
+    t_strain(session,2)
     expt=t_exptype(session)
     hw=t_hardware(session)
     ds=t_datafilesource(session)
