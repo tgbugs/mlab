@@ -8,6 +8,8 @@
 7. datetime.now as default has HUGE problems with clock sync
 8. can we generalize dataobjects in a way that simplifies things and makes analysis easier? yes, see data.py DataInterface, start w/ handling my own data and neo's data and build in imaging
 9. how to fix alignment between metadata without grouping it or just group it and be done? tensor of datasources that will be called to produce the tuple/matrix/whatever
+10. check to see where I actually need primaryjoin in relationships and where I can just use the foreign_keys option on relaitonship http://docs.sqlalchemy.org/en/rel_0_8/orm/relationships.html#relationships-api
+11. relationships, change remote_side to remote() annotation inside of primaryjoin
 
 ----------main.py
 #TODO repeated func calls: itertools repeatfunc starmap

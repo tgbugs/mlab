@@ -35,7 +35,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
 
     #whole-part relationships for all subjects
     parent_id=Column(Integer,ForeignKey('subjects.id'))
-    children=relationship('Subject',primaryjoin='Subject.id==Subject.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
+    children=relationship('Subject',primaryjoin='Subject.id==Subject.parent_id',backref=backref('parent',uselist=False,remote_side=[id])) #FIXME remote()
 
     #imagine you could patch the same cell multiple times with different headstages, what would be needed
     #or hell, the same cell with multiple headstages (some serious assertions here wrt dendrite patching)
@@ -48,6 +48,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
     #generative relationships, some are being preserving others are terminal (binary fision anyone?)
     #FIXME if parent_id is None then we can use this???? maybe a bit too much overlap?
     #ontogeny vs part-whole
+    #Generation vs selection... does that solve the problem? there is no ontogney of the cells I patch from the slice beyond me picking the cells, the slice remains in tact and the cell is clearly a part-whole... so no, not an issue for that case... generating experiment_id is really explicity for ontogeny, whether destructive or conservative
     generated_from_subjects=relationship('Subject',secondary='subjects_experiments',
             primaryjoin='Subject.generating_experiment_id==subjects_experiments.c.experiments_id',
             secondaryjoin=( 'and_(Subject.id==subjects_experiments.c.subjects_id,'
