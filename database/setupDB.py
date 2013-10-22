@@ -173,6 +173,7 @@ def popHardwareType(session):
         ('pipette','the unpulled glass cappilary tube'), #FIXME is this a reagent?@??@?
         ('pipette puller','Make that cappilary pointy!'),
         ('chamber','Box for keeping dead brain slices alive.')
+        ('actuator','something (usually motoroized) for moving something else very accurately, seems related to a manipulator')
     )
     session.add_all([HardwareType(type=t,description=d) for t,d in _HWTYPES])
 
@@ -188,13 +189,16 @@ def popHardware(session):
     iuepPipette=Hardware(type='pipette',name='iuep pipette',model='3-000-203-G/X',manufacturer='Drummond Scientific')
     session.add_all([patchPipette,iuepPipette])
 
-    session.add(Hardware(Parent=root,type='motion controller/driver',name='ESP300'))
+    esp300=Hardware(Parent=root,type='motion controller/driver',name='ESP300')
+    session.add(esp300)
     digidata=Hardware(Parent=root,type='digitizer',name='Digidata 1322A',unique_id='105309')
     session.add(digidata)
     session.add(Hardware(Parent=root,type='digitizer',name='nidaq',model='NI PCIe-6259',unique_id='0x138FADB'))
     session.commit()
     
     #wierd, since these can also be controlled directly, but I guess that ok?
+    session.add(Hardware(Parent=esp300,type='actuator',name='espX',unique_id='B12 9463'))
+    session.add(Hardware(Parent=esp300,type='actuator',name='espY',unique_id='B08 2284'))
     session.add(Hardware(Parent=digidata,type='amplifier',name='mc1',model='Multiclamp 700B',unique_id='00106956'))
     session.add(Hardware(Parent=digidata,type='amplifier',name='mc2',model='Multiclamp 700B',unique_id='00106382'))
     session.commit()

@@ -1,7 +1,13 @@
+0. what if we treat File as a datasource? well, then we loose the temporal correlation... BUT if we could just bring that along, then the code for decoding the file wouldn't be analysis it would be like a controller... yes, try to implement this, it could be much more consistent and so long as we have the datetime all synced up and stuff like that... BUT BUT BUT then we need some unti (sub experiment? to hold all the associated data...)
 1. Finish cleaning up the rest of the comments
 2. Break my own classes out into their own files/folders
 3. Finish the steps api, keeping corrispondence with database tables
 4. convert the TODO list into something that is actually readable
+5. Users and different database vs different schema or user defined schema so we can share common tables such as the units, and people and users
+6. neo, and quantities or pint or something
+7. datetime.now as default has HUGE problems with clock sync
+8. can we generalize dataobjects in a way that simplifies things and makes analysis easier? yes, see data.py DataInterface, start w/ handling my own data and neo's data and build in imaging
+9. how to fix alignment between metadata without grouping it or just group it and be done? tensor of datasources that will be called to produce the tuple/matrix/whatever
 
 ----------main.py
 #TODO repeated func calls: itertools repeatfunc starmap
@@ -105,4 +111,21 @@ sub experiments that keep track of what was held constant at their level? this i
 hybrid attributes could be REALLY REALLY handy for computing stuff on the fly... like... results
 the analysis object can hold references to all the objects it needs and then bam hybrid_property
 obviously a bit trickier for datafiles
+
+----------genetics.py
+#NOT subjects because they are actually the exact opposite, genes are universals with many, many instantiations, the complete object of subjects
+#you can't study a gene as if it is an organism Dawkins, because the notion that genes exist in the way we idealize them is completely wrong, the context of the gene is different for pretty much every cell (type if you must be a bit stodgy about initial conditions), I cant even draw a good analogy at the moment to some higher level phenomenon
+#incidentlaly you *could* study a single gene if you could go in to a single cell and look at how frequently that section of dna was transcribed but if you did that you would pretty soon realize that the causal story is so much more complicated that the central dogma starts to look pretty silly, just think of all the intervening steps and interactions between the product of a dna squence in a single cell and the phenotype of an organism, in fact, that cell will usually die long before it alone could impact the phenotype of the organism...
+#something about information does mislead us, you're right Dan...
+
+----------inventory.py
+how to construct recipes and versions of recipes from queries against ingredients
+#TODO could just make this a hardware table and maybe CHECK that the type matches?
+#then just have another table for any specifics on that, could do the same for the reagents, since most of them are going to have links to urls and msdses or whatever the fuck
+
+    #FIXME the current state of this table (Hardware) reveals the conflict between building a cooperative tool that keeps references to all the other outside data and one the keeps all the data inside
+    #ACTUALLY the above is false, the distinction is merely whether we go get the data before we add a record to the database or when we retrieve the record to do something with it
+    #I can't predict everything that this could be used for or the format, but I can predict that I will want to know the relation between things but the exact computations may be different, in which case we would want single table inheritance for processing stuff on retrieval or something like that, functions to call on specific types of data maybe that new 3.4 feature could help
+
+    #TODO I MUST have a way to track changes in the hardware parent so that datafiles will have the state when THEY were recorded...
 

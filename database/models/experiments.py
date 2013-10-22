@@ -16,11 +16,11 @@ class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Ba
     experiments=relationship('Experiment',backref=backref('type',uselist=False))
 
     @property
-    def reagents(self):
-        return [rt.currentLot for rt in self.reagenttypes] #FIXME
+    def reagents(self): #FIXME
+        return [rt.currentLot for rt in self.reagenttypes]
 
 
-    def __init__(self,name=None,abbrev=None,methods_id=None,ReagentTypes=[],MetaDataSources=[]):
+    def __init__(self,name=None,abbrev=None,methods_id=None,ReagentTypes=(),MetaDataSources=()):
         self.name=name
         self.abbrev=abbrev
         if methods_id is not None:
@@ -57,7 +57,7 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
         else:
             raise Warning('endDateTime has already been set!')
 
-    def __init__(self,type_id=None,project_id=None,person_id=None,Reagents=[],Subjects=[],startDateTime=None,endDateTime=None):
+    def __init__(self,type_id=None,project_id=None,person_id=None,Reagents=(),Subjects=(),startDateTime=None,endDateTime=None):
         self.type_id=int(type_id)
         if project_id: #FIXME move to experiment type? if exptype is hierarchical can duplicate...
             self.project_id=int(project_id)

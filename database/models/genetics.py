@@ -16,10 +16,7 @@ class Phenotype(Base):
     measured_thing_value=None
 
 
-class Gene(HasCiteables, Base): #NOT subjects because they are actually the exact opposite, genes are universals with many, many instantiations, the complete object of subjects
-    #you can't study a gene as if it is an organism Dawkins, because the notion that genes exist in the way we idealize them is completely wrong, the context of the gene is different for pretty much every cell (type if you must be a bit stodgy about initial conditions), I cant even draw a good analogy at the moment to some higher level phenomenon
-    #incidentlaly you *could* study a single gene if you could go in to a single cell and look at how frequently that section of dna was transcribed but if you did that you would pretty soon realize that the causal story is so much more complicated that the central dogma starts to look pretty silly, just think of all the intervening steps and interactions between the product of a dna squence in a single cell and the phenotype of an organism, in fact, that cell will usually die long before it alone could impact the phenotype of the organism...
-    #something about information does mislead us, you're right Dan...
+class Gene(HasCiteables, Base):
     id=Column(Integer,primary_key=True) #FIXME
     name=Column(Unicode(50))
     locus=Column(Unicode(50))

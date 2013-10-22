@@ -36,23 +36,8 @@ class HasNotes: #FIXME this works ok, will allow the addition of the same note t
         #return relationship(cls.Note,backref=backref('parent',uselist=False))
         return association_proxy('__notes','text',creator=lambda text: cls.Note(text))
 
-
-class _HasNotes: #this implementation is depreicated in favor of a metadata style that can be query joined
-    @declared_attr
-    def notes(cls):
-        note_association = Table('%s_note_assoc'%cls.__tablename__, cls.metadata,
-            Column('note_id',ForeignKey('notes.id'),primary_key=True),
-            Column('%s_id'%cls.__tablename__,ForeignKey('%s.id'%cls.__tablename__), #FIXME .id may not be all?
-                   primary_key=True)
-        )
-        return relationship('Note',secondary=note_association,
-            primaryjoin='{0}_note_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
-            secondaryjoin='Note.id=={0}_note_assoc.c.note_id'.format(cls.__tablename__),
-            backref=backref('parent_%s'%cls.__tablename__) #FIXME do we really want this?
-        )
-
 ###-------------
-###  data mixins
+###  datasource mixins
 ###-------------
 
 class HasDataFileSources:
@@ -84,6 +69,10 @@ class HasMetaDataSources:
             backref=backref('%s'%cls.__tablename__) #FIXME do we really want this?
         )
 
+
+###-------------
+###  data mixins
+###-------------
 
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
     #this stuff is not vectorized... a VectorizedData might be worth considering ala ArrayData
@@ -138,7 +127,11 @@ class HasMetaData: #FIXME based on how I'm using this right now, the relationshi
         return relationship(cls.MetaData) #FIXME may need a primaryjoin on this
 
 
-class SWC_HW_EXP_BIND:
+###----------------------------------
+###  data - datasource history mixins
+###----------------------------------
+
+class SWC_HW_EXP_BIND: #FIXME move directly into experiments?
     datafile_subdata_id=None #TODO? as long as I can get to the things needed for analysis it should be ok
     @validates('hardware_id')
     def _wo(self, key, value): return self._write_once(key, value)
@@ -251,6 +244,10 @@ class HasMdsHwRecords: #TODO how to enforce a trigger on __init__ unforunately c
     #who the fuck knows how to get event listeners to work for this >_<
 
 
+###-------------
+###  file mixins
+###-------------
+
 class HasDataFiles:
     @declared_attr
     def datafiles(cls):
@@ -286,26 +283,6 @@ class HasFiles:
             backref=backref('%s'%cls.__tablename__),
         )
 
-
-
-###--------------------
-###  experiments mixins
-###--------------------
-
-class IsTerminal:
-    #TODO mixin for terminal experiments to automatically log data of death for a mouse
-    #@declared_attr
-    def dod(cls):
-        return  None
-
-
-###-------------
-###  Credentials??!?!
-###-------------
-
-class HasCredentials:
-    #TODO I might be able to use a mixin to do logins, but this seems unlikely to work safely
-    pass
 
 ###---------------
 ###  Has citeables
@@ -354,19 +331,6 @@ class HasHardware:
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
         return relationship('Hardware', secondary=hardware_association,backref=backref('%s_used'%cls.__tablename__))
 
-###--------------
-###  Has subjects
-###--------------
-
-class HasSubjects: #XXX depricated
-    @declared_attr
-    def subjects(cls):
-        subjects_association = Table('%s_subjects'%cls.__tablename__,cls.metadata,
-            Column('subjects_id', ForeignKey('subjects.id'), primary_key=True),
-            Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__), primary_key=True))
-        return relationship('Subject', secondary=subjects_association,backref=backref('%s'%cls.__tablename__))
-
-
 ###-----------------
 ###  Has experiments
 ###-----------------
@@ -386,20 +350,16 @@ class HasExperiments:
 class Properties: #FIXME HasKeyValueStore
     """Not for data!""" #TODO how to query this...
     #FIXME this is hstore from postgres except slower and value is not a blob
-    key=Column(String(50),primary_key=True) #tattoo, eartag, name, *could* use coronal/sagital for slices, seems dubious... same with putting cell types in here... since those are technically results... #FIXME for some reason this accepts ints for a key... FIXME WATCH OUT for the type change on commit! it doesn't update the instace!
+    key=Column(String(50),primary_key=True) #tattoo, eartag, name, *could* use coronal/sagital for slices, seems dubious... same with putting cell types in here... since those are technically results... #FIXME for some reason this accepts ints for a key... FIXME WATCH OUT for the type change on commit! it doesn't update the instace! make sure to expire them
     value=Column(String(50)) #if the strings actually need to be longer than 50 we probably want something else
-    #FIXME ideally something like subtype should go here.... but that would require quite a few columns...
-    #def __init__(self,parent_id,key,value):
-        #self.parent=int(parent_id)
-        #self.key=key
-        #self.value=value
     def __repr__(self):
         return '%s %s {%s,%s}'%(self,self.parent_id,self.key,self.value)
 
 
-class HasProperties:
+class HasProperties: #FIXME set this up to use hstore if postgres is detected
+    #TODO __init__ with kwargs and the like for all these or what?
     @declared_attr
-    def properties(cls): #FIXME this is an UNVALIDATED STORE
+    def properties(cls): #this is an UNVALIDATED STORE
         cls.Properties=type(
                 '%sProperties'%cls.__name__,
                 (Properties, Base,),

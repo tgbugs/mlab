@@ -21,7 +21,7 @@ class DefaultBase:
             else:
                 raise AttributeError('%s has no id! Did you commit before referencing the instance directly?'*cls.__class__.__name__)
 
-    def strHelper(self,depth=0,attr='id'):
+    def strHelper(self,depth=0,attr='id'): #FIXME naming?
         tabs='\t'*depth
         return '\n%s%s %s'%(tabs,self.__class__.__name__,getattr(self,attr))
     def __int__(self): #MAGIC when called during __init__ for the simple cases

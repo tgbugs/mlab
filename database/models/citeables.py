@@ -8,22 +8,13 @@ from database.models.mixins import HasFiles
 ###----------
 
 class person_to_project(Base):
-    person_id=Column(Integer,ForeignKey('people.id'),primary_key=True)
     project_id=Column(Integer,ForeignKey('project.id'),primary_key=True)
-    #TODO add some nice info about what the person is doing on the project or some shit
-    def __init__(self, Project=None, Person=None, project_id=None,person_id=None):
-        self.project_id=project_id
-        self.person_id=person_id
-        if Project:
-            if Project.id:
-                self.project_id=Project.id
-            else:
-                raise AttributeError
-        if Person:
-            if Person.id:
-                self.person_id=Person.id
-            else:
-                raise AttributeError
+    person_id=Column(Integer,ForeignKey('people.id'),primary_key=True)
+    role=Column(String)
+    def __init__(self,project_id=None,person_id=None,role=None):
+        self.project_id=int(project_id)
+        self.person_id=int(person_id)
+        self.role=role
 
 
 class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a journal article
@@ -31,8 +22,6 @@ class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a jo
     #FIXME somehow experiment is dependent on this... which suggests that it doesn't quite belong in data
     id=Column(Integer,primary_key=True)
     lab=Column(String(15),nullable=False) #this is how we are going to replace the bloodly PI, and leave at the filter Role=='pi'
-    #pi_id=Column(Integer,ForeignKey('people.id')) #FIXME need better options than fkc... need a check constraint on people.role=='PI', or really current role... because those could change and violate certain checks/constraints...??? maybe better just to leave it as a person
-    #FIXME projects can have multiple PIs! damn it >_<, scaling this shit...
     iacuc_protocol_id=Column(Integer,ForeignKey('iacucprotocols.id'))
     blurb=Column(Text)
 
@@ -56,7 +45,7 @@ class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a jo
 ###  Doccuments
 ###------------
 
-#FIXME how the fuck do I query for these!??!?!
+#FIXME how the fuck do I query for these!??!?! doi xml lookup I think and add author's to the people table
 class CiteableType(Base):
     __tablename__='citeabletypes'
     id=Column(String(30),primary_key=True)
@@ -72,24 +61,19 @@ class CiteableType(Base):
 class Citeable(HasFiles, Base):
     #see: http://www2.liu.edu/cwis/cwp/library/workshop/citation.htm
     #TODO base class for all citable things, such as personal communications, journal articles, books
-    #this is now a wrapper for datafiles (among other things) and it should allow for easy querying
+    #this is now a wrapper for files (among other things) and it should allow for easy querying
+    #FIXME 'the only reason to put something in a database is so you an query it'
+    #I would like to ammend that to 'so you can keep track of its associations with other thigns that you
+    #CAN query, I want this to be a cooperative tool not one that does everything, that can be hard
     __tablename___='citeable'
-    id=Column(Integer,primary_key=True)
+    id=Column(Integer,primary_key=True) #FIXME not good enough for querying purposes... doi or something?
     type=Column(String(15),ForeignKey('citeabletypes.id'),nullable=False)
     #FIXME should this be metadata like the rest? eh... probs not
     title=None
 
     version=Column(Integer) #for things like protocols... TODO can we version some of these with git??
     accessDateTime=Column(DateTime,default=datetime.now)
-    
-    """
-    __mapper_args__={
-        'polymorphic_on':type,
-        'polymorphic_identity':'citeable'
-    }
-    """
-
-
+   
     #TODO create the columns here so that they can propagate people correctly when I pass in a pubmed citation
     #once the columns are in place I can just make it so that the output format is whatever I want
 
@@ -158,9 +142,3 @@ class IACUCProtocols(Base): #note: probs can't store them here, but just put a n
 class Methods(Base):
     id=Column(Integer,primary_key=True)
     pass
-
-
-#class Recipe(Base):
-    #DEPRICATED: recipes are now linked directly to their reagents via Ingredient asociation table
-    #id=Column(Integer,primary_key=True)
-

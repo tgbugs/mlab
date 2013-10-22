@@ -11,7 +11,6 @@ class SI_PREFIX(Base): #Yes, these are a good idea because they are written once
     symbol=Column(Unicode(2),primary_key=True)
     prefix=Column(String(5),nullable=False)
     E=Column(Integer,nullable=False)
-    #relationship('OneDData',backref='prefix') #FIXME makesure this doesn't add a column!
     def __repr__(self):
         return '%s'%(self.symbol)
     

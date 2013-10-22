@@ -14,7 +14,48 @@ class Protocol:
 ###  DataSources
 ###-------------
 
-class MetaDataSource(Base): #FIXME naming
+class DataInterface: #TODO this should be a gateway for in database and database data that DOESNT persist
+    """common interface for all data that get's passed on to analysis""" #FIXME move to analysis?
+    #def __init__(self,source=None,scalar=None,array=None,prefix=None,unit=None,prefixunit=None,mantissa=None,hardware_id=None):
+    def __init__(self,source=None,value=HALP,prefix=None,unit=None,prefixunit=None,mantissa=None,hardware_id=None):
+        self.source=source #TODO this should be the original object that the thing came from
+        #zero order tensor #how nearly everything is actually measured (2photon w/ scanning laser even)
+
+        #criteria for higher order tensors
+        #1) different hardware ID requried for tensors, the order of the fields must be by hardware/datasource id
+        #TODO tuples will have to be blobbed for sqlite :/
+        #TODO do we save the scalar source with all it's associated stuff, or do we doccument 
+        #it is easier to stick stuff together at the point of collection, the question is how to doccument it and how to store it in a database without proliferating tables or having empty columns
+        #ALTERNATELY, I could do this at analysis time and group by datasource with specific order and just allow for unordered collections of metadata that can be ordered at a later time during analysis
+        #2) OR 
+
+        #criteria for timeseries
+        #1) same hardware with sample rate
+
+        #criteria for sequence
+        #1) same hardware with timestamp (FIXME vitally this may require clock synchronization or a record kept with the same clock as any data we wish to compare it with, eg voltage driving the led)
+
+        #criteria for timeserries of tensors that may not have multiple hardware ids (imaging)
+        #1) simultaneous collection, or a sample rate for a full collection of indexed data
+
+        #criteria for tensors of timeserris (multiple voltage channles)
+        #1) simultaneous or interleaved collection in time of each channel
+
+        #making ten-time and time-ten interchangeable
+        #they are the exact same thing, just the data representation is switched
+        #FIXME the difference is that they are often subject to different kinds of correlated noise
+        #they must have a sample rate or some way of tracking the time of each sample (covers sequential)
+
+        #criteria for sequential data with timestamps THAT SHALL NOT BE CALLED DATA BUT RESULTS
+
+        #the 'matrix' of the imaging data reflects the spatial arrangment of data collected SIMULTANEOUSLY (more or less) and thus meets the criteria for a 'vectorized' format, in this case a matrix or an order 2-tensor
+        #the VALUES of that tensor have a dynamic range that may need to be dealt with :/
+
+        #TODO practical considerations for making analysis easier VS tracking where numbers actually come from
+    
+
+
+class MetaDataSource(Base): #FIXME naming #all raw data collect w/o sample rate goes here
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
     __tablename__='metadatasources'
     id=Column(Integer,primary_key=True)
@@ -23,6 +64,8 @@ class MetaDataSource(Base): #FIXME naming
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
     mantissa=Column(Integer) #TODO
     hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #this shall be muteable
+    prefix_data=relationship('SI_PREFIX',uselist=False) #FIXME don't do this myself, use pint/quanitites
+    unit_data=relationship('SI_UNIT',uselist=False) #FIXME don't do this myself, use pint/quanitites
     @validates('name','prefix','unit') #FIXME
     def _wo(self, key, value): return self._write_once(key, value)
     def strHelper(self): #TODO this is where quantities can really pay off
@@ -36,6 +79,8 @@ class MetaDataSource(Base): #FIXME naming
         self.mantissa=mantissa
         self.hardware_id=int(hardware_id)
 
+
+###  external data... somehow different in terms of process...
 
 class SoftwareChannel(Base):
     """Closely related to MetaDataSource"""

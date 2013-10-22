@@ -14,12 +14,10 @@ class Person(Base):
     FirstName=Column(String(50))
     MiddleName=Column(String(50))
     LastName=Column(String(50))
-    Gender=Column(String(1),ForeignKey('sex.abbrev')) #LOL
-    #Gender=Column(String(1),nullable=True) #FIXME tests will fail as soon as I add a real foreign key >_<
-    #ForeignKeyConstraint('Person.Gender',['sex.name','sex.symbol','sex.abbrev'])
+    contactinfo_id=Column(Integer) #TODO this probably shouldn't go here? I don't want to handle this stuff...
+    #Gender=Column(String(1),ForeignKey('sex.abbrev')) #LOL
     Birthdate=Column(Date) #this is here to match the odML, I actually think it is stupid to have, but whatever
-    #Role=Column(String,ForeignKey('role.id'))
-    Role=Column(String(20))
+    #role has been moved to person-project
     neurotree_id=Column(Integer,unique=True) #for shits and gigs
 
     experiments=relationship('Experiment',backref=backref('person',uselist=False)) #SOMETHING SOMETHING ACCESS CONTROL also in theory this might be m-m in some wierd situation where >1 person involved

@@ -14,15 +14,9 @@ class SubType(): #FIXME not sure if this is a good replacement for strain or not
     subtypes=relationship('SubType',primaryjoin='SubType.id==SubType.parenttype_id',backref=backref('parenttype',uselist=False,remote_side=[id])) #AARRRGGGGGG not the most helpful way to do this >_<
 
 
-class SubjectType(Base): #XXX not using, favoring use of STE so we can have nice python properties
-    #id=Column(Integer,primary_key=True) #FIXME may not need this
-    #name=Column(String,nullable=False,unique=True)
+class SubjectType(Base): #FIXME right now this isn't doing anything useful, could it?
     id=Column(String,primary_key=True)
     subjects=relationship('Subject',primaryjoin='Subject.type_id==SubjectType.id',backref=backref('type',uselist=False))
-    has_sexual_ontogeny=Column(Boolean,default=False)
-    #reference_type=None #might be a way to add something like HardwareSubject??? may need the mixin for that and just have the mixin define the type by the table name
-    #better to use HasMetaData, HasFiles, etc than to make stuff subjects... maybe change to 'HasExperiments'
-    #true it is not as explicit...
     def __str__(self):
         return id
     def __init__(self,id,has_sex=None):
@@ -107,7 +101,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
 
     def __init__(self,parent_id=None,generating_experiment_id=None,
             group_id=None,startDateTime=None,sDT_abs_error=None,
-            Experiments=[],Hardware=[],Properties={}):
+            Experiments=(),Hardware=(),Properties={}):
         if self.type_id is 'subject':
             raise NotImplementedError('You shouldn\'t add undefined subjects to the database!')
 
@@ -211,14 +205,18 @@ class HasGenetics(UsesJTI):
         self.strain_id=int(kwargs.pop('strain_id'))
         super().__init__(**kwargs)
 
-class HasLocation(UsesJTI):
+class HasLocation(UsesJTI): #FIXME may not need JTI on this one in particular...
     @declared_attr
     def location_id(cls):
         return Column(Integer,ForeignKey('locations.id'))
+    @declared_attr
+    def location(cls):
+        return relationship('Location',primaryjoin='%s.location_id==Location.id'%cls.__name__),
+                            backref=backref('%s'%cls.__tablename__),uselist=False)
     def __init__(self,**kwargs):
         try:
             location_id=kwargs.pop('location_id')
-            self.location_id=int(location_id) #FIXME if someone passes in location_id=None... twill error
+            self.location_id=int(location_id) #FIXME location_id=None will error
         except KeyError:
             pass
         super().__init__(**kwargs)
