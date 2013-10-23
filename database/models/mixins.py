@@ -4,6 +4,21 @@ from database.models.base import Base
 #some global variables that are used here and there that would be magic otherwise
 _plusMinus='\u00B1'
 
+class selfmtm:
+    @declared_attr
+    def nodes(cls): #can use this for a self ref m-m mixin?
+        ctab=cls.__tablename__
+        cname=cls.__name__
+        self_assoc=Table('%s_self_assoc'%ctab, cls.metadata,
+                        Column('parent_id',ForeignKey('%s.id'%ctab),primary_key=True)
+                        Column('child_id',ForeignKey('%s.id'%ctab),primary_key=True) #FIXME we want to keep track of the expeirment too and those THREE need to be consistent
+        )
+        return relationship('%s'%cname,secondary=thing_to_thing,primaryjoin=
+                '%s.ontpar_id==%s_self_assoc.parent_id'%(cname,ctab),
+                secondaryjoin='%s.id==%s_self_assoc.child_id'%(cname,ctab),
+                backref='offspring'
+                )
+
 ###--------------
 ###  notes mixins
 ###--------------
@@ -336,6 +351,11 @@ class HasHardware:
 ###-----------------
 
 class HasExperiments:
+    paramNames=tuple #persistable values that are not filled in at init
+    preStepNames=tuple
+    interStepNames=tuple
+    postStepNames=tuple
+    child_type=Base #FIXME?
     @declared_attr
     def experiments(cls):
         experiments_association = Table('%s_experiments'%cls.__tablename__,cls.metadata,

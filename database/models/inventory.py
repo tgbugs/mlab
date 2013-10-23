@@ -124,6 +124,7 @@ class Reagent(HasMetaData, HasExperiments, Base): #TODO HasReagents??!
 
 class Ingredient(Base): #FIXME make this versioned
     #TODO figure out how to query this to make a full on recipe... probably via recipe in ReagentType...
+        #the full recipe should proceed with steps and take the value from the scale
     #TODO track history such that any changes to a recipe are recorded and the original recipe stays associated
     #HALP HOW DO I DO THAT? versioned tables??? seems reasonabled
     __tablename__='ingredients'
