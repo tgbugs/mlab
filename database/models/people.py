@@ -9,6 +9,7 @@ from database.models.mixins import HasNotes
 class Person(Base):
     """__init__(self,pre,first,middle,last,gender,bd,role,ntid,experiments)"""
     __tablename__='people'
+    #FIXME TODO add roles/experiment? or base roll that can change?
     id=Column(Integer,primary_key=True)
     PrefixName=Column(String(50)) #BECAUSE FUCK YOU
     FirstName=Column(String(50))
@@ -28,8 +29,8 @@ class Person(Base):
         def xstr(string):
             return '' if string is None else str(string)
         name='%s %s %s %s'%(xstr(self.PrefixName),xstr(self.FirstName),xstr(self.MiddleName),xstr(self.LastName))
-        role=xstr(self.Role)
         date=xstr(self.Birthdate)
+        role=xstr('')
         if type(self.neurotree_id)==type(b''):
             ntid=str(int.from_bytes(self.neurotree_id,'little'))
         #elif type(self.neurotree_id)-=int:
@@ -43,7 +44,7 @@ class Person(Base):
                 out.append(string+' '*(width-len(string)))
             return out
         name,role,date,ntid=cols((name,role,date,ntid),(35,15,10,10))
-        return '\n%s%s\t%s\t%s%s '%(name,xstr(self.Gender),date,role,ntid)
+        return '\n%s\t%s\t%s%s '%(name,date,role,ntid)
     
 
 class User(Base): #FIXME no longer a datasource, the person_id shall be assumed for the time being?

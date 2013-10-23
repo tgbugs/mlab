@@ -10,7 +10,7 @@ class selfmtm:
         ctab=cls.__tablename__
         cname=cls.__name__
         self_assoc=Table('%s_self_assoc'%ctab, cls.metadata,
-                        Column('parent_id',ForeignKey('%s.id'%ctab),primary_key=True)
+                        Column('parent_id',ForeignKey('%s.id'%ctab),primary_key=True),
                         Column('child_id',ForeignKey('%s.id'%ctab),primary_key=True) #FIXME we want to keep track of the expeirment too and those THREE need to be consistent
         )
         return relationship('%s'%cname,secondary=thing_to_thing,primaryjoin=

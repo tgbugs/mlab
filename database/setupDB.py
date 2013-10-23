@@ -172,46 +172,46 @@ def popHardwareType(session):
         ('signal generator','things like a master8 that can generate arbitrary waveforms without a computer'),
         ('pipette','the unpulled glass cappilary tube'), #FIXME is this a reagent?@??@?
         ('pipette puller','Make that cappilary pointy!'),
-        ('chamber','Box for keeping dead brain slices alive.')
-        ('actuator','something (usually motoroized) for moving something else very accurately, seems related to a manipulator')
+        ('chamber','Box for keeping dead brain slices alive.'),
+        ('actuator','something (usually motoroized) for moving something else very accurately, seems related to a manipulator'),
     )
-    session.add_all([HardwareType(type=t,description=d) for t,d in _HWTYPES])
+    session.add_all([HardwareType(id=t,description=d) for t,d in _HWTYPES])
 
 def popHardware(session):
-    root=Hardware(type='rig',name='Tom\'s Rig')
+    root=Hardware(type_id='rig',name='Tom\'s Rig')
     session.add(root)
     session.commit()
 
-    chamber=Hardware(type='chamber',name='interface chamber',model='jim\'s',blueprint_id=None)
+    chamber=Hardware(type_id='chamber',name='interface chamber',Properties={'model':'jim\'s'})
     session.add(chamber)
 
-    patchPipette=Hardware(type='pipette',name='patch pipette',model='BF150-110-10',manufacturer='Sutter Instrument')
-    iuepPipette=Hardware(type='pipette',name='iuep pipette',model='3-000-203-G/X',manufacturer='Drummond Scientific')
+    patchPipette=Hardware(type_id='pipette',name='patch pipette',Properties={'model':'BF150-110-10','manufacturer':'Sutter Instrument'})
+    iuepPipette=Hardware(type_id='pipette',name='iuep pipette',Properties={'model':'3-000-203-G/X','manufacturer':'Drummond Scientific'}) #FIXME is this not a 'type'
     session.add_all([patchPipette,iuepPipette])
 
-    esp300=Hardware(Parent=root,type='motion controller/driver',name='ESP300')
+    esp300=Hardware(parent_id=root,type_id='motion controller/driver',name='ESP300')
     session.add(esp300)
-    digidata=Hardware(Parent=root,type='digitizer',name='Digidata 1322A',unique_id='105309')
+    digidata=Hardware(parent_id=root,type_id='digitizer',name='Digidata 1322A',Properties={'unique_id':'105309'})
     session.add(digidata)
-    session.add(Hardware(Parent=root,type='digitizer',name='nidaq',model='NI PCIe-6259',unique_id='0x138FADB'))
+    session.add(Hardware(parent_id=root,type_id='digitizer',name='nidaq',Properties={'model':'NI PCIe-6259','unique_id':'0x138FADB'}))
     session.commit()
     
     #wierd, since these can also be controlled directly, but I guess that ok?
-    session.add(Hardware(Parent=esp300,type='actuator',name='espX',unique_id='B12 9463'))
-    session.add(Hardware(Parent=esp300,type='actuator',name='espY',unique_id='B08 2284'))
-    session.add(Hardware(Parent=digidata,type='amplifier',name='mc1',model='Multiclamp 700B',unique_id='00106956'))
-    session.add(Hardware(Parent=digidata,type='amplifier',name='mc2',model='Multiclamp 700B',unique_id='00106382'))
+    session.add(Hardware(parent_id=esp300,type_id='actuator',name='espX',Properties={'unique_id':'B12 9463'})) #FIXME naming
+    session.add(Hardware(parent_id=esp300,type_id='actuator',name='espY',Properties={'unique_id':'B08 2284'}))
+    session.add(Hardware(parent_id=digidata,type_id='amplifier',name='mc1',Properties={'model':'Multiclamp 700B','unique_id':'00106956'}))
+    session.add(Hardware(parent_id=digidata,type_id='amplifier',name='mc2',Properties={'model':'Multiclamp 700B','unique_id':'00106382'}))
     session.commit()
 
-    amp1=session.query(Hardware).filter_by(unique_id='00106956')[0]
-    session.add(Hardware(Parent=amp1,type='headstage',name='hs 0 (left)', unique_id='115054')) #FIXME needs to go via bnc, there has GOT to be a better way?
-    session.add(Hardware(Parent=amp1,type='headstage',name='hs 1 (right)', unique_id='95017')) #so the bnc doesn't add anything because it doesn't propagate or constrain pysical reality
+    amp1=session.query(Hardware).filter_by(name='mc1')[0]
+    session.add(Hardware(parent_id=amp1,type_id='headstage',name='hs 0 (left)',Properties={'unique_id':'115054'})) #FIXME needs to go via bnc, there has GOT to be a better way?
+    session.add(Hardware(parent_id=amp1,type_id='headstage',name='hs 1 (right)',Properties={'unique_id':'95017'})) #so the bnc doesn't add anything because it doesn't propagate or constrain pysical reality
     session.commit()
     #basically, make sure reality matches what the computer thinks it is, could make a self test for that asking user to hit 0 and then hit 1?
     #good old corrispondence problems
 
     nidaq=session.query(Hardware).filter_by(name='nidaq')[0]
-    session.add(Hardware(Parent=nidaq,type='led',name='470',model='M470L2',unique_id='M00277763'))
+    session.add(Hardware(parent_id=nidaq,type_id='led',name='470',Properties={'model':'M470L2','unique_id':'M00277763'}))
     session.commit()
 
 def popReagentType(session):

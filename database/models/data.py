@@ -16,7 +16,7 @@ class Protocol:
 class DataInterface: #TODO this should be a gateway for in database and database data that DOESNT persist
     """common interface for all data that get's passed on to analysis""" #FIXME move to analysis?
     #def __init__(self,source=None,scalar=None,array=None,prefix=None,unit=None,prefixunit=None,mantissa=None,hardware_id=None):
-    def __init__(self,source=None,value=HALP,prefix=None,unit=None,prefixunit=None,mantissa=None,hardware_id=None):
+    def __init__(self,source=None,value=None,prefix=None,unit=None,prefixunit=None,mantissa=None,hardware_id=None):
         #TODO TODO if we just think of everything as a timeserries of scalars then imaging is a type of
             #time serries that has a particular structure imposed on the channels
             #the relationship between channels should be generalizeable
@@ -158,11 +158,11 @@ class DataFileMetaData(Base): #FIXME naming
     @validates('url','filename','metadatasource_id','dateTime','value','abs_error')
     def _wo(self, key, value): return self._write_once(key, value)
 
-    def __init__(self,value,DataFile=None,MetaDataSource=None,abs_error=None,dateTime=None,metadatasource_id=None,url=None,filename=None):
+    def __init__(self,value,DataFile=None,metadatasource_id=None,abs_error=None,dateTime=None,url=None,filename=None):
         self.dateTime=dateTime
         self.url=url
         self.filename=filename
-        self.metadatasource_id=metadatasource_id
+        self.metadatasource_id=int(metadatasource_id)
         self.value=value
         self.abs_error=abs_error
         if DataFile:
@@ -171,7 +171,6 @@ class DataFileMetaData(Base): #FIXME naming
                 self.filename=DataFile.filename
             else:
                 raise AttributeError
-        self.AssignID(MetaDataSource)
     def __repr__(self):
         sigfigs=''
         error=''
@@ -224,6 +223,7 @@ class File(Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces 
     mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
     filename=Column(String,primary_key=True)
     creationDateTime=Column(DateTime,default=datetime.now)
+    ident=Column(String) #used for inheritance
     @property
     def filetype(self):
         return self.filename.split('.')[-1]
@@ -238,7 +238,7 @@ class File(Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces 
     def checkExists(self): #TODO
         URL_STAND.ping(self.full_url)
 
-    def __init__(self,filename,url=None,creationDateTime=None):
+    def __init__(self,filename=None,url=None,creationDateTime=None): #args could be useful... for conveying nullable=False or primary_key...
         self.url=URL_STAND.urlClean(str(url))
         self.filename=filename
 
@@ -260,8 +260,8 @@ class DataFile(File): #data should be collected in the scope of an experiment
     filename=Column(String,primary_key=True,autoincrement=False)
     __table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
     datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),nullable=False)
-    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
     datafilesource=relationship('DataFileSource',uselist=False) #backref=backref('datafiles'),
+    experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
     __mapper_args__={'polymorphic_identity':'datafile'}
 
     experiment=relationship('Experiment',backref='datafiles',uselist=False)
@@ -277,11 +277,11 @@ class DataFile(File): #data should be collected in the scope of an experiment
         cls.MetaData=DataFileMetaData
         return relationship(cls.MetaData)
 
-    def __init__(self,filename,url,datafilesource_id,experiment_id=None,Subjects=[], creationDateTime=None):
+    def __init__(self,filename=None,url=None,datafilesource_id=None,experiment_id=None,Subjects=(),creationDateTime=None): #FIXME kwargs vs args? kwargs should exist internally for the purposes of doccumentation, args should be used in the interface for when I don't want to type something over and over
         super().__init__(filename,url,creationDateTime)
-        datafilesource_id=int(datafilesource_id)
-        if experiment_id is not None:
-            self.experiment_id=experiment_id
+        self.datafilesource_id=int(datafilesource_id)
+        #if experiment_id is not None:
+        self.experiment_id=int(experiment_id) #enforcing the idea that datafiles must have experiments
         self.subjects.extend(Subjects) #TODO in the interface.py make it so that current subjects 'auto' fill?
 
 

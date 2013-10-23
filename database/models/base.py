@@ -12,15 +12,6 @@ class DefaultBase:
             raise ValueError('%s is write once!'%key)
         return value
 
-    def AssignID(self,cls): #XXX DEPREICATED
-        raise DeprecationWarning('please transition to __int__ or __str__')
-        if cls:
-            if cls.id:
-                setattr(self,'%s_id'%cls.__class__.__name__.lower(),cls.id)
-                #setattr(self,'%s_id'%cls.__tablename__,cls.id)
-            else:
-                raise AttributeError('%s has no id! Did you commit before referencing the instance directly?'*cls.__class__.__name__)
-
     def strHelper(self,depth=0,attr='id'): #FIXME naming?
         tabs='\t'*depth
         return '\n%s%s %s'%(tabs,self.__class__.__name__,getattr(self,attr))

@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData, HasCiteables, HasTreeStructure, HasExperiments
+from database.models.mixins import HasNotes, HasMetaData, HasCiteables, HasTreeStructure, HasExperiments, HasProperties
 
 ###-----------------------------------
 ###  Hardware inventory, aka rig parts
@@ -10,17 +10,17 @@ from database.models.mixins import HasNotes, HasMetaData, HasCiteables, HasTreeS
 class HardwareType(Base):
     id=Column(String(30),primary_key=True)
     description=Column(Text)
-    hardware=relationship('Hardware',primaryjoin='HardwareType.type==Hardware.type')
+    hardware=relationship('Hardware',backref=backref('type',uselist=False)) #primaryjoin='HardwareType.id==Hardware.type_id',
     def __init__(self,id=None,description=None):
         self.id=id
         self.description=description
     def __str__(self):
         return '%s'%self.id
     def __repr__(self):
-        return '\n%s\n%s%s'%(self.type, self.description, ''.join([thing.strHelper(1) for thing in self.things]))
+        return '\n%s\n%s%s'%(self.id, self.description, ''.join([thing.strHelper(1) for thing in self.hardware]))
 
 
-class Hardware(HasMetaData, HasExperiments, HasCiteables, HasProperties, HasTreeStructure, Base):
+class Hardware(HasMetaData, HasExperiments, HasCiteables, HasProperties, HasTreeStructure, Base): #FIXME unique_id back to the base? ehhhh???? tradeoffs
     #TODO implement something like has ontogeny for has tools and require an experiment
     #even if it is just sanity checking stuff there will be a record of stuff like the pull protocol
     #FIXME well, ideally you just want to keep track of when it changes because it is technically a protocol
@@ -28,8 +28,8 @@ class Hardware(HasMetaData, HasExperiments, HasCiteables, HasProperties, HasTree
     #constrain variance and variability...
     __tablename__='hardware'
     id=Column(Integer,primary_key=True)
-    name=Column(String,nullable=False) #FIXME unique or not unique? also pk? or move to properties
-    type_id=Column(String,ForeignKey('hardwaretype.type'),nullable=False) #FIXME this should be like keywords the point is to make life easier not to put up walls
+    name=Column(String,unique=True,nullable=False) #FIXME unique or not unique? also pk? or move to properties
+    type_id=Column(String,ForeignKey('hardwaretype.id'),nullable=False) #FIXME this should be like keywords the point is to make life easier not to put up walls
     parent_id=Column(Integer,ForeignKey('hardware.id')) #FIXME pipettes are hardware made by hardware using a certain protocol, looks similar to an experiment and so physical hierarchy and generative heirarchy are different, 
     tools=None #relationship('Hardware') #TODO many to one used w/ blueprint to make stuff, WARNING this approach is almost certainly overly complicated and should be scrapped #FIXME super cool, when you have a mutable tree structure then you CAN have ontogeny and part-whole between the same types of objects... does raise the issue that experiments are starting to look awefully similar to protocols in the sense that when pulling pipettes there isn't really any... wait, yes there is, the exact parameteres of the puller on that day... sweet!
     children=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
@@ -58,7 +58,7 @@ class Hardware(HasMetaData, HasExperiments, HasCiteables, HasProperties, HasTree
         except: pass
         try: children=''.join([s.strHelper(1) for s in self.children])
         except: pass
-        return '\n%s %s %s son of %s father to %s\n\twith Properties %s\n\tand MetaData %s'%(self.type.capitalize(),name,parent,children,self.properties,''.join([m.strHelper(1) for m in self.metadata_]))
+        return '\n%s %s son of %s father to %s\n\twith Properties %s\n\tand MetaData %s'%(self.type_id.capitalize(),name,parent,children,self.properties,''.join([m.strHelper(1) for m in self.metadata_]))
 
 
 class RigHistory(Base): #this is nice, but it seems better to get the current rig state and pull the relevant data and put it in cell metadata

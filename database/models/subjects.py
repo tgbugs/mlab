@@ -39,7 +39,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
     #part-whole relationships for all subjects use primarily for tracking variables in experiments
     #can be used for both mutually exclusive (death) relationships and coterminus (in vivo, groups)
     parent_id=Column(Integer,ForeignKey('subjects.id')) #FIXME move to 'HasTreeStructure'???
-    children=relationship('Subject',primaryjoin='Subject.id==Subject.parent_id',backref=backref('parent',uselist=False,remote_side=[id])) #FIXME remote()
+    children=relationship('Subject',primaryjoin='Subject.id==Subject.parent_id',backref=backref('parent',uselist=False,remote_side=[id])) #FIXME remote()? FIXME parent id set on child, then set again on children?
 
     #FIXME since we removed generating experiment id do we need to have a way to link say a slice to an experiment? and direcly link? yeah, we need a destructive version of has ontogeny; NO WE DO NOT, we can just query against ALL the subjects in the experiment and sort by type... but... maybe we do... to make it explicit... since we might not add them to the experiment while it is running... and ideally we want to limit any modification of the raw experiment (eg no adding subjects once endDateTime has been set) and we do still want to have a record of inputs and outputs made explicit
 
@@ -54,8 +54,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
     startDateTime=Column(DateTime,default=datetime.now)
     sDT_abs_error=Column(Interval)
     endDateTime=Column(DateTime)
-    #@validates('parent_id','generating_experiment_id','startDateTime','sDT_abs_error','endDateTime')
-    @validates('parent_id','startDateTime','sDT_abs_error','endDateTime') #FIXME FIXME
+    @validates('startDateTime','sDT_abs_error','endDateTime') #FIXME FIXME want to vaildate parent_id but sqlalchemy's default behavior writes it twice
     def _wo(self, key, value): return self._write_once(key, value)
 
     __mapper_args__ = {
@@ -71,7 +70,6 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
 
         #FIXME there might be a way to do this with try:except
         if parent_id:
-            #printD(self.parent_id)
             self.parent_id=int(parent_id) #FIXME could lead to some hard to follow errors... raise earlier?
         if reproduction_experiment_id:
             self.reproduction_experiment_id=int(reproduction_experiment_id)
@@ -116,7 +114,7 @@ class UsesJTI:
         return cls.__name__.lower()+'s'
     @declared_attr
     def id(cls):
-        super_id=super().__tablename__
+        super_id=super().__tablename__ #FIXME this is is unstable and only works if UsesJTI is right before Subject...
         #printD(super_id)
         return Column(Integer,ForeignKey('%s.id'%super_id),primary_key=True)
     @declared_attr
@@ -134,9 +132,11 @@ class HasGeneratingExperiment(UsesJTI): #single parent object TODO may want a no
         not writing down the exact values the scale gives is actually bad
         because you want some record verifying that you follow the protocol
     """
+    @declared_attr
     def generating_experiment_id(cls):
         return Column(Integer,ForeignKey('experiments.id'),nullable=False)
 
+    @declared_attr
     def generating_experiment(cls):
         #generating experiments should be what 'defines' certain properties
         #there won't be a generated from subjects here because there should only be a single parent
@@ -145,9 +145,10 @@ class HasGeneratingExperiment(UsesJTI): #single parent object TODO may want a no
         return relationship('Experiment',backref=backref('generated_%s'%ctab)
                             ,uselist=False)
 
-    def parent_id(cls):
+    #@declared_attr
+    #def parent_id(cls): #FIXME conflicts with parent_id set in Subject :/
         #all subjects have parent ids, HGE subjects must specify one
-        return Column(Integer,ForeignKey('subjects.id'),nullable=False)
+        #return Column(Integer,ForeignKey('subjects.id'),nullable=False)
 
     #FIXME without sub experiments we cannot automatically assign parent
     #based on the single subject of an experiment because experiments
@@ -155,14 +156,15 @@ class HasGeneratingExperiment(UsesJTI): #single parent object TODO may want a no
     #protocol that will correctly associate parent-child, I think I already
     #have this actually
     def __init__(self,**kwargs):
-        if kwargs['repro_experiment_id']:
-            raise AttributeError('repro and generating are mutually exclusive,'
-                                 ' and if your organism is reproducing via a'
-                                 'very specific protocol, then that\'s just'
-                                 'weird. To fix remove either HasOntogeny'
-                                 'or HasGeneratingExperiment from mixins')
-        if kwargs['generating_experiment_id']:
-            self.generating_experiment_id=kwargs.popitem('generating_experiment_id')
+        #removed the check against repo_experiment_id becasue sqlalchemy catches the overlapping fks
+        #and thus prevents the conflict
+        try:
+            if kwargs['generating_experiment_id']:
+                self.generating_experiment_id=int(kwargs.pop('generating_experiment_id'))
+        except KeyError:
+            pass #this will catch on insert due to not null constraint
+            #raise AttributeError('%s must have a generating_experiment_id!'%self.__class__.__name__)
+        super().__init__(**kwargs)
 
 #
 #FIXME figure out some way to have HGE be default for all objects except those w/ HO??? seesm wrong
@@ -178,31 +180,34 @@ class HasOntogeny(UsesJTI): #FIXME naming to make it clear how this works w/ gen
     def repro_experiment_id(cls): #FIXME naming
         #TODO check that the exptype is right?
         return Column(Integer,ForeignKey('experiments.id'))
+    @declared_attr
     def repro_experiment(cls):
-        return relationship('Experiment',backref=backref('generated_subjects'),
+        ctab=cls.__tablename__
+        return relationship('Experiment',backref=backref('repro_%s'%ctab),
                             uselist=False)
     @declared_attr
     def ontpars(cls): #ontogenetic parents
+        sctab='subjects'#super().__tablename__ #FIXME
         ctab=cls.__tablename__
         cname=cls.__name__
-        return relationship(cname,secondary='%s_experiments'%ctab,primaryjoin=
-                '%s.repro_experiment_id==%s_experiments.c.experiments_id'%(cname,ctab),
-                secondaryjoin= '%s.id==%s_experiments.c.%s_id,'%(cname,ctab,ctab), #FIXME will break for mouse
+        return relationship(cname,secondary='%s_experiments'%sctab,primaryjoin=
+                '%s.repro_experiment_id==%s_experiments.c.experiments_id'%(cname,sctab),
+                secondaryjoin='%s.id==%s_experiments.c.%s_id'%(cname,sctab,sctab), #FIXME will break for mouse
                 backref='offspring') #due to lack of mice_experiments table >_<
     @validates('repro_experiment_id')
     def _wo(self, key, value): return self._write_once(key, value)
     def __init__(self,**kwargs):
-        if kwargs['generating_experiment_id']:
-            raise AttributeError('repro and generating are mutually exclusive,'
-                                 ' and if your organism is reproducing via a'
-                                 'very specific protocol, then that\'s just'
-                                 'weird. To fix only have one of HasOntogney'
-                                 'or HasGeneratingExperiment from mixins')
-        if kwargs['repro_experiment_id'] is not None:
-            self.repro_experiment_id=int(kwargs.popitem('repro_experiment_id'))
+        #removed the check against repo_experiment_id becasue sqlalchemy catches the overlapping fks
+        #and thus prevents the conflict
+        try:
+            if kwargs['repro_experiment_id'] is not None:
+                self.repro_experiment_id=int(kwargs.pop('repro_experiment_id'))
+        except KeyError:
+            pass #will catch like usual when the column is null, making the errors consistent
         super().__init__(**kwargs)
+            #raise Warning('%s has no parents, do you want this?'%self.__class__.__name__)
 
-class HasSexOntogeny(HasOntogney): #TODO composite subjects can have sex ontogoeny w/o having a sex
+class HasSexOntogeny(HasOntogeny): #TODO composite subjects can have sex ontogoeny w/o having a sex
     @property
     def sire(self):
         return [m for m in self.ontpars if m.sex_id == 'm'][0]
@@ -246,7 +251,7 @@ class HasLocation(UsesJTI): #FIXME may not need JTI on this one in particular...
         return Column(Integer,ForeignKey('locations.id'))
     @declared_attr
     def location(cls):
-        return relationship('Location',primaryjoin='%s.location_id==Location.id'%cls.__name__),
+        return relationship('Location',primaryjoin='%s.location_id==Location.id'%cls.__name__,
                             backref=backref('%s'%cls.__tablename__),uselist=False)
     def __init__(self,**kwargs):
         try:
@@ -268,9 +273,9 @@ class NewSubjectType(UsesJTI, Subject):
 class Litter(HasSexOntogeny, Subject):
     @property
     def member_sex_count(self): #FIXME optimize some day
-        return {key:len([m for m in self.members if m.sex_id=key]) for key in ['m','f','u']} #FIXME get all sex_ids, also, best format or no?
+        return {key:len([m for m in self.members if m.sex_id is key]) for key in ['m','f','u']} #FIXME get all sex_ids, also, best format or no?
     def member_sex_left(self): #FIXME optimize some day
-        return {key:len([m for m in self.members if m.sex_id=key and not m.endDateTime]) for key in ['m','f','u']} #FIXME get all sex_ids, also, best format or no?
+        return {key:len([m for m in self.members if m.sex_id is key and not m.endDateTime]) for key in ['m','f','u']} #FIXME get all sex_ids, also, best format or no?
     @property
     def remaining(self):
         return [m for m in self.members if not m.endDateTime]
@@ -291,8 +296,8 @@ class Mouse(HasSex, HasGenetics, HasLocation, Subject):
             return self.endDateTime-self.startDateTime #FIXME uncertainty
         else:
             return datetime.now()-self.startDateTime #uncertainty plox
-    def __init__(self,**kwargs):
-        super().__init__(**kwargs)
+    #def __init__(self,**kwargs):
+        #super().__init__(**kwargs)
 
 
 class Slice(HasGeneratingExperiment, Subject): #FIXME slice should probably be a subject
@@ -335,5 +340,6 @@ class Sample(HasGeneratingExperiment, Subject):
     #it will have a literal part-whole parent and a generating subject that are the same...
     pass
 
-class StrangComingIntoBeing(HasOntogeny, HasGeneratingExperiment, Subject):
-    pass
+#is broken as expected, fortunately sqlalchemy catches it for us w/ the multiple fks
+#class StrangComingIntoBeing(HasOntogeny, HasGeneratingExperiment, Subject):
+    #pass

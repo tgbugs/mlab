@@ -12,6 +12,7 @@
 10. check to see where I actually need primaryjoin in relationships and where I can just use the foreign_keys option on relaitonship http://docs.sqlalchemy.org/en/rel_0_8/orm/relationships.html#relationships-api
 11. relationships, change remote_side to remote() annotation inside of primaryjoin
 12. import logging
+13. make args based interfaces for regular use that don't require typing the kwargs every time
 
 ----------main.py
 #TODO repeated func calls: itertools repeatfunc starmap

@@ -1,5 +1,6 @@
 from database.models import *
 from database.queries import hasKVPair
+from IPython import embed
 
 import numpy as np
 
@@ -125,69 +126,52 @@ class t_people(TEST):
                             FirstName=fns[i],
                             MiddleName=mns[i],
                             LastName=lns[i],
-                            Gender=genders[i],
-                            Role=roles[i],
                             neurotree_id=ntids[i],
                             Birthdate=birthdates[i]) for i in range(8,num)]
         self.records+=[Person(FirstName=fns[i],
                             MiddleName=mns[i],
                             LastName=lns[i],
-                            Gender=genders[i],
-                            Role=roles[i],
                             neurotree_id=ntids[i],
                             Birthdate=birthdates[i]) for i in range(1)]
         self.records+=[Person(PrefixName=pfns[i],
                             MiddleName=mns[i],
                             LastName=lns[i],
-                            Gender=genders[i],
-                            Role=roles[i],
                             neurotree_id=ntids[i],
                             Birthdate=birthdates[i]) for i in range(1,2)]
         self.records+=[Person(PrefixName=pfns[i],
                             FirstName=fns[i],
                             LastName=lns[i],
-                            Gender=genders[i],
-                            Role=roles[i],
                             neurotree_id=ntids[i],
                             Birthdate=birthdates[i]) for i in range(2,3)]
         self.records+=[Person(PrefixName=pfns[i],
                             FirstName=fns[i],
                             MiddleName=mns[i],
-                            Gender=genders[i],
-                            Role=roles[i],
                             neurotree_id=ntids[i],
                             Birthdate=birthdates[i]) for i in range(3,4)]
         self.records+=[Person(PrefixName=pfns[i],
                             FirstName=fns[i],
                             MiddleName=mns[i],
                             LastName=lns[i],
-                            Role=roles[i],
                             neurotree_id=ntids[i],
                             Birthdate=birthdates[i]) for i in range(4,5)]
         self.records+=[Person(PrefixName=pfns[i],
                             FirstName=fns[i],
                             MiddleName=mns[i],
                             LastName=lns[i],
-                            Gender=genders[i],
                             neurotree_id=ntids[i],
                             Birthdate=birthdates[i]) for i in range(5,6)]
         self.records+=[Person(PrefixName=pfns[i],
                             FirstName=fns[i],
                             MiddleName=mns[i],
                             LastName=lns[i],
-                            Gender=genders[i],
-                            Role=roles[i],
                             Birthdate=birthdates[i]) for i in range(6,7)]
         self.records+=[Person(PrefixName=pfns[i],
                             FirstName=fns[i],
                             MiddleName=mns[i],
                             LastName=lns[i],
-                            Gender=genders[i],
-                            Role=roles[i],
                             neurotree_id=ntids[i]) for i in range(7,8)]
 
     def query(self):
-        #print([p.Gender for p in self.session.query(Person)])
         printD([p for p in self.session.query(Person)])
 
 ###------
@@ -251,7 +235,7 @@ class t_litters(TEST):
             conception=exp.startDateTime+durd2
             return conception+timedelta(days)
 
-        self.records=[Litter(generating_experiment_id=mr,startDateTime=getBD(mr)) for mr in mrs.records]
+        self.records=[Litter(repro_experiment_id=mr,startDateTime=getBD(mr)) for mr in mrs.records]
     def add_members(self):
         mice=[] #FIXME there has to be a better way
         #litter_sizes=np.random.randint(6,20,self.num) #randomize litter size
@@ -264,11 +248,9 @@ class t_litters(TEST):
         #self.session.add_all(mice)
         strain=self.session.query(Strain)[0] #FIXME
         for lit,i in zip(self.records,range(self.num)):
-            lit.children.extend([Mouse(generating_experiment_id=lit.generating_experiment_id,sex_id='u',strain_id=strain,startDateTime=lit.startDateTime) for i in range(litter_sizes[i])])
-
+            lit.children.extend([Mouse(repro_experiment_id=lit.repro_experiment_id,sex_id='u',strain_id=strain,startDateTime=lit.startDateTime) for i in range(litter_sizes[i])])
         #VS
         #[self.session.add_all(self.records[i].make_members(litter_sizes[i])) for i in range(self.num)]
-
         self.session.commit()
 
 class t_strain(TEST):
@@ -291,10 +273,12 @@ class t_mice(TEST):
 
 class t_slice(TEST):
     def make_all(self):
-        preps=self.session.query(Experiment).filter(Experiment.type==self.session.query(ExperimentType).filter_by(name='acute slice prep')[0])
+        #preps=self.session.query(Experiment).filter(Experiment.type==self.session.query(ExperimentType).filter_by(name='acute slice prep'))[0]
+        preps=self.session.query(Experiment).join((ExperimentType,Experiment.type)).filter_by(name='acute slice prep').all()
         
         self.records=[]
         [[self.records.append(Slice(generating_experiment_id=prep,startDateTime=datetime.now()+timedelta(hours=i))) for i in range(self.num)] for prep in preps] #FIXME amplification of numbers
+        printD(self.records)
 
 
 class t_cell(TEST):
@@ -303,11 +287,10 @@ class t_cell(TEST):
         #printD([s.parent_id for s in slices])
         #patches=[p for p in self.session.query(Experiment).filter_by(type='acute slice prep')]
         patches=[p for p in self.session.query(Experiment).filter(Experiment.type==self.session.query(ExperimentType).filter_by(name='acute slice prep')[0])] #FIXME clearly this expeirment type is wrong and I havent been catching it FIXME FIXME
-        headstages=[h for h in self.session.query(Hardware).filter_by(type='headstage')][:2]
+        headstages=[h for h in self.session.query(Hardware).filter_by(type_id='headstage')][:2]
         self.records=[]
         z=0
         for p in patches:
-            printD(p)
             for i in range(z,len(slices)): #120 #FIXME pretty sure RI is broken here
                 s=slices[i]
                 for j in range(self.num):
@@ -348,7 +331,7 @@ class t_project(TEST):
     def add_people(self): #has to be called after commit :/
         people=t_people(self.session,100)
         #HRM only queries can leverage the power of .filter
-        pis=[pi for pi in self.session.query(Person).filter(Person.Role=='pi')]
+        pis=[pi for pi in self.session.query(Person)]
         pi_n=np.random.choice(len(pis),self.num)
 
         #people=[p for p in self.session.query(Person)]
@@ -496,14 +479,14 @@ class t_datafile(TEST):
         #for c1,c2 in zip(cells[:-1],cells[1:]):
         subjects=self.session.query(Cell).filter(Cell.experiments.any()).all()
         cells=self.session.query(Cell).all()
-        printD(cells)
+        #printD(cells)
         #printD([(subject,subject.experiments) for subject in subjects])
         for subject in subjects:
             #printD(subject.experiments)
             for url in repo.records:
                 bn='exp%s_subs_%s_'%(subject.experiments[0].id,subject.id)
                 name=bn+'%s.data'
-                data+=[DataFile(name%df,url,dfs,experiment_id=subject.experiments[0],
+                data+=[DataFile(name%df,url,dfs,subject.experiments[0],
                         Subjects=[subject]) for df in range(self.num)] #FIXME this use pattern is clearly broken
                 #data+=[DataFile(Repo=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiments[0].id,c1.id,c2.id,df),Experiment=c1.experiments[0],DataSource=ds,Subjects=[c1,c2]) for df in range(self.num)] 
         self.records=data
@@ -513,21 +496,21 @@ class t_dfmetadata(TEST):
     def make_all(self):
         ds=self.session.query(MetaDataSource)[0]
         self.records=[]
-        [self.records.extend([d.MetaData(i,DataFile=d,MetaDataSource=ds) for i in range(self.num)]) for d in self.session.query(DataFile)]
+        [self.records.extend([d.MetaData(i,DataFile=d,metadatasource_id=ds) for i in range(self.num)]) for d in self.session.query(DataFile)]
 ###-----------
 ###  inventory
 ###-----------
 
 class t_hardware(TEST):
     def setup(self):
-        self.amps=[Hardware(type='amplifier',unique_id='0012312'),Hardware(type='amplifier',unique_id='bob')]
+        self.amps=[Hardware(type_id='amplifier',name='lolwut',Properties={'unique_id':'0012312'}),Hardware(type_id='amplifier',name='rudubme',Properties={'unique_id':'bob'})]
         self.session.add_all(self.amps)
         self.session.flush()
 
     def make_all(self):
         self.records=[]
-        [[self.records.append(Hardware(type='headstage',unique_id='%s'%i, Parent=amp)) for i in range(2)] for amp in self.amps]
-        self.records.append(Hardware(type='digitizer',name='the void'))
+        [[self.records.append(Hardware(type_id='headstage',name='wut%s%s'%(amp.id,i),Properties={'unique_id':'%s%s'%(amp.id,i)}, parent_id=amp)) for i in range(2)] for amp in self.amps]
+        self.records.append(Hardware(type_id='digitizer',name='the void'))
         #printD(self.records) #FIXME this whole make all is broken
 
 

@@ -74,7 +74,7 @@ __all__.extend((
 
 from database.models.notes import *
 __all__.extend((
-        'Note',
+        #'Note',
 ))
 
 from database.models.people import *
