@@ -1,3 +1,4 @@
+-1. need to make simulated datasources/protocols to test stuff
 0. what if we treat File as a datasource? well, then we loose the temporal correlation... BUT if we could just bring that along, then the code for decoding the file wouldn't be analysis it would be like a controller... yes, try to implement this, it could be much more consistent and so long as we have the datetime all synced up and stuff like that... BUT BUT BUT then we need some unti (sub experiment? to hold all the associated data...)
 1. Finish cleaning up the rest of the comments
 2. Break my own classes out into their own files/folders
