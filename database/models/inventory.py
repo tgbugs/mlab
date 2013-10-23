@@ -20,22 +20,23 @@ class HardwareType(Base):
         return '\n%s\n%s%s'%(self.type, self.description, ''.join([thing.strHelper(1) for thing in self.things]))
 
 
-class Hardware(HasMetaData, HasExperiments, HasCiteables, HasProperties, Base):
+class Hardware(HasMetaData, HasExperiments, HasCiteables, HasProperties, HasTreeStructure, Base):
+    #TODO implement something like has ontogeny for has tools and require an experiment
+    #even if it is just sanity checking stuff there will be a record of stuff like the pull protocol
+    #FIXME well, ideally you just want to keep track of when it changes because it is technically a protocol
+    #which should remain fixed, even though protocols could be considered data the idea is to use them to
+    #constrain variance and variability...
     __tablename__='hardware'
     id=Column(Integer,primary_key=True)
     name=Column(String,nullable=False) #FIXME unique or not unique? also pk? or move to properties
     type_id=Column(String,ForeignKey('hardwaretype.type'),nullable=False) #FIXME this should be like keywords the point is to make life easier not to put up walls
     parent_id=Column(Integer,ForeignKey('hardware.id')) #FIXME pipettes are hardware made by hardware using a certain protocol, looks similar to an experiment and so physical hierarchy and generative heirarchy are different, 
-    tools=None #relationship('Hardware') #TODO many to one used w/ blueprint to make stuff, WARNING this approach is almost certainly overly complicated and should be scrapped
+    tools=None #relationship('Hardware') #TODO many to one used w/ blueprint to make stuff, WARNING this approach is almost certainly overly complicated and should be scrapped #FIXME super cool, when you have a mutable tree structure then you CAN have ontogeny and part-whole between the same types of objects... does raise the issue that experiments are starting to look awefully similar to protocols in the sense that when pulling pipettes there isn't really any... wait, yes there is, the exact parameteres of the puller on that day... sweet!
     children=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
 
-    #moving all these to properties
-    #unique_id=Column(String) #FIXME fuck, serial numbers
-    #model=Column(String) # item numbers for repeated use stuff (sorta like a reagent... :/)
-    #manufacturer=Column(String) #TODO oh look hooks into contacts
-    #TODO figure out what if this is NOT going in the database and can thus go in metadata instead
+    #moved all these to properties, unique_id, model, manufactuere
 
-    def __init__(self,type_id=None,parent_id=None,name=None,unique_id=None,model=None,manufacturer=None,Citeables=(),Properties={}):
+    def __init__(self,type_id=None,parent_id=None,name=None,Citeables=(),Properties={}):
         self.type_id=str(type_id)
         if self.parent_id is not None:
             self.parent_id=int(parent_id)

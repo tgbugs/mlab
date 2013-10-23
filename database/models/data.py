@@ -9,15 +9,32 @@ _plusMinus='\u00B1'
 class Protocol:
     pass
 
-
-###-------------
-###  DataSources
-###-------------
+###----------------------------------
+### The data interface for all things
+###----------------------------------
 
 class DataInterface: #TODO this should be a gateway for in database and database data that DOESNT persist
     """common interface for all data that get's passed on to analysis""" #FIXME move to analysis?
     #def __init__(self,source=None,scalar=None,array=None,prefix=None,unit=None,prefixunit=None,mantissa=None,hardware_id=None):
     def __init__(self,source=None,value=HALP,prefix=None,unit=None,prefixunit=None,mantissa=None,hardware_id=None):
+        #TODO TODO if we just think of everything as a timeserries of scalars then imaging is a type of
+            #time serries that has a particular structure imposed on the channels
+            #the relationship between channels should be generalizeable
+            #ideally based on either the experimental context and/or the spatial relation
+            #the relationship between channels largely has to do with which objects we are trying to
+            #associate them with and the corelated noise between them
+            #for example ICA will naievely assign signals to sources
+            #spatial structure is also important for electrode arrays and tetrodes, but only the _relative_
+            #position AKA the indexing of the channels as long as that is consistent at each time step
+            #then we're good to go
+
+            #we tend to exploit our ability to hold change in our head to view multiple channels over time
+            #specifically for data that has spatial structure
+
+            #magnification, um/pixel stuff like that... are all that metadata...
+            
+            #How to preserve the spatial structure of the data...
+
         self.source=source #TODO this should be the original object that the thing came from
         #zero order tensor #how nearly everything is actually measured (2photon w/ scanning laser even)
 
@@ -55,6 +72,11 @@ class DataInterface: #TODO this should be a gateway for in database and database
     
 
 
+
+###-------------
+###  DataSources
+###-------------
+
 class MetaDataSource(Base): #FIXME naming #all raw data collect w/o sample rate goes here
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
     __tablename__='metadatasources'
@@ -80,7 +102,9 @@ class MetaDataSource(Base): #FIXME naming #all raw data collect w/o sample rate 
         self.hardware_id=int(hardware_id)
 
 
+###-----------------------------------------------------------
 ###  external data... somehow different in terms of process...
+###-----------------------------------------------------------
 
 class SoftwareChannel(Base):
     """Closely related to MetaDataSource"""
@@ -118,7 +142,6 @@ class DataFileSource(Base): #TODO think about how generalizing to other experime
 #for consistency all metadata tables should reside
 #in the namespace of their parent table
 #Thus DataFileMetaData is not exported via *
-
 
 class DataFileMetaData(Base): #FIXME naming
     __tablename__='datafiles_metadata'
@@ -264,4 +287,3 @@ class DataFile(File): #data should be collected in the scope of an experiment
 
 class InDatabaseData(Base): #TODO
     id=Column(Integer, primary_key=True)
-
