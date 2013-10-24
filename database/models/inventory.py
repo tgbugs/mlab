@@ -46,7 +46,7 @@ class Hardware(HasMetaData, HasExperiments, HasCiteables, HasProperties, HasTree
 
     def strHelper(self,depth=0):
         ts='\t'*depth
-        return '\n%s%s'%(ts,self.name)
+        return '%s%s'%(ts,self.name)
 
     def __repr__(self):
         name=None
@@ -58,7 +58,7 @@ class Hardware(HasMetaData, HasExperiments, HasCiteables, HasProperties, HasTree
         except: pass
         try: children=''.join([s.strHelper(1) for s in self.children])
         except: pass
-        return '\n%s %s son of %s father to %s\n\twith Properties %s\n\tand MetaData %s'%(self.type_id.capitalize(),name,parent,children,self.properties,''.join([m.strHelper(1) for m in self.metadata_]))
+        return '\n%s %s son of %s father to %s\n\twith Properties %s\n\tand MetaData\n%s'%(self.type_id.capitalize(),name,parent,children,self.properties,'\n'.join([m.strHelper(1) for m in self.metadata_]))
 
 
 class RigHistory(Base): #this is nice, but it seems better to get the current rig state and pull the relevant data and put it in cell metadata
@@ -97,7 +97,12 @@ class ReagentType(HasCiteables, Base):
 
     @property
     def currentLot(self): #assuming oldest first
-        return sorted(self.unusedLots, key=lambda lot: lot.startDateTime)[0] #oldest not used, might also try in place if it doesnt matter
+        if self.unusedLots:
+            return sorted(self.unusedLots, key=lambda lot: lot.startDateTime)[0] #oldest not used, might also try in place if it doesnt matter
+        else:
+            #raise Warning('You don\'t have any unused lots left! Did you forget to make them?!')
+            print('You don\'t have any unused lots left! Did you forget to make them?!')
+            return None
 
     def __repr__(self):
         return super().__repr__('name')

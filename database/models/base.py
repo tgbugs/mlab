@@ -14,7 +14,7 @@ class DefaultBase:
 
     def strHelper(self,depth=0,attr='id'): #FIXME naming?
         tabs='\t'*depth
-        return '\n%s%s %s'%(tabs,self.__class__.__name__,getattr(self,attr))
+        return '%s%s %s'%(tabs,self.__class__.__name__,getattr(self,attr,'no id, set this to primary key column'))
     def __int__(self): #MAGIC when called during __init__ for the simple cases
         #FIXME TODO make sure to override this for MetaData!
         if type(getattr(self,'id',None)) is int:
@@ -23,7 +23,7 @@ class DefaultBase:
             raise TypeError('%s has no id or id is not an int'%self.__class__.__name__)
             return None
     def __repr__(self,attr='id'):
-        return '\n%s %s'%(self.__class__.__name__,getattr(self,attr))
+        return '\n%s %s'%(self.__class__.__name__,getattr(self,attr,'no id, set this to primary key column'))
     def __str__(self):
         return '%s'%(self.__class__.__name__)
 

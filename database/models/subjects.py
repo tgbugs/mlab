@@ -21,7 +21,7 @@ class SubjectType(Base): #FIXME right now this isn't doing anything useful, coul
     id=Column(String,primary_key=True)
     subjects=relationship('Subject',primaryjoin='Subject.type_id==SubjectType.id',backref=backref('type',uselist=False))
     def __str__(self):
-        return id
+        return self.id
     def __init__(self,id,has_sex=None):
         self.id=id
         self.has_sexual_ontogeny=has_sex
@@ -47,7 +47,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
     #XXX NOTE XXX we do NOT need this for subjectcollection because generating_parent_id props via exp
     group_id=Column(Integer,ForeignKey('subjectgroup.id',use_alter=True,name='sg_fk')) #FIXME fuck, m-m on this? :/ subjects *could* belong to mupltiple identified groups, for example the jim group and the jeremy group
     #blinded group id?
-    location_id=Column(Integer,ForeignKey('locations.id'))
+    #location_id=Column(Integer,ForeignKey('locations.id'))
 
     #datetime data birth/death, time on to right/ time out of rig etc
     #other time points are probably actually metadata bools
@@ -210,10 +210,16 @@ class HasOntogeny(UsesJTI): #FIXME naming to make it clear how this works w/ gen
 class HasSexOntogeny(HasOntogeny): #TODO composite subjects can have sex ontogoeny w/o having a sex
     @property
     def sire(self):
-        return [m for m in self.ontpars if m.sex_id == 'm'][0]
+        if self.ontpars:
+            return [m for m in self.ontpars if m.sex_id == 'm'][0]
+        else:
+            print('This %s has no recorded father!'%self.__class__.__name__)
     @property
     def dam(self):
-        return [m for m in self.ontpars if m.sex_id == 'f'][0]
+        if self.ontpars: #FIXME need to require @ least a mother?
+            return [m for m in self.ontpars if m.sex_id == 'f'][0]
+        else:
+            print('This %s has no recorded mother!'%self.__class__.__name__)
     #@declared_attr
     #def sire(cls): #TODO
         #pass
@@ -273,12 +279,12 @@ class NewSubjectType(UsesJTI, Subject):
 class Litter(HasSexOntogeny, Subject):
     @property
     def member_sex_count(self): #FIXME optimize some day
-        return {key:len([m for m in self.members if m.sex_id is key]) for key in ['m','f','u']} #FIXME get all sex_ids, also, best format or no?
+        return {key:len([m for m in self.children if m.sex_id is key]) for key in ['m','f','u']} #FIXME get all sex_ids, also, best format or no?
     def member_sex_left(self): #FIXME optimize some day
-        return {key:len([m for m in self.members if m.sex_id is key and not m.endDateTime]) for key in ['m','f','u']} #FIXME get all sex_ids, also, best format or no?
+        return {key:len([m for m in self.children if m.sex_id is key and not m.endDateTime]) for key in ['m','f','u']} #FIXME get all sex_ids, also, best format or no?
     @property
     def remaining(self):
-        return [m for m in self.members if not m.endDateTime]
+        return [m for m in self.children if not m.endDateTime]
     @property
     def size(self): #FIXME just use len??
         return len(self.children)
@@ -306,11 +312,13 @@ class Slice(HasGeneratingExperiment, Subject): #FIXME slice should probably be a
         return self.startDateTime
     @property
     def dateTimeOut(self): #FIXME well, since I can't do that, how do I persist THIS (in type??)
-        exp=self.reproduction_experiment
+        exp=self.generating_experiment
         return exp.endDateTime
     @property
-    def thickness(self):
-        return [m for m in self.experiments[0].metadata_ if m.metadatasource.name=='trmSliceThickness'][0] #FIXME this ok?
+    def thickness(self): #FIXME
+        return None
+        #FIXME TODO using a dict doesn't work for sanity checks, need a per experiment sanity check table that matches the protocol values, either by association or something else, whatever the mechanism it needs to generalize to making sure hardware matches
+        return self.experiments[0].values_from_protocols['thickness'] #FIXME currently a sanity check against the protocol but no way to measure...
 
 
 class Cell(HasGeneratingExperiment, Subject):

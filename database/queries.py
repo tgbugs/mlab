@@ -1,4 +1,5 @@
 #from database.main import *
+import inspect as ins
 from database.models import *
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import object_session
@@ -39,4 +40,60 @@ def hasProperty(session,Object,key):
 
 def hasKVPair(session,Object,key,value):
     return session.query(Object).join((Object.Properties,Object.properties.local_attr)).filter(Object.Properties.key==key,Object.Properties.value==value)
+
+def queryAll(session):
+    from database import models
+    s=session
+    #[s.query(models.__dict__[a]).all() for a in models.__all__] #AWEYISS 
+    for a in models.__all__:
+        print(s.query(models.__dict__[a]).all())
+        try:
+            print(s.query(models.__dict__[a].MetaData).all())
+        except AttributeError:
+            pass
+
+def dirAll(session):
+    from database import models
+    s=session
+    #[s.query(models.__dict__[a]).all() for a in models.__all__] #AWEYISS 
+    things=models.__all__
+    things=[thing for thing in things]# if thing is not 'Sire' and thing is not 'Dam' and thing is not 'Mouse']
+    print(things)
+    for a in things:
+        try:
+            thing=s.query(models.__dict__[a]).all()
+            if thing:
+                print('---------------------%s---------------------\n\n'%thing[0])
+                dir_=[t for t in thing[0].__dir__() if t[0]!='_']
+                for attr in dir_:
+                    iat=getattr(thing[0],attr)
+                    if ins.isclass(iat):
+                        try:
+                            more_thing=session.query(iat).all()
+                        except:
+                            print(attr,'=',iat)
+                            continue
+                        if more_thing:
+                            mtdir=[t for t in more_thing[0].__dir__() if t[0]!='_']
+                            print('\t-----meta------------%s---------------------\n\n'%(more_thing[0]))
+                            for attr_ in mtdir:
+                                miat=getattr(more_thing[0],attr_)
+                                if ins.ismethod(miat):
+                                    print('\t',attr_,'=',miat())
+                                else:
+                                    print('\t',attr_,'=',miat)
+                            print('\t-----meta------------END---------------------\n\n')
+
+                    elif ins.ismethod(iat):
+                        print(attr,'=',iat())
+                    else:
+                        print(attr,'=',iat)
+        except: raise
+        #try:
+            #thing=s.query(models.__dict__[a].MetaData).all()
+            #if thing:
+                #dir_=[t for t in thing[0].__dir__() if t[0]!='_']
+                #[print(attr,'=',getattr(thing[0],attr)) for attr in dir_]
+        #except AttributeError: pass
+
 

@@ -158,13 +158,14 @@ class DataFileMetaData(Base): #FIXME naming
     @validates('url','filename','metadatasource_id','dateTime','value','abs_error')
     def _wo(self, key, value): return self._write_once(key, value)
 
-    def __init__(self,value,DataFile=None,metadatasource_id=None,abs_error=None,dateTime=None,url=None,filename=None):
-        self.dateTime=dateTime
+    def __init__(self,value,metadatasource_id=None,abs_error=None,dateTime=None,DataFile=None,url=None,filename=None):
+        #FIXME I think sqlalchemy is smart enough to add the metadata to the file without explicitly telling it
         self.url=url
         self.filename=filename
         self.metadatasource_id=int(metadatasource_id)
         self.value=value
         self.abs_error=abs_error
+        self.dateTime=dateTime
         if DataFile:
             if DataFile.url:
                 self.url=DataFile.url
@@ -172,11 +173,11 @@ class DataFileMetaData(Base): #FIXME naming
             else:
                 raise AttributeError
     def __repr__(self):
-        sigfigs=''
+        mantissa=''
         error=''
-        if self.sigfigs: sigfigs=self.sigfigs
+        if self.metadatasource.mantissa: mantissa='mantissa: %s'%self.metadatasource.mantissa
         if self.abs_error != None: error='%s %s'%(_plusMinus,self.abs_error)
-        return '%s %s %s %s %s'%(self.dateTime,self.value,self.datasource.strHelper(),sigfigs,error)
+        return '\n%s%s %s %s %s %s %s'%(self.url,self.filename,self.dateTime,self.value,self.metadatasource.strHelper(),mantissa,error) #TODO quantities/pint
 
 ###-----------------------------------------------------------------------
 ###  DataFiles and repositories for data stored externally (ie filesystem)
@@ -201,7 +202,7 @@ class Repository(Base):
         self.credentials_id=credentials_id
         self.assoc_program=assoc_program
         self.name=name
-        URL_STAND.ping(self.url)
+        URL_STAND.ping(self.url) #FIXME TODO probably need to check that we have write privs? esp if we want to save data collected using this system to track it eg for backups and stuff
         self.parent_url=parent_url
 
     def __str__(self):
@@ -209,6 +210,9 @@ class Repository(Base):
 
     def __repr__(self):
         return super().__repr__('url')
+    def strHelper(self,depth=0):
+        return super().strHelper(depth=depth,attr='url')
+
 
 
 class File(Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
@@ -236,11 +240,14 @@ class File(Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces 
     }
 
     def checkExists(self): #TODO
-        URL_STAND.ping(self.full_url)
+        #URL_STAND.ping(self.full_url)
+        print('TURN ME BACK ON YOU IDIOT')
 
     def __init__(self,filename=None,url=None,creationDateTime=None): #args could be useful... for conveying nullable=False or primary_key...
         self.url=URL_STAND.urlClean(str(url))
         self.filename=filename
+        #self.checkExists() #XXX come up with a better way to test fake file paths
+            
 
         if not creationDateTime: #FIXME implementation not complete
             URL_STAND.getCreationDateTime(self.full_url)

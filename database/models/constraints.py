@@ -13,6 +13,8 @@ class SI_PREFIX(Base): #Yes, these are a good idea because they are written once
     E=Column(Integer,nullable=False)
     def __repr__(self):
         return '%s'%(self.symbol)
+    def strHelper(self,depth=0):
+        super().strHelper(depth=depth,attr='symbol')
     
 
 class SI_UNIT(Base):
@@ -20,6 +22,9 @@ class SI_UNIT(Base):
     name=Column(String(15),nullable=False) #this is also a pk so we can accept plurals :)
     def __repr__(self):
         return '%s'%(self.symbol)
+    def strHelper(self,depth=0):
+        super().strHelper(depth=depth,attr='symbol')
+    
 
 
 class SEX(Base):
@@ -29,3 +34,6 @@ class SEX(Base):
     abbrev=Column(String(1),nullable=False,unique=True) #'m','f','u'
     def __repr__(self):
         return '\n%s %s %s'%(self.name,self.abbrev,self.symbol)
+    def strHelper(self,depth=0):
+        super().strHelper(depth=depth,attr='name')
+    

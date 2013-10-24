@@ -73,6 +73,7 @@ class TEST:
         pass
 
     def commit(self): #XXX now flush, but hey...
+        assert self.records, 'self.records is empty!!!!'
         self.session.add_all(self.records)
         self.session.flush()
 
@@ -277,16 +278,19 @@ class t_slice(TEST):
         preps=self.session.query(Experiment).join((ExperimentType,Experiment.type)).filter_by(name='acute slice prep').all()
         
         self.records=[]
-        [[self.records.append(Slice(generating_experiment_id=prep,startDateTime=datetime.now()+timedelta(hours=i))) for i in range(self.num)] for prep in preps] #FIXME amplification of numbers
+        [[self.records.append(Slice(parent_id=prep.subjects[0],generating_experiment_id=prep,startDateTime=datetime.now()+timedelta(hours=i))) for i in range(self.num)] for prep in preps] #FIXME amplification of numbers
         printD(self.records)
 
 
 class t_cell(TEST):
     def make_all(self):
-        slices=[s for s in self.session.query(Subject).filter_by(type_id='slice') if s.parent_id is not None]
+        slices=[s for s in self.session.query(Slice) if s.parent_id is not None]
+        assert slices, 'slices should not be empty here'
         #printD([s.parent_id for s in slices])
         #patches=[p for p in self.session.query(Experiment).filter_by(type='acute slice prep')]
-        patches=[p for p in self.session.query(Experiment).filter(Experiment.type==self.session.query(ExperimentType).filter_by(name='acute slice prep')[0])] #FIXME clearly this expeirment type is wrong and I havent been catching it FIXME FIXME
+        #patches=[p for p in self.session.query(Experiment).filter(Experiment.type==self.session.query(ExperimentType).filter_by(name='acute slice prep')[0])] #FIXME clearly this expeirment type is wrong and I havent been catching it FIXME FIXME
+        patches=self.session.query(Experiment).join((ExperimentType,Experiment.type)).filter_by(name='in vitro patch').all()
+        assert patches, 'patches should not be empty here'
         headstages=[h for h in self.session.query(Hardware).filter_by(type_id='headstage')][:2]
         self.records=[]
         z=0
@@ -294,7 +298,7 @@ class t_cell(TEST):
             for i in range(z,len(slices)): #120 #FIXME pretty sure RI is broken here
                 s=slices[i]
                 for j in range(self.num):
-                    self.records.extend([Cell(Hardware=[h],parent_id=s,Experiments=[p]) for h in headstages])
+                    self.records.extend([Cell(Hardware=[h],parent_id=s,Experiments=[p],generating_experiment_id=p) for h in headstages])
                 try:
                     if slices[i+1].parent_id != s.parent_id: #FIXME this should catch automatically when using session.add
                         z=i+1 #FIXME constraint!!!!
@@ -426,6 +430,27 @@ class t_sliceprep(TEST):
         self.session.commit()
         
 
+class t_patch(TEST):
+    def make_all(self):
+        project=self.session.query(Project)[0]
+        person=self.session.query(Person)[0]
+        #sucrose=self.session.query(Reagent).filter_by(type_id=1)[0]
+        exptype=self.session.query(ExperimentType).filter_by(abbrev='patch')[0]
+        self.records=[Experiment(type_id=exptype,project_id=project,person_id=person,Reagents=[],startDateTime=datetime.now()-timedelta(int(np.random.randint(1)))) for i in range(self.num)] #FIXME need to find a way to propagate mouse w/ RI
+    #def add_mice(self): #add slices?
+        #mice=self.session.query(Mouse).filter_by(sex_id='u')[:self.num]
+        ##mice=[s for s in hasKVPair(self.session,Mouse,'sex','u')]
+        #printD(len(mice))
+        #printD(len(self.records))
+        #np.random.shuffle(mice)
+        #for i in range(self.num):
+            #mice[i].experiment_id=self.records[i].id
+            #self.records[i].subjects.append(mice[i])
+        #self.session.commit()
+        
+
+
+
 
 ###------
 ###  data
@@ -486,8 +511,12 @@ class t_datafile(TEST):
             for url in repo.records:
                 bn='exp%s_subs_%s_'%(subject.experiments[0].id,subject.id)
                 name=bn+'%s.data'
-                data+=[DataFile(name%df,url,dfs,subject.experiments[0],
-                        Subjects=[subject]) for df in range(self.num)] #FIXME this use pattern is clearly broken
+                try:
+                    data+=[DataFile(name%df,url,dfs,subject.experiments[0],
+                            Subjects=[subject]) for df in range(self.num)] #FIXME this use pattern is clearly broken
+                except FileNotFoundError:
+                    printD('some file was not found')
+                    pass
                 #data+=[DataFile(Repo=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiments[0].id,c1.id,c2.id,df),Experiment=c1.experiments[0],DataSource=ds,Subjects=[c1,c2]) for df in range(self.num)] 
         self.records=data
 
@@ -573,13 +602,14 @@ def run_tests(session):
     p=t_patch(session,1) #FIXME you know it might be good to force a new exp rec when any of the variables changes... like the internal...? think think
 
     s=t_slice(session,4)
+    pa=t_patch(session,2)
     c=t_cell(session,5)
     #c2c=t_c2c(session) #no longer used
 
     d=t_datafile(session,5)#,2,1) #FIXME eating memory
     dfmd=t_dfmetadata(session,10) #as in 8 gigs of memory...
 
-    #session.commit()
+    session.commit()
 
 
     #l=t_litters(session,20) #FIXME another wierd error here... saying that I tried to add a mouse as a breeder twice... hrm...

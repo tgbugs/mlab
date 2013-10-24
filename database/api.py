@@ -123,6 +123,11 @@ class GetSoftwareChanStep(ExpStep):
     def getAssociatedSoftwareChannel(self): #FIXME Subject should somehow inherit df_type from group ?
         
 
+class BackupStep(ExpStep):
+    """ Step to initiate backup of datafiles or anything else. Probably best
+        used between subjects when drives are not being hit with writes. """
+    pass
+
 
 class MDSource:
     from database.models import MetaDataSource as MappedClass

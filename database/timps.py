@@ -5,7 +5,8 @@ from database.engines import *
 from database.queries import *
 from database.table_logic import *
 from sqlalchemy.orm import Session
-engine=pgTest(True)
+engine=pgTest(False)
 session=Session(engine)
 s=session
-embed()
+dirAll(s)
+#embed()

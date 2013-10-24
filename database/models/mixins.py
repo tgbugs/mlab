@@ -373,7 +373,10 @@ class Properties: #FIXME HasKeyValueStore
     key=Column(String(50),primary_key=True) #tattoo, eartag, name, *could* use coronal/sagital for slices, seems dubious... same with putting cell types in here... since those are technically results... #FIXME for some reason this accepts ints for a key... FIXME WATCH OUT for the type change on commit! it doesn't update the instace! make sure to expire them
     value=Column(String(50)) #if the strings actually need to be longer than 50 we probably want something else
     def __repr__(self):
-        return '%s %s {%s,%s}'%(self,self.parent_id,self.key,self.value)
+        return '\n%s %s {%s,%s}'%(self.parent_id,self.key,self.value)
+    def strHelper(self,depth=0):
+        tabs='\t'*depth
+        return '%s{%s,%s}'%(tabs,self.key,self.value)
 
 
 class HasProperties: #FIXME set this up to use hstore if postgres is detected
@@ -404,29 +407,32 @@ class HasTreeStructure:
     @property
     def rootParent(self): #FIXME probably faster to do this with a func to reduce queries
         if self.parent:
-            return parent.getRootParent()
+            return self.parent.rootParent
         else:
             return self
 
     @property
-    def lastChildren(self,allChilds=[]):
-        if not allChilds and self.children:
-            return lastChildren(self.children)
-        else:
+    def lastChildren(self):
+        def recurse(allChilds):
             new_allChilds=[]
             for child in allChilds:
                 try:
                     new_allChilds.extend(child.children)
                 except:
                     pass
-            if not new_allChilds:
+            if new_allChilds: #this prevents getting self.children again
+                return recurse(new_allChilds)
+            else:
                 return allChilds
-            return lastChildren(new_allChilds)
+        if self.children:
+            return recurse(self.children)
+        else:
+            return []
 
-    def nthChildren(self,n,allChilds=[]):
+    def nthChildren(self,n=0,allChilds=[]):
         if n:
             if not allChilds and self.children:
-                return nthChildren(n-1,self.children)
+                return self.nthChildren(n-1,self.children)
             else:
                 new_allChilds=[]
                 for child in allChilds:
@@ -434,7 +440,7 @@ class HasTreeStructure:
                         new_allChilds.extend(child.children)
                     except:
                         pass
-                return nthChildren(n-1,new_allChilds)
+                return self.nthChildren(n-1,new_allChilds)
         else:
             return allChilds
 

@@ -55,7 +55,8 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
             else:
                 self.endDateTime=dateTime
         else:
-            raise Warning('endDateTime has already been set!')
+            print('endDateTime has already been set!') #FIXME why do warnings not just warn!?
+            #raise RuntimeWarning('endDateTime has already been set!')
 
     def __init__(self,type_id=None,project_id=None,person_id=None,Reagents=(),Subjects=(),startDateTime=None,endDateTime=None):
         self.type_id=int(type_id)
