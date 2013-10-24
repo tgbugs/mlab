@@ -53,6 +53,7 @@ def queryAll(session):
             pass
 
 def dirAll(session):
+    """DUMP ALL THE THINGS"""
     from database import models
     s=session
     #[s.query(models.__dict__[a]).all() for a in models.__all__] #AWEYISS 
@@ -64,30 +65,31 @@ def dirAll(session):
             thing=s.query(models.__dict__[a]).all()
             if thing:
                 print('---------------------%s---------------------\n\n'%thing[0])
-                dir_=[t for t in thing[0].__dir__() if t[0]!='_']
-                for attr in dir_:
-                    iat=getattr(thing[0],attr)
-                    if ins.isclass(iat):
-                        try:
-                            more_thing=session.query(iat).all()
-                        except:
+                for subthing in thing:
+                    dir_=[t for t in subthing.__dir__() if t[0]!='_']
+                    for attr in dir_:
+                        iat=getattr(subthing,attr)
+                        if ins.isclass(iat):
+                            try:
+                                more_thing=session.query(iat).all()
+                            except:
+                                print(attr,'=',iat)
+                                continue
+                            if more_thing:
+                                for submore in more_thing:
+                                    mtdir=[t for t in submore.__dir__() if t[0]!='_']
+                                    print('\t-----meta------------%s---------------------\n\n'%(submore))
+                                    for attr_ in mtdir:
+                                        miat=getattr(submore,attr_)
+                                        if ins.ismethod(miat):
+                                            print('\t',attr_,'=',miat())
+                                        else:
+                                            print('\t',attr_,'=',miat)
+                                    print('\t-----meta------------END---------------------\n\n')
+                        elif ins.ismethod(iat):
+                            print(attr,'=',iat())
+                        else:
                             print(attr,'=',iat)
-                            continue
-                        if more_thing:
-                            mtdir=[t for t in more_thing[0].__dir__() if t[0]!='_']
-                            print('\t-----meta------------%s---------------------\n\n'%(more_thing[0]))
-                            for attr_ in mtdir:
-                                miat=getattr(more_thing[0],attr_)
-                                if ins.ismethod(miat):
-                                    print('\t',attr_,'=',miat())
-                                else:
-                                    print('\t',attr_,'=',miat)
-                            print('\t-----meta------------END---------------------\n\n')
-
-                    elif ins.ismethod(iat):
-                        print(attr,'=',iat())
-                    else:
-                        print(attr,'=',iat)
         except: raise
         #try:
             #thing=s.query(models.__dict__[a].MetaData).all()
