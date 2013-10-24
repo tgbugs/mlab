@@ -65,7 +65,7 @@ def dirAll(session):
             thing=s.query(models.__dict__[a]).all()
             if thing:
                 print('---------------------%s---------------------\n\n'%thing[0])
-                for subthing in thing:
+                for subthing in thing[:2]:
                     dir_=[t for t in subthing.__dir__() if t[0]!='_']
                     for attr in dir_:
                         iat=getattr(subthing,attr)
@@ -76,7 +76,7 @@ def dirAll(session):
                                 print(attr,'=',iat)
                                 continue
                             if more_thing:
-                                for submore in more_thing:
+                                for submore in more_thing[:2]:
                                     mtdir=[t for t in submore.__dir__() if t[0]!='_']
                                     print('\t-----meta------------%s---------------------\n\n'%(submore))
                                     for attr_ in mtdir:
