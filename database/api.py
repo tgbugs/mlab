@@ -15,6 +15,8 @@
 #it is hard to understand the logic of a list of measurements and analysis especially if something like a sanity check is not annotated as such
 #it would depend on the name given to the object...
 
+#FIXME ALL STEPS, EVEN THE MOST BASIC, ARE DATASORUCES, booleans saying 'this step is done!' based on the class name of the step
+
 class ExpStep:
     """ 
         Base class for all experiment steps
