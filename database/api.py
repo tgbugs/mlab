@@ -8,6 +8,13 @@
 #because we want to bind a sub component of 3
 #eg multiple df placeholders, the datafile and record datafile
 
+#FIXME fuck, it is rather obvious that steps have substeps... but this could be hard to persist?
+#FIXME also, datasources really do need to be reused...
+
+#TODO the step object in the database... should link... datasources, analysis, etc to the object... but that is already done...
+#it is hard to understand the logic of a list of measurements and analysis especially if something like a sanity check is not annotated as such
+#it would depend on the name given to the object...
+
 class ExpStep:
     """ 
         Base class for all experiment steps
@@ -31,7 +38,7 @@ class ExpStep:
         :meth:`.doStep`
     """
 
-    MappedClass=None
+    MappedClass=None #from database.models import thing as MappedClass
     ctrl_name=None
     prereqList=[]
 
@@ -68,32 +75,75 @@ class ExpStep:
         """
         raise NotImplementedError('You MUST implement this at the subclass level')
 
-    def doStep(self,Parent,autocommit=False): #the assertion that this data is about this object happens here... it is doccumented via the data not via the subject... TODO need to doccument MDSes...
+    def doStep(self,Parent=None,autocommit=False): #the assertion that this data is about this object happens here... it is doccumented via the data not via the subject... TODO need to doccument MDSes...
+        try:
+            log that the step happened successfully!
+        except:
+            log that the step failed hardcore!
+            raise FailError('oops that step failed! now you cannot continue because the coder is an idiot')
+        #TODO by default this sould log the event to something... but because these don't have experiments as default parents... waaiitttt...
         raise NotImplementedError('You MUST implement this at the subclass level')
         #FIXME ideally this step should raise an error if a variable being assigned will not persist
 
 
-class SanityCheckStep(ExpStep):
-    #make sure all the things are consistent, eg does this headstage ACTUALLY corrispond to IN 0??
+
+class SetupStep(ExpStep):
+    #step used as an interactive checklist
+    #should be possible to display the whole list
+    #and then go through them all...
     pass
+
+
+class SanityCheckStep(ExpStep): #FIXME should steps be allow to call other steps??!??! organizing by datasource makes sense but multiple different steps might use the same datasource!!!
+    #make sure all the things are consistent, eg does this headstage ACTUALLY corrispond to IN 0??
+    expected_value=None
+    allowed_error=None
+    def doStep(self,Parent,autocommit=False):
+        measured_value=self.getValue()
+        if allowed_error:
+            minimum = self.expected_value - self.allowed_error
+            maximum = self.expected_value + self.allowed_error
+            if minimum <= self.measured_value and self.measured_value <= maximum:
+                print('Sanity check passed!')
+                #TODO do something with DataContainer?
+            else:
+                raise ValueError('Sanity check failed!')
+        elif self.measured_value is not self.expected_value:
+            raise ValueError('Sanity check failed!')
+        else:
+            print('Sanity check passed!')
+            #TODO Parent.data.add(measured 
+    def getValue(self):
+        raise NotImplementedError('You MUST implement this at the subclass level')
+
+
 
 class AnalysisStep(ExpStep):
     #used for online analysis (and doccumenting it)
     #could also be used for offline analysis probably a good idea for doccumenting the version of the code and stuff
     #TODO set up a check at creation time that verifies that the analysis step has the data it will need
     from database.models import Analysis as MappedClass
+    def doStep(self,Parent,autocommit=False):
+        result=self.getResult()
+        #TODO Parent??? Parent.Results?!?!
     def getResult(self):
+        #self.session.query(GetTheDataNeeded)
+        #FIXME TODO AnalysisType should link against specific fields it is expecting?? need to work out the issue with tensor/timeserries data first
+        #basically should we go through the datainterface to get to analysis?
         pass
+
 
 class ChangeVariableStep(ExpStep):
     #move the microscope stage
     #set the mcc state
     #load a clx protocl #FIXME this may not go here, but we will see about that
-    pass
+    def doStep(self,Parent,autocommit=False):
+        self.ctrl.doSomeShit()
+        Parent.metadata_.add(well shit, this could be a boolean, but actually we probably want to record the old and new value...)
 
 
 class GetDataStep(ExpStep):
-    def doStep(self,Parent,autocommit=False):
+    def doStep(self,ParentorParents,autocommit=False): #FIXME collections of thigns??
         pass
 
 
@@ -154,7 +204,8 @@ class MDSource:
         """ adds the product of getCurrentValue and getAbsError to the session but does NOT commit by default"""
         value=self.getCurrentValue()
         abs_error=self.getAbsError()
-        self.session.add(Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error))
+        self.session.add(Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error)) #FIXME do we actually need parent here?
+        Parent.metadata_.add(Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error))
         #Parent.metadata_.append(Parent.MetaData(value,Parent,self.MetaDataSource,abs_error=abs_error)) #alt
         if autocommit:
             self.session.commit()

@@ -15,6 +15,7 @@
 12. import logging
 13. make args based interfaces for regular use that don't require typing the kwargs every time
 14. automatically back up saved datafiles between subjects, OR have a back up step
+15. epochs/intervals are another things that I kinda might want to deal with, very useful for the pharmacological bit...? technically they go in the metadata as a bool, the question is how to represent them... well bools should probably just go into the experiment timeline, how that fits with the timeline for timeserries data I will need to think about...
 
 ----------main.py
 #TODO repeated func calls: itertools repeatfunc starmap
