@@ -81,18 +81,193 @@ class Step: #fucking mess... back to thinking
         def writeThings(doneThings=()):
 
 
-class Step:
+class Step: #at the end of the day what we want is a list of classes that we can get to from a list of strings
     deps=[]
-    setters=[]
-    datasources=[]
-    analysisDatasources=[]
-    
+    datasources=[] #thiking ahead for when I get tensor datastructures worked out :/
+    setters=[] #this leads to a massive proliferation of code in the absense of a defined value, which I SUPPOSE could be defined by the step or could be pulled from somehwere like the database
+    setter_values=[] #FUCKING YUCK
+
+    def getValuesToSet(self):
+        pass
     def setValues(self):
         pass
     def getValues(self):
         pass
     def checkGottenAgainstSet(self):
         pass
+
+
+class Step: #FIXME this way of doing things is bad at recording get/set pairing for datasources :/
+    #should the datasource/eventsource or whatever implement the get/check/set?
+    #amusingly it looks like steps could inherit from datasources probably more flexible not to
+    @property
+    def name(self):
+        #FIXME add a way to explicity name classes if you want?
+        return self.__class__.__name__[4:]
+    dependencies=[] #this is used by ExpBase to validate the list of steps
+    #TODO should Steps check their OWN deps? or should ExpBase do that?
+    experiment_state_node=None #FIXME need to work on invalidating branches of trees...
+    def __init__(self,Experiment,Reader,Writer=None):
+        self.dataSource=self.DataSource(Reader,Writer)
+        self.experiment=Experiment
+    def do(self,writeTarget=None,readValue=None):
+        #FIXME don't handle deps here, handle those upstairs in BaseExp???
+        try:
+            if readValue: #output mode
+                self.dataSource.getValue(readValue)
+                self.dataSource.setValue()
+                self.dataSource.checkValue()
+            if writeTarget: #input mode
+                self.dataSource.setValue(writeTarget)
+            self.experiment.steprecord.append(experiment.steprecord(self.Step,True))
+            #the above line is technically logging... :/
+            self.experiment_state_node = True
+            return True
+        except:
+            self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
+            self.experiment_state_node = False
+            return False
+
+class BaseReadWriteData:
+    reader_name=None #aka ctrl_name #FIXME now though it seems more like a single function?!? :/ more code :/
+    Writer=None #MappedClass
+    def __init__(self,Reader):
+        def checkName(iCls,name):
+            return iCls if iCls.__class.__name__ == name else raise AttributeError('Names dont match!')
+        self.Reader=checkName(Reader,self.reader_name)
+    def getValue(self): #FIXME lots of bugs can come from the lack of mux here
+        """ Read a value from some input source, sets self.value """
+        self.value=self.Reader()
+        raise NotImplementedError('You MUST implement this at the subclass level')
+    def writeValue(self,writeTarget): #this should ALWAY be called FIXME Target or Targets?!???!
+        """ write the value to the database associated with the writeTarget
+            eg Experiment, Subject, Hardware, Reagent """
+        self.Writer(writeTarget,self.value)
+        raise NotImplementedError('You MUST implement this at the subclass level')
+class BaseSetValue(BaseReadWriteData):
+    setter_name=None #useful for 'set variable' style steps eg mcc set mode
+    def __init__(self,Reader,Setter):
+        super().__init__(Reader)
+        def checkName(iCls,name):
+            return iCls if iCls.__class.__name__ == name else raise AttributeError('Names dont match!')
+        self.Setter=checkName(Setter,self.setter_name)
+        self.expected_value=None
+        self.ev_error=None
+    def setValue(value,error=None): #this would be 'expected value' eg the weight on a scale or the x,y coords
+        raise NotImplementedError('You MUST implement this at the subclass level')
+        self.ev_error=error
+        self.expected_value=value #FIXME find a way to not duplicate this
+        self.Setter(value)
+    def checkValue(self,checkingFunction=lambda v: v):
+        """ Validate the measured value against the set/expected value
+            or validate using a checkingFunction
+        """
+        if self.ev_error:
+            minimum=self.expected_value - self.ev_error
+            maximum=self.expected_value + self.ev_error
+            if minimum >= self.value or self.value >= maximum:
+                raise ValueError('Expected %s +- %s got %s'%(self.expected_value,self.ev_error,self.value))
+        elif self.expected_value:
+            if self.value != self.expected_value
+                raise ValueError('Expected %s got %s'%(self.expected_value,self.value))
+        else:
+            if not checkingFunction(self.value): #amusing errors if v=0
+                raise ValueError('Check failed!')
+class BaseAnalysis: #aka i/o with a transformation in the middle
+    pass
+
+
+class BaseDataIO: #technically this is now a 'reusable data thing...' not yet a datasource
+    @property
+    def name(self):
+        return self.__class__.__name__[4:]
+    reader_name=None #aka ctrl_name #FIXME now though it seems more like a single function?!? :/ more code :/
+    setter_name=None #useful for 'set variable' style steps eg mcc set mode
+    Writer=None #useful for write database using orm steps eg MetaData
+    def __init__(self,Reader,Setter=None):
+        def checkName(iCls,name):
+            return iCls if iCls.__class.__name__ == name else raise AttributeError('Names dont match!')
+        self.Reader=checkName(Reader,self.reader_name)
+        self.Setter=checkName(Setter,self.setter_name)
+        #FIXME analysis can be shoved into this framework by having setter and reader be the same class :/
+        #but that stupidly inefficienty
+
+        self.expected_value=None
+        self.ev_error=None
+
+    def setValue(value,error=None): #this would be 'expected value' eg the weight on a scale or the x,y coords
+        raise NotImplementedError('You MUST implement this at the subclass level')
+        self.ev_error=error
+        self.expected_value=value #FIXME find a way to not duplicate this
+        self.Setter(value)
+
+    def getValue(self,analysis_value=None): #FIXME lots of bugs can come from the lack of mux here
+        """ Read a value from some input source, sets self.value """
+        #FIXME is it akward to pass in values as a function via reader!??! eg Reader=lambda: dumpdata()?
+        #instead of actually passing values??!?! eeeeeehhhhh as long as I hide the implementation
+        #FIXME but then the reader can't change at runtime...
+        self.value=analysis_value
+        if not self.value:
+            self.value=self.Reader() #the value could technically be anything... bool, real, tuple...
+        #self.Reader() could be what triggers the casscade of steps, but then we'd have to deal w/ fails
+        raise NotImplementedError('You MUST implement this at the subclass level')
+
+    def checkValue(self,checkingFunction=lambda v: v):
+        """ Validate the measured value against the set/expected value
+            or validate using a checkingFunction
+        """
+        if self.ev_error:
+            minimum=self.expected_value - self.ev_error
+            maximum=self.expected_value + self.ev_error
+            if minimum >= self.value or self.value >= maximum:
+                raise ValueError('Expected %s +- %s got %s'%(self.expected_value,self.ev_error,self.value))
+        elif self.expected_value:
+            if self.value != self.expected_value
+                raise ValueError('Expected %s got %s'%(self.expected_value,self.value))
+        else:
+            if not checkingFunction(self.value):
+                raise ValueError('Check failed!')
+
+    def transformValue(self,function=lambda value:value): #FIXME useful for live correction of outputs?
+        self.value=function(self.value)
+        raise NotImplementedError('You MUST implement this at the subclass level')
+
+    def writeValue(self,writeTarget): #this should ALWAY be called FIXME Target or Targets?!???!
+        """ write the value to the database associated with the writeTarget
+            eg Experiment, Subject, Hardware, Reagent """
+        self.Writer(writeTarget,self.value)
+        raise NotImplementedError('You MUST implement this at the subclass level')
+    
+    def do(self,writeTarget,set_value=None,set_error=None):
+        self.setValue(set_value)
+        self.writeValue(writeTarget)
+
+
+def things():
+    #get scalar data
+    #get tensor data
+    #get timeserries of the above
+    #get datafile
+    #get true/false
+    #get event
+    
+    #set value/variable
+
+    #write to database
+    
+    #check one value against another
+
+
+
+class DataFileSource: #the database entry PLUS how to record the datafile
+    
+
+
+
+class CheckpointStep:
+    #end of a protocol
+    #block of things that make it faster to do them all before eg setup
+    #auto generate from subjects, reagents and hardware/tools or other checkpoint steps
 
 
 class addNewSubjectStep: #??? instead of the pre/inter/post I use currently?
