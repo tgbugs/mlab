@@ -100,32 +100,29 @@ class Step: #at the end of the day what we want is a list of classes that we can
 class Step: #FIXME this way of doing things is bad at recording get/set pairing for datasources :/
     #should the datasource/eventsource or whatever implement the get/check/set?
     #amusingly it looks like steps could inherit from datasources probably more flexible not to
+    dataIO=None #import this
     @property
     def name(self):
         #FIXME add a way to explicity name classes if you want?
         return self.__class__.__name__[4:]
-    dependencies=[] #this is used by ExpBase to validate the list of steps
+    dependencies=['step','list'] #this is used by ExpBase to validate the list of steps
     #TODO should Steps check their OWN deps? or should ExpBase do that?
     experiment_state_node=None #FIXME need to work on invalidating branches of trees...
-    def __init__(self,Experiment,Reader,Writer=None):
-        self.dataSource=self.DataSource(Reader,Writer)
+    def __init__(self,Experiment,Controller,session):
         self.experiment=Experiment
-    def do(self,writeTarget=None,readValue=None):
+        self.io=self.dataIO(Controller,session)
+    def do(self,writeTarget=None,set_value=None,set_error=0,analysis_value=None,autocommit=False):
         #FIXME don't handle deps here, handle those upstairs in BaseExp???
         try:
-            if readValue: #output mode
-                self.dataSource.getValue(readValue)
-                self.dataSource.setValue()
-                self.dataSource.checkValue()
-            if writeTarget: #input mode
-                self.dataSource.setValue(writeTarget)
-            self.experiment.steprecord.append(experiment.steprecord(self.Step,True))
-            #the above line is technically logging... :/
+            self.io.do(writeTarget,set_value,set_error,analysis_value,autocommit)
+            self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
             self.experiment_state_node = True
+            print('[OK]')
             return True
         except:
             self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
             self.experiment_state_node = False
+            print('[!]')
             return False
 
 class BaseReadWriteData: #FIXME ideally we want to initialize all of these at the start?

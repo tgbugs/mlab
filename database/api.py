@@ -37,12 +37,12 @@ class BaseDataIO:
             (hopefully) has tables matching your mapped classes
 
         :meth:`.Persist`
-        :meth:`.doStep`
+        :meth:`.do` retunrs self.value
     """
 
+    #FIXME could make a factory function that takes the class variables and returns the class...
+    #the only issue is writeTarget can't be checked before hand :/
     MappedClass=None #from database.models import thing as MappedClass
-    writer_name=None #eg getattr(writeTarget,self.target_attr_name,value)
-    collection_name=None #eg metadata_ or something
     ctrl_name=None
 
     @property
@@ -79,6 +79,8 @@ class BaseDataIO:
         raise NotImplementedError('You MUST implement this at the subclass level')
 
 class Get(BaseDataIO):
+    MappedClass=None #from database.models import thing as MappedClass
+    ctrl_name=None
     getter_name=None #name of the function used to get stuff
     def __init__(self,Controller,session):
         super().__init__(Controller,session)
@@ -91,6 +93,11 @@ class Get(BaseDataIO):
         return self.value
 
 class GetWrite(Get):
+    MappedClass=None #from database.models import thing as MappedClass
+    ctrl_name=None
+    getter_name=None #name of the function used to get stuff
+    writer_name=None #eg getattr(writeTarget,self.writer_name)
+    collection_name=None #eg metadata_ or something
     def writeValue(self,writeTarget,autocommit=False):
         collection=getattr(writeTarget,self.collection_name)
         writer=getattr(writeTarget,self.writer_name)
@@ -103,6 +110,11 @@ class GetWrite(Get):
         return self.value
 
 class SetGetWriteCheck(GetWrite): #this is the basis for following protocols... eg print and input
+    MappedClass=None #from database.models import thing as MappedClass
+    ctrl_name=None
+    getter_name=None #name of the function used to get stuff
+    writer_name=None #eg getattr(writeTarget,self.writer_name)
+    collection_name=None #eg metadata_ or something
     setter_name=None #FIXME the name of the setting function
     def __init__(self,Controller,session):
         super().__init__(Controller,session)
@@ -121,23 +133,81 @@ class SetGetWriteCheck(GetWrite): #this is the basis for following protocols... 
         return self.value
 
 class Analysis(Get): #mostly for online stuff that won't be persisted which is really very few things
-    function=None #FIXME probably should be a from xyz import thing as function
-    def getValue(self,value=None):
-        self.value=value #FIXME how do we link this to the output...
+    MappedClass=None #from database.models import thing as MappedClass
+    ctrl_name=None
+    getter_name=None #name of the function used to get stuff
+    analysis_function=None #FIXME probably should be a from xyz import thing as function
+    def getValue(self,analysis_value=None):
+        self.value=analysis_value #FIXME how do we link this to the output...
         if not self.value:
             super().getValue() #FIXME make sure this sets self.value correctly
     def analysis(self):
-        self.value=self.function(self.value)
+        self.value=self.analysis_function(self.value)
     def do(self,analysis_value=None):
         self.getValue(analysis_value)
         self.analysis() #FIXME how to check these...
         return self.value
 
 class AnalysisWrite(Analysis,GetWrite): #datafiles should be opened via GetWrite or simply via Get
+    MappedClass=None #from database.models import thing as MappedClass
+    ctrl_name=None
+    getter_name=None #name of the function used to get stuff
+    writer_name=None #eg getattr(writeTarget,self.writer_name)
+    collection_name=None #eg metadata_ or something
+    function=None #FIXME probably should be a from xyz import thing as function
     def do(self,writeTarget,analysis_value=None):
         self.getValue(analysis_value)
         self.analysis() #FIXME how to check these...
         self.writeValue(writeTarget)
+        return self.value
+
+class DataIO(BaseDataIO): #IXCK ugly ugly might be nice for a factory :/ but is poorly constrained @do, so slow
+    MappedClass=None #from database.models import thing as MappedClass
+    ctrl_name=None
+    getter_name=None #name of the function used to get stuff
+    writer_name=None #eg getattr(writeTarget,self.writer_name)
+    collection_name=None #eg metadata_ or something
+    setter_name=None #FIXME the name of the setting function
+    check_function=None #FIXME :/ def check_function(self): return self.value
+    analysis_function=None #FIXME probably should be a from xyz import thing as function
+    def __init__(self,Controller,session):
+        super().__init__(Controller,session)
+        if getter_name:
+            self.getter=getattr(self.ctrl,self.getter_name) #FIXME allow override
+        if setter_name:
+            self.setter=getattr(self.ctrl,self.setter_name)
+    def setValue(self,set_value,error=0): #both value and expected value will be recoreded somehow...
+        self.expected_value=set_value
+        self.ev_error=error #allowed error
+        self.setter(self.expected_value)
+    def getValue(self,analysis_value=None):
+        self.value=analysis_value #FIXME how do we link this to the output...
+        if not self.value:
+            self.value=self.getter()
+    def checkValue(self):
+        if self.check_function:
+        self.check_function()
+    def analysis(self):
+        #FIXME need version control here... :/ so it is possible to track down errors
+        if self.analysis_function:
+            self.value=self.analysis_function(self.value)
+    def writeValue(self,writeTarget,autocommit=False):
+        collection=getattr(writeTarget,self.collection_name)
+        writer=getattr(writeTarget,self.writer_name)
+        collection.append(writer(MappedInstance,self.value)) #FIXME this gives some insight into array formats
+        if autocommit:
+            self.session.commit()
+    def do(self,writeTarget=None,set_value=None,set_error=0,analysis_value=None,autocommit=False):
+        if set_value: #FIXME handle lack of setter_name?
+            self.setValue(set_value,set_error) #TODO make sure that this will block properly
+        if analysis_value:
+            self.getValue(analysis_value)
+        else:
+            self.getValue()
+        self.analysis() #FIXME how to check these...
+        if writeTarget:
+            self.writeValue(writeTarget,autocommit)
+        self.checkValue() #check post write and THEN raise so that the bad value is recorded
         return self.value
 
 
