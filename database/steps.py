@@ -128,23 +128,32 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
             self.experiment_state_node = False
             return False
 
-class BaseReadWriteData:
+class BaseReadWriteData: #FIXME ideally we want to initialize all of these at the start?
+    from database.models import datasource as MappedClass #FIXME MappedAnalysis???
     reader_name=None #aka ctrl_name #FIXME now though it seems more like a single function?!? :/ more code :/
-    Writer=None #MappedClass
-    def __init__(self,Reader):
+    def __init__(self,Reader,session):
         def checkName(iCls,name):
             return iCls if iCls.__class.__name__ == name else raise AttributeError('Names dont match!')
         self.Reader=checkName(Reader,self.reader_name)
+        self.session=session
+        try:
+            self.MappedInstance=self.session.query(MappedClass).filter_by(name=self.name).one()
+        except NoResultFound:
+            self.Persist()
+
     def getValue(self): #FIXME lots of bugs can come from the lack of mux here
         """ Read a value from some input source, sets self.value """
         self.value=self.Reader()
         raise NotImplementedError('You MUST implement this at the subclass level')
+
     def writeValue(self,writeTarget): #this should ALWAY be called FIXME Target or Targets?!???!
         """ write the value to the database associated with the writeTarget
             eg Experiment, Subject, Hardware, Reagent """
-        self.Writer(writeTarget,self.value)
+        writer=writeTarget.Data
+        writeTarget.datas.append(writer(self.Source,value))
         raise NotImplementedError('You MUST implement this at the subclass level')
 class BaseSetValue(BaseReadWriteData):
+    #FIXME reader/setter should always be the same???
     setter_name=None #useful for 'set variable' style steps eg mcc set mode
     def __init__(self,Reader,Setter):
         super().__init__(Reader)
@@ -153,28 +162,28 @@ class BaseSetValue(BaseReadWriteData):
         self.Setter=checkName(Setter,self.setter_name)
         self.expected_value=None
         self.ev_error=None
-    def setValue(value,error=None): #this would be 'expected value' eg the weight on a scale or the x,y coords
+    def setValue(value,error=0): #this would be 'expected value' eg the weight on a scale or the x,y coords
         raise NotImplementedError('You MUST implement this at the subclass level')
         self.ev_error=error
         self.expected_value=value #FIXME find a way to not duplicate this
         self.Setter(value)
-    def checkValue(self,checkingFunction=lambda v: v):
+    def checkValue(self,checkingFunction=lambda v,ev,er: True if ev-er <= v <= ev+er else False):
         """ Validate the measured value against the set/expected value
             or validate using a checkingFunction
         """
-        if self.ev_error:
-            minimum=self.expected_value - self.ev_error
-            maximum=self.expected_value + self.ev_error
-            if minimum >= self.value or self.value >= maximum:
-                raise ValueError('Expected %s +- %s got %s'%(self.expected_value,self.ev_error,self.value))
-        elif self.expected_value:
-            if self.value != self.expected_value
-                raise ValueError('Expected %s got %s'%(self.expected_value,self.value))
-        else:
-            if not checkingFunction(self.value): #amusing errors if v=0
-                raise ValueError('Check failed!')
-class BaseAnalysis: #aka i/o with a transformation in the middle
-    pass
+        if not checkingFunction(self.value,self.expected_value,self.ev_error): #amusing errors if v=0
+            raise ValueError('Check failed!')
+
+class BaseAnalysis(BaseReadWrite): #aka i/o with a transformation in the middle
+    from somewhere.analysis import function as func
+    def getValue(self,value=None): #value for online analysis or to allow passing between analysis steps which all have writes
+        self.value=value
+        if not self.value:
+            super().getValue()
+    def analysis(self):
+        #self.input_value=self.value #FIXME need some way to connect outputs to inputs easily...
+        self.value=self.function(self.value)
+
 
 
 class BaseDataIO: #technically this is now a 'reusable data thing...' not yet a datasource

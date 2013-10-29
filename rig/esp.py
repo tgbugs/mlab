@@ -209,6 +209,9 @@ class espControl:
                     self.target=None
                     return self.cX,self.cY
 
+    def _setPos(self,x=None,y=None): #TODO alternate form use with *value
+        pass
+
     def setPos(self,pos): #this lets the output of getPos feed directly in to set pos FIXME may need BsetPos
         """1HW and/or 1HX block the newport's queue set the position of the newport to floats x,y""" 
         self.getPos() #need to do this first

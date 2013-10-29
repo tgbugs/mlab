@@ -17,7 +17,7 @@
 
 #FIXME ALL STEPS, EVEN THE MOST BASIC, ARE DATASORUCES, booleans saying 'this step is done!' based on the class name of the step
 
-class ExpStep:
+class BaseDataIO:
     """ 
         Base class for all experiment steps
         This should be extended for each type of step
@@ -41,24 +41,22 @@ class ExpStep:
     """
 
     MappedClass=None #from database.models import thing as MappedClass
+    writer_name=None #eg getattr(writeTarget,self.target_attr_name,value)
+    collection_name=None #eg metadata_ or something
     ctrl_name=None
-    prereqList=[]
 
     @property
     def name(self):
         #FIXME add a way to explicity name classes if you want?
         return self.__class__.__name__[4:]
 
-    def __init__(self,Controller,session,prereqsToCheck=[]):
-        #TODO using these steps it SHOULD be possible to reconstruct a timeline for each experiment
-        #and look at the temporal variance, good way to track experimenter performance
-        setToCheck=set(prereqsToCheck)
-        [raise KeyError('Missing Prerequisite!') for prerec in self.prereqList if prerec not in setToCheck]
+    def __init__(self,Controller,session): #FIXME controller could also be a MappedInstance?
         if Controller.__class__.__name__==self.ctrl_name:
-            self.controller_version=Controller.version #FIXME run a hash against the file find another way for external datafile soruces
+            self.controller_version=Controller.version #FIXME hash the file or something for external stuff
             #BIGGER FIXME doccumenting which version of the controller was used is now VITAL
             if not self.controller_version:
-                raise AttributeError('What are you doing not keeping track of what software you used! BAD SCIENTIST')
+                raise AttributeError('What are you doing not keeping track of'
+                                     ' what software you used! BAD SCIENTIST')
             self.ctrl=Controller
         else:
             raise TypeError('Wrong controller for this step!')
@@ -77,15 +75,84 @@ class ExpStep:
         """
         raise NotImplementedError('You MUST implement this at the subclass level')
 
-    def doStep(self,Parent=None,autocommit=False): #the assertion that this data is about this object happens here... it is doccumented via the data not via the subject... TODO need to doccument MDSes...
-        try:
-            log that the step happened successfully!
-        except:
-            log that the step failed hardcore!
-            raise FailError('oops that step failed! now you cannot continue because the coder is an idiot')
-        #TODO by default this sould log the event to something... but because these don't have experiments as default parents... waaiitttt...
+    def do(self):
         raise NotImplementedError('You MUST implement this at the subclass level')
-        #FIXME ideally this step should raise an error if a variable being assigned will not persist
+
+class Get(BaseDataIO):
+    getter_name=None #name of the function used to get stuff
+    def __init__(self,Controller,session):
+        super().__init__(Controller,session)
+        if getter_name:
+            self.getter=getattr(self.ctrl,self.getter_name) #FIXME allow override
+    def getValue(self):
+        self.value=self.getter()
+    def do(self):
+        self.getValue()
+        return self.value
+
+class GetWrite(Get):
+    def writeValue(self,writeTarget,autocommit=False):
+        collection=getattr(writeTarget,self.collection_name)
+        writer=getattr(writeTarget,self.writer_name)
+        collection.append(writer(MappedInstance,self.value)) #FIXME this gives some insight into array formats
+        if autocommit:
+            self.session.commit()
+    def do(self,writeTarget):
+        self.getValue()
+        self.writeValue(writeTarget)
+        return self.value
+
+class SetGetWriteCheck(GetWrite): #this is the basis for following protocols... eg print and input
+    setter_name=None #FIXME the name of the setting function
+    def __init__(self,Controller,session):
+        super().__init__(Controller,session)
+        if setter_name:
+            self.setter=getattr(self.ctrl,self.setter_name)
+    def setValue(self,set_value,error=0): #both value and expected value will be recoreded somehow...
+        self.expected_value=set_value
+        self.ev_error=error #allowed error
+        self.setter(self.expected_value)
+    def checkValue(self):
+        raise NotImplementedError('You MUST implement this at the subclass level')
+    def do(self,writeTarget,set_value):
+        self.setValue(set_value) #TODO make sure that this will block properly
+        super().do(writeTarget) #FIXME this needs to write value AND expected_value
+        self.checkValue() #check post write and THEN raise so that the bad value is recorded
+        return self.value
+
+class Analysis(Get): #mostly for online stuff that won't be persisted which is really very few things
+    function=None #FIXME probably should be a from xyz import thing as function
+    def getValue(self,value=None):
+        self.value=value #FIXME how do we link this to the output...
+        if not self.value:
+            super().getValue() #FIXME make sure this sets self.value correctly
+    def analysis(self):
+        self.value=self.function(self.value)
+    def do(self,analysis_value=None):
+        self.getValue(analysis_value)
+        self.analysis() #FIXME how to check these...
+        return self.value
+
+class AnalysisWrite(Analysis,GetWrite): #datafiles should be opened via GetWrite or simply via Get
+    def do(self,writeTarget,analysis_value=None):
+        self.getValue(analysis_value)
+        self.analysis() #FIXME how to check these...
+        self.writeValue(writeTarget)
+        return self.value
+
+
+
+
+
+def doStep(self,Parent=None,autocommit=False): #the assertion that this data is about this object happens here... it is doccumented via the data not via the subject... TODO need to doccument MDSes...
+    try:
+        log that the step happened successfully!
+    except:
+        log that the step failed hardcore!
+        raise FailError('oops that step failed! now you cannot continue because the coder is an idiot')
+    #TODO by default this sould log the event to something... but because these don't have experiments as default parents... waaiitttt...
+    raise NotImplementedError('You MUST implement this at the subclass level')
+    #FIXME ideally this step should raise an error if a variable being assigned will not persist
 
 
 
