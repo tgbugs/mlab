@@ -43,6 +43,7 @@ class BaseDataIO:
     #FIXME could make a factory function that takes the class variables and returns the class...
     #the only issue is writeTarget can't be checked before hand :/
     MappedClass=None #from database.models import thing as MappedClass
+    mappedClassPropertiesDict={} #things required by the database, eg datasource units
     ctrl_name=None
 
     @property
@@ -65,6 +66,12 @@ class BaseDataIO:
             self.MappedInstance=self.session.query(MappedClass).filter_by(name=self.name).one()
         except NoResultFound:
             self.Persist()
+    def checkVersion(self,thing,strict=False): #validate that the code has not changed
+        #TODO this should be handled at the level of the experiment
+        #hash the code of the thing #FIXME should this all be here or should it be tracked globally on startup?
+        if strict:
+            #hash the file that it came from and compare it to the previous hash
+        pass
 
     def Persist(self):
         """
@@ -163,12 +170,13 @@ class AnalysisWrite(Analysis,GetWrite): #datafiles should be opened via GetWrite
 
 class DataIO(BaseDataIO): #IXCK ugly ugly might be nice for a factory :/ but is poorly constrained @do, so slow
     MappedClass=None #from database.models import thing as MappedClass
+    mcKwargs={} #things required by the database, eg datasource units
     ctrl_name=None
     getter_name=None #name of the function used to get stuff
     writer_name=None #eg getattr(writeTarget,self.writer_name)
     collection_name=None #eg metadata_ or something
     setter_name=None #FIXME the name of the setting function
-    check_function=None #FIXME :/ def check_function(self): return self.value
+    check_function=None #FIXME checks are ONLY going to be written to experiments, so we can pull them out to steps? or even make them their own step akin to analysis? yeah, because checks often need to occur across multiple steps and longer stretches of time
     analysis_function=None #FIXME probably should be a from xyz import thing as function
     def __init__(self,Controller,session):
         super().__init__(Controller,session)
@@ -176,6 +184,14 @@ class DataIO(BaseDataIO): #IXCK ugly ugly might be nice for a factory :/ but is 
             self.getter=getattr(self.ctrl,self.getter_name) #FIXME allow override
         if setter_name:
             self.setter=getattr(self.ctrl,self.setter_name)
+        #TODO version checks
+
+    def Persist(self):
+        #self.MappedInstance=MappedClass(name=self.name,prefix=self.prefix,unit=self.unit,mantissa=self.mantissa,hardware_id=hardware_id)
+        self.MappedInstance=MappedClass(**self.mcKwargs)
+        self.session.add(self.MappedInstance)
+        self.session.commit()
+
     def setValue(self,set_value,error=0): #both value and expected value will be recoreded somehow...
         self.expected_value=set_value
         self.ev_error=error #allowed error
@@ -184,13 +200,11 @@ class DataIO(BaseDataIO): #IXCK ugly ugly might be nice for a factory :/ but is 
         self.value=analysis_value #FIXME how do we link this to the output...
         if not self.value:
             self.value=self.getter()
-    def checkValue(self):
-        if self.check_function:
+    def checkValue(self): #FIXME making check steps similar to analysis simplifies saving results
         self.check_function()
     def analysis(self):
         #FIXME need version control here... :/ so it is possible to track down errors
-        if self.analysis_function:
-            self.value=self.analysis_function(self.value)
+        self.value=self.analysis_function(self.value)
     def writeValue(self,writeTarget,autocommit=False):
         collection=getattr(writeTarget,self.collection_name)
         writer=getattr(writeTarget,self.writer_name)
@@ -204,10 +218,12 @@ class DataIO(BaseDataIO): #IXCK ugly ugly might be nice for a factory :/ but is 
             self.getValue(analysis_value)
         else:
             self.getValue()
-        self.analysis() #FIXME how to check these...
+        if self.analysis_function:
+            self.analysis() #FIXME how to check these...
         if writeTarget:
             self.writeValue(writeTarget,autocommit)
-        self.checkValue() #check post write and THEN raise so that the bad value is recorded
+        if self.check_function:
+            self.checkValue() #check post write and THEN raise so that the bad value is recorded
         return self.value
 
 

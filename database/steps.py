@@ -100,7 +100,13 @@ class Step: #at the end of the day what we want is a list of classes that we can
 class Step: #FIXME this way of doing things is bad at recording get/set pairing for datasources :/
     #should the datasource/eventsource or whatever implement the get/check/set?
     #amusingly it looks like steps could inherit from datasources probably more flexible not to
+    #FIXME some steps: eg setting modes, should only add themselves to the record on failure
+        #otherwise the step list will become absurdly long
+        #the unitary step tree can be kept somewhere else, or hopefully just reconstructed from the
+        #base node if I can get it to work properly...
+    from database.models import Step
     dataIO=None #import this
+    expected_writeTarget_type=None #TODO one and only one per step
     @property
     def name(self):
         #FIXME add a way to explicity name classes if you want?
