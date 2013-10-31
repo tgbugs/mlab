@@ -77,10 +77,20 @@ class DataInterface: #TODO this should be a gateway for in database and database
 ###  DataSources
 ###-------------
 
-class MetaDataSource(Base): #FIXME naming #all raw data collect w/o sample rate goes here
+class DataIO(Base):
+    __tablename__='dataio'
+    id=Column(Integer,primary_key=True)
+    type=Column(String)
+    __mapper_args__ = {
+        'polymorphic_on':type,
+        'polymorphic_identity':'baseio',
+    }
+    
+
+class MetaDataSource(DataIO): #FIXME naming #all raw data collect w/o sample rate goes here
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""
     __tablename__='metadatasources'
-    id=Column(Integer,primary_key=True)
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
     name=Column(String(20),nullable=False,unique=True)
     prefix=Column(String(2),ForeignKey('si_prefix.symbol'),default='')
     unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
@@ -88,6 +98,7 @@ class MetaDataSource(Base): #FIXME naming #all raw data collect w/o sample rate 
     hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #this shall be muteable
     prefix_data=relationship('SI_PREFIX',uselist=False) #FIXME don't do this myself, use pint/quanitites
     unit_data=relationship('SI_UNIT',uselist=False) #FIXME don't do this myself, use pint/quanitites
+    __mapper_args__ = {'polymorphic_identity':'mds'}
     @validates('name','prefix','unit') #FIXME
     def _wo(self, key, value): return self._write_once(key, value)
     def strHelper(self): #TODO this is where quantities can really pay off
@@ -106,28 +117,34 @@ class MetaDataSource(Base): #FIXME naming #all raw data collect w/o sample rate 
 ###  external data... somehow different in terms of process...
 ###-----------------------------------------------------------
 
-class SoftwareChannel(Base):
+class SoftwareChannel(DataIO):
     """Closely related to MetaDataSource"""
-    datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),primary_key=True) #FIXME generalize for nidaq?
-    channel_id=Column(String(20),primary_key=True) #handles input and output?
+    __tablename__='softwarechannel'
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
+    datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),nullable=False) #FIXME gnralize for nidaq?
+    channel_id=Column(String(20),nullable=False) #handles input and output?
+    __table_args__=(UniqueConstraint(datafilesource_id,channel_id),{})
     hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #muteable!
+    __mapper_args__ = {'polymorphic_identity':'swc'}
     def __int__(self):
         return self.datafilesource_id
     def __str__(self):
         return self.channel_id
 
 
-class DataFileSource(Base): #TODO think about how generalizing to other experiments, specifically imaging
+class DataFileSource(DataIO): #TODO think about how generalizing to other experiments, specifically imaging
     """Basic structure of a datafile based on the piece of software that writes it"""
     __tablename__='datafilesources'
-    id=Column(Integer,primary_key=True) #FIXME switch over to name for pk?
+    #id=Column(Integer,primary_key=True) #FIXME switch over to name for pk?
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
     name=Column(String(20),nullable=False,unique=True) #FIXME these could get really fucking complicated...
     extension=Column(String(32),nullable=False) #FIXME technically unlimited but WTF m8
+    __mapper_args__ = {'polymorphic_identity':'dfs'}
 
     @declared_attr
     def channels(cls):
         cls.SoftwareChannel=SoftwareChannel
-        return relationship(cls.SoftwareChannel)
+        return relationship(cls.SoftwareChannel,foreign_keys=SoftwareChannel.datafilesource_id)
 
     def strHelper(self,depth=0):
         return super().strHelper(depth,'name')

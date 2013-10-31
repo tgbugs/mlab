@@ -35,7 +35,7 @@ class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Ba
         return super().__repr__()
 
 
-class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Base):
+class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Base): #TODO figure out how to unify with steps and 'sub checkpoint' deps
     #TODO somewhere in here this needs to reference the version of the code used to generate it
     #probably a commit hash will be sufficient but that assumes the people use git
     __tablename__='experiments'
@@ -45,7 +45,6 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
     #FIXME do these go here?
     project_id=Column(Integer,ForeignKey('project.id'),nullable=False)
     person_id=Column(Integer,ForeignKey('people.id'),nullable=False)
-
 
     startDateTime=Column(DateTime,default=datetime.now())
     endDateTime=Column(DateTime)
@@ -109,7 +108,20 @@ class StepRecord(Base): #in theory this could completely replace experiment...
         #that would be passed along anyway; could check for consistency...
 
 
+###
+#FIXME TODO steps, just like experiments, produce things, IN FACT this makes the start and end times supurfluous, because the step becomes 'pair mice' and it happends at a specific time
+    #whether this complicates querying and slows it way the fuck down is another question altogether :/ it does fix the ambigious meaning of start and end time thought...
+    #furthermore they are still compatible because instead of start time and end time we end up with 'start step' and 'end step' or 'start steps' and 'end steps' which for
+    #most experiments will be a 'check/validate all checkpoints step...'
 class Step(Base): #FIXME external enforcement of acyclic needs to happen also persisting the exact method could tricky to store in database though I suppose that using the docstring of the step as the description could be a since way to do it...
+    """ Why do we have steps when we could just write code you ask. Well
+        The reason is because we want to automate things AND doccument how
+        we do it. This makes doccumentation and coding the same process
+        which is right in line with core python philosophy and is an
+        extremely useful mindset to have for science. Write once: read forever.
+    """
+    #TODO when report=False we can compile entire serries of steps down to just the get/set/write for speed
+    #TODO make sure to allow 'set only' steps that just print a 'make sure you do this' for things that don't actually need validation
     #XXX NOTE yes, this is a better way to conceptualize sub-experiments using the tree
     #TODO individual steps should be versioned, not sure what the basis should be though... changed deps?
         #the reason we want versioning is so that we can always use the base step to recreate the tree
@@ -119,7 +131,9 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
     type_id=None #FIXME do we want this??? get, set, check, analysis? don't really... need a table for 4 things?
     name=Column(String,nullable=False,unique=True)
     checkpoint=Column(Boolean,default=False) #FIXME TODO is this the right way to do this??? nice way to delimit the scope of an 'experiment' if we still have experiments when this is all done
-    dataIO_id=Column(Integer,ForeignKey('dataio.id'),nullable=False) #FIXME will need to unify metadatasource, datasource, datafilesource, etc under one index? default should be 'StepEvent' or something... maybe 'StepRecord'
+    dataio_id=Column(Integer,ForeignKey('dataio.id'),nullable=False) #FIXME will need to unify metadatasource, datasource, datafilesource, etc under one index? default should be 'StepEvent' or something... maybe 'StepRecord'
+    endDateTime=Column(DateTime,default=datetime.now)
+    record=Column(Boolean,default=True) #set to false for steps that don't need to be put in the record; TODO can this double as a 'set_only'???
     #FIXME damn, this does seem to complicate the 'HasExperiments' setup...
         #the step itself *should* specify an expected subject type
     #TODO where do we put things like 'get this subject,' 'retrieve this hardware' 'make sure you have this reagent'
@@ -144,16 +158,13 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
         #it should be possible to get the list of dependencies for each Step
         #steps either exist or do not exist, all that matters is that traversing
         #the graph from the root should give the original version
-    dependencies=relationship('Step',secondary='stepedges', #TODO make sure insert/delete work correclty
-            primaryjoin='Step.id==stepedges.dependency_id',
-            secondaryjoin='Step.id==stepedges.step_id',
-            backref=backref('revdeps',viewonly=True)) #FIXME want revdeps yes, and we also want viewonly?
-    #all_deps=relationship('Step',secondary='stepedgevers', #TODO make sure insert/delete work correclty
-            #primaryjoin='Step.id==stepedgevers.dependency_id',
-            #secondaryjoin='Step.id==stepedgevers.step_id',
+    #dependencies=relationship('Step',secondary='stepedges', #TODO make sure insert/delete work correclty
+            #primaryjoin='Step.id==stepedges.dependency_id',
+            #secondaryjoin='Step.id==stepedges.step_id',
             #backref=backref('revdeps',viewonly=True)) #FIXME want revdeps yes, and we also want viewonly?
+    dependencies=association_proxy('edges','dependency',creator=lambda step: StepEdge(dependency=step)) #TODO convert the list of step names to steps... step.deps.append(dep) for dep in stepsquery
     all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
-        ,order_by('-StepEdgeVersion.id')) #newest first to make finding deletes simple
+        ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
 
     def edges_at_version(self,version): #FIXME profile these two to see which is faster
         ver_edges=[edge for edge in self.all_edges if edge.id <= version]
@@ -183,17 +194,42 @@ class StepEdge(Base): #FIXME note that this table could hold multiple independen
     __tablename__='stepedges' #FIXME WARNING risk of redundant insert and delete!
     step_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
     dependency_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
+    step=relationship('Step',primaryjoin='Step.id==StepEdge.step_id',backref=backref('edges',lazy=False,innerjoin=True),uselist=False) #TODO might be possible to do cycle detection here? FIXME might want to spec a join_depth if these graphs get really big...
+    dependency=relationship('Step',primaryjoin='Step.id==StepEdge.dependency_id',uselist=False,lazy=False,innerjoin=True) #FIXME backref='rev_edges'???
+    def validateEdge(self):
+        """Make sure the graph remains acyclic"""
+        def cycle(node,base_id):
+            if node.id == base_id:
+                return True
+            elif node.edges:
+                for edge in node.edges:
+                    if cycle(edge.dependency,base_id):
+                        return True
+                    else:
+                        continue
+                return False
+            else:
+                return False #hit a leaf
+        if cycle(self.dependency,self.step_id): #this also catches self references
+            del(self) #FIXME 
+            raise BaseException('This edge would add a cycle to the graph! It will not be created!')
+    def __init__(self,step_id,dependency_id):
+        self.step_id=step_id
+        self.dependency_id=dependency_id
+        self.validateEdge()
+
     #versioning does not quite seem to be what I want??!? since this is only add/delete
     #recovering the version of the whole table is possible using that type of versioning
     #but maybe it is a bit more than I need?
 
 
 class StepEdgeVersion(Base): #TODO we need an event to trigger, possibly manual, but seems unlikely
+    #TODO diff two versions of the tree
     __tablename__='stepedgevers'
     id=Column(Integer,primary_key=True) #we can just call this version number... FIXME sqlite autoincrement?
     step_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
     dependency_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
-    dependency=relationship('Step',primaryjoin='StepEdgeVersion.dependency_id',uselist=False)
+    dependency=relationship('Step',primaryjoin='Step.id==StepEdgeVersion.dependency_id',uselist=False)
     added=Column(Boolean,nullable=False) #if added==False then it was deleted
     @property
     def deleted(self): #just for completeness

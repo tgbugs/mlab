@@ -156,6 +156,7 @@ def popSex(session):
 
 def popHardwareType(session):
     _HWTYPES=(
+        ('surgical tool','forceps, scalpels, spatuals, scissors, you name it'),
         ('rig','ALL THE THINGS'),
         ('amplifier','MAKE SIGNAL BIG'),
         ('bnc','Connector between amps and digitizers etc. Could be used to make really specific HW trees but since atm there is no use for those it is sort of pointless.'),

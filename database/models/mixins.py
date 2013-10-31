@@ -168,18 +168,20 @@ class HasSwcHwRecords: #TODO
                 {   '__tablename__':'%s_swchwrecords'%tname,
                     'parent_id':Column(Integer,ForeignKey('%s.id'%tname), primary_key=True), #has to be here
                     'experiment_id':Column(Integer,ForeignKey('experiments.id'), primary_key=True),
-                    'datafilesource_id':Column(Integer, primary_key=True), #pull these from subject.hardware
-                    'channel_id':Column(String(20), primary_key=True),
-                    '__table_args__':(
-                        ForeignKeyConstraint(['datafilesource_id', 'channel_id'],
-                            ['softwarechannel.datafilesource_id','softwarechannel.channel_id']), {}),
-                    'datafilesource':relationship('DataFileSource',
-                        primaryjoin='foreign(DataFileSource.id)==%s_swchwrecords.c.datafilesource_id'%tname,
-                        uselist=False),
-                    'channel':relationship('SoftwareChannel',
-                        primaryjoin=('and_(SoftwareChannel.datafilesource_id=='
-                            '%s_swchwrecords.c.datafilesource_id,'
-                            'SoftwareChannel.channel_id==%s_swchwrecords.c.channel_id)')%(tname,tname),
+                    'softwarechannel_id':Column(Integer,ForeignKey('softwarechannel.id'),primary_key=True),
+                    #'datafilesource_id':Column(Integer, primary_key=True), #pull these from subject.hardware
+                    #'channel_id':Column(String(20), primary_key=True),
+                    #'__table_args__':(
+                        #ForeignKeyConstraint(['datafilesource_id', 'channel_id'],
+                            #['softwarechannel.datafilesource_id','softwarechannel.channel_id']), {}),
+                    #'datafilesource':relationship('DataFileSource',
+                        #primaryjoin='foreign(DataFileSource.id)==%s_swchwrecords.c.datafilesource_id'%tname,
+                        #uselist=False),
+                    'softwarechannel':relationship('SoftwareChannel',
+                        primaryjoin='SoftwareChannel.id==%s_swchwrecords.c.softwarechannel_id'%tname,
+                        #primaryjoin=('and_(SoftwareChannel.datafilesource_id=='
+                            #'%s_swchwrecords.c.datafilesource_id,'
+                            #'SoftwareChannel.channel_id==%s_swchwrecords.c.channel_id)')%(tname,tname),
                         uselist=False),
                     'hardware_id':Column(ForeignKey('hardware.id'),nullable=False),
                 }

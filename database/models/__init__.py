@@ -31,6 +31,7 @@ __all__.extend((
 
 from database.models.data import *
 __all__.extend((
+        'DataIO',
         'DataFileSource',
         'SoftwareChannel',
         'MetaDataSource',
@@ -43,6 +44,9 @@ from database.models.experiments import *
 __all__.extend((
         'ExperimentType',
         'Experiment',
+        'Step',
+        'StepEdge',
+        'StepEdgeVersion',
 ))
 
 from database.models.inventory import *
