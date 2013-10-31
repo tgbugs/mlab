@@ -1,3 +1,4 @@
+import numpy as np
 from database.imports import *
 from database.models.base import Base
 from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardware, HasReagentTypes, HasDataFileSources, HasMetaDataSources, HasMdsHwRecords, HasDfsHwRecords
@@ -131,6 +132,7 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
     id=Column(Integer,primary_key=True) #FIXME this could nicely alleviate the concern about naming, but we do still need a reasonable way id them
     type_id=None #FIXME do we want this??? get, set, check, analysis? don't really... need a table for 4 things?
     name=Column(String,nullable=False,unique=True)
+    docstring=Column(String,nullable=False) #pulled from __doc__ and repropagated probably should be a citeable?
     checkpoint=Column(Boolean,default=False) #FIXME TODO is this the right way to do this??? nice way to delimit the scope of an 'experiment' if we still have experiments when this is all done
     dataio_id=Column(Integer,ForeignKey('dataio.id'),nullable=False) #FIXME will need to unify metadatasource, datasource, datafilesource, etc under one index? default should be 'StepEvent' or something... maybe 'StepRecord'
     record=Column(Boolean,default=True) #set to false for steps that don't need to be put in the record; TODO can this double as a 'set_only'???
@@ -166,7 +168,16 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
     all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
         ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
     def add_dep(self,step):
-        self.edges.append(StepEdge(self.id,step.id))
+        edge=StepEdge(self.id,step.id)
+        session=object_session(self)
+        session.add(edge)
+        session.flush()
+        try:
+            edge.validateEdge()
+            self.edges.append(edge)
+        except:
+            #session.rollback()
+            raise
 
     def edges_at_version(self,version): #FIXME profile these two to see which is faster
         ver_edges=[edge for edge in self.all_edges if edge.id <= version]
@@ -216,10 +227,10 @@ class StepEdge(Base): #FIXME note that this table could hold multiple independen
             del(self) #FIXME 
             raise BaseException('This edge would add a cycle to the graph! It will not be created!')
     def __init__(self,step_id=None,dependency_id=None):
-        self.step_id=step_id
-        self.dependency_id=dependency_id
-        printD(self.step_id,self.dependency_id,self.dependency)
-        self.validateEdge() #FIXME self.depenency doesnt' propatage... :/
+        self.step_id=int(step_id)
+        self.dependency_id=int(dependency_id)
+        #printD(self.step_id,self.dependency_id,self.dependency)
+        #self.validateEdge() #FIXME self.depenency doesnt' propatage... :/
 
     #versioning does not quite seem to be what I want??!? since this is only add/delete
     #recovering the version of the whole table is possible using that type of versioning
@@ -237,3 +248,63 @@ class StepEdgeVersion(Base): #TODO we need an event to trigger, possibly manual,
     @property
     def deleted(self): #just for completeness
         return not self.added
+
+
+class stepGraphManager:
+    def __init__(self,session):
+        self.session=session
+        self.steps=session.query(Step.id).all()
+        self.edges=np.array(session.query(StepEdge.step_id,StepEdge.dependency_id).all())
+    def getDeps(self,edge):
+        return self.edges[:,1][self.edges[:,0]==edge]
+    def addEdge(step,dep):
+        s=int(step)
+        d=int(dep)
+        def cycle(edge,step):
+            if edge==step:
+                return True
+            deps=getDeps(edge)
+            if step in deps:
+                return True
+            else:
+                for e in deps:
+                    if cycle(e,step):
+                        return True
+                return False
+        if cycle(d,s):
+            raise BaseException('This edge would add a cycle to the graph! It will not be created!')
+        else:
+            self.session.add(StepEdge(s,d))
+
+
+class StepManager:
+    def __init__(self,session,root_step=None):
+        self.root=root_step
+        #self.session=session
+        self.edges=np.array(session.query(StepEdge.step_id,StepEdge.dependency_id).all())
+    def mirrorGraph(self,root=None):
+        #make a graph from adjascency matrix and the root node
+        if not root:
+            root=self.root.id
+        #nodes=set()
+        def traverse(node,edges,nodes=set()):
+            nodes.add(node) #FIXME could pop the node...
+            for edge in edges[:,1][edges[:,0]==node]:
+                if edge==node:
+                    edges=edges[edges[:,0]!=edges[:,1]]
+                elif edge in nodes:
+                    continue
+                traverse(edge,edges)
+            return nodes
+        return traverse(root,self.edges)
+
+
+        def _traverse(edge,edge_set):
+            edge_set.add(edge)
+            [traverse(e,edge_set) for e in edge.dependency.edges]
+        #edge_set=set()
+        #[traverse(edge,edge_set) for edge in self.root.edges]
+            
+
+
+
