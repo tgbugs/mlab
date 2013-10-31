@@ -88,7 +88,8 @@ class StepRecord(Base): #in theory this could completely replace experiment...
     id=Column(Integer,primary_key=True)
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
     step_id=Column(Integer,ForeignKey('steps.id'),nullable=False)
-    dateTime=Column(DateTime,default=datetime.now)
+    #startDateTime=None #pretty sure we don't need this...
+    endDateTime=Column(DateTime,default=datetime.now) #FIXME just have dateTime???
     success=Column(Boolean,nullable=False)
     step=relationship('Step',uselist=False)
 
@@ -132,7 +133,6 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
     name=Column(String,nullable=False,unique=True)
     checkpoint=Column(Boolean,default=False) #FIXME TODO is this the right way to do this??? nice way to delimit the scope of an 'experiment' if we still have experiments when this is all done
     dataio_id=Column(Integer,ForeignKey('dataio.id'),nullable=False) #FIXME will need to unify metadatasource, datasource, datafilesource, etc under one index? default should be 'StepEvent' or something... maybe 'StepRecord'
-    endDateTime=Column(DateTime,default=datetime.now)
     record=Column(Boolean,default=True) #set to false for steps that don't need to be put in the record; TODO can this double as a 'set_only'???
     #FIXME damn, this does seem to complicate the 'HasExperiments' setup...
         #the step itself *should* specify an expected subject type
@@ -162,9 +162,11 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
             #primaryjoin='Step.id==stepedges.dependency_id',
             #secondaryjoin='Step.id==stepedges.step_id',
             #backref=backref('revdeps',viewonly=True)) #FIXME want revdeps yes, and we also want viewonly?
-    dependencies=association_proxy('edges','dependency',creator=lambda step: StepEdge(dependency=step)) #TODO convert the list of step names to steps... step.deps.append(dep) for dep in stepsquery
+    dependencies=association_proxy('edges','dependency') #TODO convert the list of step names to steps... step.deps.append(dep) for dep in stepsquery #FIXME wtf, why is this broken
     all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
         ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
+    def add_dep(self,step):
+        self.edges.append(StepEdge(self.id,step.id))
 
     def edges_at_version(self,version): #FIXME profile these two to see which is faster
         ver_edges=[edge for edge in self.all_edges if edge.id <= version]
@@ -194,7 +196,7 @@ class StepEdge(Base): #FIXME note that this table could hold multiple independen
     __tablename__='stepedges' #FIXME WARNING risk of redundant insert and delete!
     step_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
     dependency_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
-    step=relationship('Step',primaryjoin='Step.id==StepEdge.step_id',backref=backref('edges',lazy=False,innerjoin=True),uselist=False) #TODO might be possible to do cycle detection here? FIXME might want to spec a join_depth if these graphs get really big...
+    step=relationship('Step',primaryjoin='Step.id==StepEdge.step_id',backref=backref('edges',lazy=False),uselist=False) #TODO might be possible to do cycle detection here? FIXME might want to spec a join_depth if these graphs get really big...
     dependency=relationship('Step',primaryjoin='Step.id==StepEdge.dependency_id',uselist=False,lazy=False,innerjoin=True) #FIXME backref='rev_edges'???
     def validateEdge(self):
         """Make sure the graph remains acyclic"""
@@ -210,13 +212,14 @@ class StepEdge(Base): #FIXME note that this table could hold multiple independen
                 return False
             else:
                 return False #hit a leaf
-        if cycle(self.dependency,self.step_id): #this also catches self references
+        if cycle(self.dependency,self.step_id): #this also catches self references #FIXME problem w/ dependency
             del(self) #FIXME 
             raise BaseException('This edge would add a cycle to the graph! It will not be created!')
-    def __init__(self,step_id,dependency_id):
+    def __init__(self,step_id=None,dependency_id=None):
         self.step_id=step_id
         self.dependency_id=dependency_id
-        self.validateEdge()
+        printD(self.step_id,self.dependency_id,self.dependency)
+        self.validateEdge() #FIXME self.depenency doesnt' propatage... :/
 
     #versioning does not quite seem to be what I want??!? since this is only add/delete
     #recovering the version of the whole table is possible using that type of versioning
