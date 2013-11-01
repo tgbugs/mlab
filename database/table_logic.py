@@ -1,7 +1,8 @@
 #events/triggers go here
+from numpy import array
 from sqlalchemy import event
 from sqlalchemy.orm import object_session
-from database.models import Experiment
+from database.models import Experiment, StepEdge
 
 def listenForThings(session): #FIXME very broken
     """this should be 1:1 with every session where things are automated?? is it better to do this or to do it by hand, I think this is better because I can't miss with it"""
@@ -37,3 +38,34 @@ def listenForThings(session): #FIXME very broken
         event.listen(object_session(instance),'after_flush',got_id,instance)
 
     return remover
+
+def checkEdges(session): #FIXME this does not seem to be working properly...
+    """ Enforce DAG for step dependency tree"""
+    #when an edge is added to the session make sure it doesnt add cycles
+    @event.listens_for(session,'before_attach')
+    def check_for_cycles(session,instance):
+        if type(instance) is StepEdge:
+            edges=array(session.query(StepEdge.step_id,StepEdge.dependency_id).all()) #ICK horrible for repeatedly adding edges :/
+            def cycle(start,node):
+                print('starting cycle')
+                if node==start:
+                    return True
+                #TODO this *might* be faster with a transitive closure query, but srsly?
+                deps=edges[:,1][edges[:,0]==node]
+                if start in deps:
+                    return True
+                else:
+                    for n in deps:
+                        if cycle(n,start):
+                            return True
+                    return False
+            #if session.query(StepEdge).get(instance.step_id,instance.dependency_id):
+                #session.expunge(instance)
+                #del(instance) #TODO probably don't need this just catch the error on flush
+                #raise BaseException('Edge already exists, saving you a nasty backtrace!')
+            if cycle(instance.step_id,instance.dependency_id):
+                #session.expunge(instance)
+                print('[!] Edge %s -> %s would add cycle! Deleting!'%(instance.step_id,instance.dependency_id))
+                del(instance)
+                #raise BaseException('Edge would create a cycle! Not adding!')
+    #TODO add the history part too!

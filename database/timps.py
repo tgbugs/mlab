@@ -8,5 +8,12 @@ from sqlalchemy.orm import Session
 engine=pgTest(True)
 session=Session(engine)
 s=session
+
+#table logic
+checkEdges(session)
+
+#tests
 #dirAll(s)
+
+#give me some ipython!
 embed()

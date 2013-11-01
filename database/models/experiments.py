@@ -160,24 +160,42 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
         #it should be possible to get the list of dependencies for each Step
         #steps either exist or do not exist, all that matters is that traversing
         #the graph from the root should give the original version
-    #dependencies=relationship('Step',secondary='stepedges', #TODO make sure insert/delete work correclty
-            #primaryjoin='Step.id==stepedges.dependency_id',
-            #secondaryjoin='Step.id==stepedges.step_id',
-            #backref=backref('revdeps',viewonly=True)) #FIXME want revdeps yes, and we also want viewonly?
-    dependencies=association_proxy('edges','dependency') #TODO convert the list of step names to steps... step.deps.append(dep) for dep in stepsquery #FIXME wtf, why is this broken
+    def creator(step): #just in case the setattr fails
+        raise IOError('use add_dep to add things because this doesnt check edges properly')
+    dependencies=association_proxy('edges','dependency',creator=creator) #TODO custom collection type?
+    @classmethod
+    def cycle(cls,edges,start,node):
+        if node==start:
+            return True
+        deps=edges[:,1][edges[:,0]==node]
+        if start in deps:
+            return True
+        else:
+            for n in deps:
+                if cls.cycle(n,start):
+                    return True
+            return False
+    def _append_dep(self,step): #TODO it looks like there ARE appenders and adders...
+        if self.cycle(self.edge_array,int(self),int(step)):
+            raise BaseException('This edge would add a cycle to the graph! It will not be created!')
+        else:
+            self.edges.add(StepEdge(self,step))
+    def _extend_dep(self,step_list):
+        checks=[step for step in step_list if self.cycle(self.edge_array,int(self),int(step))]
+        if checks:
+            raise BaseException('Adding dependencies failed! Edges to %s'
+                                ' create cycles! Remove and try again!'%checks)
+        else:
+            [self.edges.add(StepEdge(self,step)) for step in step_list if StepEdge()]
+
+
     all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
         ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
-    def add_dep(self,step):
-        edge=StepEdge(self.id,step.id)
+    transitive_closure=None #all upstream dependencies expressed as edges starting at self and ending at all upstream steps #step graphs might be small enough we don't need this
+    @property
+    def edge_array(self):
         session=object_session(self)
-        session.add(edge)
-        session.flush()
-        try:
-            edge.validateEdge()
-            self.edges.append(edge)
-        except:
-            #session.rollback()
-            raise
+        return np.array(session.query(StepEdge.step_id,StepEdge.dependency_id).all())
 
     def edges_at_version(self,version): #FIXME profile these two to see which is faster
         ver_edges=[edge for edge in self.all_edges if edge.id <= version]
@@ -202,14 +220,24 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
              deled.dependency_id and edge.id <= deled.id] #<= gets rid of the deleted too
         return [edge.dependency for edge in ver_edges if edge not in culled]
 
+    @reconstructor
+    def __dbinit__(self):
+        setattr(self.dependencies,'append',self._append_dep)
+        setattr(self.dependencies,'extend',self._extend_dep)
+
+    def __init__(self,**kwargs): 
+        super().__init__(**kwargs)
+        setattr(self.dependencies,'append',self._append_dep)
+        setattr(self.dependencies,'extend',self._extend_dep)
+
 
 class StepEdge(Base): #FIXME note that this table could hold multiple independent trees
     __tablename__='stepedges' #FIXME WARNING risk of redundant insert and delete!
     step_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
     dependency_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
-    step=relationship('Step',primaryjoin='Step.id==StepEdge.step_id',backref=backref('edges',lazy=False),uselist=False) #TODO might be possible to do cycle detection here? FIXME might want to spec a join_depth if these graphs get really big...
-    dependency=relationship('Step',primaryjoin='Step.id==StepEdge.dependency_id',uselist=False,lazy=False,innerjoin=True) #FIXME backref='rev_edges'???
-    def validateEdge(self):
+    step=relationship('Step',primaryjoin='Step.id==StepEdge.step_id',backref=backref('edges',lazy=False,collection_class=set),uselist=False,lazy=True) #TODO might be possible to do cycle detection here? FIXME might want to spec a join_depth if these graphs get really big...
+    dependency=relationship('Step',primaryjoin='Step.id==StepEdge.dependency_id',uselist=False,lazy=True) #lazy should be ok, this IS used in the association_proxy...
+    def validateEdge(self): #XXX depricated but still a problem if the edge is simply added directly to the session :/
         """Make sure the graph remains acyclic"""
         def cycle(node,base_id):
             if node.id == base_id:
@@ -229,8 +257,14 @@ class StepEdge(Base): #FIXME note that this table could hold multiple independen
     def __init__(self,step_id=None,dependency_id=None):
         self.step_id=int(step_id)
         self.dependency_id=int(dependency_id)
+        if self.step_id==self.dependency_id:
+            raise BaseException('Nodes cannot point to themselves! Further'
+                                ' checks cant be done without a session :/.')
         #printD(self.step_id,self.dependency_id,self.dependency)
         #self.validateEdge() #FIXME self.depenency doesnt' propatage... :/
+    def __repr__(self):
+        return '\n%s -> %s'%(self.step_id,self.dependency_id)
+
 
     #versioning does not quite seem to be what I want??!? since this is only add/delete
     #recovering the version of the whole table is possible using that type of versioning
@@ -243,7 +277,7 @@ class StepEdgeVersion(Base): #TODO we need an event to trigger, possibly manual,
     id=Column(Integer,primary_key=True) #we can just call this version number... FIXME sqlite autoincrement?
     step_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
     dependency_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
-    dependency=relationship('Step',primaryjoin='Step.id==StepEdgeVersion.dependency_id',uselist=False)
+    dependency=relationship('Step',primaryjoin='Step.id==StepEdgeVersion.dependency_id',uselist=False) #may want to joined load here, don't need it for the normal table
     added=Column(Boolean,nullable=False) #if added==False then it was deleted
     @property
     def deleted(self): #just for completeness
@@ -254,7 +288,7 @@ class stepGraphManager:
     def __init__(self,session):
         self.session=session
         self.steps=session.query(Step.id).all()
-        self.edges=np.array(session.query(StepEdge.step_id,StepEdge.dependency_id).all())
+        self.edges=np.array(session.query(StepEdge.step_id,StepEdge.dependency_id).all()) #XXX NOTE these edges can be used over and over again!
     def getDeps(self,edge):
         return self.edges[:,1][self.edges[:,0]==edge]
     def addEdge(step,dep):
@@ -305,6 +339,4 @@ class StepManager:
         #edge_set=set()
         #[traverse(edge,edge_set) for edge in self.root.edges]
             
-
-
 

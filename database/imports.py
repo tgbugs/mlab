@@ -17,7 +17,7 @@ from sqlalchemy                         import ForeignKey
 from sqlalchemy                         import ForeignKeyConstraint
 from sqlalchemy                         import UniqueConstraint
 
-from sqlalchemy.orm                     import relationship, backref, object_session, validates
+from sqlalchemy.orm                     import relationship, backref, object_session, validates, reconstructor
 
 from sqlalchemy.orm.collections         import attribute_mapped_collection
 
