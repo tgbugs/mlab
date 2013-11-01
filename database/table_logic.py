@@ -1,8 +1,11 @@
 #events/triggers go here
+#TODO personally I reccomend a strongy worded warning against creating sessions
+    #to access the database directly via sqlalchemy, I need my own that hav
+    #the event listeners added automatically to the session
 from numpy import array
 from sqlalchemy import event
 from sqlalchemy.orm import object_session
-from database.models import Experiment, StepEdge
+from database.models import Experiment, StepEdge, StepEdgeVersion
 
 def listenForThings(session): #FIXME very broken
     """this should be 1:1 with every session where things are automated?? is it better to do this or to do it by hand, I think this is better because I can't miss with it"""
@@ -39,8 +42,19 @@ def listenForThings(session): #FIXME very broken
 
     return remover
 
-def checkEdges(session): #FIXME this does not seem to be working properly...
+def logic_StepEdge(session): #FIXME this does not seem to be working properly...
     """ Enforce DAG for step dependency tree"""
+    @event.listens_for(session,'before_flush')
+    def history_table_delete(session,flush_context,instances):
+        for obj in session.deleted:
+            if type(obj) is StepEdge:
+                session.add(StepEdgeVersion(step_id=obj.step_id,dependency_id=obj.dependency_id,added=False))
+                #hrm the above could create a list of cycle enducing edges... given all else constant...
+        for obj in session.new:
+            if type(obj) is StepEdge:
+                session.add(StepEdgeVersion(step_id=obj.step_id,dependency_id=obj.dependency_id,added=True))
+
+
     @event.listens_for(session,'after_attach')
     def check_for_cycles(session,instance): #FIXME monumentally slow for repeated adds and high edge counts
         if type(instance) is StepEdge:

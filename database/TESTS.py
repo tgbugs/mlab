@@ -577,9 +577,9 @@ class t_edges(TEST):
         a=steps[0].id
         b=a+1
         c=b+1
-        failed=False
 
         def basic_tests():
+            failed=False
             #cycle 1->1
             try: 
                 a1=StepEdge(a,a)
@@ -684,7 +684,6 @@ def run_tests(session):
     
     #[print(df.creation_DateTime) for df in session.query(DataFile)]
 
-    t_steps(session,100)
 
     t_strain(session,2)
     expt=t_exptype(session)
@@ -699,6 +698,9 @@ def run_tests(session):
     t_mice(session,20)
     l=t_litters(session,20)
     l.add_members()
+
+    t_steps(session,100)
+    t_edges(session)
 
 
     rt=t_reagenttype(session)

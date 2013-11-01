@@ -10,7 +10,7 @@ session=Session(engine)
 s=session
 
 #table logic
-checkEdges(session)
+logic_StepEdge(session)
 
 #tests
 dirAll(s)

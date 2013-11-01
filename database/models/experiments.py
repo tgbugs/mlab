@@ -85,7 +85,7 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
 
 
 
-class StepRecord(Base): #in theory this could completely replace experiment...
+class StepRecord(HasNotes, Base): #in theory this could completely replace experiment...
     id=Column(Integer,primary_key=True)
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
     step_id=Column(Integer,ForeignKey('steps.id'),nullable=False)
@@ -115,13 +115,15 @@ class StepRecord(Base): #in theory this could completely replace experiment...
     #whether this complicates querying and slows it way the fuck down is another question altogether :/ it does fix the ambigious meaning of start and end time thought...
     #furthermore they are still compatible because instead of start time and end time we end up with 'start step' and 'end step' or 'start steps' and 'end steps' which for
     #most experiments will be a 'check/validate all checkpoints step...'
-class Step(Base): #FIXME external enforcement of acyclic needs to happen also persisting the exact method could tricky to store in database though I suppose that using the docstring of the step as the description could be a since way to do it...
+class Step(Base):
     """ Why do we have steps when we could just write code you ask. Well
         The reason is because we want to automate things AND doccument how
         we do it. This makes doccumentation and coding the same process
         which is right in line with core python philosophy and is an
         extremely useful mindset to have for science. Write once: read forever.
     """
+    #TODO version steps and automatically update edges!???! FIXME or everything write once except docstring? or even  version the docstring???
+    #TODO figure out if there is a way to store python fucntions in the db
     #TODO when report=False we can compile entire serries of steps down to just the get/set/write for speed
     #TODO make sure to allow 'set only' steps that just print a 'make sure you do this' for things that don't actually need validation
     #XXX NOTE yes, this is a better way to conceptualize sub-experiments using the tree
@@ -163,40 +165,7 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
     #def creator(step): #just in case the setattr fails
         #raise IOError('use add_dep to add things because this doesnt check edges properly')
 
-    dependencies=association_proxy('edges','dependency')
-    '''
-    @classmethod
-    def cycle(cls,edges,start,node):
-        if node==start:
-            return True
-        deps=edges[:,1][edges[:,0]==node]
-        if start in deps:
-            return True
-        else:
-            for n in deps:
-                if cls.cycle(n,start):
-                    return True
-            return False
-    def _append_dep(self,step): #TODO it looks like there ARE appenders and adders...
-        if self.cycle(self.edge_array,int(self),int(step)):
-            raise BaseException('This edge would add a cycle to the graph! It will not be created!')
-        else:
-            self.edges.add(StepEdge(self,step))
-    def _extend_dep(self,step_list):
-        checks=[step for step in step_list if self.cycle(self.edge_array,int(self),int(step))]
-        if checks:
-            raise BaseException('Adding dependencies failed! Edges to %s'
-                                ' create cycles! Remove and try again!'%checks)
-        else:
-            [self.edges.add(StepEdge(self,step)) for step in step_list if StepEdge()]
-
-    '''
-    @property
-    def edge_array(self):
-        session=object_session(self)
-        return np.array(session.query(StepEdge.step_id,StepEdge.dependency_id).all())
-
-
+    dependencies=association_proxy('edges','dependency') #creator set at __init__
     all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
         ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
     transitive_closure=None #all upstream dependencies expressed as edges starting at self and ending at all upstream steps #step graphs might be small enough we don't need this
@@ -220,7 +189,7 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
                 first_instance.append(edge)
         return [edge.dependency for edge in first_instance if edge.added]
 
-    def deps_at_version(self,version=None):
+    def deps_at_version(self,version=None): #FIXME not quite working as expected...
         if not self.all_edges:
             return []
         elif not version:
@@ -275,6 +244,9 @@ class StepEdgeVersion(Base): #TODO we need an event to trigger, possibly manual,
     dependency_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
     dependency=relationship('Step',primaryjoin='Step.id==StepEdgeVersion.dependency_id',uselist=False) #may want to joined load here, don't need it for the normal table
     added=Column(Boolean,nullable=False) #if added==False then it was deleted
+    @validates('id','step_id','dependency_id','added')
+    def _wo(self, key, value): return self._write_once(key, value)
+
     @property
     def deleted(self): #just for completeness
         return not self.added
