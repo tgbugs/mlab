@@ -4,7 +4,7 @@ from IPython import embed
 
 import numpy as np
 
-from database.imports import printD,ploc,datetime,timedelta,_tdb
+from database.imports import printD,ploc,datetime,timedelta,_tdb,FlushError
 
 #_tdb.tdbOff()
 
@@ -386,7 +386,7 @@ class t_experiment(TEST):
             #TODO need to test with bad inputs
             exps=[p.people[i] for i in np.random.choice(len(p.people),self.num)]
             datetimes=self.make_datetime()
-            exptype=self.sesison.query(ExperimentType).filter_by(name='in vitro patch')[0]
+            exptype=self.sessison.query(ExperimentType).filter_by(name='in vitro patch')[0]
 
             self.records+=[Experiment(project_id=p,Person=exps[i],startDateTime=datetimes[i],type_id=exptype) for i in range(self.num)] #FIXME lol this is going to reaveal experiments on mice that aren't even born yet hehe
 
@@ -564,6 +564,111 @@ class t_reagent(TEST):
         rts=self.session.query(ReagentType)
         self.records=[Reagent(Type=r) for r in rts]
 
+###-------
+###  steps
+###-------
+class t_steps(TEST):
+    def make_all(self):
+        self.records.extend([Step(name='a%s'%i,dataio_id=1,docstring='') for i in range(self.num)])
+
+class t_edges(TEST):
+    def make_all(self):
+        steps=self.session.query(Step).order_by(Step.id).all()
+        a=steps[0].id
+        b=a+1
+        c=b+1
+        failed=False
+
+        def basic_tests():
+            #cycle 1->1
+            try: 
+                a1=StepEdge(a,a)
+                self.session.add(a1)
+                self.session.flush()
+                failed=True
+            except:
+                pass
+            assert not failed, 'a==a check FAILED'
+
+            #basic add
+            a2=StepEdge(a,b) #OK
+            self.session.add(a2)
+            self.session.flush()
+            assert a2, 'basic test FAILED'
+
+            #cycle 1->2->1
+            try:
+                a3=StepEdge(b,a)
+                self.session.add(a3) #FIXME a3 still in records after delete!
+                self.session.flush()
+                failed=True
+            except:
+                pass
+            #printD(a3.__repr__())
+            assert not failed, 'circular 1-2-1 check FAILED'
+
+            #basic add 2 to add one more node to the cycle
+            a4=StepEdge(b,c) #OK
+            self.session.add(a4)
+            self.session.flush()
+            assert a4, 'basic test #2 FAILED'
+            
+            #cycle from 1->2->3->1
+            try:
+                a5=StepEdge(c,a)
+                self.session.add(a5)
+                self.session.flush()
+                failed=True
+            except:
+                pass
+            assert not failed, 'circular 1-2-3-1 check FAILED'
+
+        def adv_test():
+            se1=set(self.session.query(StepEdge).all())
+            assert se1 == se1 , 'A SET IS NOT EQUAL TO ITSELF RUNNNNNN!!!'
+
+            try:
+                [step.dependencies.update([steps[int(i)] for i in np.random.randint(0,100,20)]) for step in steps]
+            except (ValueError, FlushError) as e:
+                if type(e) is FlushError:
+                    printD('Rolling back!')
+                    self.session.rollback()
+                printD(e)
+            self.session.flush()
+            self.session.expire_all()
+            se2=set(self.session.query(StepEdge).all())
+            assert se2 != se1
+
+            try:
+                [[step.dependencies.add(steps[int(np.random.randint(100))]) for step in steps] for i in range(20)]
+            except (ValueError, FlushError) as e:
+                if type(e) is FlushError:
+                    printD('Rolling back!')
+                    self.session.rollback()
+                printD(e)
+            self.session.flush()
+            se3=set(self.session.query(StepEdge).all())
+            assert se3 != se2
+
+            for i in range(1000):
+                a,b=(steps[int(i)] for i in np.random.randint(0,len(steps),2))
+                try:
+                    self.session.add(StepEdge(a,b))
+                except (ValueError, FlushError) as e:
+                    printD(e)
+                    self.session.rollback()
+
+            self.session.flush()
+            
+            printD('Num StepEdges',len(se3))
+        basic_tests()
+        #adv_tests()
+
+    def commit(self):
+        self.session.commit()
+
+        #todo test a double cycle and a split tree
+        
 
 def run_tests(session):
     #FIXME for some reason running these sequentially causes all sorts of problems...
@@ -578,6 +683,8 @@ def run_tests(session):
     #d=t_datafile(session,10,50,4)
     
     #[print(df.creation_DateTime) for df in session.query(DataFile)]
+
+    t_steps(session,100)
 
     t_strain(session,2)
     expt=t_exptype(session)

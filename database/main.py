@@ -26,6 +26,7 @@ from database.models.base       import Base, initDBScience
 from database.engines           import sqliteMem, pgTest
 from database.setupDB           import populateConstraints, populateTables
 from database.TESTS             import run_tests
+from database.table_logic       import checkEdges
 
 try:
     import rpdb2
@@ -86,14 +87,20 @@ def main(echo=False,postgres=False,wipe_db=False,setupDB=False,test=False):
         engine=pgTest(echo=echo,wipe_db=wipe_db)
         if setupDB:
             session=initDBScience(engine) #imported from base.py via *
+            #add table logic
+            checkEdges(session)
             #populate constraint tables
             populateConstraints(session)
             populateTables(session)
         else:
             session=Session(engine) #imported from base.py via *
+            #add table logic
+            checkEdges(session)
     else:
         engine=sqliteMem(echo=echo) #XXX sqlite wont autoincrement compositie primary keys >_< DERP
         session=initDBScience(engine) #imported from base.py via *
+        #add table logic
+        checkEdges(session)
         #populate constraint tables
         populateConstraints(session)
         populateTables(session)

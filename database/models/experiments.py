@@ -160,9 +160,11 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
         #it should be possible to get the list of dependencies for each Step
         #steps either exist or do not exist, all that matters is that traversing
         #the graph from the root should give the original version
-    def creator(step): #just in case the setattr fails
-        raise IOError('use add_dep to add things because this doesnt check edges properly')
-    dependencies=association_proxy('edges','dependency',creator=creator) #TODO custom collection type?
+    #def creator(step): #just in case the setattr fails
+        #raise IOError('use add_dep to add things because this doesnt check edges properly')
+
+    dependencies=association_proxy('edges','dependency')
+    '''
     @classmethod
     def cycle(cls,edges,start,node):
         if node==start:
@@ -188,16 +190,22 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
         else:
             [self.edges.add(StepEdge(self,step)) for step in step_list if StepEdge()]
 
-
-    all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
-        ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
-    transitive_closure=None #all upstream dependencies expressed as edges starting at self and ending at all upstream steps #step graphs might be small enough we don't need this
+    '''
     @property
     def edge_array(self):
         session=object_session(self)
         return np.array(session.query(StepEdge.step_id,StepEdge.dependency_id).all())
 
-    def edges_at_version(self,version): #FIXME profile these two to see which is faster
+
+    all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
+        ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
+    transitive_closure=None #all upstream dependencies expressed as edges starting at self and ending at all upstream steps #step graphs might be small enough we don't need this
+
+    def edges_at_version(self,version=None): #FIXME profile these two to see which is faster
+        if not self.all_edges:
+            return []
+        if not version:
+            version=self.all_edges[0].id #works because of inverted sort
         ver_edges=[edge for edge in self.all_edges if edge.id <= version]
         first_instace=[]
         for edge in ver_edges:
@@ -212,7 +220,11 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
                 first_instance.append(edge)
         return [edge.dependency for edge in first_instance if edge.added]
 
-    def deps_at_version(self,version):
+    def deps_at_version(self,version=None):
+        if not self.all_edges:
+            return []
+        elif not version:
+            version=self.all_edges[0].id #works because of inverted sort
         ver_edges=[edge for edge in self.all_edges if edge.id <= version]
         culled=set()
         for deled in [edge for edge in ver_edges if not edge.added]:
@@ -222,13 +234,19 @@ class Step(Base): #FIXME external enforcement of acyclic needs to happen also pe
 
     @reconstructor
     def __dbinit__(self):
-        setattr(self.dependencies,'append',self._append_dep)
-        setattr(self.dependencies,'extend',self._extend_dep)
+        def creator(step):
+            return StepEdge(self,step)
+        setattr(self.dependencies,'creator',creator)
+        #setattr(self.dependencies,'append',self._append_dep)
+        #setattr(self.dependencies,'extend',self._extend_dep)
 
     def __init__(self,**kwargs): 
         super().__init__(**kwargs)
-        setattr(self.dependencies,'append',self._append_dep)
-        setattr(self.dependencies,'extend',self._extend_dep)
+        def creator(step):
+            return StepEdge(self,step)
+        setattr(self.dependencies,'creator',creator)
+        #setattr(self.dependencies,'append',self._append_dep)
+        #setattr(self.dependencies,'extend',self._extend_dep)
 
 
 class StepEdge(Base): #FIXME note that this table could hold multiple independent trees
@@ -237,31 +255,9 @@ class StepEdge(Base): #FIXME note that this table could hold multiple independen
     dependency_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
     step=relationship('Step',primaryjoin='Step.id==StepEdge.step_id',backref=backref('edges',lazy=False,collection_class=set),uselist=False,lazy=True) #TODO might be possible to do cycle detection here? FIXME might want to spec a join_depth if these graphs get really big...
     dependency=relationship('Step',primaryjoin='Step.id==StepEdge.dependency_id',uselist=False,lazy=True) #lazy should be ok, this IS used in the association_proxy...
-    def validateEdge(self): #XXX depricated but still a problem if the edge is simply added directly to the session :/
-        """Make sure the graph remains acyclic"""
-        def cycle(node,base_id):
-            if node.id == base_id:
-                return True
-            elif node.edges:
-                for edge in node.edges:
-                    if cycle(edge.dependency,base_id):
-                        return True
-                    else:
-                        continue
-                return False
-            else:
-                return False #hit a leaf
-        if cycle(self.dependency,self.step_id): #this also catches self references #FIXME problem w/ dependency
-            del(self) #FIXME 
-            raise BaseException('This edge would add a cycle to the graph! It will not be created!')
     def __init__(self,step_id=None,dependency_id=None):
         self.step_id=int(step_id)
         self.dependency_id=int(dependency_id)
-        if self.step_id==self.dependency_id:
-            raise BaseException('Nodes cannot point to themselves! Further'
-                                ' checks cant be done without a session :/.')
-        #printD(self.step_id,self.dependency_id,self.dependency)
-        #self.validateEdge() #FIXME self.depenency doesnt' propatage... :/
     def __repr__(self):
         return '\n%s -> %s'%(self.step_id,self.dependency_id)
 
