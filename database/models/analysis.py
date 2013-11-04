@@ -24,3 +24,10 @@ class OfflineAnalysis():
     pass
 
 
+class MetaAnalysis(Base):
+    id=Column(Integer,primary_key=True)
+    #things related to performance and evaluating success rates
+    #basically science science
+    #identifying steps with high failure rates etc
+    #places for optimization
+

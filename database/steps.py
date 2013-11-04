@@ -97,6 +97,10 @@ class Step: #at the end of the day what we want is a list of classes that we can
         pass
 
 
+###---------
+### THIS ONE
+###---------
+
 class Step: #FIXME this way of doing things is bad at recording get/set pairing for datasources :/
     #should the datasource/eventsource or whatever implement the get/check/set?
     #amusingly it looks like steps could inherit from datasources probably more flexible not to
@@ -133,7 +137,7 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
             return False
 
 
-class BaseDataIO: #technically this is now a 'reusable data thing...' not yet a datasource
+class BaseDataIO: #XXX DEPRICATED see api.py for new version
     @property
     def name(self):
         return self.__class__.__name__[4:]

@@ -50,6 +50,10 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
     startDateTime=Column(DateTime,default=datetime.now())
     endDateTime=Column(DateTime)
 
+    #possible replacement for sdt and edt; TODO essentially Experiment because a flattened StepRecord for easier querying... FIXME these should probably go in exp type?
+    startStepsTime=None #checkpoint steps the must evaluate to true prior to creation
+    endStepTime=None
+
     #TODO list of steps completed with the time of completion: association object class? seems nice for querying
     #TODO FIXME don't let someone create an experiment if specific checkpoints/check steps aren't satisfied
     step_tree_version_id=None
@@ -252,7 +256,7 @@ class StepEdgeVersion(Base): #TODO we need an event to trigger, possibly manual,
         return not self.added
 
 
-class stepGraphManager:
+class stepGraphManager: #XXX Depricated in favor of the events interface
     def __init__(self,session):
         self.session=session
         self.steps=session.query(Step.id).all()

@@ -170,7 +170,7 @@ class AnalysisWrite(Analysis,GetWrite): #datafiles should be opened via GetWrite
 
 class DataIO(BaseDataIO): #IXCK ugly ugly might be nice for a factory :/ but is poorly constrained @do, so slow
     MappedClass=None #from database.models import thing as MappedClass
-    mcKwargs={} #things required by the database, eg datasource units
+    mcKwargs={} # MappedClass(**kwargs) things for the database, eg datasource units
     ctrl_name=None
     getter_name=None #name of the function used to get stuff
     writer_name=None #eg getattr(writeTarget,self.writer_name)
