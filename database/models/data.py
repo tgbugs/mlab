@@ -81,6 +81,10 @@ class DataIO(Base):
     __tablename__='dataio'
     id=Column(Integer,primary_key=True)
     type=Column(String)
+    ctrl_name=Column(String) #FIXME should these actually save the code or just the name?
+    getter_name=Column(String)
+    writer_name=Column(String) #should be somethinking like Experiment.MetaData or the like
+    collection_name=Column(String)
     __mapper_args__ = {
         'polymorphic_on':type,
         'polymorphic_identity':'baseio',

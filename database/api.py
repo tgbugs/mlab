@@ -169,9 +169,13 @@ class AnalysisWrite(Analysis,GetWrite): #datafiles should be opened via GetWrite
         return self.value
 
 class DataIO(BaseDataIO): #IXCK ugly ugly might be nice for a factory :/ but is poorly constrained @do, so slow
+    #NOTE TO SELF: this interface needs to be here unless we go with STI for dataio objects in order to implement persistence, and EVEN THAT misses the point which is that there are live functions that we want to run and have doccumented, I supposed using only names it would be possible to init everything and save it BUT we would still need something to deal with actually tying it all together at run time which is what THIS is supposed to do
+        #doing it this way we keep the all the relevant information in one place that can all be seen at the same time and debugged more easily
+        #the alternative is generating DataIO objects directly from database entries but that still leaves tying them to actual live code objects which seems like it could go very wrong and would still require an input interface and we would essentially be persisting a class that looks like this anyway
+        #probably do want a way to recreate classes straight from the database though... but that is alot of work and we will have to do it in the future NOT RIGHT NOW
     MappedClass=None #from database.models import thing as MappedClass
     mcKwargs={} # MappedClass(**kwargs) things for the database, eg datasource units
-    ctrl_name=None
+    ctrl_name=None #FIXME why do we need this again??? ANSWER: because we need live functions and I'm not sure the best way to unambigiously name a 'dead' function of a class and make it live (the way in rigcont is iffy)
     getter_name=None #name of the function used to get stuff
     writer_name=None #eg getattr(writeTarget,self.writer_name)
     collection_name=None #eg metadata_ or something
