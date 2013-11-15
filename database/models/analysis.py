@@ -1,7 +1,7 @@
 from database.imports import *
 from database.models.base import Base
 from database.models.mixins import HasNotes
-from database.models import DataIO
+from database.models.data import DataIO
 class Result(Base):
     __tablename__='results'
     id=Column(Integer,primary_key=True)
@@ -27,8 +27,8 @@ class Analysis(DataIO): #primarily for data which also has times associated
         #or check for a match between the two??
         #forcing the user to write the same thing twice sucks
     #FIXME analysis shouldn't need a getter? or are there simply too many possible relations that we are better off treating queries as getters and just doccumenting which values we actually retrieved thereafter?
-    id=Column(Integer,primary_key=True)
-    dataios=relationship('DataIO') #TODO THIS is useful because it gives some basic idea of where stuff came from, the 'AnalysisRecord' will be a bit more complicated
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
+    #dataios=relationship('DataIO') #TODO THIS is useful because it gives some basic idea of where stuff came from, the 'AnalysisRecord' will be a bit more complicated
     version=Column(Integer,nullable=False)
     code=Column(Text) #halp wat
     analysis_function=None

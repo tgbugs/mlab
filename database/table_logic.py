@@ -44,18 +44,23 @@ def listenForThings(session): #FIXME very broken
 
 def logic_StepEdge(session): #FIXME this does not seem to be working properly...
     """ Enforce DAG for step dependency tree"""
-    @event.listens_for(session,'before_flush')
+    @event.listens_for(session,'before_flush') #FIXME why does this trigger on session.add??!
     def history_table_delete(session,flush_context,instances):
+        print(session.new,session.deleted)
+        print(flush_context)
         for obj in session.deleted:
-            if type(obj) is StepEdge:
+            if type(obj) is StepEdge:#isinstance preferred IF I subclass StepEdge (very unlikely)
                 session.add(StepEdgeVersion(step_id=obj.step_id,dependency_id=obj.dependency_id,added=False))
                 #hrm the above could create a list of cycle enducing edges... given all else constant...
+            elif type(obj) is StepEdgeVersion:
+                session.expunge(obj) #this should prevent the delete
+                raise AttributeError('StepEdgeVersion is write only!')
         for obj in session.new:
             if type(obj) is StepEdge:
                 session.add(StepEdgeVersion(step_id=obj.step_id,dependency_id=obj.dependency_id,added=True))
 
 
-    @event.listens_for(session,'after_attach')
+    @event.listens_for(session,'before_attach')
     def check_for_cycles(session,instance): #FIXME monumentally slow for repeated adds and high edge counts
         if type(instance) is StepEdge:
             edges=array(session.query(StepEdge.step_id,StepEdge.dependency_id).all()) #ICK horrible for repeatedly adding edges :/
@@ -79,8 +84,10 @@ def logic_StepEdge(session): #FIXME this does not seem to be working properly...
                 #session.flush()
                 #raise BaseException('Edge already exists, saving you a nasty backtrace!')
             if cycle(instance.step_id,instance.dependency_id):
-                session.delete(instance)
-                session.flush()
+                #FIXME I don't want to roll back the whole session here do it?!
+                #session.delete(instance) #XXX apparently delete autoflushes!??!
+                #print('deleted?')
+                #session.flush() #FIXME this will trigger history_table_delete
                 raise ValueError('[!] Edge %s -> %s would add cycle! Deleting!'%(instance.step_id,instance.dependency_id))
                 #FIXME HORRENDOUSLY SLOW as edge count grows
 

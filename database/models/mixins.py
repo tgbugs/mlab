@@ -375,7 +375,7 @@ class Properties: #FIXME HasKeyValueStore
     key=Column(String(50),primary_key=True) #tattoo, eartag, name, *could* use coronal/sagital for slices, seems dubious... same with putting cell types in here... since those are technically results... #FIXME for some reason this accepts ints for a key... FIXME WATCH OUT for the type change on commit! it doesn't update the instace! make sure to expire them
     value=Column(String(50)) #if the strings actually need to be longer than 50 we probably want something else
     def __repr__(self):
-        return '\n%s %s {%s,%s}'%(self.parent_id,self.key,self.value)
+        return '\n%s {%s,%s}'%(self.parent_id,self.key,self.value)
     def strHelper(self,depth=0):
         tabs='\t'*depth
         return '%s{%s,%s}'%(tabs,self.key,self.value)

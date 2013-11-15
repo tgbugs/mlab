@@ -181,11 +181,11 @@ class Step(Base):
         if not version:
             version=self.all_edges[0].id #works because of inverted sort
         ver_edges=[edge for edge in self.all_edges if edge.id <= version]
-        first_instace=[]
+        first_instance=[]
         for edge in ver_edges:
             found = False
             for fedge in first_instance: #surely this would make it slower?
-                found = edge.dependency_id == fedge.dependnecy_id
+                found = edge.dependency_id == fedge.dependency_id
                 if found:
                     break #this way we stop inner loop asap
                 else:
@@ -241,7 +241,7 @@ class StepEdge(Base): #FIXME note that this table could hold multiple independen
     #but maybe it is a bit more than I need?
 
 
-class StepEdgeVersion(Base): #TODO we need an event to trigger, possibly manual, but seems unlikely
+class StepEdgeVersion(Base): #TODO prevent delete!
     #TODO diff two versions of the tree
     __tablename__='stepedgevers'
     id=Column(Integer,primary_key=True) #we can just call this version number... FIXME sqlite autoincrement?
@@ -255,6 +255,9 @@ class StepEdgeVersion(Base): #TODO we need an event to trigger, possibly manual,
     @property
     def deleted(self): #just for completeness
         return not self.added
+
+    def __repr__(self):
+        return 'ver:%s step:%s dep:%s add:%s'%(self.id,self.step_id,self.dependency_id,self.added)
 
 
 class stepGraphManager: #XXX Depricated in favor of the events interface
