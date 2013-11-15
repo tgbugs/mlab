@@ -21,7 +21,7 @@
 ----------main.py
 #TODO repeated func calls: itertools repeatfunc starmap
 #FIXME many of the options only apply if postgres is used...
-#TODO ipython
+__ from IPython import embed #TODO ipython
 
 #Base file for creating the tables that I will use to store all my (meta)data
 
@@ -41,8 +41,8 @@
 
 #TODO transfer logs for mice can now be done and incorporated directly with the system for weening etc
 
-#TODO reimplement notes so that they can apply to multiple things like I do with classDOB, but check the overhead, join inheritance might work
-#make sure to set the 'existing table' option or something?
+__ #TODO reimplement notes so that they can apply to multiple things like I do with classDOB, but check the overhead, join inheritance might work
+__ #make sure to set the 'existing table' option or something?
 
 #TODO neo io for dealing with abf files, but that comes later
 #OBJECTIVE raw data format agnostic, this database does not house the raw data, it houses the assumptions and the results and POINTS to the analysis code and the raw data
