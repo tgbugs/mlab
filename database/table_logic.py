@@ -46,8 +46,7 @@ def logic_StepEdge(session): #FIXME this does not seem to be working properly...
     """ Enforce DAG for step dependency tree"""
     @event.listens_for(session,'before_flush') #FIXME why does this trigger on session.add??!
     def history_table_delete(session,flush_context,instances):
-        print(session.new,session.deleted)
-        print(flush_context)
+        #print(session.new,session.deleted) #FIXME this reveals a number of problems in __repr__s around the db
         for obj in session.deleted:
             if type(obj) is StepEdge:#isinstance preferred IF I subclass StepEdge (very unlikely)
                 session.add(StepEdgeVersion(step_id=obj.step_id,dependency_id=obj.dependency_id,added=False))
@@ -57,38 +56,97 @@ def logic_StepEdge(session): #FIXME this does not seem to be working properly...
                 raise AttributeError('StepEdgeVersion is write only!')
         for obj in session.new:
             if type(obj) is StepEdge:
+                #print('wtf m8!') #FIXME this is being called waaay too much
                 session.add(StepEdgeVersion(step_id=obj.step_id,dependency_id=obj.dependency_id,added=True))
 
 
     @event.listens_for(session,'before_attach')
     def check_for_cycles(session,instance): #FIXME monumentally slow for repeated adds and high edge counts
         if type(instance) is StepEdge:
-            edges=array(session.query(StepEdge.step_id,StepEdge.dependency_id).all()) #ICK horrible for repeatedly adding edges :/
+            #FIXME since this is now called at before_attach the edge cannot find itself!
+            edges=session.query(StepEdge.step_id,StepEdge.dependency_id).all() #ICK horrible for repeatedly adding edges :/
+            edge_tuple=(instance.step_id,instance.dependency_id)
+            if edge_tuple in edges:
+                raise ValueError('Edge already exists!') #FIXME
+            edges.append(edge_tuple)
+            def makeDepDict(edges):
+                #edges=array(edges)
+                depDict={}
+                #revDepDict={}
+                for step,dep in edges:
+                    depDict[step]=set((dep,))
+                    #revDepDict[dep]=set((step,))
+                for step,dep in edges:
+                    depDict[step].add(dep)
+                    #revDepDict[dep].add(step) #this is fucking stupid
+                return depDict#,revDepDict
+
+            def topoSort(depDict,revDepDict):
+                #edges=array(edges)
+                #starts=[node for node in edges[:,0] if edge not in edges[:,1]]
+                starts=[node for node in depDict.keys() if node not in revDepDict.keys()]
+                #print(starts)
+                L=[] #our sorted list
+                while starts:
+                    node=starts.pop()
+                    L.append(node)
+                    discards=set()
+                    #print(depDict.keys(),node)
+                    try:
+                        for m in depDict[node]:
+                            revDepDict[m].discard(node)
+                            discards.add(m)
+                            if not revDepDict[m]:
+                                starts.append(m)
+                        depDict[node].difference_update(discards)
+                    except KeyError:
+                        pass #the node is a leaf and thus not in depDict
+                check=set()
+                (check.update(v) for v in depDict.values())
+                (check.update(v) for v in revDepDict.values())
+                if check:
+                    raise TypeError('NOT ACYCLIC!!')
+                else:
+                    return L
+
+            depDict=makeDepDict(edges)
             if not len(edges): #in the one time event that there are no edges
                 return False
             def cycle(start,node):
                 if node==start:
                     return True
                 #TODO this *might* be faster with a transitive closure query, but srsly?
-                deps=edges[:,1][edges[:,0]==node] #FIXME this seems to be the culpret
+                #deps=edges[:,1][edges[:,0]==node] #FIXME this seems to be the culpret for the slow down
+                #TODO better to see if start is in the TC of start aka if step_id in TC of dep_id
+                    #don't need this right now since most scientific protocols dont have massive x-deps
                 #print('node %s dependencies'%node,deps)
-                if start in deps:
-                    return True
-                else:
-                    for n in deps:
-                        if cycle(start,n):
-                            return True
+                try:
+                    if start in depDict[node]:
+                        return True
+                    else:
+                        for n in depDict[node]: #TODO make this threaded? OR use lists sorted by connectivity
+                            if cycle(start,n): #nasty stack overflow here
+                                return True
+                        return False
+                except KeyError:
                     return False
             #if session.query(StepEdge).get(instance.step_id,instance.dependency_id):
                 #session.delete(instance)
                 #session.flush()
                 #raise BaseException('Edge already exists, saving you a nasty backtrace!')
+            print('Checking if edge %s -> %s would add cycle!'%(instance.step_id,instance.dependency_id))
+            #try:
+                #print(topoSort(*makeDepDict(edges))) #slow as balls
+            #except:
+                #raise
+                #raise ValueError('[!] Edge %s -> %s would add cycle! Not adding!'%(instance.step_id,instance.dependency_id))
+
             if cycle(instance.step_id,instance.dependency_id):
                 #FIXME I don't want to roll back the whole session here do it?!
                 #session.delete(instance) #XXX apparently delete autoflushes!??!
                 #print('deleted?')
                 #session.flush() #FIXME this will trigger history_table_delete
-                raise ValueError('[!] Edge %s -> %s would add cycle! Deleting!'%(instance.step_id,instance.dependency_id))
+                raise ValueError('[!] Edge %s -> %s would add cycle! Not adding!'%(instance.step_id,instance.dependency_id))
                 #FIXME HORRENDOUSLY SLOW as edge count grows
 
 #TODO add the history part too!

@@ -4,7 +4,7 @@ from IPython import embed
 
 import numpy as np
 
-from database.imports import printD,ploc,datetime,timedelta,_tdb,FlushError
+from database.imports import printD,ploc,datetime,timedelta,_tdb,FlushError,IntegrityError
 
 #_tdb.tdbOff()
 
@@ -588,6 +588,7 @@ class t_edges(TEST):
                 failed=True
             except:
                 pass
+            self.session.query(StepEdge).all()
             assert not failed, 'a==a check FAILED'
 
             #basic add
@@ -623,46 +624,53 @@ class t_edges(TEST):
                 pass
             assert not failed, 'circular 1-2-3-1 check FAILED'
 
-        def adv_test():
+        def adv_tests():
             se1=set(self.session.query(StepEdge).all())
             assert se1 == se1 , 'A SET IS NOT EQUAL TO ITSELF RUNNNNNN!!!'
 
             try:
                 [step.dependencies.update([steps[int(i)] for i in np.random.randint(0,100,20)]) for step in steps]
+                printD(self.session.new)
+                #[step.dependencies.update((steps[int(i)] for i in np.random.randint(0,100,20))) for step in steps]
             except (ValueError, FlushError) as e:
                 if type(e) is FlushError:
                     printD('Rolling back!')
                     self.session.rollback()
                 printD(e)
+                printD(self.session.new)
             self.session.flush()
             self.session.expire_all()
             se2=set(self.session.query(StepEdge).all())
-            assert se2 != se1
+            assert se2 != se1, 'set used for update probably contained a duplicate'
 
             try:
                 [[step.dependencies.add(steps[int(np.random.randint(100))]) for step in steps] for i in range(20)]
+                printD(self.session.new)
             except (ValueError, FlushError) as e:
                 if type(e) is FlushError:
                     printD('Rolling back!')
                     self.session.rollback()
                 printD(e)
+                printD(self.session.new)
             self.session.flush()
             se3=set(self.session.query(StepEdge).all())
             assert se3 != se2
 
-            for i in range(1000):
+            for i in range(100): #FIXME somehow all this stuff really does not work well with the versioning
                 a,b=(steps[int(i)] for i in np.random.randint(0,len(steps),2))
                 try:
                     self.session.add(StepEdge(a,b))
+                    self.session.flush()
                 except (ValueError, FlushError) as e:
                     printD(e)
-                    self.session.rollback()
+                    #self.session.rollback() #FIXME <<< this is what causes all the good edges to get zapped
 
-            self.session.flush()
-            
-            printD('Num StepEdges',len(se3))
-        basic_tests()
-        #adv_tests()
+            se4=set(self.session.query(StepEdge).all())
+            assert se4 != se3
+            printD('Num StepEdges',len(se4)) #FIXME this is patently wrong
+
+        #basic_tests()
+        adv_tests()
 
     def commit(self):
         self.session.commit()
@@ -715,8 +723,8 @@ def run_tests(session):
     c=t_cell(session,5)
     #c2c=t_c2c(session) #no longer used
 
-    d=t_datafile(session,5)#,2,1) #FIXME eating memory
-    dfmd=t_dfmetadata(session,10) #as in 8 gigs of memory...
+    d=t_datafile(session,1)#,2,1) #FIXME eating memory
+    dfmd=t_dfmetadata(session,1) #as in 8 gigs of memory...
 
     session.commit()
 

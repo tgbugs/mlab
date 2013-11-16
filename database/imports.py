@@ -17,6 +17,8 @@ from sqlalchemy                         import ForeignKey
 from sqlalchemy                         import ForeignKeyConstraint
 from sqlalchemy                         import UniqueConstraint
 
+from sqlalchemy.exc                     import IntegrityError
+
 from sqlalchemy.orm                     import relationship, backref, object_session, validates, reconstructor
 
 from sqlalchemy.orm.exc                 import FlushError

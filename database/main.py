@@ -125,7 +125,7 @@ def main(echo=False,postgres=False,wipe_db=False,setupDB=False,test=False):
     
 if __name__=='__main__':
     args=docopt(__doc__, version='Main .0002')
-    global ipython #FIXME LOL MASSIVE HACK
+    #global ipython #FIXME LOL MASSIVE HACK
     session=main(args['--echo'],args['--pgsql'],args['--wipe'],args['--setup'],args['--test']) #THAT WAS EASY
     if args['--ipython']:
         from IPython import embed

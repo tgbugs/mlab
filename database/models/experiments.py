@@ -211,16 +211,12 @@ class Step(Base):
         def creator(step):
             return StepEdge(self,step)
         setattr(self.dependencies,'creator',creator)
-        #setattr(self.dependencies,'append',self._append_dep)
-        #setattr(self.dependencies,'extend',self._extend_dep)
 
     def __init__(self,**kwargs): 
         super().__init__(**kwargs)
         def creator(step):
             return StepEdge(self,step)
         setattr(self.dependencies,'creator',creator)
-        #setattr(self.dependencies,'append',self._append_dep)
-        #setattr(self.dependencies,'extend',self._extend_dep)
 
 
 class StepEdge(Base): #FIXME note that this table could hold multiple independent trees
@@ -234,6 +230,14 @@ class StepEdge(Base): #FIXME note that this table could hold multiple independen
         self.dependency_id=int(dependency_id)
     def __repr__(self):
         return '\n%s -> %s'%(self.step_id,self.dependency_id)
+    def __eq__(self,other):
+        return self.step_id == other.step_id and self.dependency_id == other.dependency_id
+    def __ne__(self,other):
+        return self.step_id != other.step_id or self.dependency_id != other.dependency_id
+    def __hash__(self):
+        return hash('%s%s'%(self.step_id,self.dependency_id)) #needed to make add and update work properly
+
+
 
 
     #versioning does not quite seem to be what I want??!? since this is only add/delete
