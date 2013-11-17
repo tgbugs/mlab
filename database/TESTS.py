@@ -25,6 +25,9 @@ class TEST:
         self.make_all()
         if autocommit:
             self.commit()
+        self.test_delete()
+        if autocommit:
+            self.commit()
     def make_date(self):
         from datetime import date,timedelta
         num=self.num
@@ -70,6 +73,9 @@ class TEST:
             pass
 
     def make_all(self):
+        pass
+
+    def test_delete(self):
         pass
 
     def commit(self): #XXX now flush, but hey...
@@ -676,6 +682,9 @@ class t_edges(TEST):
         self.session.commit()
 
         #todo test a double cycle and a split tree
+    def test_delete(self):
+        edges=self.session.query(StepEdge).all()
+        [self.session.delete(edge) for edge in edges]
         
 
 def run_tests(session):
