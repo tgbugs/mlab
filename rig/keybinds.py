@@ -64,6 +64,10 @@ def rigDict():
                     #'o':'test',
                     #'d':('setMode','dat'),
                    },
+
+        'trmFuncs':{
+            'k':('setMode','trm'),
+            },
     }
     return rigDict
 
@@ -142,6 +146,20 @@ def datDict():
             }
     }
     return datDict
+
+def trmDict():
+    trmDict={
+        'mode':'trm',
+        'trmFuncs':
+            {
+                '1':'getString',
+                '2':'getFloat',
+                '3':'getInt',
+                '4':'getBool',
+                '5':'getKbdHit',
+            },
+    }
+    return trmDict
 
 def getDicts(locs): #in theory we would like to generate this automatically...
     from inspect import isfunction

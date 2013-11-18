@@ -90,6 +90,11 @@ class DataIO(Base):
         'polymorphic_identity':'baseio',
     }
     
+class DataSetter(DataIO):
+    __tablename__='datasetter'
+    setter_name=Column(String) #only on certain subclasses?
+    __mapper_args__ = {'polymorphic_identity':'dset'}
+
 
 class MetaDataSource(DataIO): #FIXME naming #all raw data collect w/o sample rate goes here
     """used for doccumenting how data was COLLECTED not where it came from, may need to fix naming"""

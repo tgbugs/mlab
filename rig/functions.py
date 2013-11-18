@@ -478,6 +478,33 @@ class keyFuncs(kCtrlObj):
     def esc(self):
         return 0
 
+class trmFuncs(kCtrlObj):
+    def __init__(self, modestate, controller):
+        super().__init__(modestate,controller)
+        def printwrap(func):
+            def wrap():
+                out=func()
+                printD(out)
+                return out
+            return wrap
+        for name in self.ctrl.__dir__():
+            if name[:3]=='get':
+                setattr(self,name,printwrap(getattr(self.ctrl,name)))
+        self.getKbdHit=printwrap(self.getKbdHit)
+        self.getBool=printwrap(self.getBool)
+
+    def getKbdHit(self):
+        print('Hit any key to advance.')
+        self.keyHandler(1)
+        self.charBuffer.get()
+        return True
+
+    def getBool(self):
+        print('Boolean: hit space for True, anything else for False.')
+        true_key=' '
+        self.keyHandler(1) #requesting key passthrough
+        return self.charBuffer.get() == true_key
+
 
 def main():
     esp=espFuncs(None,None,None,None)

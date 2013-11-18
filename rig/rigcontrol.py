@@ -1,4 +1,5 @@
 import threading
+import warnings
 from queue import Queue,Empty
 
 from rig.functions import * #FIXME add __all__ to functions
@@ -106,12 +107,13 @@ class rigIOMan:
                 print('[OK]',inited.__class__.__name__)
                 ctrlDict[ctrl.__name__]=inited
             except:
-                raise Warning('[!] %s failed to init'%ctrl.__name__)
+                warnings.warn('[!] %s failed to init'%ctrl.__name__,UserWarning)
      
         ctrlBindingDict={
                 'clxControl':clxFuncs,
                 'espControl':espFuncs,
-                'mccControl':mccFuncs
+                'mccControl':mccFuncs,
+                'trmControl':trmFuncs,
         }
         for key in ctrlDict.keys():
             initedFunc=ctrlBindingDict[key](self,ctrlDict[key])
