@@ -89,9 +89,27 @@ class DataIO(Base):
         'polymorphic_on':type,
         'polymorphic_identity':'baseio',
     }
-    
+
+class Getter(DataIO):
+    ctrl_name=Column(String)
+    function_name=Column(String)
+    kwargs={} 
+class Setter(DataIO):
+    ctrl_name=Column(String)
+    function_name=Column(String)
+    kwargs={}
+class Reader(DataIO):
+    pass
+class Writer(DataIO):
+    pass
+class Analyzer(DataIO):
+    pass
+class Checker(DataIO):
+    pass
+
 class DataSetter(DataIO):
     __tablename__='datasetter'
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
     setter_name=Column(String) #only on certain subclasses?
     __mapper_args__ = {'polymorphic_identity':'dset'}
 

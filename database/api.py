@@ -148,7 +148,7 @@ class DataIO(BaseDataIO): #IXCK ugly ugly might be nice for a factory :/ but is 
         return self.value
 
 class Get(BaseDataIO):
-    MappedClass=None #from database.models import thing as MappedClass
+    #MappedClass=None #GET DOESNT NEED THIS??!?!
     ctrl_name=None
     getter_name=None #name of the function used to get stuff
     def __init__(self,Controller,session):

@@ -18,6 +18,14 @@ class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Ba
     experiments=relationship('Experiment',backref=backref('type',uselist=False))
     checkpoint_step_id=None #TODO this defines the methodes and the tools etc, Experiment can doccument the exact tree? or the toposort of the tree
 
+    base_step_id=Column(ForeignKey('steps.id'),nullable=False)
+    base_step=relationship('Step')
+    #FIXME loop steps
+    @property
+    def steps(self): #TODO
+        return base_step.transitive_closure() #or something like this
+        #TODO make sure this thing is indexed by step name!
+
     @property
     def reagents(self): #FIXME
         return [rt.currentLot for rt in self.reagenttypes]
@@ -59,6 +67,14 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
     step_tree_version_id=None
     steprecord=relationship('StepRecord',order_by='StepRecord.id')
     steps=association_proxy('steprecord','step',creator=lambda step_id, success: StepRecord(step_id=step_id,success=success)) #FIXME make sure experiment_id gets set...
+
+    stepStateDict={} #FIXME make me peristable please! hstore? or... something on top of step record?
+    #we can do this by looking at the current step and comparing it to the state of the LIVE tree...
+    def getBaseStepDict(self):
+        for step in self.type.steps:
+            self.stepStateDict[step.id]=False
+        return stepStateDict
+
 
     @validates('type_id','person_id','endDateTime','startDateTime')
     def _wo(self, key, value): return self._write_once(key, value)
@@ -141,6 +157,7 @@ class Step(Base):
     name=Column(String,nullable=False,unique=True)
     docstring=Column(String,nullable=False) #pulled from __doc__ and repropagated probably should be a citeable?
     checkpoint=Column(Boolean,default=False) #FIXME TODO is this the right way to do this??? nice way to delimit the scope of an 'experiment' if we still have experiments when this is all done
+    isdone=Column(Boolean,default=False) #FIXME FIXME should we keep the step tree state here!???! seems ok? unless we try to run two experiments off the same step at the same time, then we will really mess stuff up... ideally we need a per experiment tree or something??? though from a science checklist point of view you don't want to reset stuff every time... hrm; using only direct dependencies is nice in that as soon as the steps registers as successful and the next step proceeds, the previous (in many cases) should be reset to false!
     dataio_id=Column(Integer,ForeignKey('dataio.id'),nullable=False) #FIXME will need to unify metadatasource, datasource, datafilesource, etc under one index? default should be 'StepEvent' or something... maybe 'StepRecord'
     record_step=Column(Boolean,default=True) #set to false for steps that don't need to be put in the record; TODO can this double as a 'set_only'???
     #FIXME damn, this does seem to complicate the 'HasExperiments' setup...
@@ -173,7 +190,7 @@ class Step(Base):
     dependencies=association_proxy('edges','dependency') #creator set at __init__
     all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
         ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
-    transitive_closure=None #all upstream dependencies expressed as edges starting at self and ending at all upstream steps #step graphs might be small enough we don't need this
+    transitive_closure=lambda:[] #all upstream dependencies expressed as edges starting at self and ending at all upstream steps #step graphs might be small enough we don't need this
 
     def edges_at_version(self,version=None): #FIXME profile these two to see which is faster
         if not self.all_edges:

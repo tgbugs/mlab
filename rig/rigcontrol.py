@@ -107,7 +107,8 @@ class rigIOMan:
                 print('[OK]',inited.__class__.__name__)
                 ctrlDict[ctrl.__name__]=inited
             except:
-                warnings.warn('[!] %s failed to init'%ctrl.__name__,UserWarning)
+                #warnings.warn('[!] %s failed to init'%ctrl.__name__,UserWarning,0)
+                print('[!] %s failed to init'%ctrl.__name__)
      
         ctrlBindingDict={
                 'clxControl':clxFuncs,

@@ -6,6 +6,10 @@ from debug import TDB
 tdb=TDB()
 printFD=tdb.printFuncDict
 
+#XXX this seems to be depricated given how steps are working now
+    #convert some of the logic to a writeTarget manager?
+    #hrm, subjects are now dependencies in the step graph
+    #so... yeah this is now old
 class BaseExp: #FIXME this should *probably* move over to the api?
     def __init__(self,rigIO,experiment=None,experimenttype=None): #FIXME should be arbitrary IO
         if not checkExpType(experimenttype):

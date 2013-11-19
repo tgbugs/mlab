@@ -100,39 +100,11 @@ class clxFuncs(kCtrlObj):
         self.ctrl.StartMembTest(121)
         return self
 
+
 class datFuncs(kCtrlObj): 
     #interface with the database TODO this should be able to run independently?
     """Put ANYTHING permanent that might be data in here"""
-    def __init__(self, modestate):
-        #from database.models import * #DAMNIT FIXME
-        super().__init__(modestate)
-        self.markDict={}
-        self.posDict={}
-        self.MCCstateDict={}
-        #self.wrapDoneCB()
-        #FIXME
-        #this class should be the one to get data out of dataman
-        #dataman should have a method 'saveData' that takes the source class (self) and the data and stores it
-
-    def newExperiment(self):
-        return self
-
-    def newCell(self):
-        return self
-
-    def newSlice(self):
-        return self
-
-    def addMetaData(self):
-        return self
-
-    def addDataFile(self): #FIXME not sure this should go here...
-        return self
-
-    def getUserInputData(self):
-        """Sadly there is still some data that I can't automatically collect"""
-        #get cell depths FROM SAME STARTING POINT??? measure this before expanding tissue with internal???
-        return self
+    pass
 
 
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
@@ -477,6 +449,7 @@ class keyFuncs(kCtrlObj):
         return self
     def esc(self):
         return 0
+
 
 class trmFuncs(kCtrlObj):
     def __init__(self, modestate, controller):

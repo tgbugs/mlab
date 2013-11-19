@@ -111,25 +111,65 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
     from database.models import Step, StepRecord
     dataIO=None #import this
     expected_writeTarget_type=None #TODO one and only one per step
-    set_only=False #TODO use this so that we can doccument steps and choose not to check them (bad scientist!)
+    keepRecord=False #TODO use this so that we can doccument steps and choose not to check them (bad scientist!)
     @property
     def name(self):
         #FIXME add a way to explicity name classes if you want?
         return self.__class__.__name__[4:]
     dependencies=['step','list'] #this is used by ExpBase to validate the list of steps
+    callbackDict={}
+    def depCallback(self,depName,value):
+        self.callbackDict[depname]=value
     #TODO should Steps check their OWN deps? or should ExpBase do that?
+
     experiment_state_node=None #FIXME need to work on invalidating branches of trees...
-    def __init__(self,Experiment,Controller,session):
+
+    def __init__(self,stepDict,session,Experiment,ctrlDict): #FIXME for self running steps we need the ctrlDict
         self.experiment=Experiment
-        self.io=self.dataIO(Controller,session)
-    def do(self,writeTarget=None,set_value=None,set_error=0,analysis_value=None,autocommit=False):
+        self.etype=Experiment.type
+        self.io=self.dataIO(session,ctrlDict[dataIO.ctrl_name]) #quite elegant!? FIXME if we're going to use set to set the experiment state and stuff like that then we need to expand ctrlDict
+        self.getDeps(stepDict) #FIXME need a way to pick up where we left off??? interact w/ step record?
+        #XXX the above won't becircular because all that is needed are unintilized steps for this
+
+    def getDeps(self,stepDict): #this is gonna be a bit crazy, since all the steps are inited off the bat
+        #FIXME I foresee the need for a way to reload the deps if something goes wrong...
+            #maybe we can just call getDeps again? hell, we could even call it with a new step dict!
+            #or even a new ctrlDict! actually... I bet changes to the ctrlDict get passed along...
+            #HRM that might be a better way to handle controllers that haven't started... TODO
+            #but that isn't good... because the tree is obfusticating the steps!
+        self.iDepDict={}
+        for dep in self.dependencies:
+            self.iDepDict[dep]=stepDict[dep](stepDict,session,Experiment,ctrlDict)
+
+    #TODO easy way to persist progress is StepRecord/exp...
+
+    def runDeps(self):
+        for name,dep in self.iDepDict:
+            FUCK=writeTargetTracker.getSubject() #TODO, maybe something like this!!!?
+                #yes, because you can just add a 'go to next subject' step?
+                #or is that too much... I have the subject tree traversal practially
+                #automated at this point... I want that functionality too...
+            self.depValueDict[name]=dep.do(writeTarget=FUCK,**kwargs) #FIXME damn it still need external management for the writeTarget :/
+            #FIXME UNLESS we handle that here? but... we do need expman to bind subjects to data :/
+
+    def doFuncs(self,kwargDict):
+        """Put any code needed to handle depValueDict -> self.io.do here"""
+        kwargDict.update(self.callbackDict) #FIXME I don't want the callbackDict key names to be referenced by dataios...
+        
+    def do(self,*args,writeTarget=None,**kwargs):
         #FIXME don't handle deps here, handle those upstairs in BaseExp???
+        #FIXME loop steps, by taking a bool input at one step that then resets the state
+        kwargs['writeTarget']=writeTarget
+        self.runDeps() #FIXME this needs to go first, because some steps will have their own do???
+        self.doFuncs(kwargs) #this does an in-place substitution
         try:
-            self.io.do(writeTarget,set_value,set_error,analysis_value,autocommit)
+            value=self.io.do(*args,**kwargs)
+            if depCallback: #this makes steps self managing... but could still use external?
+                depCallback(self.name,value) #FIXME what if there are mulitple child steps!?
             self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
             self.experiment_state_node = True
             print('[OK]')
-            return True
+            return value
         except:
             self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
             self.experiment_state_node = False
@@ -137,7 +177,7 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
             return False
 
 
-class BaseDataIO: #XXX DEPRICATED see api.py for new version
+class BaseDataIO: #XXX DEPRICATED see dataio.py for new version
     @property
     def name(self):
         return self.__class__.__name__[4:]
