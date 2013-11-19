@@ -154,6 +154,7 @@ class Step(Base):
     __tablename__='steps'
     id=Column(Integer,primary_key=True) #FIXME this could nicely alleviate the concern about naming, but we do still need a reasonable way id them
     type_id=None #FIXME do we want this??? get, set, check, analysis? don't really... need a table for 4 things?
+        #get set bind read write analysis check
     name=Column(String,nullable=False,unique=True)
     docstring=Column(String,nullable=False) #pulled from __doc__ and repropagated probably should be a citeable?
     checkpoint=Column(Boolean,default=False) #FIXME TODO is this the right way to do this??? nice way to delimit the scope of an 'experiment' if we still have experiments when this is all done

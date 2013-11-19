@@ -110,26 +110,35 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
         #base node if I can get it to work properly...
     from database.models import Step, StepRecord
     dataIO=None #import this
+    keepRecord=False #TODO use this so that we can doccument steps and choose not to check them, bad scientist!
+    persistent_node=False #True means that this node will not automatically reset itself to False on succesful exit, pretty sure this one of those 'hard' problems
+    dependencies=['step','list'] #this now used internally without the need for BaseExp/ExpBase
     expected_writeTarget_type=None #TODO one and only one per step
-    keepRecord=False #TODO use this so that we can doccument steps and choose not to check them (bad scientist!)
-    @property
-    def name(self):
-        #FIXME add a way to explicity name classes if you want?
-        return self.__class__.__name__[4:]
-    dependencies=['step','list'] #this is used by ExpBase to validate the list of steps
-    callbackDict={}
-    def depCallback(self,depName,value):
-        self.callbackDict[depname]=value
-    #TODO should Steps check their OWN deps? or should ExpBase do that?
+    #TODO something to track experiment state
 
-    experiment_state_node=None #FIXME need to work on invalidating branches of trees...
+    @property
+    def name(self): #FIXME we might be able to use this in conjunction with the dataio_deps???
+        #FIXME add a way to explicity name classes if you want?
+        return 'step_'+self.dataIO.__name__
+
+    @property
+    def __doc__(self):
+        raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER')
+
+    @property
+    def baseStep(self):
+        return self.etype.base_step_id == self.Step.id
 
     def __init__(self,stepDict,session,Experiment,ctrlDict): #FIXME for self running steps we need the ctrlDict
         self.experiment=Experiment
         self.etype=Experiment.type
+        self.dependencies.extend(['step_'+name for name in self.dataIO.dependencies])
         self.io=self.dataIO(session,ctrlDict[dataIO.ctrl_name]) #quite elegant!? FIXME if we're going to use set to set the experiment state and stuff like that then we need to expand ctrlDict
         self.getDeps(stepDict) #FIXME need a way to pick up where we left off??? interact w/ step record?
         #XXX the above won't becircular because all that is needed are unintilized steps for this
+
+    def persist(self): #TODO
+        raise NotImplementedError('GET IT DONE')
 
     def getDeps(self,stepDict): #this is gonna be a bit crazy, since all the steps are inited off the bat
         #FIXME I foresee the need for a way to reload the deps if something goes wrong...
@@ -143,33 +152,41 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
 
     #TODO easy way to persist progress is StepRecord/exp...
 
-    def runDeps(self):
+    #TODO optimize to limit when we need to recompute the topo sort, do as much before hand as possible
+        #basically we want a 'persistent true' vs a 'transient true' distinction,
+        #so a step can return that it exited successfully and still need to be completed
+        #it should then be possible to predict the state of a node preceeding a given step apriori (I think)
+    def runDeps(self,kwargDict): #FIXME massive problem here! convergent upstream steps will be run multiple times!!!!!! NOT TO MENTION LOOPS!! #FIXME this needs to go to ExpBase, we need deps and revdeps, the nodes in the graph shouldn't be trying to traverse the graph! some steps that remain perisistently true will just be natural checkpoints
+        #topo sort sub trees, find convergent nodes???
+        #FIXME also have to deal with linearity in time for some stuff because SOME convergent nodes
+            #are actaully called multiple times because they aren't actually the same step
+            #will have to deal with that... instances of the step vs the step itself :/
+            #when to converge and when not to converge
+            #TODO the stepStateDict should help with this since node invalidation could make this work right
         for name,dep in self.iDepDict:
             FUCK=writeTargetTracker.getSubject() #TODO, maybe something like this!!!?
                 #yes, because you can just add a 'go to next subject' step?
                 #or is that too much... I have the subject tree traversal practially
                 #automated at this point... I want that functionality too...
-            self.depValueDict[name]=dep.do(writeTarget=FUCK,**kwargs) #FIXME damn it still need external management for the writeTarget :/
+            kwargDict.update(dep.do(writeTarget=FUCK,**kwargs)) #FIXME damn it still need external management for the writeTarget :/
             #FIXME UNLESS we handle that here? but... we do need expman to bind subjects to data :/
 
-    def doFuncs(self,kwargDict):
-        """Put any code needed to handle depValueDict -> self.io.do here"""
-        kwargDict.update(self.callbackDict) #FIXME I don't want the callbackDict key names to be referenced by dataios...
-        
-    def do(self,*args,writeTarget=None,**kwargs):
+    def do(self,writeTarget=None,**kwargs):
+        #FIXME writeTarget may not be for the final step until much later?
+            #the the base write target should probably always be preceeded by a
+            #Get boolean step that writes to experiment, ie: the "ExperimentDone" step
         #FIXME don't handle deps here, handle those upstairs in BaseExp???
         #FIXME loop steps, by taking a bool input at one step that then resets the state
-        kwargs['writeTarget']=writeTarget
-        self.runDeps() #FIXME this needs to go first, because some steps will have their own do???
-        self.doFuncs(kwargs) #this does an in-place substitution
+        if writeTarget:
+            kwargs['writeTarget']=writeTarget
         try:
-            value=self.io.do(*args,**kwargs)
-            if depCallback: #this makes steps self managing... but could still use external?
-                depCallback(self.name,value) #FIXME what if there are mulitple child steps!?
+            value=self.io.do(**kwargs)
             self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
             self.experiment_state_node = True
             print('[OK]')
-            return value
+            return value #FIXME multiple child steps??? using a database to pass values is super dumb
+                #a good example is if we want to write to the db and do analysis at the same time
+                #there is no reason why we shouldn't be able to do both at the same time... HRM
         except:
             self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
             self.experiment_state_node = False

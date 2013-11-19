@@ -135,8 +135,13 @@ class DataIO(BaseDataIO): #IXCK ugly ugly might be nice for a factory :/ but is 
 
 #need failover if a function is not found?
 
+
+#XXX NOTE: readTarget and WriteTarget are really the only INPUT that is dynamic for dataios
+
 class baseio:
     #TODO inspect.getsourcelines for versioning? or... what? doesn't work for wrapped classes
+    dependencies=[] #these will be prefixed by 'step_' for dealing with deps at the step level
+        #and they should be the expected keywords for anything downstream
     @property
     def name(self):
         return self.__class__.__name__#[4:]
@@ -183,110 +188,181 @@ class Get(ctrlio): #FIXME now that this is separate from Writer... wat do?
     #TODO i think this somehow needs to interface with subjects, or do I need another step type? Set has it too
     MappedClass=None #Getter
     function_name=''
-    kwargs={}
+    kwargs={} #FIXME because Getters are now divorced from Writers, need to validate that units match?
     ctrl_name=''
-
-    def get(self,**kwargs):
-        self.kwargs.update(kwargs)
-        out=getattr(self.ctrl,function_name)(**self.kwargs)
-        return {'value':out}
+    dependencies=[] #TODO these will be in the expected kwarg list
+    #FIXME time serries acquisition are all within their own get so no worries
+        #about key collisions with multiple reads from the same Getter
+    #FIXME PROBLEM: dep names here are different than the dep names for steps...
+        #gotta figure out how to integrate the two... :/
+    #atm dep_names in here just mean that the inner function is going to expect those keywords to be present
+    #TODO: could auto-generate steps based on the dep names found here... probably wouldnt be quite so reusable
 
     def do(self,**kwargs):
-        return self.get(**kwargs)
+        out=self.get(**kwargs)
+        return {'%s'%self.name:out}#XXX NOTE: this makes it super easy to chain things by dependency name
+            #might not even need the whole step framework to keep track of deps if the dataios keep the
+            #names of the upstream dataios that they need... or really just automatically add certain deps
 
+    def get(self,**kwargs):
+        """Modify as needed"""
+        self.kwargs.update(kwargs)
+        return getattr(self.ctrl,function_name)(**self.kwargs)
 
 class Set(ctrlio): #FIXME must always have an input value
-    #TODO set COULD be used to change the subject/set of subjects? YES
+    #TODO set COULD be used to change the subject/set of subjects? YES/NO???
+    #TODO probably also to be used for resetting the experimental state? NO??
+        #both of the above suggestions seem like too much overloading of this
+        #this is about io not about tracking the internal state of the program
+        #even if we are persisiting that too
     MappedClass=None #Setter
     function_name=''
     kwargs={}
     ctrl_name=''
+    dependencies=[] #TODO virtually all setters should have a read dep or define the set value in kwargs
+
+    def do(self,**kwargs):
+        out=self.set(**kwargs)
+        return {'%s'%self.name:out}
 
     def set(self,**kwargs):
+        """Modify as needed"""
         self.kwargs.update(kwargs)
         try:
             setter=getattr(self.ctrl,function_name)
             setter(**self.kwargs)
-            return {'success':True} #FIXME *args will almost never be in order...
+            return True
         except:
             raise #error or true false??
 
+
+class Bind(baseio): #this is not quite analysis, it is just a data organizing step
+    MappedClass=None #TODO yay! finally a simple way to collect datasources into vectors!
+        #obviously if I have 100 independent sensors this things is getting refactored
+    dependencies=[] #eg: esp_x esp_y, or channel_1, channel_2, etc
+    out_format=[] #take the dep_names from above and put them in the structure you want, need not be a list
+        #rewrite self.bind as need for more complex data structures
+
     def do(self,**kwargs):
-        return self.set(**kwargs)
+        out=self.bind(**kwargs)
+        return {'%s'%self.name:out}
+
+    def bind(self,**kwargs):
+        """Modify as needed"""
+        out=[]
+        for kw in out_format:
+            out.append(kwargs[kw])
+        return {'%s'%self.name:out}
+
 
 class Read(baseio): #FIXME technically anything read from the database should already be annotated
     #AND the link between what is read MUST be maintained... which is quite hard w/ this setup...?
     MappedClass=None #DataBaseSource BAD BAD BAD BAD practice
     class_kwargs={}
     MappedReader=None #literally any mapped class, depending on the query strategy
-    filter_string='' #FIXME these do no allow sufficient query power
-    order_by=''
+
     def validate(self):
         #check to make sure stuff here has not changed? ie versioning?
         pass
+
     def persist(self,session):
         mrn=self.MappedReader.__name__
         self.MappedInstance=MappedClass(name=self.name,reader_name=mrn,filter_string=self.filter_string,order_by=self.order_by)
         super().persist(session)
+
+    def do(self,**kwargs):
+        if 'writeTarget' in kwargs.keys(): #FIXME very dangerous!
+            kwargs['readTarget':kwargs['writeTarget']] #stupid hack
+        out=self.read(**kwargs)
+        return {'%s'%self.name:out}
+
     def read(self,readTarget=None,**kwargs): #this seems to be needed for analysis... but how to we tie it in 
+        """Modify as needed"""
         raise NotImplementedError('You MUST implement this at the subclass level')
         query=self.session.query(self.MappedReader).filter(self.filter_string).order_by(self.order_by)
         #we explicitly do NOT want to allow subcolumns so that analysis can be properly linked to the
             #generating data objects??
-        reclist=query.all()
-        return {'value':reclist}
-    def do(self,**kwargs):
-        if 'writeTarget' in kwargs.keys():
-            kwargs['readTarget':kwargs['writeTarget']] #stupid hack
-        return self.read(**kwargs)
+        return query.all()
 
 
-class Write(baseio):
+class Write(baseio): #wow, this massively simplifies this class since the values is passed in as a kwarg
+    #TODO validate incoming units :/
     MappedClass=None #MetaDataSource
-    class_kwargs={}
-    MappedWriter=None #MetaData
+    class_kwargs={} #things like units etc,
+        #XXX BEWARE need to validate these against inputs AT START TIME NOT RUN TIME
+    MappedWriter=None #MetaData, we're not even messing with adding to collections right now
     writer_kwargs={}
+    dependencies=[] #pretty much every writer should have get or an analysis or something
+
     def validate(self):
         #check to make sure stuff here has not changed? ie versioning?
+        #check units XXX this may have to be done at the level of steps
+            #OR we can just feed it forward from the Getter/Analysis
+            #and throw an error if it is not defined, but then we can't persist Writer's properly...
+            #maybe we don't NEED to persist writers properly, INFACT I'm faily ertain we don't
+            #because they aren't what has the properties, they just need to persist them
+            #we can probably document the 'datasource' properties via the getter
+            #even through tht writer is what actually 'writes' the data
+            #think about how to make this sensible and don't forget that kwargs would be
+            #overwritten if we use {'mantissa':5} for multiple things, BUT
+            #it should be ok as long as it gets fed DIRECTLY in to the writer, which really
+            #should happen...
         pass
+
     def persist(self,session):
         mwn=self.MappedWriter.__name__
-        self.MappedInstance=MappedClass(name=self.name,writer_name=mwn,kwargs=self.kwargs)
+        self.MappedInstance=MappedClass(name=self.name,writer_name=mwn,writer_kwargs=self.writer_kwargs)
         super().persist(session)
+
+    def do(self,**kwargs):
+        out=self.write(**kwargs)
+        return {'%s'%self.name:out}
+
     def write(self,writeTarget=None,autocommit=False,**kwargs): #not handling errors here
+        """Modify as needed"""
         self.writer_kwargs.update(kwargs) #XXX kwargs should include the value
-        self.session.add(self.MappedWriter(writeTarget=writeTarget,**self.kwargs)) #TODO parent shall be speced in kwargs???
+        self.session.add(self.MappedWriter(writeTarget=writeTarget,**self.writer_kwargs)) #TODO parent shall be speced in kwargs???
         if autocommit:
             self.session.commit()
-        return {'success':True}
-    def do(self,**kwargs):
-        return self.write(**kwargs)
+        return True
 
 
-class Analysis:
+class Analysis(baseio):
     MappedClass=None
     analysis_function=lambda **kwargs: 2+2
+    dependencies=[]
+
     def validate(self):
         pass
+
     def persist(self):
         pass
-    def analyze(self,**kwargs): #TODO make sure to unpack everything when calling analyze
-        out=self.analysis_function(*args,**kwargs)
-        return {'result':out}
+
     def do(self,**kwargs):
-        return self.analyze(**kwargs)
+        out=self.analyze(**kwargs)
+        return {'%s'%self.name:out}
+
+    def analyze(self,**kwargs):
+        """Modify as needed"""
+        return self.analysis_function(**kwargs)
 
 
-class Check:
+class Check(baseio):
     MappedClass=None
     check_function=lambda **kwargs:True #return type: Boolean please
+    dependencies=[]
+
     def validate(self):
         #make sure the code for the check function hasn't change, if it has, increment version
         pass
+
     def persist(self):
         pass
-    def check(self,**kwargs):
-        out=self.check_function(**kwargs)
-        return {'success':out}
+
     def do(self,**kwargs):
-        return self.check(**kwargs)
+        out=self.check(**kwargs)
+        return {'%s'%self.name:out}
+
+    def check(self,**kwargs):
+        """Modify as needed"""
+        return self.check_function(**kwargs)
