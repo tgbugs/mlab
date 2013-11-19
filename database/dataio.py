@@ -140,7 +140,8 @@ class DataIO(BaseDataIO): #IXCK ugly ugly might be nice for a factory :/ but is 
 
 class baseio:
     #TODO inspect.getsourcelines for versioning? or... what? doesn't work for wrapped classes
-    dependencies=[] #these will be prefixed by 'step_' for dealing with deps at the step level
+    dependencies=[] #these propagate up to iodeps, we want to use the same dataios for many steps
+        #so we can't use dataio names for step names DUH that was why we split stuff up in the first place!
         #and they should be the expected keywords for anything downstream
     @property
     def name(self):
@@ -215,6 +216,8 @@ class Set(ctrlio): #FIXME must always have an input value
         #both of the above suggestions seem like too much overloading of this
         #this is about io not about tracking the internal state of the program
         #even if we are persisiting that too
+    #TODO setter's should really be reading their values from a protocol of some sort...
+        #which ideally would be stored in the database and thus accessed via a read
     MappedClass=None #Setter
     function_name=''
     kwargs={}

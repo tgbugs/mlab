@@ -1,102 +1,3 @@
-#Basic step logic, dissociated from datasource for the time being, may reintegrate into api.py
-
-#substeps or dependency tree to say a step is compelted? I think they are the same...
-#because let's say you want to do an analysis step, then the tree will say 'ok you need to do these things first'#and when it gets to a step that has other deps, it will go all the way to the first dependency and then work its way down
-class _Step:
-    #XXX: NOTE these are only the DIRECT dependencies, and the order specifies only how they are to be run
-    #not the actual order of steps which will be constructed from the dependencies
-    #FIXME easy way to specify that a step should be depth or dredth first???? easy! just make a checkpoint step!
-    direct_dependencies=('ordered','list/tuple','of','step','names that is ordered to make things deterministic') #XXX NOTE: every step should have at least one dependnecy unless they are leaves that other things depend on
-    #XXX this way the order things are done in is always preserved WITHIN dependencies, leading to more regularity in how an experiment is done... though there is some risk that things would fail if done in another order?
-
-    #ordered lists of deps make experimental procedures deterministic
-    #FIXME always test as UNORDERED to make sure that you aren't cheating by getting data from deps[0] that is infact needed in deps[1] but deps[0] is NOT explicitly listed in deps[1] as a dependency....
-    #fucking side effects
-
-    #this is better than just a list of things to check every time
-    #the question is whether the dependencies will vary from experiment to experiment
-    #and thus reduce reuseability? I don't think it will
-
-    #FIXME big question, with the dep tree it is the REVERSE of how most people think of science,
-    #namely as a list of things to do in a certain order
-    #there may be a way to also have that functionality (ie just have no deps) but honestly I think this will end up being safer...
-    #TODO in fact, when there are no steps, the dependencies for the experiment itself will just be the ordered list of steps, damn that is so cool :D
-        #except that it would be better for things with 'no' deps to simply specify the previous thing so that the order would be preserved... that might be best... but it creates more work when the order doesn't really matter
-    #FIXME one datasource per step?!??!?! FIXME ANSWER YES: because using the dependency tree model
-
-    def __init__(self,session,Controller,ParentObject):
-        pass
-    def getter(self):
-        pass
-    def setter(self):
-        pass
-    def success(self):
-        pass
-
-
-class Step: #TODO make this peristable
-    dependencies={'set','set'}
-    preceeding_step='None' #TNIS could also be derived from a list? and is not necessarily a strict dependnecy, may ultimately go away?
-    #TODO searching for a way to combine topo sort with procedures that must be done by one person and therefore need some regularity
-
-    def noSideEffects(self):
-        #database read
-        #get value from datasource
-        #do analysis or strict functions
-        pass
-    def sideEffects(self):
-        #print to terminal! BUT this is ok, because THIS CODE doesn't do it, the datasource handles ALL of that
-        #write to database; minimal a boolean 'step succeeded/failed'
-        #change a variable; eg move a motor or set MCC state, clx file
-        #write analysis results
-        pass
-
-    #TODO problem: looks like we need to intersperse se with nse?
-
-class Step: #fucking mess... back to thinking
-    deps={'',''}
-    previous_step=None
-    datasources=['',''] #FIXME when a writer writes is it just another datasource???
-    reader_types=['',''] #should be ordered for consistency could be a set
-    writer_types=['','']
-    def __init__(self,ExpStepRecord,datasourcedict={}):
-        self.ExpStepRecord=ExpStepRecord
-        self.nodepreaders=nodpereaders #FIXME shouldn't this be defined before __init__ since we've split off datasources? actually I think it needs to be live! :/
-        self.Writers=Writers #big problem here... the 'writer' is an object that may not exist... since it would be an initilized mapped class :/
-    def readSomeThings(self,Readers=()):
-        #FIXME preferably read from memory, which I THINK is how Readers is flexible
-        #in that Writers can return the written thing directly to the reader... and
-        #the code that goes through the steps should automatically pass Writers to Readers
-        #directly from the dep tree, so we call self.go(nondepreaders,(dep1.go(),dep2.go(),dep3.go())) or something like that
-        pass
-    def doSomeThings(self):
-        pass
-    def writeSomeThings(self):
-        #FIXME shouldn't we be able to smartly pass values already in memory/session from step to step without having to read from the database?
-        pass
-    def go(self,Readers=(),Writers=()):
-        def readThings(Readers=()):
-            return [r.read for reader in  Readrs]
-        def doThings(readThings=()):
-        def writeThings(doneThings=()):
-
-
-class Step: #at the end of the day what we want is a list of classes that we can get to from a list of strings
-    deps=[]
-    datasources=[] #thiking ahead for when I get tensor datastructures worked out :/
-    setters=[] #this leads to a massive proliferation of code in the absense of a defined value, which I SUPPOSE could be defined by the step or could be pulled from somehwere like the database
-    setter_values=[] #FUCKING YUCK
-
-    def getValuesToSet(self):
-        pass
-    def setValues(self):
-        pass
-    def getValues(self):
-        pass
-    def checkGottenAgainstSet(self):
-        pass
-
-
 ###---------
 ### THIS ONE
 ###---------
@@ -112,6 +13,7 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
     dataIO=None #import this
     keepRecord=False #TODO use this so that we can doccument steps and choose not to check them, bad scientist!
     persistent_node=False #True means that this node will not automatically reset itself to False on succesful exit, pretty sure this one of those 'hard' problems
+        #another way to approach this is to assume a successful run and use invalidation steps
     dependencies=['step','list'] #this now used internally without the need for BaseExp/ExpBase
     expected_writeTarget_type=None #TODO one and only one per step
     #TODO something to track experiment state
@@ -119,20 +21,15 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
     @property
     def name(self): #FIXME we might be able to use this in conjunction with the dataio_deps???
         #FIXME add a way to explicity name classes if you want?
-        return 'step_'+self.dataIO.__name__
+        return self.__class__.__name__
 
     @property
     def __doc__(self):
         raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER')
 
-    @property
-    def baseStep(self):
-        return self.etype.base_step_id == self.Step.id
-
     def __init__(self,stepDict,session,Experiment,ctrlDict): #FIXME for self running steps we need the ctrlDict
         self.experiment=Experiment
         self.etype=Experiment.type
-        self.dependencies.extend(['step_'+name for name in self.dataIO.dependencies])
         self.io=self.dataIO(session,ctrlDict[dataIO.ctrl_name]) #quite elegant!? FIXME if we're going to use set to set the experiment state and stuff like that then we need to expand ctrlDict
         self.getDeps(stepDict) #FIXME need a way to pick up where we left off??? interact w/ step record?
         #XXX the above won't becircular because all that is needed are unintilized steps for this
@@ -147,8 +44,18 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
             #HRM that might be a better way to handle controllers that haven't started... TODO
             #but that isn't good... because the tree is obfusticating the steps!
         self.iDepDict={}
+        iodeps=set() #validate the iodeps to make sure they are all met in the previous steps
+            #sadly don't currently have a good way to automatically correct for this :/
+        for dep in self.dependencies: #TODO could probably be refactored for all the speedz
+            iodeps.update(stepDict[dep].dependencies)
+        ioset=set(self.dataIO.dependencies)
+        missing=ioset.difference(iodeps.intersection(ioset))
+        if missing:
+            raise ValueError('None %s\' dependencies satisfy the io dep for %s'%(self.name,missing))
         for dep in self.dependencies:
             self.iDepDict[dep]=stepDict[dep](stepDict,session,Experiment,ctrlDict)
+        #FIXME make sure the dataio deps are executed LAST in the order
+            #since kwarg passing is a substitute for func(func())
 
     #TODO easy way to persist progress is StepRecord/exp...
 
@@ -193,6 +100,54 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
             print('[!]')
             return False
 
+
+###
+#Basic step logic, dissociated from datasource for the time being, may reintegrate into api.py
+
+#substeps or dependency tree to say a step is compelted? I think they are the same...
+#because let's say you want to do an analysis step, then the tree will say 'ok you need to do these things first'#and when it gets to a step that has other deps, it will go all the way to the first dependency and then work its way down
+    #XXX: NOTE these are only the DIRECT dependencies, and the order specifies only how they are to be run
+    #not the actual order of steps which will be constructed from the dependencies
+    #FIXME easy way to specify that a step should be depth or dredth first???? easy! just make a checkpoint step!
+    #direct_dependencies=('ordered','list/tuple','of','step','names that is ordered to make things deterministic') #XXX NOTE: every step should have at least one dependnecy unless they are leaves that other things depend on
+    #XXX this way the order things are done in is always preserved WITHIN dependencies, leading to more regularity in how an experiment is done... though there is some risk that things would fail if done in another order?
+
+    #ordered lists of deps make experimental procedures deterministic
+    #FIXME always test as UNORDERED to make sure that you aren't cheating by getting data from deps[0] that is infact needed in deps[1] but deps[0] is NOT explicitly listed in deps[1] as a dependency....
+    #fucking side effects
+
+    #this is better than just a list of things to check every time
+    #the question is whether the dependencies will vary from experiment to experiment
+    #and thus reduce reuseability? I don't think it will
+
+    #FIXME big question, with the dep tree it is the REVERSE of how most people think of science,
+    #namely as a list of things to do in a certain order
+    #there may be a way to also have that functionality (ie just have no deps) but honestly I think this will end up being safer...
+    #TODO in fact, when there are no steps, the dependencies for the experiment itself will just be the ordered list of steps, damn that is so cool :D
+        #except that it would be better for things with 'no' deps to simply specify the previous thing so that the order would be preserved... that might be best... but it creates more work when the order doesn't really matter
+    #FIXME one datasource per step?!??!?! FIXME ANSWER YES: because using the dependency tree model
+
+
+    #preceeding_step='None' #TNIS could also be derived from a list? and is not necessarily a strict dependnecy, may ultimately go away?
+    #TODO searching for a way to combine topo sort with procedures that must be done by one person and therefore need some regularity
+
+    #def noSideEffects(self):
+        #database read
+        #get value from datasource
+        #do analysis or strict functions
+    #def sideEffects(self):
+        #print to terminal! BUT this is ok, because THIS CODE doesn't do it, the datasource handles ALL of that
+        #write to database; minimal a boolean 'step succeeded/failed'
+        #change a variable; eg move a motor or set MCC state, clx file
+        #write analysis results
+
+    #TODO problem: looks like we need to intersperse se with nse?
+
+        #FIXME preferably read from memory, which I THINK is how Readers is flexible
+        #in that Writers can return the written thing directly to the reader... and
+        #the code that goes through the steps should automatically pass Writers to Readers
+        #directly from the dep tree, so we call self.go(nondepreaders,(dep1.go(),dep2.go(),dep3.go())) or something like that
+        #FIXME shouldn't we be able to smartly pass values already in memory/session from step to step without having to read from the database?
 
 class BaseDataIO: #XXX DEPRICATED see dataio.py for new version
     @property
