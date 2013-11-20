@@ -198,6 +198,8 @@ class Step(Base):
         #raise IOError('use add_dep to add things because this doesnt check edges properly')
 
     dependencies=association_proxy('edges','dependency') #creator set at __init__
+    _deps=association_proxy('edges','dependency_id')
+    _revdeps=association_proxy('_rev_edges','step_id')
     all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
         ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
     transitive_closure=association_proxy('tc_edges','tc')
@@ -272,7 +274,7 @@ class StepEdge(Base): #FIXME note that this table could hold multiple independen
     step_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
     dependency_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
     step=relationship('Step',primaryjoin='Step.id==StepEdge.step_id',backref=backref('edges',lazy=False,collection_class=set),uselist=False,lazy=True) #TODO might be possible to do cycle detection here? FIXME might want to spec a join_depth if these graphs get really big...
-    dependency=relationship('Step',primaryjoin='Step.id==StepEdge.dependency_id',uselist=False,lazy=True) #lazy should be ok, this IS used in the association_proxy...
+    dependency=relationship('Step',primaryjoin='Step.id==StepEdge.dependency_id',backref=backref('_rev_edges',lazy=False,collection_class=set),uselist=False,lazy=True) #lazy should be ok, this IS used in the association_proxy...
     def __init__(self,step_id=None,dependency_id=None):
         self.step_id=int(step_id)
         self.dependency_id=int(dependency_id)

@@ -36,17 +36,55 @@ class StepBase: #FIXME this way of doing things is bad at recording get/set pair
     def __doc__(self):
         raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER')
 
-    def __init__(self,stepDict,session,Experiment,ctrlDict): #FIXME for self running steps we need the ctrlDict
+    def __init__(self,session,Experiment,ctrlDict): #FIXME for self running steps we need the ctrlDict
         self.experiment=Experiment
         self.etype=Experiment.type
         self.io=self.dataIO(session,ctrlDict[dataIO.ctrl_name]) #quite elegant!? FIXME if we're going to use set to set the experiment state and stuff like that then we need to expand ctrlDict
-        self.getDeps(stepDict) #FIXME need a way to pick up where we left off??? interact w/ step record?
         #XXX the above won't becircular because all that is needed are unintilized steps for this
 
     def persist(self): #TODO
         raise NotImplementedError('GET IT DONE')
+    def do(self,writeTarget=None,**kwargs):
+        #FIXME writeTarget may not be for the final step until much later?
+            #the the base write target should probably always be preceeded by a
+            #Get boolean step that writes to experiment, ie: the "ExperimentDone" step
+        #FIXME don't handle deps here, handle those upstairs in BaseExp???
+        #FIXME loop steps, by taking a bool input at one step that then resets the state
+        if writeTarget:
+            kwargs['writeTarget']=writeTarget
+        try:
+            value=self.io.do(**kwargs)
+            self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
+            if self.checkpoint_step or self.persistent_step: #FIXME collapse this in to self.Step (rename to self.something?)
+                self.Step.isdone=True
+            print('[OK]')
+            return value #FIXME multiple child steps??? using a database to pass values is super dumb
+                #a good example is if we want to write to the db and do analysis at the same time
+                #there is no reason why we shouldn't be able to do both at the same time... HRM
+        except:
+            self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
+            print('[!] Step failed. Trying again.') #FIXME TODO
+            self.do(writeTarget,**kwargs)
 
-    #FIXME the step manager should probably handle all of this in conjunction with the database?
+
+class StepRunner:
+    """ The class that actually runs the steps and interacts with subjects, hardware, etc
+        Might also be where I put the step list builder, but I think that should go in step
+        compiler or maybe even directly in the database since it should all be compiled beforehand
+    """
+    #how do we take the list L returned by the topo sort and use it with flow control?!
+    def __init__(self,stepList,stepDict,ctrlDict,Experiment):
+        self.stepList=stepList
+        self.getSteps(stepDict,ctrlDict,Experiment) #FIXME need a way to pick up where we left off??? interact w/ step record?
+  
+    def getSteps(self,stepDict):
+        iStepDict={}
+        for step in self.stepList:
+            iStepDict[step]=stepDict[step](session,Experiment,ctrlDict)
+        self.iStepDict=iStepDict
+
+   #FIXME the step manager should probably handle all of this in conjunction with the database?
+    #XXX depreicated
     def getDeps(self,stepDict): #this is gonna be a bit crazy, since all the steps are inited off the bat
         #FIXME I foresee the need for a way to reload the deps if something goes wrong...
             #maybe we can just call getDeps again? hell, we could even call it with a new step dict!
@@ -74,6 +112,7 @@ class StepBase: #FIXME this way of doing things is bad at recording get/set pair
         #basically we want a 'persistent true' vs a 'transient true' distinction,
         #so a step can return that it exited successfully and still need to be completed
         #it should then be possible to predict the state of a node preceeding a given step apriori (I think)
+    #XXX depreicated
     def runDeps(self,kwargDict): #FIXME massive problem here! convergent upstream steps will be run multiple times!!!!!! NOT TO MENTION LOOPS!! #FIXME this needs to go to ExpBase, we need deps and revdeps, the nodes in the graph shouldn't be trying to traverse the graph! some steps that remain perisistently true will just be natural checkpoints
         #topo sort sub trees, find convergent nodes???
         #FIXME also have to deal with linearity in time for some stuff because SOME convergent nodes
@@ -89,43 +128,27 @@ class StepBase: #FIXME this way of doing things is bad at recording get/set pair
             kwargDict.update(dep.do(writeTarget=FUCK,**kwargs)) #FIXME damn it still need external management for the writeTarget :/
             #FIXME UNLESS we handle that here? but... we do need expman to bind subjects to data :/
 
-    def do(self,writeTarget=None,**kwargs):
-        #FIXME writeTarget may not be for the final step until much later?
-            #the the base write target should probably always be preceeded by a
-            #Get boolean step that writes to experiment, ie: the "ExperimentDone" step
-        #FIXME don't handle deps here, handle those upstairs in BaseExp???
-        #FIXME loop steps, by taking a bool input at one step that then resets the state
-        if writeTarget:
-            kwargs['writeTarget']=writeTarget
-        try:
-            value=self.io.do(**kwargs)
-            self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
-            if self.checkpoint_step or self.persistent_step: #FIXME collapse this in to self.Step (rename to self.something?)
-                self.Step.isdone=True
-            self.experiment_state_node = True
-            print('[OK]')
-            return value #FIXME multiple child steps??? using a database to pass values is super dumb
-                #a good example is if we want to write to the db and do analysis at the same time
-                #there is no reason why we shouldn't be able to do both at the same time... HRM
-        except:
-            self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
-            print('[!] Step failed. Trying again.') #FIXME TODO
-            self.do(writeTarget,**kwargs)
+    def do(self,**kwargs):
+        current_step=self.iStepDict[self.stepList[0]]
+        for name in self.stepList: #FIXME loop isnt going to work for this!
+            #unless that is, I massively improve the complier?
+            current_step=self.iStepDict[name]
+            kwargs=current_step.do(**kwargs)
 
-
-class StepRunner:
-    """ The class that actually runs the steps and interacts with subjects, hardware, etc
-        Might also be where I put the step list builder, but I think that should go in step
-        compiler or maybe even directly in the database since it should all be compiled beforehand
-    """
 
 class StepComplier:
+    """ Allows us to compile experimentes and steps offline
+        need to make sure I can get the flow control to work
+        properly with this though
+    """
+
     def __init__(self,baseStep):
         #Base steps should be checkpoint steps when they produce new subjects/
         #reagents/hardware. If they dont produce anything but data, then they
         #should not persist since they will be reused over and over.
         self.baseStep=baseStep.Step
-        self.transitive_closure=self.baseStep.transitive_closure
+        self.checkDeps()
+        self.stepList=self.unorderedTopoSort()
     def findConvergentNodes(self):
         #XXX good news, for convergent steps, as long as we pass the kwargs along to both children
             #all we have to do is make sure that we don't call the same node twice!
@@ -145,7 +168,6 @@ class StepComplier:
                 #at a later time
         def getStepsWithMultipleRevDeps(): #FIXME not quite sufficient! there could be two entire branches!
             pass
-
     def stepTreeThroughTime(self):
         #for steps that are used multiple times
             #add or subtract steps based on their predicted state
@@ -153,8 +175,75 @@ class StepComplier:
     def unifyCommonSteps(self):
         #detect convergent nodes that can happen at the same time
         pass
-    def orderedTopoSort(self):
-        pass
+
+    def checkDeps(self): #FIXME somehow I seem to be loosing the power of check steps??!
+        if not self.baseStep.gotAllCps:
+            print('[!] utoh! some checkpoints werent finished!') #FIXME I'm starting to think there are multiple types of checkpoint steps that server different fucntions:/
+                #one kind is the high level exeperiment outputs, one is for temporal order, and one is for tracking experiment state, another is for determining when downstream stuff is parallel... shit
+                #XXX actually... maybe not, because as long as something in the dep tree is persisting as True
+                #then we can just go ahead and assume that any of its deps were already met
+        #TODO ordering!
+        self.unfinished_nodes=self.baseStep.transitive_closure
+        for step in self.baseStep.checkpoints:
+            if step.isdone:
+                self.unfinished_nodes.difference_update(step.transitive_closure)
+
+        
+    def unorderedTopoSort(self): #TODO paralellizeable?
+        from collections import dequeue
+        S=dequeue() #note: order matters here too left most happen first
+        depD={}
+        revD={}
+        names={}
+        for node in self.unfinished_nodes:
+            depD[node.id]=node._deps
+            names[node.id]=node.name
+            if node._rev_deps:
+                revD[node.id]=node._rev_deps
+            else:
+                S.append(node.id)
+        L=dequeue()
+        while S:
+            node=S.pop()
+            L.appendleft(node)
+            for dep in depD[node]:
+                revD[dep].discard(node)
+                discards.add(dep)
+                if not revD[dep]: #ie if the set is empty
+                    revD.pop(dep)
+                    S.append(dep)
+            depD.pop(node)
+        if depD or revD:
+            raise TypeError('Graph is not acyclic!!')
+        else:
+            return [names[id] for id in L]
+
+###
+#FIXME do persisitent steps actually fix problems of simultaneous revdeps
+    #AND temporal ordering at the same time?!
+#S.appendleft(dep) #if there is a way to split deps into 'do last and together?'
+#FIXME clearly I need to just do the bloodly temporal ordering and stop trying to be
+    #all sneeky and smart about it and make it explicit instead of
+    #trying to read minds huristically
+    #XXX ACTUALLY, no, using bind steps and checkpoints is the right way for this
+        #I may need to break out checkpoint steps and persist steps
+        #but checkpoint steps are how we are going to get temporal order
+        #for the 'do all this' then do that
+
+    #FIXME how to gurantee the ordering matches that given above?
+    #we don't want to do that here anyway, but if we want to reflect
+    #the order without having the original list of names we are probably going to have a bad time :/
+#edges=set() #might want to query for this? any edge that ends with an end in start.tc
+#def makeDepDicts(edges):
+    #edges=array(edges)
+    #depDict=dict.fromkeys(edges[:,0],set())
+    #revDepDict=dict.fromkeys(edges[:,1],set())
+    #for step,dep in edges:
+        #depDict[step].add(dep)
+        #revDepDict[dep].add(step) #this is fucking stupid
+    #return depDict,revDepDict
+#depD,revD=makeDepDicts(edges)
+
 
 
 
