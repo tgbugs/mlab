@@ -19,6 +19,10 @@ engine=pgTest(args['--echo'])
 session=Session(engine)
 s=session
 
+#session type
+dbtype=session.connection().engine.name #dialect.name??
+#FIXME use this to change how models import??
+
 #table logic
 logic_StepEdge(session)
 

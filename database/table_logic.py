@@ -5,7 +5,7 @@
 from numpy import array
 from sqlalchemy import event
 from sqlalchemy.orm import object_session
-from database.models import Experiment, StepEdge, StepEdgeVersion
+from database.models import Experiment, StepEdge, StepEdgeVersion, StepTC
 
 def listenForThings(session): #FIXME very broken
     """this should be 1:1 with every session where things are automated?? is it better to do this or to do it by hand, I think this is better because I can't miss with it"""
@@ -42,15 +42,20 @@ def listenForThings(session): #FIXME very broken
 
     return remover
 
-def logic_StepEdge(session): #FIXME this does not seem to be working properly...
+def logic_StepEdge(session):
     """ Enforce DAG for step dependency tree"""
-    @event.listens_for(session,'before_flush') #FIXME why does this trigger on session.add??!
-    def history_table_delete(session,flush_context,instances):
-        #print(session.new,session.deleted) #FIXME this reveals a number of problems in __repr__s around the db
+    @event.listens_for(session,'before_flush')
+    def history_and_tc(session,flush_context,instances):
+        def update_TC(stepedge):
+            pass
+        def delete_TC(stepedge):
+            pass
+
         for obj in session.deleted:
             if type(obj) is StepEdge:#isinstance preferred IF I subclass StepEdge (very unlikely)
                 session.add(StepEdgeVersion(step_id=obj.step_id,dependency_id=obj.dependency_id,added=False))
                 #hrm the above could create a list of cycle enducing edges... given all else constant...
+                delete_TC(obj)
             elif type(obj) is StepEdgeVersion:
                 session.expunge(obj) #this should prevent the delete
                 raise AttributeError('StepEdgeVersion is write only!')
@@ -58,6 +63,8 @@ def logic_StepEdge(session): #FIXME this does not seem to be working properly...
             if type(obj) is StepEdge:
                 #print('wtf m8!') #FIXME this is being called waaay too much
                 session.add(StepEdgeVersion(step_id=obj.step_id,dependency_id=obj.dependency_id,added=True))
+                update_TC(obj)
+
 
 
     @event.listens_for(session,'before_attach')

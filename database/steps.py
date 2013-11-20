@@ -2,7 +2,8 @@
 ### THIS ONE
 ###---------
 
-class Step: #FIXME this way of doing things is bad at recording get/set pairing for datasources :/
+#TODO need a way to retrieve step classes directly from the database?
+class StepBase: #FIXME this way of doing things is bad at recording get/set pairing for datasources :/
     #should the datasource/eventsource or whatever implement the get/check/set?
     #amusingly it looks like steps could inherit from datasources probably more flexible not to
     #FIXME some steps: eg setting modes, should only add themselves to the record on failure
@@ -12,9 +13,17 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
     from database.models import Step, StepRecord
     dataIO=None #import this
     keepRecord=False #TODO use this so that we can doccument steps and choose not to check them, bad scientist!
-    persistent_node=False #True means that this node will not automatically reset itself to False on succesful exit, pretty sure this one of those 'hard' problems
+    #persistent_node=False #True means that this node will not automatically reset itself to False on succesful exit, pretty sure this one of those 'hard' problems
+    checkpoint_step=False #these are the perisitent steps whose state is tracked directly, they are where everything should revert to, so slice on rig, got cell, analysis completed stuff like that; this is how we will do loops, if all the prior checkpoints are satisfied then we can build directly from the next known checkpoint step and trace the deps from there
         #another way to approach this is to assume a successful run and use invalidation steps
-    dependencies=['step','list'] #this now used internally without the need for BaseExp/ExpBase
+    #persistent_step=False #TODO a toggleable step that stores its state, may turn out that it should be thought of as a checkpoint step and so we will eventually get rid of it anyway
+        #YEP XXX the whole point of checkpoint steps is that they can have MULTIPLE SIMULTANEOUS REVDEPS
+        #thus, if it is not a checkpoint step, then the step will be called multiple times
+        #checkpoint steps can still be called multiple times as needed by invalidating their state
+        #TODO should all checkpoint steps be check steps that dependnt on a get or read step to validate?
+            #the Set step would then also need to handle invalidation of other steps, which overlaods it
+            
+    dependencies=[] #this now used internally without the need for BaseExp/ExpBase
     expected_writeTarget_type=None #TODO one and only one per step
     #TODO something to track experiment state
 
@@ -37,6 +46,7 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
     def persist(self): #TODO
         raise NotImplementedError('GET IT DONE')
 
+    #FIXME the step manager should probably handle all of this in conjunction with the database?
     def getDeps(self,stepDict): #this is gonna be a bit crazy, since all the steps are inited off the bat
         #FIXME I foresee the need for a way to reload the deps if something goes wrong...
             #maybe we can just call getDeps again? hell, we could even call it with a new step dict!
@@ -47,8 +57,9 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
         iodeps=set() #validate the iodeps to make sure they are all met in the previous steps
             #sadly don't currently have a good way to automatically correct for this :/
         for dep in self.dependencies: #TODO could probably be refactored for all the speedz
-            iodeps.update(stepDict[dep].dependencies)
+            iodeps.update(stepDict[dep].dataIO.dependencies)
         ioset=set(self.dataIO.dependencies)
+        #TODO the step dependencies that corrispond to io deps (that need to go at the end)
         missing=ioset.difference(iodeps.intersection(ioset))
         if missing:
             raise ValueError('None %s\' dependencies satisfy the io dep for %s'%(self.name,missing))
@@ -89,6 +100,8 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
         try:
             value=self.io.do(**kwargs)
             self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
+            if self.checkpoint_step or self.persistent_step: #FIXME collapse this in to self.Step (rename to self.something?)
+                self.Step.isdone=True
             self.experiment_state_node = True
             print('[OK]')
             return value #FIXME multiple child steps??? using a database to pass values is super dumb
@@ -96,9 +109,56 @@ class Step: #FIXME this way of doing things is bad at recording get/set pairing 
                 #there is no reason why we shouldn't be able to do both at the same time... HRM
         except:
             self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
-            self.experiment_state_node = False
-            print('[!]')
-            return False
+            print('[!] Step failed. Trying again.') #FIXME TODO
+            self.do(writeTarget,**kwargs)
+
+
+class StepRunner:
+    """ The class that actually runs the steps and interacts with subjects, hardware, etc
+        Might also be where I put the step list builder, but I think that should go in step
+        compiler or maybe even directly in the database since it should all be compiled beforehand
+    """
+
+class StepComplier:
+    def __init__(self,baseStep):
+        #Base steps should be checkpoint steps when they produce new subjects/
+        #reagents/hardware. If they dont produce anything but data, then they
+        #should not persist since they will be reused over and over.
+        self.baseStep=baseStep.Step
+        self.transitive_closure=self.baseStep.transitive_closure
+    def findConvergentNodes(self):
+        #XXX good news, for convergent steps, as long as we pass the kwargs along to both children
+            #all we have to do is make sure that we don't call the same node twice!
+            #(temp persist until _all_ a grandchild node is called or the last/first node is called?
+            #but we dont know the value is in kwargs until we error... so... we need the state?
+            #TODO state and a step that pops kwarg values that are done (for all revdeps)
+                #are highly related concepts... if you pop the key... don't even have to check the value
+                #can just return a {None:None} dict if the step fails!
+        #find nodes that converge in the atemporal graph
+            #outcome 1: the dep is a simultaenous dep: do not run twice!
+                #XXX this happends in the atemporal graph when the two revdeps are NOT
+                    #in eachother's tc
+            #outcome 2: the dep occurs @ multiple times
+                #one way around this is to just always use check steps
+                #but that means if you forget them everything will break
+                #TODO track the state for these nodes and only compile them
+                #at a later time
+        def getStepsWithMultipleRevDeps(): #FIXME not quite sufficient! there could be two entire branches!
+            pass
+
+    def stepTreeThroughTime(self):
+        #for steps that are used multiple times
+            #add or subtract steps based on their predicted state
+        pass
+    def unifyCommonSteps(self):
+        #detect convergent nodes that can happen at the same time
+        pass
+    def orderedTopoSort(self):
+        pass
+
+
+
+
 
 
 ###

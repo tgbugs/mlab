@@ -7,7 +7,7 @@ from database.models.mixins import HasNotes, HasMetaData, HasReagents, HasHardwa
 ###  Experiment tables
 ###-------------------
 
-class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Base):
+class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Base): #FIXME no longer needs HDFS or HMDS
     """this stores all the constant data about an experiment that will be done many times"""
     id=Column(Integer,primary_key=True) #FIXME
     name=Column(String(30),nullable=False)
@@ -31,14 +31,14 @@ class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Ba
         return [rt.currentLot for rt in self.reagenttypes]
 
 
-    def __init__(self,name=None,abbrev=None,methods_id=None,ReagentTypes=(),MetaDataSources=()):
+    def __init__(self,name=None,abbrev=None,base_step_id=None,methods_id=None,ReagentTypes=()):
         self.name=name
         self.abbrev=abbrev
+        self.base_step_id=int(base_step_id)
         if methods_id is not None:
             self.methods_id=int(methods_id)
 
         self.reagenttypes.extend(ReagentTypes)
-        self.metadatasources.extend(MetaDataSources)
 
     def __repr__(self):
         return super().__repr__()
@@ -159,6 +159,15 @@ class Step(Base):
     docstring=Column(String,nullable=False) #pulled from __doc__ and repropagated probably should be a citeable?
     checkpoint=Column(Boolean,default=False) #FIXME TODO is this the right way to do this??? nice way to delimit the scope of an 'experiment' if we still have experiments when this is all done
     isdone=Column(Boolean,default=False) #FIXME FIXME should we keep the step tree state here!???! seems ok? unless we try to run two experiments off the same step at the same time, then we will really mess stuff up... ideally we need a per experiment tree or something??? though from a science checklist point of view you don't want to reset stuff every time... hrm; using only direct dependencies is nice in that as soon as the steps registers as successful and the next step proceeds, the previous (in many cases) should be reset to false!
+    @validates('isdone')
+    def is_checkpoint(self, key, value):
+        if not value:
+            return value
+        elif not self.checkpoint:
+            raise TypeError('Step is not a checkpoint, state must always be False!')
+        else:
+            return value
+
     dataio_id=Column(Integer,ForeignKey('dataio.id'),nullable=False) #FIXME will need to unify metadatasource, datasource, datafilesource, etc under one index? default should be 'StepEvent' or something... maybe 'StepRecord'
     record_step=Column(Boolean,default=True) #set to false for steps that don't need to be put in the record; TODO can this double as a 'set_only'???
     #FIXME damn, this does seem to complicate the 'HasExperiments' setup...
@@ -191,7 +200,28 @@ class Step(Base):
     dependencies=association_proxy('edges','dependency') #creator set at __init__
     all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
         ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
-    transitive_closure=lambda:[] #all upstream dependencies expressed as edges starting at self and ending at all upstream steps #step graphs might be small enough we don't need this
+    transitive_closure=association_proxy('tc_edges','tc')
+    #lambda:[] #all upstream dependencies expressed as edges starting at self and ending at all upstream steps #step graphs might be small enough we don't need this
+    #@property
+    #def allcps(self): #FIXME this is super slow? better to try to query for it?
+        #return set((step for step in self.transitive_closure if step.checkpoint))
+    allcps=association_proxy('tc_edges','cp')
+
+    @property
+    def checkpoints(self): #FIXME STI to break out checkpoint step methods??? NO
+        #the step itself cannot be in its own tc, thus see if a step is in the union of all TCs and done
+        #there may be a faster way but right now I don't really care
+        cpunion=set()
+        [cpunion.update(cp.allcps) for cp in self.allcps]
+        return self.allcps.difference(cpunion) #cps that arent in the union of the tc cps
+
+    @property
+    def gotAllCps(self):
+        for cp in self.checkpoints:
+            if not cp.isdone:
+                return False
+        return True
+        #return all([cp.isdone for cp in self.checkpoints])
 
     def edges_at_version(self,version=None): #FIXME profile these two to see which is faster
         if not self.all_edges:
@@ -263,7 +293,26 @@ class StepEdge(Base): #FIXME note that this table could hold multiple independen
     #but maybe it is a bit more than I need?
 
 
-class StepEdgeVersion(Base): #TODO prevent delete!
+class StepTC(Base):
+    """ Transitive closure of the graph """
+    __tablename__='steptc'
+    step_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
+    tc_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
+    step=relationship('Step',primaryjoin='Step.id==StepTC.step_id',backref=backref('tc_edges',lazy=False,collection_class=set),uselist=False,lazy=True) #TODO might be possible to do cycle detection here? FIXME might want to spec a join_depth if these graphs get really big...
+    tc=relationship('Step',primaryjoin='Step.id==StepTC.tc_id',uselist=False,lazy=True) #lazy should be ok, this IS used in the association_proxy...
+    cp=relationship('Step',primaryjoin='and_(Step.id==StepTC.tc_id, Step.checkpoint == True)',uselist=False,lazy=True) #FIXME this doesn't quite seem right...
+    def __eq__(self,other):
+        return self.step_id == other.step_id and self.tc_id == other.tc_id
+    def __ne__(self,other):
+        return self.step_id != other.step_id or self.tc_id != other.tc_id
+    def __hash__(self):
+        return hash('%s%s'%(self.step_id,self.tc_id)) #needed to make add and update work properly
+
+
+
+#TODO TypeEngine.with_variant!!! for switching between Hstore and pickle or the like, WHOO
+
+class StepEdgeVersion(Base):
     #TODO diff two versions of the tree
     __tablename__='stepedgevers'
     id=Column(Integer,primary_key=True) #we can just call this version number... FIXME sqlite autoincrement?

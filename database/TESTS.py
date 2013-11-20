@@ -360,9 +360,9 @@ class t_project(TEST):
 class t_exptype(TEST):
     def make_all(self):
         self.records=[
-            ExperimentType(name='Mating Record'),
-            ExperimentType(name='acute slice prep',abbrev='prep'),
-            ExperimentType(name='in vitro patch',abbrev='patch'),
+            ExperimentType(name='Mating Record',base_step_id=1),
+            ExperimentType(name='acute slice prep',abbrev='prep',base_step_id=2),
+            ExperimentType(name='in vitro patch',abbrev='patch',base_step_id=3),
         ]
 
 
@@ -703,6 +703,8 @@ def run_tests(session):
 
 
     t_strain(session,2)
+    t_steps(session,100)
+    t_edges(session)
     expt=t_exptype(session)
     hw=t_hardware(session)
     ds=t_datafilesource(session)
@@ -716,8 +718,6 @@ def run_tests(session):
     l=t_litters(session,20)
     l.add_members()
 
-    t_steps(session,100)
-    t_edges(session)
 
 
     rt=t_reagenttype(session)

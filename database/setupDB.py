@@ -218,9 +218,16 @@ def popHardware(session):
 def popReagentType(session):
     acsf=ReagentType(name='acsf')#,iupac=None)
 
-def popExperimentType(session):
-    session.add(ExperimentType('acute slice prep','prep'))
-    session.add(ExperimentType('in vitro patch','patch'))
+def popDataIO(session):
+    session.add(DataIO())
+
+def popStep(session): #FIXME we really should never have to do this directly!
+    session.add(Step(name='test step',docstring='fixme',dataio_id=1))
+
+
+def popExperimentType(session): #FIXME
+    session.add(ExperimentType('acute slice prep','prep',1))
+    session.add(ExperimentType('in vitro patch','patch',1))
 
 def popDataFileSources(session):
     session.add(DataFileSource(name='clampex9_scope',extension='abf'))
@@ -278,13 +285,17 @@ def popDataSourceAssociations(session):
     #fuck, datasource is going to change depending on the mode the amp is in... how to propagate forward
     pass
 
-def populateConstraints(session):
+def populateConstraints(session): #FIXME this has become testing because of how things have been reworked
     """Populate the tables used to constrain datatypes"""
     popSIUnit(session)
     popNonSIUnit(session)
     popSIPrefix(session)
     popSex(session)
     popHardwareType(session)
+    popDataIO(session)
+    session.flush()
+    popStep(session)
+    session.flush()
     popExperimentType(session)
     popSubjectType(session)
     return session.commit()

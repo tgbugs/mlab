@@ -81,31 +81,46 @@ class DataIO(Base):
     __tablename__='dataio'
     id=Column(Integer,primary_key=True)
     type=Column(String)
-    ctrl_name=Column(String) #FIXME should these actually save the code or just the name?
-    getter_name=Column(String)
-    writer_name=Column(String) #should be somethinking like Experiment.MetaData or the like
-    collection_name=Column(String)
+    #ctrl_name=Column(String) #FIXME should these actually save the code or just the name?
+    #getter_name=Column(String)
+    #writer_name=Column(String) #should be somethinking like Experiment.MetaData or the like
+    #collection_name=Column(String)
     __mapper_args__ = {
         'polymorphic_on':type,
         'polymorphic_identity':'baseio',
     }
 
-class Getter(DataIO):
+#TODO figure out the best way to manage these suckers in the database it is NOT how I am doing it right now
+class Getter(DataIO): #TODO for all of these, may also want to diversify in case we dont need ALL THE THINGS?
+    __tablename__='getters'
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
     ctrl_name=Column(String)
     function_name=Column(String)
     kwargs={} 
+    __mapper_args__ = {'polymorphic_identity':'getter'}
 class Setter(DataIO):
+    __tablename__='setters'
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
     ctrl_name=Column(String)
     function_name=Column(String)
     kwargs={}
+    __mapper_args__ = {'polymorphic_identity':'setter'}
 class Reader(DataIO):
-    pass
+    __tablename__='readers'
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
+    __mapper_args__ = {'polymorphic_identity':'reader'}
 class Writer(DataIO):
-    pass
+    __tablename__='writers'
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
+    __mapper_args__ = {'polymorphic_identity':'writer'}
 class Analyzer(DataIO):
-    pass
+    __tablename__='analyzers'
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
+    __mapper_args__ = {'polymorphic_identity':'analyzer'}
 class Checker(DataIO):
-    pass
+    __tablename__='checkers'
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
+    __mapper_args__ = {'polymorphic_identity':'checker'}
 
 class DataSetter(DataIO):
     __tablename__='datasetter'

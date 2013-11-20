@@ -210,6 +210,7 @@ class Get(ctrlio): #FIXME now that this is separate from Writer... wat do?
         self.kwargs.update(kwargs)
         return getattr(self.ctrl,function_name)(**self.kwargs)
 
+
 class Set(ctrlio): #FIXME must always have an input value
     #TODO set COULD be used to change the subject/set of subjects? YES/NO???
     #TODO probably also to be used for resetting the experimental state? NO??
@@ -226,7 +227,7 @@ class Set(ctrlio): #FIXME must always have an input value
 
     def do(self,**kwargs):
         out=self.set(**kwargs)
-        return {'%s'%self.name:out}
+        return {'%s'%self.name:out} #This will return None or an exception will occur
 
     def set(self,**kwargs):
         """Modify as needed"""
@@ -234,9 +235,9 @@ class Set(ctrlio): #FIXME must always have an input value
         try:
             setter=getattr(self.ctrl,function_name)
             setter(**self.kwargs)
-            return True
+            #return True #FIXME DO NOT CONFOUND THIS WITH THE *STEP* RETURNING TRUE
         except:
-            raise #error or true false??
+            raise IOError('Setter failed to seet value!')
 
 
 class Bind(baseio): #this is not quite analysis, it is just a data organizing step
@@ -319,7 +320,7 @@ class Write(baseio): #wow, this massively simplifies this class since the values
 
     def do(self,**kwargs):
         out=self.write(**kwargs)
-        return {'%s'%self.name:out}
+        return {'%s'%self.name:out} #This will return None or will raise and exception
 
     def write(self,writeTarget=None,autocommit=False,**kwargs): #not handling errors here
         """Modify as needed"""
@@ -327,7 +328,6 @@ class Write(baseio): #wow, this massively simplifies this class since the values
         self.session.add(self.MappedWriter(writeTarget=writeTarget,**self.writer_kwargs)) #TODO parent shall be speced in kwargs???
         if autocommit:
             self.session.commit()
-        return True
 
 
 class Analysis(baseio):
@@ -364,8 +364,13 @@ class Check(baseio):
 
     def do(self,**kwargs):
         out=self.check(**kwargs)
-        return {'%s'%self.name:out}
+        return {'%s'%self.name:out} #This will return None or raise an exception
 
     def check(self,**kwargs):
         """Modify as needed"""
-        return self.check_function(**kwargs)
+        if not self.check_function(**kwargs):
+            raise ValueError('Check did not pass!')
+
+class FlowControl:
+    #fuck me I don't want to write a fucking computer language >_<
+    pass
