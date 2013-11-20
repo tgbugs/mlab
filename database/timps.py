@@ -9,6 +9,8 @@ Options:
 from docopt import docopt
 from IPython import embed
 from database.TESTS import *
+from database.steps import *
+from database.dataio import Get,Set,Bind,Read,Write,Analysis,Check
 from database.models import *
 from database.engines import *
 from database.queries import *

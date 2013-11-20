@@ -3,68 +3,101 @@
 ###---------
 
 #TODO need a way to retrieve step classes directly from the database?
-class StepBase: #FIXME this way of doing things is bad at recording get/set pairing for datasources :/
+#FIXME this way of doing things is bad at recording get/set pairing for datasources :/
     #should the datasource/eventsource or whatever implement the get/check/set?
     #amusingly it looks like steps could inherit from datasources probably more flexible not to
     #FIXME some steps: eg setting modes, should only add themselves to the record on failure
         #otherwise the step list will become absurdly long
         #the unitary step tree can be kept somewhere else, or hopefully just reconstructed from the
         #base node if I can get it to work properly...
-    from database.models import Step, StepRecord
-    dataIO=None #import this
+#TODO CHECK STEPS MAY NEED MORE DIVERSITY: EXPLORE
+#these are the perisitent steps whose state is tracked directly, they are where everything should revert to, so slice on rig, got cell, analysis completed stuff like that; this is how we will do loops, if all the prior checkpoints are satisfied then we can build directly from the next known checkpoint step and trace the deps from there
+    #another way to approach this is to assume a successful run and use invalidation steps
+#persistent_node=False #True means that this node will not automatically reset itself to False on succesful exit, pretty sure this one of those 'hard' problems
+#persistent_step=False #TODO a toggleable step that stores its state, may turn out that it should be thought of as a checkpoint step and so we will eventually get rid of it anyway
+    #YEP XXX the whole point of checkpoint steps is that they can have MULTIPLE SIMULTANEOUS REVDEPS
+    #thus, if it is not a checkpoint step, then the step will be called multiple times
+    #checkpoint steps can still be called multiple times as needed by invalidating their state
+    #TODO should all checkpoint steps be check steps that dependnt on a get or read step to validate?
+        #the Set step would then also need to handle invalidation of other steps, which overlaods it
+#TODO something to track experiment state
+
+#from do()
+    #FIXME writeTarget may not be for the final step until much later?
+        #the the base write target should probably always be preceeded by a
+        #Get boolean step that writes to experiment, ie: the "ExperimentDone" step
+    #FIXME don't handle deps here, handle those upstairs in BaseExp???
+    #FIXME loop steps, by taking a bool input at one step that then resets the state
+
+    #FIXME multiple child steps??? using a database to pass values is super dumb
+    #a good example is if we want to write to the db and do analysis at the same time
+    #there is no reason why we shouldn't be able to do both at the same time... HRM
+        #NOW FIXED by passing the kwargs dict around :/ village bycicle yada yada
+
+from database.models import Step, StepRecord
+class StepBase: 
+    dataIO=None #import this #FIXME I'm a bit worried about importing and initing the same dataio many times
     keepRecord=False #TODO use this so that we can doccument steps and choose not to check them, bad scientist!
-    #persistent_node=False #True means that this node will not automatically reset itself to False on succesful exit, pretty sure this one of those 'hard' problems
-    checkpoint_step=False #these are the perisitent steps whose state is tracked directly, they are where everything should revert to, so slice on rig, got cell, analysis completed stuff like that; this is how we will do loops, if all the prior checkpoints are satisfied then we can build directly from the next known checkpoint step and trace the deps from there
-        #another way to approach this is to assume a successful run and use invalidation steps
-    #persistent_step=False #TODO a toggleable step that stores its state, may turn out that it should be thought of as a checkpoint step and so we will eventually get rid of it anyway
-        #YEP XXX the whole point of checkpoint steps is that they can have MULTIPLE SIMULTANEOUS REVDEPS
-        #thus, if it is not a checkpoint step, then the step will be called multiple times
-        #checkpoint steps can still be called multiple times as needed by invalidating their state
-        #TODO should all checkpoint steps be check steps that dependnt on a get or read step to validate?
-            #the Set step would then also need to handle invalidation of other steps, which overlaods it
+    checkpoint_step=False 
             
     dependencies=[] #this now used internally without the need for BaseExp/ExpBase
     expected_writeTarget_type=None #TODO one and only one per step
-    #TODO something to track experiment state
 
     @property
-    def name(self): #FIXME we might be able to use this in conjunction with the dataio_deps???
-        #FIXME add a way to explicity name classes if you want?
+    def name(self):
+        """ Modify as needed"""
         return self.__class__.__name__
 
     @property
     def __doc__(self):
         raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER')
 
-    def __init__(self,session,Experiment,ctrlDict): #FIXME for self running steps we need the ctrlDict
-        self.experiment=Experiment
-        self.etype=Experiment.type
-        self.io=self.dataIO(session,ctrlDict[dataIO.ctrl_name]) #quite elegant!? FIXME if we're going to use set to set the experiment state and stuff like that then we need to expand ctrlDict
-        #XXX the above won't becircular because all that is needed are unintilized steps for this
+    def __init__(self,session,experiment,ctrlDict): #FIXME for self running steps we need the ctrlDict
+        self.experiment_id=experiment.id
+        self.io=self.dataIO(session,ctrlDict[self.dataIO.ctrl_name]) #quite elegant!? FIXME if we're going to use set to set the experiment state and stuff like that then we need to expand ctrlDict
+        #TODO versioning instead of requiring unique names, the records are kept by id anyway and the name
+            #SHOULD always get the most recent version, will have to verify this :/
+        self.session=session
+        try:
+            #TODO version check! um... no?
+                #well, except that the only things that might change are the dataIO or the deps
+                #and the deps and the deps are already taken care of
+                #we could track the changes to the dataio...
+                #really we just want to have a record of the whole code base
+                #or if the input on the dataio changes eg from axon to ni or something
+            self.Step=session.query(Step).filter_by(name == self.name).order_by(-id).first()
+        except:
+            self.persist()
 
-    def persist(self): #TODO
-        raise NotImplementedError('GET IT DONE')
+    def persist(self,autocommit=False): #TODO
+        self.Step=Step(name=self.name,docstring=self.__doc__,checkpoint=
+                       self.checkpoint_step,dataio_id=self.io.MappedInstance.id,
+                       keepRecord=self.keepRecord) #TODO subject, hardware, reagent type etc
+                            #that might be one way to deal with writeTargets...
+                            #except... no also there are the check steps that check for existence
+                            #but that should be handled via the dataio...
+        self.session.add(self.Step)
+        if autocommit:
+            self.session.commit()
+
     def do(self,writeTarget=None,**kwargs):
-        #FIXME writeTarget may not be for the final step until much later?
-            #the the base write target should probably always be preceeded by a
-            #Get boolean step that writes to experiment, ie: the "ExperimentDone" step
-        #FIXME don't handle deps here, handle those upstairs in BaseExp???
-        #FIXME loop steps, by taking a bool input at one step that then resets the state
         if writeTarget:
             kwargs['writeTarget']=writeTarget
         try:
             value=self.io.do(**kwargs)
-            self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
-            if self.checkpoint_step or self.persistent_step: #FIXME collapse this in to self.Step (rename to self.something?)
+            #self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
+            self.session.add(StepRecord(experiment_id=self.experiment_id,step_id=self.Step.id,success=True)) #TODO subjects etc
+            if self.checkpoint_step: #FIXME combine this into self.Step (rename to self.something?)
                 self.Step.isdone=True
             print('[OK]')
-            return value #FIXME multiple child steps??? using a database to pass values is super dumb
-                #a good example is if we want to write to the db and do analysis at the same time
-                #there is no reason why we shouldn't be able to do both at the same time... HRM
+            return value
         except:
-            self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
-            print('[!] Step failed. Trying again.') #FIXME TODO
+            #self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
+            self.session.add(StepRecord(experiment_id=self.experiment_id,step_id=self.Step.id,success=False)) #TODO subjects etc
+            print('[!] Step failed. Trying again.') #FIXME TODO need a way to break out to fix
             self.do(writeTarget,**kwargs)
+        finally:
+            self.session.commit() #FIXME this make sense here?
 
 
 class StepRunner:
@@ -83,7 +116,7 @@ class StepRunner:
             iStepDict[step]=stepDict[step](session,Experiment,ctrlDict)
         self.iStepDict=iStepDict
 
-   #FIXME the step manager should probably handle all of this in conjunction with the database?
+    #FIXME the step manager should probably handle all of this in conjunction with the database?
     #XXX depreicated
     def getDeps(self,stepDict): #this is gonna be a bit crazy, since all the steps are inited off the bat
         #FIXME I foresee the need for a way to reload the deps if something goes wrong...
@@ -132,6 +165,9 @@ class StepRunner:
         current_step=self.iStepDict[self.stepList[0]]
         for name in self.stepList: #FIXME loop isnt going to work for this!
             #unless that is, I massively improve the complier?
+            #FIXME right now I would have to recompile every time I wanted to loop!
+            #but at least that means I know where the problem is ^_^
+            #and hell, I guess for the time being that will do :D
             current_step=self.iStepDict[name]
             kwargs=current_step.do(**kwargs)
 
@@ -141,6 +177,13 @@ class StepComplier:
         need to make sure I can get the flow control to work
         properly with this though
     """
+    #TODO ideally what we want is to compile a whole serries of sub graphs
+        #that will have the same ordering every time and stretch from
+        #one checkpoint step to the next, then those can be reused MUCH more easily
+        #without having to guess at adding and removing nodes from a topo sort
+        #during a live run (or something like that)
+    #as long as we can get parallel orderings then all that needs to happen at
+        #run time is to checkCheckpoints on the fly and choose the right stepList
 
     def __init__(self,baseStep):
         #Base steps should be checkpoint steps when they produce new subjects/
@@ -187,7 +230,6 @@ class StepComplier:
         for step in self.baseStep.checkpoints:
             if step.isdone:
                 self.unfinished_nodes.difference_update(step.transitive_closure)
-
         
     def unorderedTopoSort(self): #TODO paralellizeable?
         from collections import dequeue
@@ -298,7 +340,7 @@ class StepComplier:
         #directly from the dep tree, so we call self.go(nondepreaders,(dep1.go(),dep2.go(),dep3.go())) or something like that
         #FIXME shouldn't we be able to smartly pass values already in memory/session from step to step without having to read from the database?
 
-class BaseDataIO: #XXX DEPRICATED see dataio.py for new version
+class _BaseDataIO: #XXX DEPRICATED see dataio.py for new version
     @property
     def name(self):
         return self.__class__.__name__[4:]
@@ -307,7 +349,9 @@ class BaseDataIO: #XXX DEPRICATED see dataio.py for new version
     Writer=None #useful for write database using orm steps eg MetaData
     def __init__(self,Reader,Setter=None):
         def checkName(iCls,name):
-            return iCls if iCls.__class.__name__ == name else raise AttributeError('Names dont match!')
+            if iCls.__class.__name__ == name:
+                return iCls 
+            else: raise AttributeError('Names dont match!')
         self.Reader=checkName(Reader,self.reader_name)
         self.Setter=checkName(Setter,self.setter_name)
         #FIXME analysis can be shoved into this framework by having setter and reader be the same class :/
@@ -343,7 +387,7 @@ class BaseDataIO: #XXX DEPRICATED see dataio.py for new version
             if minimum >= self.value or self.value >= maximum:
                 raise ValueError('Expected %s +- %s got %s'%(self.expected_value,self.ev_error,self.value))
         elif self.expected_value:
-            if self.value != self.expected_value
+            if self.value != self.expected_value:
                 raise ValueError('Expected %s got %s'%(self.expected_value,self.value))
         else:
             if not checkingFunction(self.value):
@@ -377,10 +421,12 @@ def things():
     #write to database
     
     #check one value against another
+    pass
 
 
 
 class DataFileSource: #the database entry PLUS how to record the datafile
+    pass   
     
 
 
@@ -389,6 +435,7 @@ class CheckpointStep:
     #end of a protocol
     #block of things that make it faster to do them all before eg setup
     #auto generate from subjects, reagents and hardware/tools or other checkpoint steps
+    pass
 
 
 class addNewSubjectStep: #??? instead of the pre/inter/post I use currently?
@@ -398,6 +445,7 @@ class trmGotCell:
     datasources=['trmGetBool']
     def do(self):
         for ds in self.datasources:
+            pass
 
 
 def doExperiment():
@@ -406,7 +454,7 @@ def doExperiment():
     while 1:
         getDataOnSubjectSet() #FIXME seems like we may still need a way to deal with the subject tree too...
         if input()=='y': #a check to get a new slice? seems ugly compared to pre/inter/post...
-        changeHigherLevelSubject() #yeah... still have to be able to changes slices...
+            changeHigherLevelSubject() #yeah... still have to be able to changes slices...
         #how to doccument the pre/inter/post as part of the dep tree??? ACTUALLY, don't have too, it already IS doccumented, can just record that we did the steps again for a different set of subjects...
         #hybrid of the subject tree and the dep tree...
         #TODO a experiment-step-subject history table thing???!?!
@@ -432,5 +480,7 @@ def topoSort(all_Steps_dict,current_step): #topological sort of the steps
     #yeah, especially since I have direct deps ordered already
     #get the last one first, (do all deps by same rule), get 2nd to last (do all deps by same rule), etc.
     for step in current_step.direct_dependencies: #TODO could be threaded... though direct deps may share...
-        buildStepTree(all_Steps_dict,all_Steps_dict[step]
+        buildStepTree(all_Steps_dict,all_Steps_dict[step])
 
+if __name__ == '__main__':
+    main()

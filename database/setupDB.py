@@ -219,7 +219,7 @@ def popReagentType(session):
     acsf=ReagentType(name='acsf')#,iupac=None)
 
 def popDataIO(session):
-    session.add(DataIO())
+    session.add(DataIO(name='urio'))
 
 def popStep(session): #FIXME we really should never have to do this directly!
     session.add(Step(name='test step',docstring='fixme',dataio_id=1))

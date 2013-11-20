@@ -155,7 +155,7 @@ class Step(Base):
     id=Column(Integer,primary_key=True) #FIXME this could nicely alleviate the concern about naming, but we do still need a reasonable way id them
     type_id=None #FIXME do we want this??? get, set, check, analysis? don't really... need a table for 4 things?
         #get set bind read write analysis check
-    name=Column(String,nullable=False,unique=True)
+    name=Column(String,nullable=False,unique=True) #FIXME versioning??!??
     docstring=Column(String,nullable=False) #pulled from __doc__ and repropagated probably should be a citeable?
     checkpoint=Column(Boolean,default=False) #FIXME TODO is this the right way to do this??? nice way to delimit the scope of an 'experiment' if we still have experiments when this is all done
     isdone=Column(Boolean,default=False) #FIXME FIXME should we keep the step tree state here!???! seems ok? unless we try to run two experiments off the same step at the same time, then we will really mess stuff up... ideally we need a per experiment tree or something??? though from a science checklist point of view you don't want to reset stuff every time... hrm; using only direct dependencies is nice in that as soon as the steps registers as successful and the next step proceeds, the previous (in many cases) should be reset to false!
@@ -169,7 +169,7 @@ class Step(Base):
             return value
 
     dataio_id=Column(Integer,ForeignKey('dataio.id'),nullable=False) #FIXME will need to unify metadatasource, datasource, datafilesource, etc under one index? default should be 'StepEvent' or something... maybe 'StepRecord'
-    record_step=Column(Boolean,default=True) #set to false for steps that don't need to be put in the record; TODO can this double as a 'set_only'???
+    keepRecord=Column(Boolean,default=True) #set to false for steps that don't need to be put in the record; TODO can this double as a 'set_only'???
     #FIXME damn, this does seem to complicate the 'HasExperiments' setup...
         #the step itself *should* specify an expected subject type
     #TODO where do we put things like 'get this subject,' 'retrieve this hardware' 'make sure you have this reagent'

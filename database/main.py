@@ -22,7 +22,7 @@ from sqlalchemy.orm             import aliased
 from sqlalchemy.engine          import Engine
 
 from database.models            import *
-from database.models.base       import Base, initDBScience
+from database.models.base       import initDBScience
 from database.engines           import sqliteMem, pgTest
 from database.setupDB           import populateConstraints, populateTables
 from database.TESTS             import run_tests

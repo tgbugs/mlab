@@ -53,7 +53,7 @@ class BaseDataIO:
         #hash the code of the thing #FIXME should this all be here or should it be tracked globally on startup?
         if strict:
             #hash the file that it came from and compare it to the previous hash
-        pass
+            pass
 
     def Persist(self):
         """
@@ -147,18 +147,24 @@ class baseio:
     def name(self):
         return self.__class__.__name__#[4:]
 
+    @property
+    def __doc__(self):
+        raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER')
+
     def __init__(self,session):
         self.validate()
         try:
-            self.MappedInstance=session.query(MappedClass).filter_by(name=self.name).one()
+            self.MappedInstance=session.query(self.MappedClass).filter_by(name=self.name).one() #FIXME versioning?
         except:
             self.persist(session)
         self.session=session
 
     def validate(self):
         raise NotImplementedError('You MUST implement this at the subclass level')
+        #TODO check the version and increment??!
 
     def persist(self,session):
+        #will raise an error, this is just here for super() calls
         session.add(self.MappedInstance)
         session.commit()
         
@@ -174,20 +180,23 @@ class ctrlio(baseio):
 
     def validate(self):
         if self.ctrl_name == self.ctrl.__class__.__name__:
-            #TODO check the version!
+            #TODO check the controller version!
             pass
         else:
             raise TypeError('Wrong controller for this step!')
+        #super().validate() #TODO do we actually want to check versions of this? these are just tiny interfaces
             
     def persist(self,session):
-        self.MappedInstance=MappedClass(ctrl_name=self.ctrl_name,function_name=
+        self.MappedInstance=self.MappedClass(name=self.name,ctrl_name=self.ctrl_name,function_name=
                                 self.function_name,kwargs=self.kwargs)
         super().persist(session)
 
 
 class Get(ctrlio): #FIXME now that this is separate from Writer... wat do?
     #TODO i think this somehow needs to interface with subjects, or do I need another step type? Set has it too
+    #XXX FUN: this is another potential way to read data from datafiles or the web using an established interface
     MappedClass=None #Getter
+    #from database.models import Getter as MappedClass
     function_name=''
     kwargs={} #FIXME because Getters are now divorced from Writers, need to validate that units match?
     ctrl_name=''
@@ -208,7 +217,7 @@ class Get(ctrlio): #FIXME now that this is separate from Writer... wat do?
     def get(self,**kwargs):
         """Modify as needed"""
         self.kwargs.update(kwargs)
-        return getattr(self.ctrl,function_name)(**self.kwargs)
+        return getattr(self.ctrl,self.function_name)(**self.kwargs)
 
 
 class Set(ctrlio): #FIXME must always have an input value
@@ -220,6 +229,7 @@ class Set(ctrlio): #FIXME must always have an input value
     #TODO setter's should really be reading their values from a protocol of some sort...
         #which ideally would be stored in the database and thus accessed via a read
     MappedClass=None #Setter
+    #from database.models import Setter as MappedClass
     function_name=''
     kwargs={}
     ctrl_name=''
@@ -233,7 +243,7 @@ class Set(ctrlio): #FIXME must always have an input value
         """Modify as needed"""
         self.kwargs.update(kwargs)
         try:
-            setter=getattr(self.ctrl,function_name)
+            setter=getattr(self.ctrl,self.function_name)
             setter(**self.kwargs)
             #return True #FIXME DO NOT CONFOUND THIS WITH THE *STEP* RETURNING TRUE
         except:
@@ -243,9 +253,18 @@ class Set(ctrlio): #FIXME must always have an input value
 class Bind(baseio): #this is not quite analysis, it is just a data organizing step
     MappedClass=None #TODO yay! finally a simple way to collect datasources into vectors!
         #obviously if I have 100 independent sensors this things is getting refactored
+    #from database.models import Binder as MappedClass
     dependencies=[] #eg: esp_x esp_y, or channel_1, channel_2, etc
     out_format=[] #take the dep_names from above and put them in the structure you want, need not be a list
         #rewrite self.bind as need for more complex data structures
+
+    def validate(self):
+        #make sure the code for the check function hasn't change, if it has, increment version
+        pass
+
+    def persist(self,session):
+        self.MappedInstance=self.MappedClass(name=self.name) #FIXME **do want some mcKwargs???
+        super().persist(session)
 
     def do(self,**kwargs):
         out=self.bind(**kwargs)
@@ -262,8 +281,10 @@ class Bind(baseio): #this is not quite analysis, it is just a data organizing st
 class Read(baseio): #FIXME technically anything read from the database should already be annotated
     #AND the link between what is read MUST be maintained... which is quite hard w/ this setup...?
     MappedClass=None #DataBaseSource BAD BAD BAD BAD practice
+    #from database.models import Reader as MappedClass
     class_kwargs={}
     MappedReader=None #literally any mapped class, depending on the query strategy
+    MappedReader=type('thing',(object,),{})
 
     def validate(self):
         #check to make sure stuff here has not changed? ie versioning?
@@ -271,7 +292,7 @@ class Read(baseio): #FIXME technically anything read from the database should al
 
     def persist(self,session):
         mrn=self.MappedReader.__name__
-        self.MappedInstance=MappedClass(name=self.name,reader_name=mrn,filter_string=self.filter_string,order_by=self.order_by)
+        self.MappedInstance=self.MappedClass(name=self.name,reader_name=mrn) #TODO should probably be reader type
         super().persist(session)
 
     def do(self,**kwargs):
@@ -292,9 +313,11 @@ class Read(baseio): #FIXME technically anything read from the database should al
 class Write(baseio): #wow, this massively simplifies this class since the values is passed in as a kwarg
     #TODO validate incoming units :/
     MappedClass=None #MetaDataSource
+    #from database.models import Writer as MappedClass
     class_kwargs={} #things like units etc,
         #XXX BEWARE need to validate these against inputs AT START TIME NOT RUN TIME
     MappedWriter=None #MetaData, we're not even messing with adding to collections right now
+    MappedWriter=type('thing',(object,),{})
     writer_kwargs={}
     dependencies=[] #pretty much every writer should have get or an analysis or something
 
@@ -315,7 +338,7 @@ class Write(baseio): #wow, this massively simplifies this class since the values
 
     def persist(self,session):
         mwn=self.MappedWriter.__name__
-        self.MappedInstance=MappedClass(name=self.name,writer_name=mwn,writer_kwargs=self.writer_kwargs)
+        self.MappedInstance=self.MappedClass(name=self.name,writer_name=mwn,writer_kwargs=self.writer_kwargs)
         super().persist(session)
 
     def do(self,**kwargs):
@@ -332,14 +355,16 @@ class Write(baseio): #wow, this massively simplifies this class since the values
 
 class Analysis(baseio):
     MappedClass=None
+    #from database.models import Analyzer as MappedClass
     analysis_function=lambda **kwargs: 2+2
     dependencies=[]
 
     def validate(self):
         pass
 
-    def persist(self):
-        pass
+    def persist(self,session):
+        self.MappedInstance=self.MappedClass(name=self.name) #FIXME **do want some mcKwargs???
+        super().persist(session)
 
     def do(self,**kwargs):
         out=self.analyze(**kwargs)
@@ -352,6 +377,7 @@ class Analysis(baseio):
 
 class Check(baseio):
     MappedClass=None
+    #from database.models import Checker as MappedClass
     check_function=lambda **kwargs:True #return type: Boolean please
     dependencies=[]
 
@@ -359,8 +385,9 @@ class Check(baseio):
         #make sure the code for the check function hasn't change, if it has, increment version
         pass
 
-    def persist(self):
-        pass
+    def persist(self,session):
+        self.MappedInstance=self.MappedClass(name=self.name) #FIXME **do want some mcKwargs???
+        super().persist(session)
 
     def do(self,**kwargs):
         out=self.check(**kwargs)
@@ -371,6 +398,30 @@ class Check(baseio):
         if not self.check_function(**kwargs):
             raise ValueError('Check did not pass!')
 
+
 class FlowControl:
     #fuck me I don't want to write a fucking computer language >_<
     pass
+
+
+def main():
+    from database.engines import sqliteMem
+    from database.models.base import initDBScience
+    engine=sqliteMem(echo=True)
+    session=initDBScience(engine)
+    fake_ctrl=type('',(object,),{})()
+    tests={
+        'g':Get(session,fake_ctrl),
+        's':Set(session,fake_ctrl),
+        'b':Bind(session),
+        'r':Read(session),
+        'w':Write(session),
+        'a':Analysis(session),
+        'c':Check(session),
+    }
+    for test in tests.values():
+        test.do()
+
+
+if __name__ == '__main__':
+    main()

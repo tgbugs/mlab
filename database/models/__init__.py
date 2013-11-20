@@ -32,6 +32,13 @@ __all__.extend((
 from database.models.data import *
 __all__.extend((
         'DataIO',
+        'Getter',
+        'Setter',
+        'Binder',
+        'Reader',
+        'Writer',
+        'Analyzer',
+        'Checker',
         'DataFileSource',
         'SoftwareChannel',
         'MetaDataSource',
@@ -45,6 +52,7 @@ __all__.extend((
         'ExperimentType',
         'Experiment',
         'Step',
+        'StepTC',
         'StepEdge',
         'StepEdgeVersion',
 ))

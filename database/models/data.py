@@ -81,6 +81,7 @@ class DataIO(Base):
     __tablename__='dataio'
     id=Column(Integer,primary_key=True)
     type=Column(String)
+    name=Column(String,nullable=False,unique=True)
     #ctrl_name=Column(String) #FIXME should these actually save the code or just the name?
     #getter_name=Column(String)
     #writer_name=Column(String) #should be somethinking like Experiment.MetaData or the like
@@ -105,13 +106,20 @@ class Setter(DataIO):
     function_name=Column(String)
     kwargs={}
     __mapper_args__ = {'polymorphic_identity':'setter'}
+class Binder(DataIO):
+    __tablename__='binders' #FIXME naming
+    id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
+    __mapper_args__ = {'polymorphic_identity':'binder'}
 class Reader(DataIO):
     __tablename__='readers'
     id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
+    reader_name=Column(String,nullable=False) #FIXME should probably be reader type?
     __mapper_args__ = {'polymorphic_identity':'reader'}
 class Writer(DataIO):
     __tablename__='writers'
     id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
+    writer_name=Column(String,nullable=False) #FIXME should probably be reader type?
+    writer_kwargs={} #FIXME hybrid type using with_variant for hstore and and pickle? can't query them direct...
     __mapper_args__ = {'polymorphic_identity':'writer'}
 class Analyzer(DataIO):
     __tablename__='analyzers'
@@ -122,7 +130,8 @@ class Checker(DataIO):
     id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
     __mapper_args__ = {'polymorphic_identity':'checker'}
 
-class DataSetter(DataIO):
+
+class DataSetter(DataIO): #XXX depricated
     __tablename__='datasetter'
     id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
     setter_name=Column(String) #only on certain subclasses?
