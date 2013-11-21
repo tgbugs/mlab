@@ -23,7 +23,7 @@ class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Ba
     #FIXME loop steps
     @property
     def steps(self): #TODO
-        return base_step.transitive_closure() #or something like this
+        return self.base_step.transitive_closure #or something like this
         #TODO make sure this thing is indexed by step name!
 
     @property
@@ -68,12 +68,12 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
     steprecord=relationship('StepRecord',order_by='StepRecord.id')
     steps=association_proxy('steprecord','step',creator=lambda step_id, success: StepRecord(step_id=step_id,success=success)) #FIXME make sure experiment_id gets set...
 
-    stepStateDict={} #FIXME make me peristable please! hstore? or... something on top of step record?
+    #stepStateDict={} #FIXME make me peristable please! hstore? or... something on top of step record?
     #we can do this by looking at the current step and comparing it to the state of the LIVE tree...
-    def getBaseStepDict(self):
-        for step in self.type.steps:
-            self.stepStateDict[step.id]=False
-        return stepStateDict
+    #def getBaseStepDict(self): #XXX depricated?
+        #for step in self.type.steps:
+            #self.stepStateDict[step.id]=False
+        #return self.stepStateDict
 
 
     @validates('type_id','person_id','endDateTime','startDateTime')
@@ -160,7 +160,7 @@ class Step(Base):
     checkpoint=Column(Boolean,default=False) #FIXME TODO is this the right way to do this??? nice way to delimit the scope of an 'experiment' if we still have experiments when this is all done
     isdone=Column(Boolean,default=False) #FIXME FIXME should we keep the step tree state here!???! seems ok? unless we try to run two experiments off the same step at the same time, then we will really mess stuff up... ideally we need a per experiment tree or something??? though from a science checklist point of view you don't want to reset stuff every time... hrm; using only direct dependencies is nice in that as soon as the steps registers as successful and the next step proceeds, the previous (in many cases) should be reset to false!
     @validates('isdone')
-    def is_checkpoint(self, key, value):
+    def _is_checkpoint(self, key, value):
         if not value:
             return value
         elif not self.checkpoint:

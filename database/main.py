@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.3
 """Main file for database stuff
 Usage:
     main.py [(-e | --echo) (-p | --pgsql) (-w | --wipe) (-s | --setup) (-t | --test) (-i | --ipython)]

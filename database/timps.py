@@ -1,11 +1,13 @@
+#!/usr/bin/env python3.3
 """Streamlined file for testing postgres stuff in ipython
 Usage:
-    main.py [(-e | --echo) (-t | --test)]
+    main.py [(-e | --echo) (-i | --ipython)]
     main.py (-h | --help )
 Options:
     -e --echo       enable echo
-    -t --test       run tests and exit
+    -i --ipython    embed
 """
+#-t --test       run tests and exit
 from docopt import docopt
 from IPython import embed
 from database.TESTS import *
@@ -28,14 +30,15 @@ dbtype=session.connection().engine.name #dialect.name??
 #table logic
 logic_StepEdge(session)
 
+#give me some ipython!
+if args['--ipython']:
+    embed()
+
 #tests
-if args['--test']:
-    dirAll(s)
+else:# args['--test']:
+    dirAll(s) #FIXME NOTE: __dir__ does not work in 3.2 for some reason >_<
     #t_steps(s,100)
     #s.commit()
     #print(session.query(Step).all())
     #t_edges(s)
 
-#give me some ipython!
-else:
-    embed()

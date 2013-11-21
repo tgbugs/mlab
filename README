@@ -12,3 +12,8 @@ In this order
 And if you do
 You will find
 What I found.
+
+Dependencies:
+sqlalchemy
+psycopg2
+docopt
