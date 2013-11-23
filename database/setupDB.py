@@ -219,7 +219,7 @@ def popReagentType(session):
     acsf=ReagentType(name='acsf')#,iupac=None)
 
 def popDataIO(session):
-    session.add(DataIO(name='urio'))
+    session.add(DataIO(name='urio',docstring='mareti'))
 
 def popStep(session): #FIXME we really should never have to do this directly!
     session.add(Step(name='test step',docstring='fixme',dataio_id=1))
@@ -230,7 +230,7 @@ def popExperimentType(session): #FIXME
     session.add(ExperimentType('in vitro patch','patch',1))
 
 def popDataFileSources(session):
-    session.add(DataFileSource(name='clampex9_scope',extension='abf'))
+    session.add(DataFileSource(name='clampex9_scope',extension='abf',docstring='a clampex!'))
 
 def popMetaDataSources(session):
     espX=None

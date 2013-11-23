@@ -4,6 +4,7 @@ import inspect as ins
 from sys import stdout
 from time import sleep
 from debug import TDB,ploc
+from IPython import embed
 try:
     import rpdb2
 except:
@@ -478,6 +479,9 @@ class trmFuncs(kCtrlObj):
         self.keyHandler(1) #requesting key passthrough
         return self.charBuffer.get() == true_key
 
+    def openIPython(self): #XXX depreicated because I need access to globals and this is not the way
+        print('opening the ipython interpreter wait shit, this is all happening in its own thread! NOOOOOOOOO')
+        embed() #FIXME this doesn't get any of the globals...
 
 def main():
     esp=espFuncs(None,None,None,None)

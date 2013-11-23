@@ -82,6 +82,7 @@ class DataIO(Base):
     id=Column(Integer,primary_key=True)
     type=Column(String)
     name=Column(String,nullable=False,unique=True)
+    docstring=Column(String,nullable=False) #pulled from __doc__ and repropagated probably should be a citeable?
     #ctrl_name=Column(String) #FIXME should these actually save the code or just the name?
     #getter_name=Column(String)
     #writer_name=Column(String) #should be somethinking like Experiment.MetaData or the like
@@ -97,7 +98,7 @@ class Getter(DataIO): #TODO for all of these, may also want to diversify in case
     id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
     ctrl_name=Column(String)
     function_name=Column(String)
-    kwargs={} 
+    func_kwargs={}  #FIXME TODO
     __mapper_args__ = {'polymorphic_identity':'getter'}
 class Setter(DataIO):
     __tablename__='setters'
@@ -156,7 +157,9 @@ class MetaDataSource(DataIO): #FIXME naming #all raw data collect w/o sample rat
         return '%s%s from %s'%(self.prefix,self.unit,self.name)
     def __repr__(self):
         return '\n%s units %s%s'%(self.name,self.prefix,self.unit)
-    def __init__(self,name=None,prefix=None,unit=None,mantissa=None,hardware_id=None):
+    def __init__(self,docstring=None,ctrl_name=None,function_name=None,func_kwargs=None,name=None,prefix=None,unit=None,mantissa=None,hardware_id=None):
+        #TODO function_name and control name; aka fix the bloody underlying dataio structure in the database
+        self.docstring=docstring #FIXME
         self.name=name
         self.prefix=prefix
         self.unit=unit

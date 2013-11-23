@@ -36,6 +36,11 @@
 
 from database.models import Step, StepRecord
 class StepBase: 
+    #TODO what is really cool about the way I have this set up right now is that you can use literally anything in a write step
+        #I'm currently using my own backend, but anyone should be able to use the step frame work presented here WITHOUT the db
+        #which means, that I need decouple the two so that one can run without the other
+        #but but but there is so much cool stuff you get by having the steps in a database :/
+        #well, maybe the step database could be its own thing? ick no, we'll worry about this later
     dataIO=None #import this #FIXME I'm a bit worried about importing and initing the same dataio many times
     keepRecord=False #TODO use this so that we can doccument steps and choose not to check them, bad scientist!
     checkpoint_step=False 
@@ -54,7 +59,7 @@ class StepBase:
 
     def __init__(self,session,experiment,ctrlDict): #FIXME for self running steps we need the ctrlDict
         self.experiment_id=experiment.id
-        self.io=self.dataIO(session,ctrlDict[self.dataIO.ctrl_name]) #quite elegant!? FIXME if we're going to use set to set the experiment state and stuff like that then we need to expand ctrlDict
+        self.io=self.dataIO(session,ctrlDict[self.dataIO.ctrl_name],ctrlDict) #quite elegant!? FIXME if we're going to use set to set the experiment state and stuff like that then we need to expand ctrlDict
         #TODO versioning instead of requiring unique names, the records are kept by id anyway and the name
             #SHOULD always get the most recent version, will have to verify this :/
         self.session=session
@@ -84,7 +89,7 @@ class StepBase:
         if writeTarget:
             kwargs['writeTarget']=writeTarget
         try:
-            value=self.io.do(**kwargs)
+            value=self.io.do(**kwargs) #FIXME maybe there is a place to chain recursive gets?
             #self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
             self.session.add(StepRecord(experiment_id=self.experiment_id,step_id=self.Step.id,success=True)) #TODO subjects etc
             if self.checkpoint_step: #FIXME combine this into self.Step (rename to self.something?)

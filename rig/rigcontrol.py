@@ -17,14 +17,14 @@ from rig.trm import trmControl
 
 class rigIOMan:
     """Terminal input manager, control the rig from a terminal window"""
-    def __init__(self,keyDicts,session_maker):
+    def __init__(self,keyDicts,session_maker, globs):
+        self.globs=globs #for passing in to for openIPyton and embed()
         self.keyDicts=keyDicts
 
         self.ikFuncDict={}
         self.modeDict={}
         self.helpDict={}
         self.keyActDict={}
-
 
         self.keyRequest=0
         self.key=None #genius! now we don't even need have the stupid pass through!
@@ -45,6 +45,10 @@ class rigIOMan:
         self.Session=session_maker
 
         #TODO add a way for keys to enter programatic control mode, they will still need keyinput though
+
+    def ipython(self,globs):
+        locals().update(globs) #SUPER unkosher but seems safe from tampering
+        embed()
 
     def updateModeDict(self):
         self.helpDict,self.modeDict=makeModeDict(self.ikFuncDict,*keyDicts.values())
@@ -72,6 +76,9 @@ class rigIOMan:
             return self
 
     def keyHandler(self,keyRequest=0): #FIXME still confusing
+        do = lambda globs: self.ipython(globs)
+        self.keyActDict['i'] = lambda: do(self.globs) #FIXME this could explode all over the place
+            #FIXME FIXME this is a hack, I don't think this is a good or safe way to do ANYTHING
         if keyRequest:
             self.keyRequest=1
             return 1

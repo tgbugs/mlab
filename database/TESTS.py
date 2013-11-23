@@ -485,7 +485,7 @@ class t_repo(TEST):
 class t_datafilesource(TEST):
     def make_all(self):
         self.records=[
-            DataFileSource(name='test',extension='data'),
+            DataFileSource(name='test',extension='data',docstring='wooo!'),
         ]
 
 
@@ -493,7 +493,7 @@ class t_metadatasource(TEST):
     def make_all(self):
         hw=self.session.query(Hardware).filter_by(name='the void')[0]
         self.records=[
-            MetaDataSource(name='the void',prefix='T',unit='Pa',hardware_id=hw),
+            MetaDataSource(name='the void',prefix='T',unit='Pa',hardware_id=hw,docstring='yes I am nothing'),
         ]
 
 

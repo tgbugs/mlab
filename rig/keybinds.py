@@ -49,12 +49,12 @@ def rigDict():
                     'e':'printError',
                     #'w':'printPosDict',
                     #'e':('setMode','esp'),
-                    'i':'getDisp',
+                    't':'getDisp', #FIXME Mod, Ctrl etc... :/
                     #'s':'setSpeedDef',
                     'g':'getPos',
                     'f':'gotoMark',
                     #'r':'read',
-                    't':'fakeMove',
+                    'z':'fakeMove',
                     'm':'mark',
                     '\'':'gotoMark',
                    },
@@ -67,6 +67,7 @@ def rigDict():
 
         'trmFuncs':{
             'k':('setMode','trm'),
+            'i':'openIPython',
             },
     }
     return rigDict
@@ -152,6 +153,7 @@ def trmDict():
         'mode':'trm',
         'trmFuncs':
             {
+                'i':'openIPython',
                 '1':'getString',
                 '2':'getFloat',
                 '3':'getInt',

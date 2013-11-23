@@ -11,8 +11,10 @@ Options:
 from docopt import docopt
 from IPython import embed
 from database.TESTS import *
-from database.steps import *
-from database.dataio import Get,Set,Bind,Read,Write,Analysis,Check
+#from database.steps import *
+#from database.dataio import Get,Set,Bind,Read,Write,Analysis,Check
+from rig.rigcontrol import rigIOMan, keyDicts
+from database.real_steps import *
 from database.models import *
 from database.engines import *
 from database.queries import *
@@ -30,6 +32,9 @@ dbtype=session.connection().engine.name #dialect.name??
 #table logic
 logic_StepEdge(session)
 
+#load up the stuff we need to test dataios and steps
+rio=rigIOMan(keyDicts, session, globals())
+
 #give me some ipython!
 if args['--ipython']:
     embed()
@@ -42,3 +47,5 @@ else:# args['--test']:
     #print(session.query(Step).all())
     #t_edges(s)
 
+#cleanup! #just it @ and it will close properly
+#rio.cleanup() #FIXME this should be handled internally in rio probs w/ a wrapper for with as:

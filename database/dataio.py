@@ -143,20 +143,30 @@ class baseio:
     dependencies=[] #these propagate up to iodeps, we want to use the same dataios for many steps
         #so we can't use dataio names for step names DUH that was why we split stuff up in the first place!
         #and they should be the expected keywords for anything downstream
+    dynamic_inputs=False
     @property
     def name(self):
         return self.__class__.__name__#[4:]
 
-    @property
-    def __doc__(self):
-        raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER')
 
-    def __init__(self,session):
+    def __init__(self,session,controller_class=None,ctrlDict=None):
+        if getattr(self,'ctrl_name',None): #FIXME not quite correct
+            if ctrlDict:
+                self.ctrl=ctrlDict[self.ctrl_name]
+                #self.ctrlDict=ctrlDict #XXX this is a really hacky way to do call dependnet dataios
+                #TODO yeah, now I'm seeing why keeing the live dataio dict might be a good idea...
+            elif controller_class:
+                self.ctrl=controller_class
+            else:
+                raise ValueError('ctrl_name defined but no controller passed in during init!')
+
         self.validate()
+
         try:
             self.MappedInstance=session.query(self.MappedClass).filter_by(name=self.name).one() #FIXME versioning?
         except:
             self.persist(session)
+
         self.session=session
 
     def validate(self):
@@ -165,18 +175,29 @@ class baseio:
 
     def persist(self,session):
         #will raise an error, this is just here for super() calls
+        if not self.__doc__:
+            raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER! (add a docstring to this class)')
+        self.MappedInstance.docstring=self.__doc__
         session.add(self.MappedInstance)
         session.commit()
+
+    def _rec_do_kwargs(self,kwargs):
+        #FIXME this is so that we can record the input values in the step record
+            #ideally we shouldnt need this for write and stuff like that
+            #and we really shouldnt need it at all because it obfusticates everythings >_<
+            #XXX we don't want internal representations ending up in the db
+        #really we just want the value(s) we set to be recorded iff the dataio itself sets/expects
+            #dynamic inputs that won't be recorded elsewhere, eg validating that we are on the correct channel
+            #but that could be handled as a check steps? and should be dealt with as part of the looping stuff :/
+        if self.dynamic_inputs:
+            self.full_kwargs=kwargs
         
 
 class ctrlio(baseio):
-    function_name=''
-    kwargs={}
+    mcKwargs={}
     ctrl_name=''
-
-    def __init__(self,session,controller_class):
-        self.ctrl=controller_class
-        super().__init__(session)
+    func_kwargs={}
+    function_name=''
 
     def validate(self):
         if self.ctrl_name == self.ctrl.__class__.__name__:
@@ -188,7 +209,7 @@ class ctrlio(baseio):
             
     def persist(self,session):
         self.MappedInstance=self.MappedClass(name=self.name,ctrl_name=self.ctrl_name,function_name=
-                                self.function_name,kwargs=self.kwargs)
+                                self.function_name,hardware_id=self.hardware_id,func_kwargs=self.func_kwargs,**self.mcKwargs)
         super().persist(session)
 
 
@@ -197,27 +218,40 @@ class Get(ctrlio): #FIXME now that this is separate from Writer... wat do?
     #XXX FUN: this is another potential way to read data from datafiles or the web using an established interface
     MappedClass=None #Getter
     #from database.models import Getter as MappedClass
-    function_name=''
-    kwargs={} #FIXME because Getters are now divorced from Writers, need to validate that units match?
+    mcKwargs={} #FIXME because Getters are now divorced from Writers, need to validate that units match?
     ctrl_name=''
+    func_kwargs={}
+    function_name=''
     dependencies=[] #TODO these will be in the expected kwarg list
+    hardware='lol wut' #FIXME TODO things needed to deal with the current state of MDS, also that is a pita and this should probably be by name :/
     #FIXME time serries acquisition are all within their own get so no worries
         #about key collisions with multiple reads from the same Getter
     #FIXME PROBLEM: dep names here are different than the dep names for steps...
         #gotta figure out how to integrate the two... :/
     #atm dep_names in here just mean that the inner function is going to expect those keywords to be present
     #TODO: could auto-generate steps based on the dep names found here... probably wouldnt be quite so reusable
+    def __init__(self,session,controller_class=None,ctrlDict=None):
+        from database.models import Hardware
+        try:
+            self.hardware_id=self.session.query(Hardware).filter_by(name=self.hardware).first()
+        except: #TODO
+            print('no hardware by that name found! TODO')
+            self.hardware_id=1
+        super().__init__(session,controller_class,ctrlDict)
 
     def do(self,**kwargs):
         out=self.get(**kwargs)
-        return {'%s'%self.name:out}#XXX NOTE: this makes it super easy to chain things by dependency name
+        #TODO out={'value':self.get(**kwargs),'unit':self.units,'prefix':self.prefix,'type',self.type}
+            #completely changes what dataios need to deal with :/
+        return {'%s'%self.name:out,'last_getter':self.name}#XXX NOTE: this makes it super easy to chain things by dependency name
             #might not even need the whole step framework to keep track of deps if the dataios keep the
             #names of the upstream dataios that they need... or really just automatically add certain deps
 
     def get(self,**kwargs):
         """Modify as needed"""
-        self.kwargs.update(kwargs)
-        return getattr(self.ctrl,self.function_name)(**self.kwargs)
+        self.func_kwargs.update(kwargs)
+        self._rec_do_kwargs(self.func_kwargs)
+        return getattr(self.ctrl,self.function_name)(**self.func_kwargs)
 
 
 class Set(ctrlio): #FIXME must always have an input value
@@ -230,9 +264,10 @@ class Set(ctrlio): #FIXME must always have an input value
         #which ideally would be stored in the database and thus accessed via a read
     MappedClass=None #Setter
     #from database.models import Setter as MappedClass
+    mcKwargs={}
+    ctrl_name='' #FIXME ideally this would be optional? one could override the set method directly, again, decorators seem like they could be SUPER userful, because on import they could literally collect ALL THE FUNCTIONS and put them in a single place indexed by name
+    func_kwargs={} #FIXME should be func_kwargs
     function_name=''
-    kwargs={}
-    ctrl_name=''
     dependencies=[] #TODO virtually all setters should have a read dep or define the set value in kwargs
 
     def do(self,**kwargs):
@@ -241,10 +276,11 @@ class Set(ctrlio): #FIXME must always have an input value
 
     def set(self,**kwargs):
         """Modify as needed"""
-        self.kwargs.update(kwargs)
+        self.func_kwargs.update(kwargs)
+        self._rec_do_kwargs(self.func_kwargs)
         try:
             setter=getattr(self.ctrl,self.function_name)
-            setter(**self.kwargs)
+            setter(**self.func_kwargs)
             #return True #FIXME DO NOT CONFOUND THIS WITH THE *STEP* RETURNING TRUE
         except:
             raise IOError('Setter failed to seet value!')
@@ -272,8 +308,9 @@ class Bind(baseio): #this is not quite analysis, it is just a data organizing st
 
     def bind(self,**kwargs):
         """Modify as needed"""
+        self._rec_do_kwargs(kwargs)
         out=[]
-        for kw in out_format:
+        for kw in self.out_format:
             out.append(kwargs[kw])
         return {'%s'%self.name:out}
 
@@ -284,7 +321,7 @@ class Read(baseio): #FIXME technically anything read from the database should al
     #from database.models import Reader as MappedClass
     class_kwargs={}
     MappedReader=None #literally any mapped class, depending on the query strategy
-    MappedReader=type('thing',(object,),{})
+    #MappedReader=type('thing',(object,),{})
 
     def validate(self):
         #check to make sure stuff here has not changed? ie versioning?
@@ -317,7 +354,7 @@ class Write(baseio): #wow, this massively simplifies this class since the values
     class_kwargs={} #things like units etc,
         #XXX BEWARE need to validate these against inputs AT START TIME NOT RUN TIME
     MappedWriter=None #MetaData, we're not even messing with adding to collections right now
-    MappedWriter=type('thing',(object,),{})
+    #MappedWriter=type('thing',(object,),{})
     writer_kwargs={}
     dependencies=[] #pretty much every writer should have get or an analysis or something
 
@@ -347,7 +384,8 @@ class Write(baseio): #wow, this massively simplifies this class since the values
 
     def write(self,writeTarget=None,autocommit=False,**kwargs): #not handling errors here
         """Modify as needed"""
-        self.writer_kwargs.update(kwargs) #XXX kwargs should include the value
+        self.writer_kwargs.update(kwargs) #XXX kwargs should include the value FIXME watch out for kwargs that don't get reset
+        self._rec_do_kwargs(self.writer_kwargs)
         self.session.add(self.MappedWriter(writeTarget=writeTarget,**self.writer_kwargs)) #TODO parent shall be speced in kwargs???
         if autocommit:
             self.session.commit()
@@ -367,6 +405,7 @@ class Analysis(baseio):
         super().persist(session)
 
     def do(self,**kwargs):
+        self._rec_do_kwargs(kwargs)
         out=self.analyze(**kwargs)
         return {'%s'%self.name:out}
 
@@ -395,6 +434,7 @@ class Check(baseio):
 
     def check(self,**kwargs):
         """Modify as needed"""
+        self._rec_do_kwargs(kwargs)
         if not self.check_function(**kwargs):
             raise ValueError('Check did not pass!')
 
