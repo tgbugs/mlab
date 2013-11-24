@@ -1,7 +1,6 @@
 import re
 import datetime
 import inspect as ins
-import tty
 from sys import stdout,stdin
 from time import sleep
 from debug import TDB,ploc
@@ -14,7 +13,7 @@ except:
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
-tdbOff=tdb.tdbOff
+#tdb.off()
 
 #file to consolidate all the different functions I want to execute using the xxx.Control classes
 #TODO this file needs a complete rework so that it can pass data to the database AND so that it can be used by keyboard AND so that it can be used by experiment scripts... means I may need to split stuff up? ;_;
@@ -537,9 +536,6 @@ class trmFuncs(kCtrlObj):
             stdout.write('\r'+ib.str_to_pos) #puts the cursor at the right spot
             stdout.flush()
 
-        #tty.setraw(stdin.fileno())
-        #out=input()
-        #tty.setcbreak(stdin.fileno())
         return str(ib)
 
     def getString(self):

@@ -4,6 +4,7 @@ try:
     import ctypes
 except: #FIXME this is not accurate...
     #for linux
+    print('out not import ctypes.wintypes assuming linux')
     import sys
     import select
     import tty
@@ -18,8 +19,7 @@ except:
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
-tdbOff=tdb.tdbOff
-tdbOff()
+tdb.off()
 
 def kl_lin(charBuffer,keyHandler):
     #FIXME does not work properly with ipython :/
@@ -108,6 +108,20 @@ def kl_win(charBuffer,keyHandler): #FIXME
 
     WAIT_OBJECT=0x00000000 #needed to match the return type for ret
 
+    keyCodeDict={ #make the windows match the linux
+        #None:'shift', #TODO modifier keys do exist for these
+        #None:'ctrl',
+        #13:'\n', #enter
+        38:'[A', #up
+        40:'[B', #down
+        39:'[C', #right
+        37:'[D', #left
+        46:'[3~', #delete
+        36:'[7~', #home
+        35:'[8~', #end
+        #8:'\x7f', #backspace FIXME on windows this is \x08 wtf
+    }
+
     #main loop
     stopflag=0
     #rpdb2.setbreak()
@@ -129,10 +143,19 @@ def kl_win(charBuffer,keyHandler): #FIXME
                     if not keyEvent.keyDown:
                         continue
                     char = keyEvent.char.UnicodeChar.lower()
-                    printD(char)
-                    #printD(charBuffer)
-                    if char == '\x1b': #rebind for esc keys and linux compat
+                    printD(keyEvent.virtualKeyCode)
+                    if char == '\x00':
+                        try:
+                            char=keyCodeDict[keyEvent.virtualKeyCode]
+                        except:
+                            continue
+                    elif char == '\x1b': #rebind for esc keys and linux compat
                         char = 'esc'
+                    elif char == '\x08':
+                        char = '\x7f' #make windows and linux match 
+                    elif char == '\r': #make things consistent between windows and linux
+                        char = '\n'
+                    printD(char.encode())
                     charBuffer.put_nowait(char) #THIS WORKS because if there is a get() waiting on the stack it will tigger on the first keyHandler call, though, FIXME race conditions be here! somehow I think queue is built for this
                     #sleep(.001) #YEP IT WAS A FUCKING RACE CONDITION .0001 is too fast
                     
@@ -145,7 +168,7 @@ def kl_win(charBuffer,keyHandler): #FIXME
 
 def keyListener(charBuffer,keyHandler,cleanup=lambda:0): #FIXME
     try:
-        if globals().get('ctypes.wintypes'):
+        if globals().get('ctypes'):
             kl_win(charBuffer,keyHandler)
         else:
             kl_lin(charBuffer,keyHandler)
@@ -153,7 +176,8 @@ def keyListener(charBuffer,keyHandler,cleanup=lambda:0): #FIXME
         cleanup()
 
 def main():
-    pass
+    from queue import Queue
+    keyListener(Queue(),lambda: 1)
 
 if __name__ == '__main__':
     main()

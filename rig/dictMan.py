@@ -7,8 +7,7 @@ from debug import TDB
 tdb=TDB()
 printD=tdb.printD
 printFuncDict=tdb.printFuncDict
-tdbOff=tdb.tdbOff
-tdbOff()
+tdb.off()
 
 
 def dictInit(inDict,clsDict): #putting this here makes everything funny but auto catches errors
