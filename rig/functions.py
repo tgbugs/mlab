@@ -1,7 +1,8 @@
 import re
 import datetime
 import inspect as ins
-from sys import stdout
+import tty
+from sys import stdout,stdin
 from time import sleep
 from debug import TDB,ploc
 from IPython import embed
@@ -315,7 +316,7 @@ class espFuncs(kCtrlObj):
                 print(key,'=',self.markDict[key])
             else:
                 print('No mark set')
-        elif key=='\x1b':
+        elif key=='esc':
             self.unmark()
         else:
             self.markDict[key]=self.ctrl.getPos()
@@ -388,7 +389,7 @@ class espFuncs(kCtrlObj):
             try:
                 key=self.charBuffer.get_nowait()
                 #FIXME this should go AFTER the other bit to allow proper mode changing
-                if key=='q' or key=='\x1b': #this should be dealt with through the key handler...
+                if key=='q' or key=='esc': #this should be dealt with through the key handler...
                     print('\nleaving displacement mode')
                     break
                 elif key: #FIXME HOW DOES THIS EVEN WORK!?!??!
@@ -461,11 +462,110 @@ class trmFuncs(kCtrlObj):
                 printD(out)
                 return out
             return wrap
-        for name in self.ctrl.__dir__():
+        #for name in self.ctrl.__dir__():
+            #if name[:3]=='get':
+                #setattr(self,name,printwrap(getattr(self.ctrl,name)))
+        for name in self.__dir__():
             if name[:3]=='get':
-                setattr(self,name,printwrap(getattr(self.ctrl,name)))
+                setattr(self,name,printwrap(getattr(self,name)))
         self.getKbdHit=printwrap(self.getKbdHit)
         self.getBool=printwrap(self.getBool)
+
+
+    def __getChars__(self):
+        """ replacement for input()"""
+        class inputBuffer:
+            char_list=[]
+            pos=0
+            def put(self,char):
+                self.char_list.insert(self.pos,char)
+                self.goR()
+            def goR(self):
+                if self.pos + 1 <= len(self.char_list):
+                    self.pos += 1
+            def goL(self):
+                if self.pos -1 >= 0:
+                    self.pos -= 1
+            def home(self):
+                self.pos = 0
+            def end(self):
+                self.pos = len(self.char_list)
+            def backspace(self):
+                if self.pos: #if we're already at zero dont go!
+                    self.char_list.pop(self.pos-1)
+                    self.goL()
+            def delete(self):
+                try:
+                    self.char_list.pop(self.pos)
+                except IndexError:
+                    pass
+            def __str__(self):
+                return ''.join(self.char_list)
+            @property
+            def str_to_pos(self):
+                return ''.join(self.char_list[:self.pos])
+
+        ib=inputBuffer()
+
+        cmddict={
+        '[A':lambda:None,
+        '[B':lambda:None,
+        '[C':ib.goR,
+        '[D':ib.goL,
+        '\x7f':ib.backspace,
+        '[3~':ib.delete,
+        '[7~':ib.home,
+        '[8~':ib.end,
+        'esc':lambda:None,
+        }
+
+        def charHand(char):
+            if cmddict.get(char):
+                cmddict[char]()
+            else:
+                ib.put(char)
+
+        while 1:
+            self.keyHandler(1)
+            char=self.charBuffer.get()
+            if char == '\n':
+                break
+            filler='\r'+' '*len(ib.char_list) #could move this to the buffer.. but no
+            charHand(char)
+            stdout.write(filler)
+            stdout.write('\r'+str(ib))
+            stdout.write('\r'+ib.str_to_pos) #puts the cursor at the right spot
+            stdout.flush()
+
+        #tty.setraw(stdin.fileno())
+        #out=input()
+        #tty.setcbreak(stdin.fileno())
+        return str(ib)
+
+    def getString(self):
+        print("Please enter a string.")
+        return self.__getChars__()
+
+    def getFloat(self):
+        print('Please enter a floating point value.')
+        while 1:
+            string=self.__getChars__()
+            try:
+                out=float(string)
+                return out
+            except:
+                print('Could not convert value to float, try again!')
+
+    def getInt(self):
+        print('please enter an integer')
+        while 1:
+            string=self.__getChars__()
+            try:
+                out=int(string)
+                return out
+            except ValueError as e:
+                print(e,'Try again!')
+                #print('could not convert value to int, try again!')
 
     def getKbdHit(self):
         print('Hit any key to advance.')

@@ -4,7 +4,7 @@ class trmControl:
     """Controller for text entry, uses input()"""
 
     def __getChars__(self): #use this to make a refactor easier
-        return input()
+        return input() #FIXME this seems to have nasty race conditions in linux
 
     def getString(self):
         print('Please enter a string')

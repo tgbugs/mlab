@@ -104,14 +104,14 @@ def dictInit(inDict,clsDict): #putting this here makes everything funny but auto
                 #printD('hardcoded excape code follows')
                 try:
                     if initedDict['mode']=='rig':
-                        initedDict['\x1b']=lambda:0 #hardcoded escape
+                        initedDict['esc']=lambda:0 #hardcoded escape
                     elif initedDict['mode']: #anything with a mode gets this
-                        initedDict['\x1b']=argsCaller(ikCtrl.setMode,'rig')
+                        initedDict['esc']=argsCaller(ikCtrl.setMode,'rig')
                 except:
                     try:
                         if initedDict['mode']:
-                            #initedDict['\x1b']=argsCaller(ikCtrl.setMode,'rig')
-                            initedDict['\x1b']=argsCaller(ikCtrl.setMode,'rig')
+                            #initedDict['esc']=argsCaller(ikCtrl.setMode,'rig')
+                            initedDict['esc']=argsCaller(ikCtrl.setMode,'rig')
                     except:
                         printD("no mode set, cannot be put in mode dict, so no esc set")
         except:

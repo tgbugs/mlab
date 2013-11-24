@@ -17,8 +17,8 @@ from rig.trm import trmControl
 
 class rigIOMan:
     """Terminal input manager, control the rig from a terminal window"""
-    def __init__(self,keyDicts,session_maker, globs):
-        self.globs=globs #for passing in to for openIPyton and embed()
+    def __init__(self,keyDicts,session_maker):
+        #self.globs=globs #for passing in to for openIPyton and embed()
         self.keyDicts=keyDicts
 
         self.ikFuncDict={}
@@ -31,7 +31,7 @@ class rigIOMan:
         self.currentMode='init'
 
         def esc():return 1
-        self.keyActDict['\x1b']=esc
+        self.keyActDict['esc']=esc
 
         self.charBuffer=Queue()
 
@@ -42,11 +42,13 @@ class rigIOMan:
 
         self.initControllers() #these need charBuffer and keyThread to work
         self.setMode('rig')
-        self.Session=session_maker
+        self.Session=session_maker #FIXME how do we ACTUALLy want to deal with this? I feel like I have isolated most of the database io that the keyboard interacts with to the dataios-write
+            #but what if I want to query something on the fly? urg
+            #just open a new terminal m8
 
         #TODO add a way for keys to enter programatic control mode, they will still need keyinput though
 
-    def ipython(self,globs):
+    def ipython(self,globs={}):
         locals().update(globs) #SUPER unkosher but seems safe from tampering
         embed()
 
@@ -76,8 +78,8 @@ class rigIOMan:
             return self
 
     def keyHandler(self,keyRequest=0): #FIXME still confusing
-        do = lambda globs: self.ipython(globs)
-        self.keyActDict['i'] = lambda: do(self.globs) #FIXME this could explode all over the place
+        #do = lambda : self.ipython() #was used for passing globs
+        self.keyActDict['i'] = lambda: embed() #FIXME this could explode all over the place
             #FIXME FIXME this is a hack, I don't think this is a good or safe way to do ANYTHING
         if keyRequest:
             self.keyRequest=1

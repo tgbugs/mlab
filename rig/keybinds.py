@@ -7,7 +7,7 @@ def rigDict():
     rigDict= {
         'mode':'rig',
         'keyFuncs':{
-                    '\x1b':'esc',
+                    'esc':'esc',
                     'h':'help',
                     'q': #FIXME depricated???
                         {

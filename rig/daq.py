@@ -155,7 +155,7 @@ def main():
     DAQThrd.start()
     while kbdThrd.is_alive():
         key=charBuffer.get() #don't use the secrete escape key, it breaks this, should be fine in the other
-        if key=='\x1b' or key=='q' or key=='@':
+        if key=='esc' or key=='q' or key=='@':
             kh.stopflag=1
             break
     DAQTask.cleanup()
