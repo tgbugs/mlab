@@ -519,6 +519,8 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         def charHand(char):
             if cmddict.get(char):
                 cmddict[char]()
+            elif len(char) > 1:
+                pass #prevents escape sequences from printing
             else:
                 ib.put(char)
 

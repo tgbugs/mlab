@@ -29,6 +29,7 @@ class rigIOMan:
 
         self.keyRequest=0 #used to keep a count of the number of outstanding key requests
         self.key=None #genius! now we don't even need have the stupid pass through!
+        self.keyLock=threading.RLock() #used to prevent race conditions in keyHandler
         self.currentMode='init'
 
         def esc():return 1
@@ -83,25 +84,31 @@ class rigIOMan:
         #do = lambda : self.ipython() #was used for passing globs
         #self.keyActDict['i'] = lambda: embed() #FIXME this could explode all over the place
             #FIXME FIXME this is a hack, I don't think this is a good or safe way to do ANYTHING
-        if keyRequest:
-            self.keyRequest += 1
-            printD(self.keyRequest) #FIXME FIXME wonderful news, shit goes south when keyRequest=2 ! pretty sure it is a really really weird race condition where two requests go on the stack at the same time so it jumps from 0 -> 2 lickity we're not going to worry about it right now through since it seems to work for any normal typing speed... damned threading :/
-            return 1
-        if self.keyRequest: #FIXME if two keys are hit close together in time then it is possible for a call to keyHandler from keyListener to reset self.keyRequest because keyHandler(1) will be called twice but only one of the two downstream calls will go... so just count the number of key requests!
-            self.key=self.charBuffer.queue[0] #TODO we can use this everywhere! no need for key requests!
-            self.keyRequest -= 1 #FIXME NOPE that didn't fix it >_<
-            assert self.keyRequest >= 0, 'utoh key requests somehow went below zero!'
-            return 1 #if a request is in then return before getting the function from the queue
-        self.key=self.charBuffer.get() #FIXME self.key needs to update no matter what...
         try:
-            function=self.keyActDict[self.key]
-            #printD(self.key)
-            if function:
-                calledThread=threading.Thread(target=function)
-                calledThread.start()
-        except (KeyError, TypeError, Empty) as e:
-            pass
-        return 1
+            self.keyLock.acquire()
+            if self.keyRequest and not keyRequest: #FIXME if two keys are hit close together in time then it is possible for a call to keyHandler from keyListener to reset self.keyRequest because keyHandler(1) will be called twice but only one of the two downstream calls will go... so just count the number of key requests!
+                self.key=self.charBuffer.queue[0] #TODO we can use this everywhere! no need for key requests!
+                self.keyRequest -= 1 #FIXME NOPE that didn't fix it >_<
+                assert self.keyRequest >= 0, 'utoh key requests somehow went below zero!'
+                return 1 #if a request is in then return before getting the function from the queue
+            if keyRequest:
+                self.keyRequest += 1
+                #printD(self.keyRequest) #FIXME FIXME wonderful news, shit goes south when keyRequest=2 ! pretty sure it is a really really weird race condition where two requests go on the stack at the same time so it jumps from 0 -> 2 lickity we're not going to worry about it right now through since it seems to work for any normal typing speed... damned threading :/
+                return 1
+            self.key=self.charBuffer.get() #FIXME self.key needs to update no matter what...
+            try:
+                function=self.keyActDict[self.key]
+                #printD(self.key)
+                if function:
+                    calledThread=threading.Thread(target=function)
+                    calledThread.start()
+            except (KeyError, TypeError, Empty) as e:
+                pass
+            return 1
+        except:
+            raise IOError('Could not acquire lock to use keyHandler!') #this really shouldn't be called
+        finally:
+            self.keyLock.release()
 
     def cleanup(self):
         for kFunc in self.ikFuncDict.values():
