@@ -452,7 +452,7 @@ class keyFuncs(kCtrlObj):
         return 0
 
 
-class trmFuncs(kCtrlObj):
+class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
     def __init__(self, modestate, controller):
         super().__init__(modestate,controller)
         def printwrap(func):
@@ -467,8 +467,6 @@ class trmFuncs(kCtrlObj):
         for name in self.__dir__():
             if name[:3]=='get':
                 setattr(self,name,printwrap(getattr(self,name)))
-        self.getKbdHit=printwrap(self.getKbdHit)
-        self.getBool=printwrap(self.getBool)
 
 
     def __getChars__(self):
@@ -529,6 +527,7 @@ class trmFuncs(kCtrlObj):
             char=self.charBuffer.get()
             if char == '\n':
                 break
+                printD('done')
             filler='\r'+' '*len(ib.char_list) #could move this to the buffer.. but no
             charHand(char)
             stdout.write(filler)
@@ -536,7 +535,9 @@ class trmFuncs(kCtrlObj):
             stdout.write('\r'+ib.str_to_pos) #puts the cursor at the right spot
             stdout.flush()
 
-        return str(ib)
+        out=str(ib)
+        del(ib)
+        return out
 
     def getString(self):
         print("Please enter a string.")
@@ -574,10 +575,7 @@ class trmFuncs(kCtrlObj):
         true_key=' '
         self.keyHandler(1) #requesting key passthrough
         return self.charBuffer.get() == true_key
-
-    def openIPython(self): #XXX depreicated because I need access to globals and this is not the way
-        print('opening the ipython interpreter wait shit, this is all happening in its own thread! NOOOOOOOOO')
-        embed() #FIXME this doesn't get any of the globals...
+        #FIXME why is this getting printe twice!???!
 
 def main():
     esp=espFuncs(None,None,None,None)

@@ -34,6 +34,7 @@ logic_StepEdge(session)
 
 #load up the stuff we need to test dataios and steps
 rio=rigIOMan(keyDicts, session, globals())
+rio.start()
 
 #give me some ipython!
 if args['--ipython']:

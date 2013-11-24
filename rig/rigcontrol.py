@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.3
 import threading
 import warnings
 from queue import Queue,Empty
@@ -26,7 +27,7 @@ class rigIOMan:
         self.helpDict={}
         self.keyActDict={}
 
-        self.keyRequest=0
+        self.keyRequest=0 #used to keep a count of the number of outstanding key requests
         self.key=None #genius! now we don't even need have the stupid pass through!
         self.currentMode='init'
 
@@ -37,7 +38,6 @@ class rigIOMan:
 
 
         self.keyThread=threading.Thread(target=keyListener,args=(self.charBuffer,self.keyHandler,self.cleanup))
-        self.keyThread.start()
         #self.keyThread=keyThread
 
         self.initControllers() #these need charBuffer and keyThread to work
@@ -47,6 +47,8 @@ class rigIOMan:
             #just open a new terminal m8
 
         #TODO add a way for keys to enter programatic control mode, they will still need keyinput though
+    def start(self):
+        self.keyThread.start()
 
     def ipython(self,globs={}):
         locals().update(globs) #SUPER unkosher but seems safe from tampering
@@ -79,18 +81,21 @@ class rigIOMan:
 
     def keyHandler(self,keyRequest=0): #FIXME still confusing
         #do = lambda : self.ipython() #was used for passing globs
-        self.keyActDict['i'] = lambda: embed() #FIXME this could explode all over the place
+        #self.keyActDict['i'] = lambda: embed() #FIXME this could explode all over the place
             #FIXME FIXME this is a hack, I don't think this is a good or safe way to do ANYTHING
         if keyRequest:
-            self.keyRequest=1
+            self.keyRequest += 1
+            printD(self.keyRequest) #FIXME FIXME wonderful news, shit goes south when keyRequest=2 ! pretty sure it is a really really weird race condition where two requests go on the stack at the same time so it jumps from 0 -> 2 lickity we're not going to worry about it right now through since it seems to work for any normal typing speed... damned threading :/
             return 1
-        if self.keyRequest:
+        if self.keyRequest: #FIXME if two keys are hit close together in time then it is possible for a call to keyHandler from keyListener to reset self.keyRequest because keyHandler(1) will be called twice but only one of the two downstream calls will go... so just count the number of key requests!
             self.key=self.charBuffer.queue[0] #TODO we can use this everywhere! no need for key requests!
-            self.keyRequest=0
+            self.keyRequest -= 1 #FIXME NOPE that didn't fix it >_<
+            assert self.keyRequest >= 0, 'utoh key requests somehow went below zero!'
             return 1 #if a request is in then return before getting the function from the queue
         self.key=self.charBuffer.get() #FIXME self.key needs to update no matter what...
         try:
             function=self.keyActDict[self.key]
+            #printD(self.key)
             if function:
                 calledThread=threading.Thread(target=function)
                 calledThread.start()
@@ -143,6 +148,7 @@ def main():
     from database.engines import sqliteMem
     Session=None #TODO
     rigIO=rigIOMan(keyDicts,Session)
+    rigIO.start()
 
 
 if __name__=='__main__':
