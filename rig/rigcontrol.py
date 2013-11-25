@@ -23,9 +23,11 @@ class rigIOMan:
         self.keyDicts=keyDicts
 
         self.ikFuncDict={}
+        self.kr_dict={} #dict of registered key requesting functions
         self.modeDict={}
         self.helpDict={}
         self.keyActDict={}
+        self.keyRequestDict={} #store the number of requests per key
 
         self.keyRequest=0 #used to keep a count of the number of outstanding key requests
         self.key=None #genius! now we don't even need have the stupid pass through!
@@ -56,9 +58,12 @@ class rigIOMan:
         embed()
 
     def updateModeDict(self):
-        self.helpDict,self.modeDict=makeModeDict(self.ikFuncDict,*keyDicts.values())
+        #TODO keyDicts.values is where we will find the names of the functions that have been wrapped as keyRequests and that keybinding is what we need to hop on
+        #all we need to do is pass in acquireKeyRequest and wrap the function when we make keyActDict
+        self.helpDict,self.modeDict,self.modeKRDict=makeModeDict(self.ikFuncDict,self.kr_dict,*keyDicts.values())
         try:
             self.keyActDict.update(self.modeDict[self.currentMode])
+            self.keyRequestDict.update(self.modeKRDict[self.currentMode])
         except KeyError:
             pass
         return self
@@ -68,6 +73,8 @@ class rigIOMan:
         if mode:
             try:
                 self.keyActDict=self.modeDict[mode] #where mode is just defined by __mode__
+                self.keyRequestDict=self.modeKRDict[mode]
+                printD(self.keyRequestDict)
                 print('mode has been set to \'%s\' with keyActDict='%(mode))
                 self.currentMode=mode
                 return self
@@ -80,35 +87,37 @@ class rigIOMan:
             print(self.currentMode)
             return self
 
-    def keyHandler(self,keyRequest=0): #FIXME still confusing
-        #do = lambda : self.ipython() #was used for passing globs
-        #self.keyActDict['i'] = lambda: embed() #FIXME this could explode all over the place
-            #FIXME FIXME this is a hack, I don't think this is a good or safe way to do ANYTHING
-        try:
-            self.keyLock.acquire()
-            if self.keyRequest and not keyRequest: #FIXME if two keys are hit close together in time then it is possible for a call to keyHandler from keyListener to reset self.keyRequest because keyHandler(1) will be called twice but only one of the two downstream calls will go... so just count the number of key requests!
-                self.key=self.charBuffer.queue[0] #TODO we can use this everywhere! no need for key requests!
-                self.keyRequest -= 1 #FIXME NOPE that didn't fix it >_<
-                assert self.keyRequest >= 0, 'utoh key requests somehow went below zero!'
-                return 1 #if a request is in then return before getting the function from the queue
-            if keyRequest:
-                self.keyRequest += 1
-                #printD(self.keyRequest) #FIXME FIXME wonderful news, shit goes south when keyRequest=2 ! pretty sure it is a really really weird race condition where two requests go on the stack at the same time so it jumps from 0 -> 2 lickity we're not going to worry about it right now through since it seems to work for any normal typing speed... damned threading :/
-                return 1
-            self.key=self.charBuffer.get() #FIXME self.key needs to update no matter what...
-            try:
-                function=self.keyActDict[self.key]
-                #printD(self.key)
-                if function:
-                    calledThread=threading.Thread(target=function)
-                    calledThread.start()
-            except (KeyError, TypeError, Empty) as e:
-                pass
+    def registerKeyRequest(self,className,functionName):
+        if self.kr_dict.get(className): #really __mode__ but hey
+            self.kr_dict[className].add(functionName)
+        else:
+            self.kr_dict[className]=set((functionName))
+        printD('kr_dict',self.kr_dict)
+
+    #def acquireKeyRequest(self): #FIXME does this require locking? I don't think so because the passthrough will prevent a the thread from being spawned anyway unless something else trys to get() from charBuffer in which case wtf!
+        #self.keyRequest=1
+    def releaseKeyRequest(self): #callback to release a key request lock
+        self.keyRequest -= 1
+        printD('key request released value =',self.keyRequest,context=3)
+        assert self.keyRequest >= 0, 'utoh key requests went below zero!'
+
+    def keyHandler(self):
+        if self.keyRequest: #FIXME the currently cannot deal with multiple interspersed key requesters properly!
+            printD('key request has %s passing through'%self.keyRequest)
             return 1
-        except:
-            raise IOError('Could not acquire lock to use keyHandler!') #this really shouldn't be called
-        finally:
-            self.keyLock.release()
+        self.key=self.charBuffer.get() #if we're not in a key request get the key
+        self.keyRequest+=self.keyRequestDict.get(self.key,0) #get key requests for that key
+            # and add that number of expected callbacks to requests
+
+        try: #then call the function
+            function=self.keyActDict[self.key]
+            #printD(self.key)
+            if function:
+                calledThread=threading.Thread(target=function)
+                calledThread.start()
+        except (KeyError, TypeError, Empty) as e:
+            pass
+        return 1
 
     def cleanup(self):
         for kFunc in self.ikFuncDict.values():
@@ -120,7 +129,7 @@ class rigIOMan:
 
     def initControllers(self): #FIXME
         #load the drivers so that they aren't just hidden in the Funcs
-        controllers=clxControl,espControl,mccControl,trmControl
+        controllers=clxControl,espControl,mccControl
         ctrlDict={}
         for ctrl in controllers:
             try:
@@ -135,15 +144,14 @@ class rigIOMan:
                 'clxControl':clxFuncs,
                 'espControl':espFuncs,
                 'mccControl':mccFuncs,
-                'trmControl':trmFuncs,
         }
-        for key in ctrlDict.keys():
-            initedFunc=ctrlBindingDict[key](self,ctrlDict[key])
+        for ctrl_name in ctrlDict.keys(): #initilize the function dicts
+            initedFunc=ctrlBindingDict[ctrl_name](self,ctrlDict[ctrl_name]) #callback to register functions as keyRequesters happends here
             self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
-        FUNCS=datFuncs,keyFuncs
+        FUNCS=datFuncs,keyFuncs,trmFuncs
         for func in FUNCS:
-            initedFunc=func(self)
+            initedFunc=func(self) #callback to register functions as keyRequesters happends here
             self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
         self.updateModeDict() #bind keys to functions

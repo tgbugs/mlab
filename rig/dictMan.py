@@ -9,24 +9,32 @@ printD=tdb.printD
 printFuncDict=tdb.printFuncDict
 tdb.off()
 
+#XXX WARNING XXX Spagetti code be here! some day we will refactor
 
-def dictInit(inDict,clsDict): #putting this here makes everything funny but auto catches errors
+def dictInit(inDict,clsDict,kr_dict): #putting this here makes everything funny but auto catches errors
     """the only EXTERNAL dicts that should be put in here are ikCtrlDicts ie in=initilized"""
-    def parseValue(counter,instanceOfClass,putativeFunc):
+    def parseValue(counter,instanceOfClass,putativeFunc,keyRequesters,kr_dict):
         """Recursive parser for keybinding dictionaries that binds the named function to the method it initilizes to?, only works because I'm using classes"""
         #FIXME might be able to simplify this by simply referring to functions? and getting rid of the classes? eh, but inheritance man...
         if counter > 100: #this should be longer than the longest program list you try to pass in
-            return None
+            return None,None
+        key_request_count=0
         try:
             #'function name'
-            return instanceOfClass.__getattribute__(putativeFunc)
+            if putativeFunc in keyRequesters: #see if this is a key requester
+                key_request_count+=1
+                #TODO
+            return instanceOfClass.__getattribute__(putativeFunc), key_request_count
+
         except (TypeError,AttributeError) as e:
             #printD(putativeFunc,'wasnt a function')
             if type(putativeFunc)==tuple: #is it a func tupel?
                 try:
                     #'function',args
                     function=instanceOfClass.__getattribute__(putativeFunc[0])
-                    return argsCaller(function,putativeFunc[1])
+                    if putativeFunc[0] in keyRequesters: #check and wrap if kr
+                        key_request_count+=1
+                    return argsCaller(function,putativeFunc[1]), key_request_count
                 except (TypeError,AttributeError) as e:
                     printD(putativeFunc,'func arg tuple not inited')
                     pass
@@ -34,21 +42,26 @@ def dictInit(inDict,clsDict): #putting this here makes everything funny but auto
                 funcList=[]
                 for item in putativeFunc:
                     try:
-                        funcList.append(parseValue(counter+1,instanceOfClass,item)) #RECURSE AWEYISS
+
+                        function,kr_count=parseValue(counter+1,instanceOfClass,item,keyRequesters,kr_dict) #RECURSE AWEYISS
+                        funcList.append(function)
+                        key_request_count+=kr_count
                         printD(item,'successfully appended to function list!')
                     except (TypeError,AttributeError) as e:
                         printD("dictInit: Step '%s' in your list is wrong")
-                        return None
-                return listCaller(funcList)
+                        return None,key_request_count
+                return listCaller(funcList),key_request_count
             elif type(putativeFunc)==dict: #NOTE this comes LAST because otheriwse it would catch all the key dicts and try to call them (i think?)
                 try:
-                    return dictCaller(dictInit(inDict, putativeFunc)[1]) #we'll see if this works
+                    help,idict,krc=dictInit(inDict, putativeFunc, kr_dict)
+
+                    return dictCaller(idict),key_request_count+sum(krc.values()) #we'll see if this works FIXME
                 except:
                     raise
                     printD("something may not have been parsed earlier and something leaked through")
             else:
                 printD('parseValues: something is wrong!',putativeFunc)
-                return None
+                return None,key_request_count
 
     def cleanDict(inDict,clsDict):
         """remove any calls to modules that aren't loaded"""
@@ -78,39 +91,43 @@ def dictInit(inDict,clsDict): #putting this here makes everything funny but auto
             #printD('dictInit: could not set mode, did you include it in your dict?')
             #printD('no mode detected, assuming you want to convert a mixed class sequence')
 
-
-
     #printFuncDict(clsDict.items())
-    def makeKeyDict(ikCtrlDict,clsDict):
+    def makeKeyDict(ikFuncDict,clsDict,kr_dict):
         initedDict={}
+        keyRequestDict={}
         try:
             initedDict['mode']=clsDict['mode'] #see if the dict we are working on has a mode
         except: #this will fail when dictInit is passed a dict that isn't actually a top level mode dict
             pass
-        newDict=cleanDict(ikCtrlDict,clsDict) #in here it's nondestructive!
+        newDict=cleanDict(ikFuncDict,clsDict) #in here it's nondestructive!
         try:
             for className,keyDict in newDict.items():
-                ikCtrl=ikCtrlDict[className]
+                ikFunc=ikFuncDict[className]
+                keyRequesters=kr_dict.get(className,tuple()) #XXX get the key requesters in this class
                 for key,funcStr in keyDict.items():
                     #if key=='c':
                     #printD('initDict: function to call is:',ikCtrl,funcStr,'key is:',key)
                     if key=='#!':                        #SPECIAL KEYCODE TO IMMEDIATELY EXECUTE so we can 
                     #FIXME
                     #use of '#!' expects a tuple ('funcName',args)
-                        ikCtrl.__getattribute__(funcStr[0])(*funcStr[1]) #pass things in from the config files 
+                        name,args=funcStr
+                        functionToCall=getattr(ikFunc,name)
+                        functionToCall(*args)
+                        #ikFunc.__getattribute__(funcStr[0])(*funcStr[1]) #pass things in from the config files 
                     else:
-                        initedDict[key]=parseValue(0,ikCtrl,funcStr)     #without having to know things in advance
+                        initedDict[key],keyRequestDict[key]=parseValue(0,ikFunc,funcStr,keyRequesters,kr_dict) #without having to know things in advance FIXME this is a god damned maze
+
                 #printD('hardcoded excape code follows')
                 try:
                     if initedDict['mode']=='rig':
                         initedDict['esc']=lambda:0 #hardcoded escape
                     elif initedDict['mode']: #anything with a mode gets this
-                        initedDict['esc']=argsCaller(ikCtrl.setMode,'rig')
+                        initedDict['esc']=argsCaller(ikFunc.setMode,'rig')
                 except:
                     try:
                         if initedDict['mode']:
                             #initedDict['esc']=argsCaller(ikCtrl.setMode,'rig')
-                            initedDict['esc']=argsCaller(ikCtrl.setMode,'rig')
+                            initedDict['esc']=argsCaller(ikFunc.setMode,'rig')
                     except:
                         printD("no mode set, cannot be put in mode dict, so no esc set")
         except:
@@ -121,24 +138,27 @@ def dictInit(inDict,clsDict): #putting this here makes everything funny but auto
             helpDict={clsDict['mode']:newDict}
         except:
             helpDict={}
-        return helpDict, initedDict
+        return helpDict, initedDict, keyRequestDict
 
-    helpDict,initedDict=makeKeyDict(inDict,clsDict)
-    return helpDict,initedDict
+    helpDict,initedDict,keyRequestDict=makeKeyDict(inDict,clsDict,kr_dict)
+    return helpDict,initedDict,keyRequestDict
 
-def makeModeDict(ikCtrlDict,*clsDicts):
+def makeModeDict(ikFuncDict,kr_dict,*clsDicts):
     modeDict={}
+    modeKRDict={}
     if len(clsDicts)==1:
-        helpDict,keyActDict=dictInit(ikCtrlDict,clsDicts[0])
+        helpDict,keyActDict,keyRequestDict=dictInit(ikFuncDict,clsDicts[0],kr_dict)
         modeDict[keyActDict['mode']]=keyActDict
-        return helpDict, modeDict
+        modeKRDict[keyActDict['mode']]=keyRequestDict
+        return helpDict, modeDict, modeKRDict
 
     helpDict={}
     for clsDict in clsDicts:
-        newHD, keyActDict=dictInit(ikCtrlDict,clsDict)
+        newHD, keyActDict, keyRequestDict=dictInit(ikFuncDict,clsDict,kr_dict)
         helpDict.update(newHD)
         modeDict[keyActDict['mode']]=keyActDict
-    return helpDict, modeDict
+        modeKRDict[keyActDict['mode']]=keyRequestDict
+    return helpDict, modeDict, modeKRDict
 
 #
 #functions to call functions awe yeah

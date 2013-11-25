@@ -28,11 +28,41 @@ printFD=tdb.printFuncDict
 
 #TODO datasource/expected datasource mismatch
 
+#static method for adding a function as a key requester
+def keyRequest(function):
+    def _keyRequest(self,*args,**kwargs):
+        def wrapped():
+            out=function(self,*args,**kwargs)
+            self._releaseKR()
+            return out
+        return wrapped()
+    _keyRequest.keyRequester=True
+    return _keyRequest
+
+#class decorator
+def hasKeyRequests(cls):
+    cls.keyRequesters=[]
+    def init_wrap(init):
+        def __init__(self,modestate,*args):
+            self._releaseKR=modestate.releaseKeyRequest
+            for name in self.keyRequesters:
+                modestate.registerKeyRequest(cls.__name__,name)
+            init(self,modestate,*args)
+        return __init__
+    cls.__init__=init_wrap(cls.__init__)
+
+    for name,method in cls.__dict__.items(): #register keyRequesters
+        if hasattr(method,'keyRequester'):
+            printD('got one!',name)
+            cls.keyRequesters.append(name)
+    return cls
+
 class kCtrlObj:
     """key controller object"""
+
     def __init__(self, modestate, controller=None):
         self.charBuffer=modestate.charBuffer
-        self.keyHandler=modestate.keyHandler
+        #self.releaseKeyReq=modestate.releaseKeyRequest #FIXME don't even have to do this, @keyRequest can do it for me! :)
         #I probably do not need to pass key handler to thing outside of inputManager...
         #yep, not used anywhere, but I supose it could be used for submodes... we'll leave it in
         self.setMode=modestate.setMode
@@ -44,6 +74,7 @@ class kCtrlObj:
         pass
 
 
+@hasKeyRequests
 class clxFuncs(kCtrlObj):
     def __init__(self, modestate, controller):
         try:
@@ -80,10 +111,10 @@ class clxFuncs(kCtrlObj):
         print(status)
         return self
 
+    @keyRequest
     def load(self,key=None):
         if not key:
             print('Please enter the program to load')
-            self.keyHandler(1)
             key=self.charBuffer.get()
         try:
             path=self.programDict[key]
@@ -92,7 +123,6 @@ class clxFuncs(kCtrlObj):
         except:
             print('Program not found')
             raise
-
         return self
 
     #input only
@@ -125,12 +155,9 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         #self.state1DataSource=None
 
 
-    def inpWait(self):
+    def inpWait(self): #XXX depricated
         #wait for keypress to move to the next program, this may need to spawn its own thread?
-        print('HIT ANYTHING TO ADVANCE! (not the dog, that could end poorly)')
-        self.keyHandler(1)
-        self.charBuffer.get()
-        return self
+        raise DeprecationWarning('please use trmFuncs.getKbdHit()')
 
     def getState(self): #FIXME this function and others like it should probably be called directly by dataman?
         printD('hMCCmsg outer',self.ctrl.hMCCmsg)
@@ -258,6 +285,7 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
             pass
 
 
+@hasKeyRequests
 class espFuncs(kCtrlObj):
     def __init__(self, modestate, controller):
         try:
@@ -299,16 +327,15 @@ class espFuncs(kCtrlObj):
         print(re.sub('\), ',')\r\n',str(self.posDict)))
         return self
 
+    @keyRequest
     def mark(self): #FIXME
         """mark/store the position of a cell using a character sorta like vim"""
         stdout.write('\rmark:')
         stdout.flush()
-        self.keyHandler(1)
         key=self.charBuffer.get()
         #printD('we got the key from charBuffer')
         if key in self.markDict:
             print('Mark %s is already being used, do you want to replace it? y/N'%(key))
-            self.keyHandler(1)
             yeskey=self.charBuffer.get()
             if yeskey=='y' or yeskey=='Y':
                 self.markDict[key]=self.ctrl.getPos()
@@ -323,10 +350,10 @@ class espFuncs(kCtrlObj):
         #self.keyHandler(getMark) #fuck, this could be alot slower...
         return self
 
+    @keyRequest
     def unmark(self):
         #self.doneCB()
         try:
-            self.keyHandler(1)
             mark=self.charBuffer.get()
             pos=self.markDict.pop(mark)
             print("umarked '%s' at pos %s"%(mark,pos))
@@ -334,11 +361,11 @@ class espFuncs(kCtrlObj):
             pass
         return self
 
+    @keyRequest
     def gotoMark(self): #FIXME
         #self.doneCB()
         stdout.write('\rgoto:')
         stdout.flush()
-        self.keyHandler(1)
         key=self.charBuffer.get()
         if key in self.markDict:
             print('Moved to: ',self.ctrl.BsetPos(self.markDict[key])) #AH HA! THIS is what is printing stuff out as I mvoe FIXME I removed BsetPos at some point and now I need to add it... back? or what
@@ -363,6 +390,7 @@ class espFuncs(kCtrlObj):
             print('Not in fake mode! Not moving!')
         return self
 
+    @keyRequest
     def getDisp(self):
         """BLOCKING stream the displacement from a set point"""
         #self.doneCB()
@@ -370,14 +398,12 @@ class espFuncs(kCtrlObj):
         from numpy import array as arr
 
         if not len(self.markDict):
-            self.keyHandler(1)
             key=self.charBuffer.get()
             self.markDict[key]=self.ctrl.getPos()
 
         dist1=1
         print(list(self.markDict.keys()))
         while self.keyThread.is_alive(): #FIXME may need a reentrant lock here to deal w/ keyboard control
-            self.keyHandler(1) #call this up here so the pass through is waiting
             pos=self.markDict.values()
             dist=(npsum((arr(self.ctrl._BgetPos()-arr(list(pos))))**2,axis=1))**.5 #FIXME the problem here is w/ _BgetPos()
             if dist1!=dist[0]:
@@ -452,9 +478,10 @@ class keyFuncs(kCtrlObj):
         return 0
 
 
+@hasKeyRequests
 class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
-    def __init__(self, modestate, controller):
-        super().__init__(modestate,controller)
+    def __init__(self, modestate):
+        super().__init__(modestate)
         def printwrap(func):
             def wrap():
                 out=func()
@@ -469,13 +496,18 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
                 setattr(self,name,printwrap(getattr(self,name)))
 
 
-    def __getChars__(self):
+    #@keyRequest #FIXME this causes stuff to get called twice...
+    def __getChars__(self,prompt=''):
         """ replacement for input()"""
+
         class inputBuffer:
             char_list=[]
             pos=0
+            _filler=0 #used to make the display update correct
             def put(self,char):
                 self.char_list.insert(self.pos,char)
+                #if self._filler > 0: #don't need it is ok to overfill
+                    #self._filler -= 1
                 self.goR()
             def goR(self):
                 if self.pos + 1 <= len(self.char_list):
@@ -489,11 +521,13 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
                 self.pos = len(self.char_list)
             def backspace(self):
                 if self.pos: #if we're already at zero dont go!
+                    self._filler+=1
                     self.char_list.pop(self.pos-1)
                     self.goL()
             def delete(self):
                 try:
                     self.char_list.pop(self.pos)
+                    self._filler+=1
                 except IndexError:
                     pass
             def __str__(self):
@@ -501,6 +535,10 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
             @property
             def str_to_pos(self):
                 return ''.join(self.char_list[:self.pos])
+            def pop_filler(self):
+                out=self._filler #ick this is terrible TODO FIXME
+                self._filler=0
+                return out
 
         ib=inputBuffer()
 
@@ -525,40 +563,39 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
                 ib.put(char)
 
         while 1:
-            self.keyHandler(1)
             char=self.charBuffer.get()
+            printD('got a key:', char) 
             if char == '\n':
                 break
                 printD('done')
-            filler='\r'+' '*len(ib.char_list) #could move this to the buffer.. but no
             charHand(char)
-            stdout.write(filler)
-            stdout.write('\r'+str(ib))
-            stdout.write('\r'+ib.str_to_pos) #puts the cursor at the right spot
+            stdout.write('\r%s'%prompt+str(ib)+' '*ib.pop_filler())
+            stdout.write('\r%s'%prompt+ib.str_to_pos)
             stdout.flush()
 
-        out=str(ib)
-        del(ib)
-        return out
+        return str(ib)
 
+    @keyRequest
     def getString(self):
-        print("Please enter a string.")
-        return self.__getChars__()
+        print("Please enter a string.",)
+        return self.__getChars__('string> ')
 
+    @keyRequest
     def getFloat(self):
-        print('Please enter a floating point value.')
+        print('Please enter a floating point value.',)
         while 1:
-            string=self.__getChars__()
+            string=self.__getChars__('float> ')
             try:
                 out=float(string)
                 return out
             except:
                 print('Could not convert value to float, try again!')
 
+    @keyRequest
     def getInt(self):
-        print('please enter an integer')
+        print('please enter an integer',)
         while 1:
-            string=self.__getChars__()
+            string=self.__getChars__('int> ')
             try:
                 out=int(string)
                 return out
@@ -566,18 +603,28 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
                 print(e,'Try again!')
                 #print('could not convert value to int, try again!')
 
+    @keyRequest
     def getKbdHit(self):
         print('Hit any key to advance.')
-        self.keyHandler(1)
         self.charBuffer.get()
         return True
 
+    @keyRequest
     def getBool(self):
         print('Boolean: hit space for True, anything else for False.')
         true_key=' '
-        self.keyHandler(1) #requesting key passthrough
-        return self.charBuffer.get() == true_key
-        #FIXME why is this getting printe twice!???!
+        #self.keyHandler(1) #requesting key passthrough
+        out=self.charBuffer.get() == true_key
+        return out
+
+    @keyRequest
+    def command(self): #TODO
+        """ vim : mode """
+        def parse_command(com_str): #TODO
+            printD(com_str,'TODO FIXME')
+            return com_str
+        com_str=self.__getChars__(':')
+        return parse_command(com_str)
 
 def main():
     esp=espFuncs(None,None,None,None)
