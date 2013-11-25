@@ -68,6 +68,8 @@ def rigDict():
         'trmFuncs':{
             'k':('setMode','trm'),
             'i':'openIPython',
+            #':':'test' #this works, so not sure why command doesnt
+            ':':'command',
             },
     }
     return rigDict

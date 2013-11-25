@@ -1,4 +1,5 @@
 import socket
+import os
 from sqlalchemy import create_engine
 
 
@@ -15,7 +16,7 @@ def sqliteMem(echo=False):
     return engine
 
 def pgTest(echo=False,wipe_db=False,username='sqla',password='asdf',host='localhost',port=54321):
-    if socket.gethostname()=='athena':
+    if socket.gethostname()=='athena' and os.name == 'posix':
         port=5432
     pg='postgresql://%s:%s@%s:%s/%s'
     if wipe_db:

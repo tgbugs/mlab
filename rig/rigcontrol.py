@@ -21,6 +21,7 @@ class rigIOMan:
     def __init__(self,keyDicts,session_maker):
         #self.globs=globs #for passing in to for openIPyton and embed()
         self.keyDicts=keyDicts
+        self.krdLock=threading.RLock()
 
         self.ikFuncDict={}
         self.kr_dict={} #dict of registered key requesting functions
@@ -29,7 +30,7 @@ class rigIOMan:
         self.keyActDict={}
         self.keyRequestDict={} #store the number of requests per key
 
-        self.keyRequest=0 #used to keep a count of the number of outstanding key requests
+        self._keyRequest=0 #used to keep a count of the number of outstanding key requests
         self.key=None #genius! now we don't even need have the stupid pass through!
         self.keyLock=threading.RLock() #used to prevent race conditions in keyHandler
         self.currentMode='init'
@@ -88,26 +89,60 @@ class rigIOMan:
             return self
 
     def registerKeyRequest(self,className,functionName):
-        if self.kr_dict.get(className): #really __mode__ but hey
-            self.kr_dict[className].add(functionName)
-        else:
-            self.kr_dict[className]=set((functionName))
+        #if self.kr_dict.get(className): #really __mode__ but hey
+        #printD(locals())
+        try:
+            self.kr_dict[className].append(functionName)
+        except:
+            self.kr_dict[className]=[functionName]
         printD('kr_dict',self.kr_dict)
 
     #def acquireKeyRequest(self): #FIXME does this require locking? I don't think so because the passthrough will prevent a the thread from being spawned anyway unless something else trys to get() from charBuffer in which case wtf!
         #self.keyRequest=1
     def releaseKeyRequest(self): #callback to release a key request lock
-        self.keyRequest -= 1
-        printD('key request released value =',self.keyRequest,context=3)
-        assert self.keyRequest >= 0, 'utoh key requests went below zero!'
+        try:
+            #printD('krdLock try')
+            self.krdLock.acquire()
+            #printD('krdLock acquire')
+            self._keyRequest -= 1
+            assert self._keyRequest >= 0, 'utoh key requests went below zero!'
+        except:
+            raise
+            #raise BaseException('wtf is going on here')
+        finally:
+            printD('krdLock release')
+            printD('key request released value =',self._keyRequest)
+            self.krdLock.release()
+
+    def print_keyRequest(self):
+        try:
+            self.krdLock.acquire()
+            printD(self._keyRequest)
+        except:
+            raise
+        finally:
+            self.krdLock.release()
 
     def keyHandler(self):
-        if self.keyRequest: #FIXME the currently cannot deal with multiple interspersed key requesters properly!
-            printD('key request has %s passing through'%self.keyRequest)
+        #self.print_keyRequest()
+        if self._keyRequest: #FIXME the currently cannot deal with multiple interspersed key requesters properly!
+            #printD('key request has %s passing through'%self.keyRequest)
             return 1
         self.key=self.charBuffer.get() #if we're not in a key request get the key
-        self.keyRequest+=self.keyRequestDict.get(self.key,0) #get key requests for that key
-            # and add that number of expected callbacks to requests
+
+        try:
+            #printD('krdLock try')
+            self.krdLock.acquire()
+            #printD('krdLock acquire')
+            self._keyRequest+=self.keyRequestDict.get(self.key,0) #get key requests for that key
+                # and add that number of expected callbacks to requests
+        except:
+            raise
+            #raise BaseException('wtf is going on here')
+        finally:
+            #printD('krdLock release')
+            self.krdLock.release()
+
 
         try: #then call the function
             function=self.keyActDict[self.key]

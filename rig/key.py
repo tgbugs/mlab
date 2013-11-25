@@ -27,7 +27,7 @@ def kl_lin(charBuffer,keyHandler):
     old_settings = termios.tcgetattr(sys.stdin)
     try:
         tty.setcbreak(sys.stdin.fileno())
-        poll= select.poll()
+        poll = select.poll()
         poll.register(sys.stdin, select.POLLIN)
         stopflag=0
         while not stopflag:
@@ -41,9 +41,12 @@ def kl_lin(charBuffer,keyHandler):
                     char=sys.stdin.read(3)
                 elif len(peek) == 5: #all the <F> keys
                     char=sys.stdin.read(4)
+                elif len(peek) > 5:
+                    sys.stdin.read(len(peek)-1) #this is to catch the weird erros where <F> keys land in stdin faster than poll can loop through
+                    char='esc'
                 else:
                     char='esc' #FIXME
-            printD(char)
+            printD(char.encode())
             charBuffer.put_nowait(char)
             stopflag = not keyHandler()
             if char == '@':
@@ -177,7 +180,7 @@ def keyListener(charBuffer,keyHandler,cleanup=lambda:0): #FIXME
 
 def main():
     from queue import Queue
-    keyListener(Queue(),lambda: 1)
+    keyListener(Queue(),lambda: 1) #this still randomly causes crashes in windows sometimes during rapid key input
 
 if __name__ == '__main__':
     main()

@@ -29,19 +29,32 @@ printFD=tdb.printFuncDict
 #TODO datasource/expected datasource mismatch
 
 #static method for adding a function as a key requester
-def keyRequest(function):
+def keyRequest(function): #FIXME sometimes we want to release a kr EARLY!
     def _keyRequest(self,*args,**kwargs):
         def wrapped():
-            out=function(self,*args,**kwargs)
-            self._releaseKR()
+            try:
+                self._kr_not_done+=1 #this enables keyRequesters to call eachother safely if they are in the same class
+                out=function(self,*args,**kwargs)
+                self._kr_not_done-=1
+            except:
+                self._kr_not_done-=1
+                raise
+                #printD('an error has occured while calling func!')
+            finally:
+                printD('_kr_not_done=',self._kr_not_done)
+                if not self._kr_not_done: #TODO prevent multiple unlocks
+                    self._releaseKR()
+                    assert self._kr_not_done >= 0, 'oh no! _kr_not_done is negative!!'
             return out
         return wrapped()
     _keyRequest.keyRequester=True
+    _keyRequest.__name__=function.__name__
     return _keyRequest
 
 #class decorator
 def hasKeyRequests(cls):
     cls.keyRequesters=[]
+    cls._kr_not_done=False #FIXME will we get nasty threading collisions here?
     def init_wrap(init):
         def __init__(self,modestate,*args):
             self._releaseKR=modestate.releaseKeyRequest
@@ -122,7 +135,7 @@ class clxFuncs(kCtrlObj):
             self.ctrl.LoadProtocol(path.encode('ascii'))
         except:
             print('Program not found')
-            raise
+            #raise
         return self
 
     #input only
@@ -337,6 +350,7 @@ class espFuncs(kCtrlObj):
         if key in self.markDict:
             print('Mark %s is already being used, do you want to replace it? y/N'%(key))
             yeskey=self.charBuffer.get()
+            #self._releaseKR() #XXX
             if yeskey=='y' or yeskey=='Y':
                 self.markDict[key]=self.ctrl.getPos()
                 print(key,'=',self.markDict[key])
@@ -345,10 +359,12 @@ class espFuncs(kCtrlObj):
         elif key=='esc':
             self.unmark()
         else:
+            #self._releaseKR() #XXX
             self.markDict[key]=self.ctrl.getPos()
             print(key,'=',self.markDict[key])
         #self.keyHandler(getMark) #fuck, this could be alot slower...
         return self
+    #mark.keyRequester=True
 
     @keyRequest
     def unmark(self):
@@ -357,21 +373,23 @@ class espFuncs(kCtrlObj):
             mark=self.charBuffer.get()
             pos=self.markDict.pop(mark)
             print("umarked '%s' at pos %s"%(mark,pos))
-        except:
+        except KeyError:
             pass
         return self
 
-    @keyRequest
+    @keyRequest #FIXME we may actually want to use the manual version here due to BsetPos...
     def gotoMark(self): #FIXME
         #self.doneCB()
         stdout.write('\rgoto:')
         stdout.flush()
         key=self.charBuffer.get()
+        #self._releaseKR() #XXX
         if key in self.markDict:
             print('Moved to: ',self.ctrl.BsetPos(self.markDict[key])) #AH HA! THIS is what is printing stuff out as I mvoe FIXME I removed BsetPos at some point and now I need to add it... back? or what
         else:
             print('No position has been set for mark %s'%(key))
         return self
+    #gotoMark.keyRequester=True
 
     def printMarks(self):
         """print out all marks and their associated coordinates"""
@@ -385,25 +403,53 @@ class espFuncs(kCtrlObj):
             from numpy import random #only for testing remove later
             a,b=random.uniform(-10,10,2) #DO NOT SET cX or cY manually
             self.ctrl.setPos((a,b))
-            print(self.ctrl._cX,self.ctrl._cY)
+            #print(self.ctrl._cX,self.ctrl._cY)
         else:
             print('Not in fake mode! Not moving!')
         return self
 
-    @keyRequest
+    #callback to break out of display mode
+    def _gd_break_callback(self):
+        print('leaving disp mode!')
+        self._gd_exit=1
+        self.modestate.keyActDict['esc']=self._gd_old_esc
+        self._gd_old_esc=None
+        del(self._gd_old_esc)
+        self.modestate.keyActDict[self._gd_own_key]=self.getDisp
+        self._gd_own_key=None
+        del(self._gd_own_key)
+
+    #@keyRequest #just added the getDisp.keyRequester=True at the bottom and we're good to go
     def getDisp(self):
         """BLOCKING stream the displacement from a set point"""
         #self.doneCB()
         from numpy import sum as npsum #FIXME should these go here!?
         from numpy import array as arr
+        print('entering disp mode')
 
         if not len(self.markDict):
-            key=self.charBuffer.get()
-            self.markDict[key]=self.ctrl.getPos()
+            self.mark()
+        else:
+            self._releaseKR() #XXX release whether we got it or not
+
+        def get_key(_dict,func):
+            for key,value in _dict.items():
+                if value == func:
+                    return key
+            raise KeyError('key not found!')
+
+
+        self._gd_old_esc=self.modestate.keyActDict['esc']
+        self._gd_own_key=get_key(self.modestate.keyActDict,self.getDisp)
+        printD('get disp key:',self._gd_own_key)
+
+        self._gd_exit=0
+        self.modestate.keyActDict['esc']=self._gd_break_callback #FIXME probably going to need some try:finally:
+        self.modestate.keyActDict[self._gd_own_key]=lambda:print('already in disp mode!')
 
         dist1=1
         print(list(self.markDict.keys()))
-        while self.keyThread.is_alive(): #FIXME may need a reentrant lock here to deal w/ keyboard control
+        while self.keyThread.is_alive() and not self._gd_exit: #FIXME may need a reentrant lock here to deal w/ keyboard control
             pos=self.markDict.values()
             dist=(npsum((arr(self.ctrl._BgetPos()-arr(list(pos))))**2,axis=1))**.5 #FIXME the problem here is w/ _BgetPos()
             if dist1!=dist[0]:
@@ -411,25 +457,29 @@ class espFuncs(kCtrlObj):
                 stdout.write('\r'+''.join(map('{:1.5f} '.format,dist)))
                 stdout.flush()
                 dist1=dist[0]
-            try:
-                key=self.charBuffer.get_nowait()
-                #FIXME this should go AFTER the other bit to allow proper mode changing
-                if key=='q' or key=='esc': #this should be dealt with through the key handler...
-                    print('\nleaving displacement mode')
-                    break
-                elif key: #FIXME HOW DOES THIS EVEN WORK!?!??!
-                    #printD('breaking shit')
-                    try:
-                        func=self.modestate.keyActDict[key]
-                        if func.__name__ !='getDisp':
-                            from threading import Thread
-                            a=Thread(target=func)
-                            a.start()
-                    except:
-                        printD('should have keyHandled it')
-            except:
-                pass
+
+            #try:
+                #key=self.charBuffer.get_nowait()
+                ##FIXME this should go AFTER the other bit to allow proper mode changing
+                #if key=='q' or key=='esc': #this should be dealt with through the key handler...
+                    #print('\nleaving displacement mode')
+                    #break
+                #elif key: #FIXME HOW DOES THIS EVEN WORK!?!??!
+                    ##printD('breaking shit')
+                    #try:
+                        #func=self.modestate.keyActDict[key] #FIXME WOW BAD
+                        #printD(func.__name__)
+                        #if func.__name__ !='getDisp': #FIXME this isnt catching it because lambda
+                            #from threading import Thread
+                            #a=Thread(target=func)
+                            #a.start()
+                    #except:
+                        #printD('should have keyHandled it')
+            #except:
+                #pass
+        printD('done! loops broken!')
         return self
+    getDisp.keyRequester=True
 
     def setSpeedDef(self):
         #self.doneCB()
@@ -481,6 +531,7 @@ class keyFuncs(kCtrlObj):
 @hasKeyRequests
 class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
     def __init__(self, modestate):
+        self._keyThread=modestate.keyThread
         super().__init__(modestate)
         def printwrap(func):
             def wrap():
@@ -496,7 +547,7 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
                 setattr(self,name,printwrap(getattr(self,name)))
 
 
-    #@keyRequest #FIXME this causes stuff to get called twice...
+    @keyRequest
     def __getChars__(self,prompt=''):
         """ replacement for input()"""
 
@@ -562,9 +613,10 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
             else:
                 ib.put(char)
 
-        while 1:
+        stdout.write('\r%s'%prompt)
+        while self.keyThread.is_alive():
             char=self.charBuffer.get()
-            printD('got a key:', char) 
+            #printD('got a key:', char) 
             if char == '\n':
                 break
                 printD('done')
@@ -623,8 +675,12 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         def parse_command(com_str): #TODO
             printD(com_str,'TODO FIXME')
             return com_str
+        print('command opened')
         com_str=self.__getChars__(':')
         return parse_command(com_str)
+
+    def test(self):
+        print('testing testing 123')
 
 def main():
     esp=espFuncs(None,None,None,None)
