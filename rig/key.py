@@ -21,42 +21,53 @@ printD=tdb.printD
 printFD=tdb.printFuncDict
 tdb.off()
 
-def kl_lin(charBuffer,keyHandler):
+def kl_lin(charBuffer,keyHandler,keyLock,termInfoSet):
     #FIXME does not work properly with ipython :/
     #FIXME still has problems with c-ctrl
     old_settings = termios.tcgetattr(sys.stdin)
+
+    #functions to pass to the callback for managing ipython
+    off=lambda:termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+    on=lambda:tty.setcbreak(sys.stdin.fileno())
+    termInfoSet(off,on)
+
     try:
         tty.setcbreak(sys.stdin.fileno())
         poll = select.poll()
         poll.register(sys.stdin, select.POLLIN)
         stopflag=0
         while not stopflag:
-            poll.poll()
-            peek=sys.stdin.buffer.peek()
-            char = sys.stdin.read(1) #FIXME this may be too short for escape sequences...
-            if char == '\x1b':
-                if len(peek) == 3: #escape sequences
-                    char=sys.stdin.read(2) #ignore the escape since esc has its own
-                elif len(peek) == 4: #delete key
-                    char=sys.stdin.read(3)
-                elif len(peek) == 5: #all the <F> keys
-                    char=sys.stdin.read(4)
-                elif len(peek) > 5:
-                    sys.stdin.read(len(peek)-1) #this is to catch the weird erros where <F> keys land in stdin faster than poll can loop through
-                    char='esc'
-                else:
-                    char='esc' #FIXME
-            printD(char.encode())
-            charBuffer.put_nowait(char)
-            stopflag = not keyHandler()
-            if char == '@':
-                stopflag=1
+            try:
+                keyLock.acquire() #XXX lock acquire
+                poll.poll()
+                peek=sys.stdin.buffer.peek()
+                char = sys.stdin.read(1) #FIXME this may be too short for escape sequences...
+                if char == '\x1b':
+                    if len(peek) == 3: #escape sequences
+                        char=sys.stdin.read(2) #ignore the escape since esc has its own
+                    elif len(peek) == 4: #delete key
+                        char=sys.stdin.read(3)
+                    elif len(peek) == 5: #all the <F> keys
+                        char=sys.stdin.read(4)
+                    elif len(peek) > 5:
+                        sys.stdin.read(len(peek)-1) #this is to catch the weird erros where <F> keys land in stdin faster than poll can loop through
+                        char='esc'
+                    else:
+                        char='esc' #FIXME
+                printD(char.encode())
+                charBuffer.put_nowait(char)
+                keyLock.release() #XXX lock release
+                stopflag = not keyHandler()
+                if char == '@':
+                    stopflag=1
+            except: #FIXME???
+                keyLock.release()
     except KeyboardInterrupt:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
     finally:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
-def kl_win(charBuffer,keyHandler): #FIXME
+def kl_win(charBuffer,keyHandler,keyLock): #FIXME
     #http://techtonik.rainforce.org
     STD_INPUT_HANDLE = -10
     # Constant for infinite timeout in WaitForMultipleObjects()
@@ -129,52 +140,60 @@ def kl_win(charBuffer,keyHandler): #FIXME
     stopflag=0
     #rpdb2.setbreak()
     while not stopflag:
-        # params: handle, milliseconds
-        ret = ctypes.windll.kernel32.WaitForSingleObject(handle, INFINITE)
-        #print('im here in the while loop')
-        if ret == WAIT_OBJECT:
-            # --- processing input ---------------------------
-            ctypes.windll.kernel32.GetNumberOfConsoleInputEvents(ch, ctypes.byref(eventnum))
-            for i in range(eventnum.value):
-                # params: handler, buffer, length, eventsnum
-                ctypes.windll.kernel32.ReadConsoleInputW(ch, ctypes.byref(inbuf), 2, ctypes.byref(eventread))
-                if EVENTS[inbuf[0].eventType] != 'KEY_EVENT':
-                    #print(EVENTS[inbuf[0].eventType])
-                    pass
-                else:
-                    keyEvent = inbuf[0].event.keyEvent
-                    if not keyEvent.keyDown:
-                        continue
-                    char = keyEvent.char.UnicodeChar.lower()
-                    printD(keyEvent.virtualKeyCode)
-                    if char == '\x00':
-                        try:
-                            char=keyCodeDict[keyEvent.virtualKeyCode]
-                        except:
+        try:
+            keyLock.acquire() #XXX lock acquire
+            # params: handle, milliseconds
+            ret = ctypes.windll.kernel32.WaitForSingleObject(handle, INFINITE)
+            #print('im here in the while loop')
+            if ret == WAIT_OBJECT:
+                # --- processing input ---------------------------
+                ctypes.windll.kernel32.GetNumberOfConsoleInputEvents(ch, ctypes.byref(eventnum))
+                for i in range(eventnum.value):
+                    # params: handler, buffer, length, eventsnum
+                    ctypes.windll.kernel32.ReadConsoleInputW(ch, ctypes.byref(inbuf), 2, ctypes.byref(eventread))
+                    if EVENTS[inbuf[0].eventType] != 'KEY_EVENT':
+                        #print(EVENTS[inbuf[0].eventType])
+                        pass
+                    else:
+                        keyEvent = inbuf[0].event.keyEvent
+                        if not keyEvent.keyDown:
                             continue
-                    elif char == '\x1b': #rebind for esc keys and linux compat
-                        char = 'esc'
-                    elif char == '\x08':
-                        char = '\x7f' #make windows and linux match 
-                    elif char == '\r': #make things consistent between windows and linux
-                        char = '\n'
-                    printD(char.encode())
-                    charBuffer.put_nowait(char) #THIS WORKS because if there is a get() waiting on the stack it will tigger on the first keyHandler call, though, FIXME race conditions be here! somehow I think queue is built for this
-                    #sleep(.001) #YEP IT WAS A FUCKING RACE CONDITION .0001 is too fast
-                    
-                    stopflag = not keyHandler()
-                    if char == '@': #emergency break
-                        stopflag=1 #FIXME! this is a hack, integrate it properly
-        else:
-            print("Warning: Unknown return value '%s'" % ret)
-    ctypes.windll.kernel32.FlushConsoleInputBuffer(ch)
+                        char = keyEvent.char.UnicodeChar.lower()
+                        printD(keyEvent.virtualKeyCode)
+                        if char == '\x00':
+                            try:
+                                char=keyCodeDict[keyEvent.virtualKeyCode]
+                            except:
+                                continue
+                        elif char == '\x1b': #rebind for esc keys and linux compat
+                            char = 'esc'
+                        elif char == '\x08':
+                            char = '\x7f' #make windows and linux match 
+                        elif char == '\r': #make things consistent between windows and linux
+                            char = '\n'
+                        printD(char.encode())
+                        charBuffer.put_nowait(char) #THIS WORKS because if there is a get() waiting on the stack it will tigger on the first keyHandler call, though, FIXME race conditions be here! somehow I think queue is built for this
+                        #sleep(.001) #YEP IT WAS A FUCKING RACE CONDITION .0001 is too fast
+                        keyLock.release() #XXX lock release
+                        stopflag = not keyHandler()
+                        if char == '@': #emergency break
+                            stopflag=1 #FIXME! this is a hack, integrate it properly
+            else:
+                print("Warning: Unknown return value '%s'" % ret)
+        except:
+            keyLock.release() #FIXME
+        ctypes.windll.kernel32.FlushConsoleInputBuffer(ch)
 
-def keyListener(charBuffer,keyHandler,cleanup=lambda:0): #FIXME
+def keyListener(charBuffer,keyHandler,keyLock=None,termInfoSet=lambda off,on:None,cleanup=lambda:0): #FIXME
+    if keyLock == None: 
+        from threading import RLock
+        keyLock=Rlock()
     try:
         if globals().get('ctypes'):
-            kl_win(charBuffer,keyHandler)
+            termInfoSet(lambda:None,lambda:None)
+            kl_win(charBuffer,keyHandler,keyLock)
         else:
-            kl_lin(charBuffer,keyHandler)
+            kl_lin(charBuffer,keyHandler,keyLock,termInfoSet)
     finally:
         cleanup()
 

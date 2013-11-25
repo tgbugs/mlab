@@ -532,6 +532,7 @@ class keyFuncs(kCtrlObj):
 class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
     def __init__(self, modestate):
         self._keyThread=modestate.keyThread
+        self.keyLock=modestate.keyLock
         super().__init__(modestate)
         def printwrap(func):
             def wrap():
@@ -672,12 +673,32 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
     @keyRequest
     def command(self): #TODO
         """ vim : mode """
+        #TODO figure out where to move the command dict...
+        #cmdDict={'ipython':'ipython'} #can't put ipython here due to race conditions
+        cmdDict={}
         def parse_command(com_str): #TODO
-            printD(com_str,'TODO FIXME')
+            def match_key(com_str):
+                printD(com_str)
+                matches = [key for key in cmdDict.keys() if key[:len(com_str)]==com_str]
+                matches.sort()
+                return matches
+            matches=match_key(com_str)
+            printD(matches)
+            func=getattr(self,matches[0],lambda:None)
+            func()
+            #printD(com_str,'TODO FIXME')
             return com_str
         print('command opened')
         com_str=self.__getChars__(':')
         return parse_command(com_str)
+
+    def ipython(self):
+        #TODO how to deal with imports...
+        try:
+            self.keyLock.acquire() #XXX lock acquire so ipython can have input priority
+            embed()
+        finally:
+            self.keyLock.release() #XXX lock release
 
     def test(self):
         print('testing testing 123')

@@ -29,10 +29,11 @@ class rigIOMan:
         self.helpDict={}
         self.keyActDict={}
         self.keyRequestDict={} #store the number of requests per key
+        self.trmRequestDict={} #TODO this can allow other threads that want to spawn ipython to hold?
 
         self._keyRequest=0 #used to keep a count of the number of outstanding key requests
         self.key=None #genius! now we don't even need have the stupid pass through!
-        self.keyLock=threading.RLock() #used to prevent race conditions in keyHandler
+        self.keyLock=threading.RLock() #used to allow ipython to work in linux
         self.currentMode='init'
 
         def esc():return 1
@@ -41,10 +42,10 @@ class rigIOMan:
         self.charBuffer=Queue()
 
 
-        self.keyThread=threading.Thread(target=keyListener,args=(self.charBuffer,self.keyHandler,self.cleanup))
+        self.keyThread=threading.Thread(target=keyListener,args=(self.charBuffer,self.keyHandler,self.keyLock,self.term_callback,self.cleanup))
         #self.keyThread=keyThread
 
-        self.initControllers() #these need charBuffer and keyThread to work
+        self.initControllers() #these need charBuffer and keyThread to work FIXME this is still broken for keyRequests...
         self.setMode('rig')
         self.Session=session_maker #FIXME how do we ACTUALLy want to deal with this? I feel like I have isolated most of the database io that the keyboard interacts with to the dataios-write
             #but what if I want to query something on the fly? urg
@@ -54,9 +55,19 @@ class rigIOMan:
     def start(self):
         self.keyThread.start()
 
+    def term_callback(self,off,on):
+        self.term_off=off
+        self.term_on=on
+
     def ipython(self,globs={}):
         locals().update(globs) #SUPER unkosher but seems safe from tampering
-        embed()
+        try:
+            self.term_off()
+            self.keyLock.acquire()
+            embed()
+        finally:
+            self.term_on()
+            self.keyLock.release()
 
     def updateModeDict(self):
         #TODO keyDicts.values is where we will find the names of the functions that have been wrapped as keyRequests and that keybinding is what we need to hop on
@@ -130,6 +141,9 @@ class rigIOMan:
             return 1
         self.key=self.charBuffer.get() #if we're not in a key request get the key
 
+        if self.key=='i':
+            self.ipython()
+
         try:
             #printD('krdLock try')
             self.krdLock.acquire()
@@ -142,7 +156,6 @@ class rigIOMan:
         finally:
             #printD('krdLock release')
             self.krdLock.release()
-
 
         try: #then call the function
             function=self.keyActDict[self.key]
