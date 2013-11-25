@@ -321,8 +321,6 @@ class espFuncs(kCtrlObj):
         #self.EspXDataSource=None
         #self.EspYDataSource=None
 
-
-
     def getPos(self):
         #may want to demand a depth input (which can be bank)
         #try:

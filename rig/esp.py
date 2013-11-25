@@ -43,6 +43,7 @@ class espControl:
         #all of these can then be referenced under self.esp for the lifetime of the npC object
         self.rlock=RLock()
         try:
+            #raise IOError('testing :)')
             self.esp=ser.Serial(port,baudrate,bytesize,parity,stopbits,timeout) #port is now open!
             self.write('1HX\r\n')
             self.POST()
@@ -80,7 +81,6 @@ class espControl:
         if not len(out):
             raise IOError('esp300 not responding, is it on?')
 
-
     def write(self,string,writeback=0): #FIXME may need an rlock here... yep, writeTimeout doesnt work
         out=string+'\r\n'
         try:
@@ -88,8 +88,8 @@ class espControl:
             self.esp.write(out.encode('ascii'))
             if writeback: #FIXME in theory we could make a list of all the commands that need to be read, but then I would have to parse the string :/ someday, some day
                 return self.read()
-        except:
-            raise IOError('Could not acquire lock to write to serial')
+        except (ValueError,ser.serialutil.SerialTimeoutException) as e:
+            print(e)
         finally:
             self.rlock.release()
 
@@ -97,7 +97,7 @@ class espControl:
         try:
             self.rlock.acquire() #aweyiss
             out=b''
-            while 1:
+            while 1: #this should be a tight loop that doesn't have to worry about thread exits...
                 a=self.esp.read(1) 
                 if a==b'\n':
                     a=self.esp.read(1)
@@ -105,9 +105,9 @@ class espControl:
                     break
                 else:
                     out+=a
+            return out
         finally:
             self.rlock.release()
-        return out
 
     def readProgram(self):
         out=b''
@@ -177,7 +177,12 @@ class espControl:
         #do we want to consolidate all this into a single function, I think it's probably worth it since I have all the trys...
         x=self.write('2TP',1)  #X
         y=self.write('1TP',1)  #Y
-        self._cX,self._cY=float(x),float(y)
+        try:
+            self._cX,self._cY=float(x),float(y)
+        except TypeError as e:
+            print(e,'in',e.__traceback__.tb_frame.f_code.co_filename,'at line:',e.__traceback__.tb_lineno)
+            #print('[!] x or y could not be converted to a float! Probably because self.write returned None.')
+
         if (self._cX,self._cY)==self.target:
             self.write('1HX') #degroup oh man this is ugly and not transparent
             self.target=None
@@ -248,6 +253,7 @@ class espControl:
 
 class _fakeEsp:
     """this creates a fake serial connection to the esp for testing"""
+    from time import sleep
     def __init__(self,port,baudrate,bytesize,parity,stopbits,timeout):
         import numpy as np
         self.port=port
@@ -258,20 +264,45 @@ class _fakeEsp:
         self.timeout=timeout
         self._x,self._y=np.random.uniform(-10,10,2)
         self.outbuff=['\r']
+        self._moved=0
     def read(self,n):
         out=''
         out+=self.outbuff.pop()
+        #print('in read',out)
         return out.encode('ascii')
     def write(self,s):
-        #print(s)
-        if s.split(b';')[0]==b'1HN1,2':
+        if s[1:3] == b'PR': #remember y=1 x=2
+            #print(s)
+            dist=float(s[3:-2].decode('ascii'))
+            axis=s.decode('ascii')[0]
+            if axis=='1':
+                self._y+=dist
+            elif axis=='2':
+                self._x+=dist
+            self._moved=1
+            #print(self._x,self._y)
+        elif s[1:3]== b'TP':
+            self.sleep(.001) #reduces cpu usage by nearly 100%
+            axis=s.decode('ascii')[0]
+            if axis=='1':
+                outstr='%.5f\r\n'%(self._y)
+            elif axis=='2':
+                outstr='%.5f\r\n'%(self._x)
+            outlist=list(outstr)
+            outlist.reverse()
+            self.outbuff+=outlist
+            return 1
+        elif s.split(b';')[0]==b'1HN1,2':
             y,x=s.split(b';')[5].split(b',')
             self._x=float(x)
             self._y=float(y[3:])
+            self._moved=1
         outstr='%.5f\r\n%.5f\r\n'%(self._x,self._y)
-        self.outbuff=list(outstr)
-        self.outbuff.reverse()
+        outlist=list(outstr)
+        outlist.reverse()
+        self.outbuff+=outlist
         return 1
+
     def close(self):
         pass
     def open(self):

@@ -16,8 +16,6 @@ def rigDict():
                          'espFuncs':{2:'cleanup'},
                          'keyfuncs':{3:'esc'},
                         },
-
-                    ':':'cmd',
                    },
 
         'clxFuncs':{
@@ -165,29 +163,30 @@ def trmDict():
     }
     return trmDict
 
-def getDicts(locs): #in theory we would like to generate this automatically...
-    from inspect import isfunction
-    dictDict={}
-    for name,locvar in locs.items():
-        if isfunction(locvar):
-            if name != 'getDicts':
-                dict=locvar()
-                dictDict[dict['mode']]=dict
-
-    return dictDict
-
-keyDicts=getDicts(locals()) #This mirrors modeDict
-
 def checkDups(keyDicts):
     for mode,DICT in keyDicts.items():
         keys=[]
         [keys.extend(d.keys()) for d in DICT.values() if type(d) is dict]
         dups=[k for k in keys if keys.count(k) > 1]
         if dups:
-            print(mode,'has duplicate key entries!',dups)
+            print('[!]',mode,'has duplicate key entries!',dups)
+
+def getDicts(locs): #in theory we would like to generate this automatically...
+    from inspect import isfunction
+    dictDict={}
+    for name,locvar in locs.items():
+        if isfunction(locvar):
+            if name not in {'getDicts','checkDups'}:
+                dict=locvar()
+                dictDict[dict['mode']]=dict
+
+    checkDups(dictDict)
+    return dictDict
+
+keyDicts=getDicts(locals()) #This mirrors modeDict
 
 def main():
-    checkDups(keyDicts)
+    pass
     
 if __name__ == '__main__':
     main()

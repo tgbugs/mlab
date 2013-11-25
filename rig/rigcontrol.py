@@ -51,7 +51,7 @@ class rigIOMan:
         self.keyThread=threading.Thread(target=keyListener,args=(self.charBuffer,self.keyHandler,self.keyLock,self.term_callback,self.cleanup))
         #self.keyThread=keyThread
 
-        self.initControllers() #these need charBuffer and keyThread to work FIXME this is still broken for keyRequests...
+        self.initControllers() #these need charBuffer and keyThread to work FIXME nope, dupe for ':':'cmd'
         self.setMode('rig')
         self.Session=session_maker #FIXME how do we ACTUALLy want to deal with this? I feel like I have isolated most of the database io that the keyboard interacts with to the dataios-write
             #but what if I want to query something on the fly? urg
@@ -192,7 +192,8 @@ class rigIOMan:
                 ctrlDict[ctrl.__name__]=inited
             except:
                 #warnings.warn('[!] %s failed to init'%ctrl.__name__,UserWarning,0)
-                print('[!] %s failed to init'%ctrl.__name__)
+                raise
+                printD('[!] %s failed to init'%ctrl.__name__)
      
         ctrlBindingDict={
                 'clxControl':clxFuncs,

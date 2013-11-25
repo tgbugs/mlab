@@ -2,7 +2,6 @@ import socket
 import os
 from sqlalchemy import create_engine
 
-
 def sqliteMem(echo=False):
     from sqlalchemy.engine import Engine
     from sqlalchemy import event
