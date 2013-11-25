@@ -4,7 +4,7 @@ import inspect as ins
 from sys import stdout,stdin
 from time import sleep
 from debug import TDB,ploc
-from IPython import embed
+#from IPython import embed
 try:
     import rpdb2
 except:
@@ -696,7 +696,8 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         #TODO how to deal with imports...
         try:
             self.keyLock.acquire() #XXX lock acquire so ipython can have input priority
-            embed()
+            #embed()
+            printD('Not Implemented here due to threading and needing to hit one extra key to break the lock in keyListener')
         finally:
             self.keyLock.release() #XXX lock release
 
@@ -707,5 +708,12 @@ def main():
     esp=espFuncs(None,None,None,None)
     #mcc=mccFuncs(None,None,None,None)
 
+__all__=(
+    'clxFuncs',
+    'mccFuncs',
+    'espFuncs',
+    'keyFuncs',
+    'trmFuncs',
+)
 if __name__=='__main__':
     main()

@@ -3,15 +3,21 @@ import threading
 import warnings
 from queue import Queue,Empty
 
-from rig.functions import * #FIXME add __all__ to functions
+from rig.ipython import embed
+
+from rig.functions import * #__all__ has been set, update it
 from rig.keybinds import keyDicts
 from rig.dictMan import makeModeDict
-
 from rig.key import keyListener
 from rig.clx import clxControl
 from rig.esp import espControl
 from rig.mcc import mccControl
-from rig.trm import trmControl
+
+from debug import TDB,ploc
+tdb=TDB()
+printD=tdb.printD
+printFD=tdb.printFuncDict
+#tdb.off()
 
 #TODO need to integrate stuff from experiments, but maybe it makes sense to do that elsewhere somehow?
 #since they will need to be integrated with keys to launch them or something
@@ -64,7 +70,7 @@ class rigIOMan:
         try:
             self.term_off()
             self.keyLock.acquire()
-            embed()
+            embed() #FIXME WHAT IS THIS WIZARDRY!? how is this even in the name space O_O
         finally:
             self.term_on()
             self.keyLock.release()
@@ -197,7 +203,7 @@ class rigIOMan:
             initedFunc=ctrlBindingDict[ctrl_name](self,ctrlDict[ctrl_name]) #callback to register functions as keyRequesters happends here
             self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
-        FUNCS=datFuncs,keyFuncs,trmFuncs
+        FUNCS=keyFuncs,trmFuncs #datFuncs has been removed for now
         for func in FUNCS:
             initedFunc=func(self) #callback to register functions as keyRequesters happends here
             self.ikFuncDict[initedFunc.__mode__]=initedFunc
