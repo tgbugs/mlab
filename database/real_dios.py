@@ -3,6 +3,7 @@ from sqlalchemy.orm import object_session
 from database.dataio import Get, Set, Bind, Read, Write, Analysis, Check #FIXME make these decorators for a do() function? this should enable reusable chaining with doccumentation?
 #should the decorator(properties) be how we do default kwargs or should we just define them locally and persist those?
 from database.models import Setter, Getter, Binder, Reader, Writer, Analyzer, Checker, MetaDataSource
+from time import sleep
 
 #decoratos
 
@@ -50,6 +51,15 @@ class Get_bool(Get):
     pass
 class Get_int(Get):
     pass
+###
+#TRM
+class Get_trmDoneNB(Get): #FIXME threading nightmare
+    """ poop """
+    MappedClass=Getter
+    ctrl_name='trmFuncs'
+    function_name='getDoneNB'
+    hardware='keyboard'
+        
 
 ###
 #ESP
@@ -59,6 +69,7 @@ class Get_espX(Get):
     mcKwargs={'prefix':'m','unit':'m','mantissa':5} #FIXME this is a horrible use case, it makes it easy to make a ton of them, but it makes everything super hard to read ;_;
     ctrl_name='espControl'
     function_name='getX'
+    hardware='esp300'
 
 
 class Get_espY(Get):
@@ -67,6 +78,8 @@ class Get_espY(Get):
     mcKwargs={'prefix':'m','unit':'m','mantissa':5}
     ctrl_name='espControl'
     function_name='getY'
+    hardware='esp300'
+
 
 class Bind_espXY(Bind): #FIXME experimental... requires dependent classes to reside together atm
     """ gets espx and espy and binds them into an (x,y) tuple"""
@@ -78,15 +91,24 @@ class Bind_espXY(Bind): #FIXME experimental... requires dependent classes to res
             #do it in parallel for steps... do that, but not right now, and this way is more mem eff?
         for dio in self.out_format:
             self.depDict[dio]=globals()[dio](session=session,ctrlDict=ctrlDict)
+        super().__init__(session,ctrlDict=ctrlDict)
     def bind(self,**kwargs):
         out=[]
         for kw in self.out_format: #FIXME figure out how to do with w/o a for loop! (collections maybe?)
             out.append(self.depDict[kw].do(**kwargs)[kw]) #FIXME this kwargs passing... >_< stepname dataio name conflicts and all the rest ;_;
         return out
 
-
+class Bind_dep_vals(Bind): #FIXME
+    """ poop """
+    #ctrl_name='espControl' #FIXME
+    MappedClass=Binder
+    #dependencies=['Get_pia_xy_1','Get_pia_xy_2','Get_pia_xy_3','Get_pia_xy_4']
+    out_format=['Get',''] #FIXME this needs to take step names too?
+    def bind(self,**kwargs):
+        return kwargs['dep_vals']
 
 class _Bind_espXY(Bind):
+    """ poop """
     MappedClass=Binder
     dependencies=['Get_espX','Get_espY']
     out_format=['Get_espX','Get_espY']
@@ -105,6 +127,7 @@ class _Bind_espXY(Bind):
             #eeeehhhh maybe? think about it for the future
         pass
 
+
 class Set_espXY(Set):
     """ A dynamic setter do(pos=(x,y)) is the proper calling convention"""
     #TODO this needs to be followed/acompanied by a Write of the set values?
@@ -116,10 +139,11 @@ class Set_espXY(Set):
     #XXX XXX actually NOPE! not an issue, because we are going to GET the espXY again when we need it!
         #so all we really need to know is that it was set and the changes will be picked up
         #and we *should* have a record anyway, maybe for setting channels or something we need that
+    MappedClass=Setter
     ctrl_name='espControl'
     function_name='setPos'
+    hardware='esp300'
     #TODO kwargs for do(**kwargs) should be pos=(x,y)
-
 
 
 ###
@@ -132,41 +156,52 @@ class _Get_mcc(Get):
     MappedClass=MetaDataSource
     ctrl_name='mccControl'
     dependencies=['Set_mccChannel']
+    hardware=''
+
 
 class Get_mccHoldEnable(_Get_mcc): #FIXME how do we want to deal with channels??!?! At the step level.
     """ Get whether holding is enabled for the active channel"""
                                         #damn it needless complications again >_<
     mcKwargs=mds_bool_kwargs
     function_name='GetHoldingEnable'
+    hardware=''
+
 
 class Get_mccHolding(_Get_mcc): #FIXME ARGH HATE MCC
     """ Get the holding voltage/amerage for the active channel"""
     mcKwargs={'prefix':'','unit':'V','mantissa':3} #FIXME DAMN IT MAN this depends on the mode :(
     function_name='GetHolding'
+    hardware=''
+
 
 class Get_mccPSGain(_Get_mcc):
     """ Get the gain for the primary signal"""
     mcKwargs={'prefix':'','unit':'num'}
     function_name='GetPrimarySignalGain'
+    hardware=''
 
 
 class Get_PSLPF(_Get_mcc):
     """Low pass filter for primary signal"""
     mcKwargs={'prefix':'','unit':'Hz'}
     function_name='GetPrimarySignalLPF'
+    hardware=''
 
 class Get_mccPipetteOffset(_Get_mcc):
     """ Get Pipette offset for active channel"""
     mcKwargs={'prefix':'','unit':'V','mantissa':5}
     function_name='GetPipetteOffset'
+    hardware=''
 
 #TODO add more later
+
 
 #FIXME NOTICE: setters are only useful in combination, don't just blindly reproduce stuff !
 class _Set_mcc(Set):
     MappedClass=Setter
     ctrl_name='mccControl'
     #modes: V=0, I=1, IeZ=2
+
 
 class Set_mccAll_IeZ(_Set_mcc): #FIXME not actually all
     """ Sets num=n headstages to current clamp with no injected current"""
@@ -176,6 +211,7 @@ class Set_mccAll_IeZ(_Set_mcc): #FIXME not actually all
         for i in range(num):
             self.ctrl.selectMC(i)
             self.ctrl.SetMode(2)
+
 
 class Set_mccAllVnoHold(_Set_mcc):
     """ Sets num=n headstages to voltage clamp at 0mV"""

@@ -1,4 +1,6 @@
 #pulled this out of api.py
+from database.main import printD,tdb
+#tdb.off()
 class BaseDataIO:
     """ 
         Base class for all experiment steps
@@ -148,7 +150,6 @@ class baseio:
     def name(self):
         return self.__class__.__name__#[4:]
 
-
     def __init__(self,session,controller_class=None,ctrlDict=None):
         if getattr(self,'ctrl_name',None): #FIXME not quite correct
             if ctrlDict:
@@ -198,8 +199,21 @@ class ctrlio(baseio):
     ctrl_name=''
     func_kwargs={}
     function_name=''
+    hardware=''
+
+    def __init__(self,session,controller_class=None,ctrlDict=None):
+        from database.models import Hardware
+        if type(controller_class)==dict:
+            raise TypeError('you passed the dict in the class spot!')
+        try:
+            self.hardware_id=self.session.query(Hardware).filter_by(name=self.hardware).first().id
+        except: #TODO
+            printD('no hardware by that name found! TODO')
+            self.hardware_id=1
+        super().__init__(session,controller_class,ctrlDict)
 
     def validate(self):
+        print(self.ctrl_name,self.ctrl.__class__.__name__)
         if self.ctrl_name == self.ctrl.__class__.__name__:
             #TODO check the controller version!
             pass
@@ -216,7 +230,8 @@ class ctrlio(baseio):
 class Get(ctrlio): #FIXME now that this is separate from Writer... wat do?
     #TODO i think this somehow needs to interface with subjects, or do I need another step type? Set has it too
     #XXX FUN: this is another potential way to read data from datafiles or the web using an established interface
-    MappedClass=None #Getter
+    def error(*args,**kwargs):raise NotImplemented('please import a real MappedClass!')
+    MappedClass=error
     #from database.models import Getter as MappedClass
     mcKwargs={} #FIXME because Getters are now divorced from Writers, need to validate that units match?
     ctrl_name=''
@@ -230,20 +245,15 @@ class Get(ctrlio): #FIXME now that this is separate from Writer... wat do?
         #gotta figure out how to integrate the two... :/
     #atm dep_names in here just mean that the inner function is going to expect those keywords to be present
     #TODO: could auto-generate steps based on the dep names found here... probably wouldnt be quite so reusable
-    def __init__(self,session,controller_class=None,ctrlDict=None):
-        from database.models import Hardware
-        try:
-            self.hardware_id=self.session.query(Hardware).filter_by(name=self.hardware).first()
-        except: #TODO
-            print('no hardware by that name found! TODO')
-            self.hardware_id=1
-        super().__init__(session,controller_class,ctrlDict)
 
     def do(self,**kwargs):
         out=self.get(**kwargs)
         #TODO out={'value':self.get(**kwargs),'unit':self.units,'prefix':self.prefix,'type',self.type}
             #completely changes what dataios need to deal with :/
-        return {'%s'%self.name:out,'last_getter':self.name}#XXX NOTE: this makes it super easy to chain things by dependency name
+        #return {'%s'%self.name:out,'last_getter':self.name}#XXX NOTE: this makes it super easy to chain things by dependency name
+        return {'%s'%self.name:out,'last_getter':self.name,kwargs['step_name']:out}#XXX NOTE: this makes it super easy to chain things by dependency name
+
+
             #might not even need the whole step framework to keep track of deps if the dataios keep the
             #names of the upstream dataios that they need... or really just automatically add certain deps
 
@@ -269,6 +279,7 @@ class Set(ctrlio): #FIXME must always have an input value
     func_kwargs={} #FIXME should be func_kwargs
     function_name=''
     dependencies=[] #TODO virtually all setters should have a read dep or define the set value in kwargs
+    hardware='what'
 
     def do(self,**kwargs):
         out=self.set(**kwargs)

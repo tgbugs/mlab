@@ -58,6 +58,8 @@ class rigIOMan:
             #just open a new terminal m8
 
         #TODO add a way for keys to enter programatic control mode, they will still need keyinput though
+        #FIXME TODO
+        self.ctrlDict.update(self.ikFuncDict) #FIXME temp hack to get trmFuncs through to the rest of the world
     def start(self):
         self.keyThread.start()
 
@@ -92,7 +94,7 @@ class rigIOMan:
             try:
                 self.keyActDict=self.modeDict[mode] #where mode is just defined by __mode__
                 self.keyRequestDict=self.modeKRDict[mode]
-                printD(self.keyRequestDict)
+                #printD(self.keyRequestDict)
                 print('mode has been set to \'%s\' with keyActDict='%(mode))
                 self.currentMode=mode
                 return self
@@ -112,7 +114,7 @@ class rigIOMan:
             self.kr_dict[className].append(functionName)
         except:
             self.kr_dict[className]=[functionName]
-        printD('kr_dict',self.kr_dict)
+        #printD('kr_dict',self.kr_dict)
 
     #def acquireKeyRequest(self): #FIXME does this require locking? I don't think so because the passthrough will prevent a the thread from being spawned anyway unless something else trys to get() from charBuffer in which case wtf!
         #self.keyRequest=1

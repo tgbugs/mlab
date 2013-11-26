@@ -98,15 +98,22 @@ class Getter(DataIO): #TODO for all of these, may also want to diversify in case
     id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
     ctrl_name=Column(String)
     function_name=Column(String)
+    hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False)
     func_kwargs={}  #FIXME TODO
     __mapper_args__ = {'polymorphic_identity':'getter'}
+    #def __init__(self,hardware_id=None,**kwargs):
+        #self.hardware_id=int(hardware_id)
+        #super().__init__(**kwargs)
 class Setter(DataIO):
     __tablename__='setters'
     id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
     ctrl_name=Column(String)
     function_name=Column(String)
-    kwargs={}
+    hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False)
+    func_kwargs={}
     __mapper_args__ = {'polymorphic_identity':'setter'}
+    #def __init__(self,hardware_id=None,**kwargs):
+        #self.hardware_id=int(hardware_id)
 class Binder(DataIO):
     __tablename__='binders' #FIXME naming
     id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
@@ -145,7 +152,7 @@ class MetaDataSource(DataIO): #FIXME naming #all raw data collect w/o sample rat
     id=Column(Integer,ForeignKey('dataio.id'),primary_key=True)
     name=Column(String(20),nullable=False,unique=True)
     prefix=Column(String(2),ForeignKey('si_prefix.symbol'),default='')
-    unit=Column(String(3),ForeignKey('si_unit.symbol'),nullable=False)
+    unit=Column(String(4),ForeignKey('si_unit.symbol'),nullable=False)
     mantissa=Column(Integer) #TODO
     hardware_id=Column(Integer,ForeignKey('hardware.id'),nullable=False) #this shall be muteable
     prefix_data=relationship('SI_PREFIX',uselist=False) #FIXME don't do this myself, use pint/quanitites

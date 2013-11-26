@@ -41,7 +41,8 @@ class StepBase:
         #which means, that I need decouple the two so that one can run without the other
         #but but but there is so much cool stuff you get by having the steps in a database :/
         #well, maybe the step database could be its own thing? ick no, we'll worry about this later
-    dataIO=None #import this #FIXME I'm a bit worried about importing and initing the same dataio many times
+    #dataIO=None #import this #FIXME I'm a bit worried about importing and initing the same dataio many times
+    dataio=None
     keepRecord=False #TODO use this so that we can doccument steps and choose not to check them, bad scientist!
     checkpoint_step=False 
             
@@ -57,9 +58,15 @@ class StepBase:
     def __doc__(self):
         raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER')
 
-    def __init__(self,session,experiment,ctrlDict): #FIXME for self running steps we need the ctrlDict
-        self.experiment_id=experiment.id
-        self.io=self.dataIO(session,ctrlDict[self.dataIO.ctrl_name],ctrlDict) #quite elegant!? FIXME if we're going to use set to set the experiment state and stuff like that then we need to expand ctrlDict
+    def __init__(self,session,ctrlDict,experiment=None): #FIXME for self running steps we need the ctrlDict
+        if not experiment: #FIXME
+            self.experiment_id=1
+        else:
+            self.experiment_id=experiment.id
+        try: #FIXME
+            self.io=self.dataio(session,ctrlDict[self.dataio.ctrl_name],ctrlDict) #quite elegant!? FIXME if we're going to use set to set the experiment state and stuff like that then we need to expand ctrlDict
+        except:
+            self.io=self.dataio(session,ctrlDict=ctrlDict)
         #TODO versioning instead of requiring unique names, the records are kept by id anyway and the name
             #SHOULD always get the most recent version, will have to verify this :/
         self.session=session
@@ -85,9 +92,16 @@ class StepBase:
         if autocommit:
             self.session.commit()
 
+    def format_dep_returns(self,**kwargs): #FIXME remind me why we aren't using bind?
+        """ format the dependency returns to pass to io.do"""
+        printD('FIXME')
+        return [kwargs[name] for name in self.dependencies] #keeps them ordered at least but overloads the meaning of the order
     def do(self,writeTarget=None,**kwargs):
+        dep_vals=format_dep_returns(**kwargs)
         if writeTarget:
             kwargs['writeTarget']=writeTarget
+            kwargs['step_name']=self.__class__.__name__
+            kwargs['dep_vals']=dep_vals #for analysis do steps and bind do steps? poorly doccumented
         try:
             value=self.io.do(**kwargs) #FIXME maybe there is a place to chain recursive gets?
             #self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
@@ -174,10 +188,10 @@ class StepRunner:
             #but at least that means I know where the problem is ^_^
             #and hell, I guess for the time being that will do :D
             current_step=self.iStepDict[name]
-            kwargs=current_step.do(**kwargs)
+            kwargs.update(current_step.do(**kwargs))
 
 
-class StepComplier:
+class StepCompiler:
     """ Allows us to compile experimentes and steps offline
         need to make sure I can get the flow control to work
         properly with this though
@@ -190,7 +204,7 @@ class StepComplier:
     #as long as we can get parallel orderings then all that needs to happen at
         #run time is to checkCheckpoints on the fly and choose the right stepList
 
-    def __init__(self,baseStep):
+    def __init__(self,baseStep): #FIXME should be able to compile on steps not in the db
         #Base steps should be checkpoint steps when they produce new subjects/
         #reagents/hardware. If they dont produce anything but data, then they
         #should not persist since they will be reused over and over.

@@ -15,15 +15,18 @@ from database.TESTS import *
 #from database.dataio import Get,Set,Bind,Read,Write,Analysis,Check
 from rig.rigcontrol import rigIOMan, keyDicts
 from database.real_steps import *
+from database.steps import StepRunner, StepCompiler
 from database.models import *
 from database.engines import *
 from database.queries import *
 from database.table_logic import *
+from database.main import printFD
 from sqlalchemy.orm import Session
 args=docopt(__doc__)
 engine=pgTest(args['--echo'])
 session=Session(engine)
 s=session
+
 
 #session type
 dbtype=session.connection().engine.name #dialect.name??
@@ -35,6 +38,15 @@ logic_StepEdge(session)
 #load up the stuff we need to test dataios and steps
 rio=rigIOMan(keyDicts, session)#, globals())
 #rio.start()
+
+#deal with steps
+iStepDict={}
+printFD(stepDict)
+for name,step in stepDict.items():
+    printD(name,step.__name__)
+    iStepDict[name.lower()]=step(session,ctrlDict=rio.ctrlDict)
+locals().update(iStepDict)
+#iStepDict=stepDict
 
 #give me some ipython!
 if args['--ipython']:

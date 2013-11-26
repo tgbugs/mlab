@@ -66,7 +66,7 @@ def hasKeyRequests(cls):
 
     for name,method in cls.__dict__.items(): #register keyRequesters
         if hasattr(method,'keyRequester'):
-            printD('got one!',name)
+            #printD('got one!',name)
             cls.keyRequesters.append(name)
     return cls
 
@@ -531,6 +531,7 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
     def __init__(self, modestate):
         self._keyThread=modestate.keyThread
         self.keyLock=modestate.keyLock
+        self.keyActDict=modestate.keyActDict
         super().__init__(modestate)
         def printwrap(func):
             def wrap():
@@ -659,6 +660,17 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         print('Hit any key to advance.')
         self.charBuffer.get()
         return True
+
+    def getDoneNB(self): #FIXME 
+        print('Hit space when you are done') #FIXME
+        self._gdnb_cb_done=False
+        def callback(self):
+            self._gbnd_cb_done=True
+        self.keyActDict[' ']=callback
+        while not self._gbnd_cb_done:
+            sleep(.001) #FIXME
+        return True
+        
 
     @keyRequest
     def getBool(self):
