@@ -1,6 +1,7 @@
 #from database.main import *
 import inspect as ins
 from database.models import *
+from sqlalchemy import or_, and_
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import object_session
 
@@ -97,5 +98,69 @@ def dirAll(session):
                 #dir_=[t for t in thing[0].__dir__() if t[0]!='_']
                 #[print(attr,'=',getattr(thing[0],attr)) for attr in dir_]
         #except AttributeError: pass
+
+def getSusTru(stepedge,session): #XXX used in table_logic
+    #FIXME the proper way to do this is by alisasing StepTC
+    start=stepedge.step_id
+    end=stepedge.dependency_id
+
+    sus_1=session.query(StepTC.step_id,StepTC.tc_id).filter(
+            or_( StepTC.step_id==end, #edges starting at deleted edge
+            StepTC.tc_id==start )) #edges ending at deleted edge
+    sus_2=session.query(StepTC.step_id, StepEdge.dependency_id).filter(
+            and_( StepTC.tc_id==start, StepEdge.dependency_id==end ))
+    sus_3=session.query(StepEdge.step_id, StepTC.tc_id).filter(
+            and_( StepTC.step_id==end, StepEdge.step_id==start ))
+    sus_4=session.query(StepTC.step_id,StepTC.tc_id).filter(
+            StepTC.step_id==start,
+            StepTC.tc_id==end )
+
+    suspects=sus_1.union(sus_2,sus_3,sus_4)
+
+    deleted=session.query(StepEdge.step_id,StepEdge.dependency_id).filter(
+            StepEdge.step_id == start,
+            StepEdge.dependency_id == end )
+    all_but_del=session.query(StepEdge.step_id,StepEdge.dependency_id).except_(deleted)
+    trusty=session.query(StepTC.step_id,StepTC.tc_id).except_(suspects).union(all_but_del)
+    t1=aliased(StepTC,trusty.subquery())
+    t2=aliased(StepTC,trusty.subquery())
+    t3=aliased(StepTC,trusty.subquery())
+    trusty_obj=aliased(StepTC,trusty.subquery()) #tru_a will now behave as a table
+    t1t2=session.query(t1.step_id,t2.tc_id).filter(t1.tc_id == t2.step_id) #join paths
+    t2t3=session.query(t1.step_id,t3.tc_id).filter(and_(t1.tc_id == t2.step_id,
+                                                        t2.tc_id == t3.step_id )) #join paths
+    new_tc=t1t2.union(t2t3)
+
+    to_delete=session.query(StepTC).except_(new_tc)
+
+    return suspects,trusty,new_tc,to_delete
+
+    #suspects=sus_1.union(sus_2).union(sus_3).union(sus_4) #indistinguishable from the above
+
+    #s1=set(sus_1.all())
+    #print('s1')
+    #s2=set(sus_2.all())
+    #print('s2')
+    #s3=set(sus_3.all())
+    #print('s3')
+    #s4=set(sus_4.all())
+    #print('s4')
+    #out=s1.union(s2).union(s3).union(s4)
+    #return out
+
+def getSuspects(session):
+    edges=session.query(StepEdge).all()
+    for edge in edges:
+        sus,tru,ntc,tod=getSusTru(edge,session)
+        s=sus.order_by(StepTC.step_id).all()
+        t=tru.order_by(StepTC.step_id).all()
+        n=ntc.order_by(StepTC.step_id).all()
+        d=tod.order_by(StepTC.step_id).all()
+        print('edge:',repr(edge))
+        print('sus :',s)
+        print('trus:',t)
+        print('new :',n)
+        print('del :',d)
+
 
 

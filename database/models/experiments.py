@@ -268,6 +268,8 @@ class Step(Base):
             return StepEdge(self,step)
         setattr(self.dependencies,'creator',creator)
 
+    def __repr__(self):
+        return '%s %s'%(self.name,self.id)
 
 class StepEdge(Base): #FIXME note that this table could hold multiple independent trees
     __tablename__='stepedges' #FIXME WARNING risk of redundant insert and delete!
@@ -279,13 +281,19 @@ class StepEdge(Base): #FIXME note that this table could hold multiple independen
         self.step_id=int(step_id)
         self.dependency_id=int(dependency_id)
     def __repr__(self):
-        return '\n%s -> %s'%(self.step_id,self.dependency_id)
+        return '%s -> %s'%(self.step_id,self.dependency_id)
     def __eq__(self,other):
-        return self.step_id == other.step_id and self.dependency_id == other.dependency_id
+        try:
+            return (self.step_id == other.step_id and self.dependency_id == other.dependency_id)
+        except AttributeError:
+            return False
     def __ne__(self,other):
-        return self.step_id != other.step_id or self.dependency_id != other.dependency_id
+        try:
+            return (self.step_id != other.step_id or self.dependency_id != other.dependency_id)
+        except AttributeError:
+            return False
     def __hash__(self):
-        return hash('%s%s'%(self.step_id,self.dependency_id)) #needed to make add and update work properly
+        return hash('%s%s%s'%(self.step_id,self.dependency_id,self.__class__.__name__)) #needed to make add and update work properly
 
 
 
@@ -303,12 +311,26 @@ class StepTC(Base):
     step=relationship('Step',primaryjoin='Step.id==StepTC.step_id',backref=backref('tc_edges',lazy=False,collection_class=set),uselist=False,lazy=True) #TODO might be possible to do cycle detection here? FIXME might want to spec a join_depth if these graphs get really big...
     tc=relationship('Step',primaryjoin='Step.id==StepTC.tc_id',uselist=False,lazy=True) #lazy should be ok, this IS used in the association_proxy...
     cp=relationship('Step',primaryjoin='and_(Step.id==StepTC.tc_id, Step.checkpoint == True)',uselist=False,lazy=True) #FIXME this doesn't quite seem right...
+    def __init__(self,step_id=None,tc_id=None,stepedge=None):
+        self.step_id=step_id
+        self.tc_id=tc_id
+        if stepedge:
+            self.step_id=stepedge.step_id
+            self.tc_id=stepedge.dependency_id
+    def __repr__(self):
+        return '%s -> %s'%(self.step_id,self.tc_id)
     def __eq__(self,other):
-        return self.step_id == other.step_id and self.tc_id == other.tc_id
+        try:
+            return (self.step_id == other.step_id and self.tc_id == other.tc_id)
+        except AttributeError:
+            return False
     def __ne__(self,other):
-        return self.step_id != other.step_id or self.tc_id != other.tc_id
+        try:
+            return (self.step_id != other.step_id or self.tc_id != other.tc_id)
+        except AttributeError:
+            return False
     def __hash__(self):
-        return hash('%s%s'%(self.step_id,self.tc_id)) #needed to make add and update work properly
+        return hash('%s%s%s'%(self.step_id,self.tc_id,self.__class__.__name__)) #needed to make add and update work properly
 
 
 

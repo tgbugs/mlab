@@ -48,6 +48,8 @@ for name,step in stepDict.items():
 locals().update(iStepDict)
 #iStepDict=stepDict
 
+#get_at_desired_xy.do()
+
 #give me some ipython!
 if args['--ipython']:
     embed()

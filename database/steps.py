@@ -35,6 +35,8 @@
         #NOW FIXED by passing the kwargs dict around :/ village bycicle yada yada
 
 from database.models import Step, StepRecord
+from database.main import printD
+from IPython import embed
 class StepBase: 
     #TODO what is really cool about the way I have this set up right now is that you can use literally anything in a write step
         #I'm currently using my own backend, but anyone should be able to use the step frame work presented here WITHOUT the db
@@ -68,7 +70,13 @@ class StepBase:
         except:
             self.io=self.dataio(session,ctrlDict=ctrlDict)
         #TODO versioning instead of requiring unique names, the records are kept by id anyway and the name
+        if not self.io.MappedInstance:
+            printD('self.io.MappedInstance didnt init going to ipython')
+            embed()
+            printD(self.io)
+            raise AttributeError('mapped instance didnt init')
             #SHOULD always get the most recent version, will have to verify this :/
+
         self.session=session
         try:
             #TODO version check! um... no?
@@ -77,9 +85,25 @@ class StepBase:
                 #we could track the changes to the dataio...
                 #really we just want to have a record of the whole code base
                 #or if the input on the dataio changes eg from axon to ni or something
-            self.Step=session.query(Step).filter_by(name == self.name).order_by(-id).first()
-        except:
+            self.Step=session.query(Step).filter_by(name = self.name).order_by(Step.id.desc()).first()
+            #printD(self.Step)
+            if not self.Step:
+                raise ValueError('No Step by that name')
+        except ValueError:
+            #raise
             self.persist()
+        self.check_deps()
+
+    def check_deps(self):
+        deps=self.session.query(Step).filter(Step.name.in_(self.dependencies)).all()
+        if len(deps) is not len(self.dependencies):
+            raise ValueError('Length of deps and self.deps mismatch, check your spelling, did you create the dependency?')
+        if self.Step.dependencies:
+            #if not set([d.name for d self.Step.dependencies]) == set(self.dependencies): 
+            if not set(self.Step.dependencies) == set(deps): #TODO check if Step.deps needs {}
+                printD('[!] dependences do not match, updating!')
+        self.Step.dependencies.update(deps) #TODO make sure this updates proper
+
 
     def persist(self,autocommit=False): #TODO
         self.Step=Step(name=self.name,docstring=self.__doc__,checkpoint=
@@ -89,6 +113,8 @@ class StepBase:
                             #except... no also there are the check steps that check for existence
                             #but that should be handled via the dataio...
         self.session.add(self.Step)
+
+
         if autocommit:
             self.session.commit()
 
@@ -97,11 +123,11 @@ class StepBase:
         printD('FIXME')
         return [kwargs[name] for name in self.dependencies] #keeps them ordered at least but overloads the meaning of the order
     def do(self,writeTarget=None,**kwargs):
-        dep_vals=format_dep_returns(**kwargs)
+        dep_vals=self.format_dep_returns(**kwargs)
         if writeTarget:
             kwargs['writeTarget']=writeTarget
-            kwargs['step_name']=self.__class__.__name__
-            kwargs['dep_vals']=dep_vals #for analysis do steps and bind do steps? poorly doccumented
+        kwargs['step_name']=self.__class__.__name__
+        kwargs['dep_vals']=dep_vals #for analysis do steps and bind do steps? poorly doccumented
         try:
             value=self.io.do(**kwargs) #FIXME maybe there is a place to chain recursive gets?
             #self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
@@ -112,8 +138,10 @@ class StepBase:
             return value
         except:
             #self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
+            raise
+
             self.session.add(StepRecord(experiment_id=self.experiment_id,step_id=self.Step.id,success=False)) #TODO subjects etc
-            print('[!] Step failed. Trying again.') #FIXME TODO need a way to break out to fix
+            printD('[!] Step failed. Trying again.') #FIXME TODO need a way to break out to fix
             self.do(writeTarget,**kwargs)
         finally:
             self.session.commit() #FIXME this make sense here?
@@ -251,8 +279,8 @@ class StepCompiler:
                 self.unfinished_nodes.difference_update(step.transitive_closure)
         
     def unorderedTopoSort(self): #TODO paralellizeable?
-        from collections import dequeue
-        S=dequeue() #note: order matters here too left most happen first
+        from collections import deque
+        S=deque() #note: order matters here too left most happen first
         depD={}
         revD={}
         names={}
@@ -263,7 +291,7 @@ class StepCompiler:
                 revD[node.id]=node._rev_deps
             else:
                 S.append(node.id)
-        L=dequeue()
+        L=deque()
         while S:
             node=S.pop()
             L.appendleft(node)

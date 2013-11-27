@@ -531,10 +531,10 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
     def __init__(self, modestate):
         self._keyThread=modestate.keyThread
         self.keyLock=modestate.keyLock
-        self.keyActDict=modestate.keyActDict
+        self.modestate=modestate #need this to det the current modestate
         super().__init__(modestate)
         def printwrap(func):
-            def wrap():
+            def wrap(*args,**kwargs):
                 out=func()
                 printD(out)
                 return out
@@ -545,7 +545,6 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         for name in self.__dir__():
             if name[:3]=='get':
                 setattr(self,name,printwrap(getattr(self,name)))
-
 
     @keyRequest
     def __getChars__(self,prompt=''):
@@ -663,12 +662,24 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
 
     def getDoneNB(self): #FIXME 
         print('Hit space when you are done') #FIXME
+        try:
+            old_func=self.modestate.keyActDict[' ']
+        except:
+            old_func=None
+
         self._gdnb_cb_done=False
-        def callback(self):
-            self._gbnd_cb_done=True
-        self.keyActDict[' ']=callback
-        while not self._gbnd_cb_done:
+        def callback():
+            self._gdnb_cb_done=True
+
+        self.modestate.keyActDict[' ']=callback
+        while not self._gdnb_cb_done:
             sleep(.001) #FIXME
+        printD('got it')
+        
+        if old_func:
+            self.modestate.keyActDict[' ']=old_func #FIXME danger in x thread?
+        else:
+            self.modestate.keyActDict.pop(' ')
         return True
         
 

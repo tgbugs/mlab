@@ -164,11 +164,14 @@ class baseio:
         self.validate()
 
         try:
-            self.MappedInstance=session.query(self.MappedClass).filter_by(name=self.name).one() #FIXME versioning?
+            printD(self)
+            self.MappedInstance=session.query(self.MappedClass).filter_by(name=self.name).order_by(self.MappedClass.id.desc()).first() #FIXME versioning?
         except:
             self.persist(session)
+            raise AttributeError('MappedInstace not in the database')
 
         self.session=session
+        assert self.MappedInstance, 'MappedInstance did not init in %s'%self.name
 
     def validate(self):
         raise NotImplementedError('You MUST implement this at the subclass level')
@@ -211,6 +214,7 @@ class ctrlio(baseio):
             printD('no hardware by that name found! TODO')
             self.hardware_id=1
         super().__init__(session,controller_class,ctrlDict)
+        #self.persist(session) #FIXME
 
     def validate(self):
         print(self.ctrl_name,self.ctrl.__class__.__name__)
@@ -224,6 +228,7 @@ class ctrlio(baseio):
     def persist(self,session):
         self.MappedInstance=self.MappedClass(name=self.name,ctrl_name=self.ctrl_name,function_name=
                                 self.function_name,hardware_id=self.hardware_id,func_kwargs=self.func_kwargs,**self.mcKwargs)
+        printD(self.MappedInstance)
         super().persist(session)
 
 
@@ -261,7 +266,9 @@ class Get(ctrlio): #FIXME now that this is separate from Writer... wat do?
         """Modify as needed"""
         self.func_kwargs.update(kwargs)
         self._rec_do_kwargs(self.func_kwargs)
-        return getattr(self.ctrl,self.function_name)(**self.func_kwargs)
+        function=getattr(self.ctrl,self.function_name)
+        printD(function)
+        return function(**self.func_kwargs)
 
 
 class Set(ctrlio): #FIXME must always have an input value
@@ -304,6 +311,10 @@ class Bind(baseio): #this is not quite analysis, it is just a data organizing st
     dependencies=[] #eg: esp_x esp_y, or channel_1, channel_2, etc
     out_format=[] #take the dep_names from above and put them in the structure you want, need not be a list
         #rewrite self.bind as need for more complex data structures
+
+    def __init__(self,session,controller_class=None,ctrlDict=None):
+        super().__init__(session,controller_class,ctrlDict)
+        #self.persist(session)
 
     def validate(self):
         #make sure the code for the check function hasn't change, if it has, increment version

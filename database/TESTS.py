@@ -650,7 +650,9 @@ class t_edges(TEST):
             assert se2 != se1, 'set used for update probably contained a duplicate'
 
             try:
-                [[step.dependencies.add(steps[int(np.random.randint(100))]) for step in steps] for i in range(20)]
+                for i in range(20):
+                    for step in steps:
+                        step.dependencies.add(steps[int(np.random.randint(100))])
                 printD(self.session.new)
             except (ValueError, FlushError) as e:
                 if type(e) is FlushError:
@@ -675,7 +677,26 @@ class t_edges(TEST):
             assert se4 != se3
             printD('Num StepEdges',len(se4)) #FIXME this is patently wrong
 
+        def custom():
+            start=a
+
+            for i in range(0,10):
+                self.session.add(StepEdge(start+i,start+i+1))
+                self.session.flush()
+            for i in range(2,10):
+                self.session.add(StepEdge(start+i,start+i+12))
+                self.session.flush()
+            for i in range(4,10):
+                self.session.add(StepEdge(start+i,start+i+25))
+                self.session.flush()
+
+            self.session.add(StepEdge(start,14))
+            self.session.flush()
+            self.session.add(StepEdge(start+7,start+9))
+            self.session.flush()
+
         #basic_tests()
+        custom()
         adv_tests()
 
     def commit(self):
@@ -683,8 +704,10 @@ class t_edges(TEST):
 
         #todo test a double cycle and a split tree
     def test_delete(self):
-        edges=self.session.query(StepEdge).all()
-        [self.session.delete(edge) for edge in edges]
+        printD('running delete tests!')
+        #edges=self.session.query(StepEdge).all()
+        #[self.session.delete(edge) for edge in edges]
+        pass
         
 
 def run_tests(session):

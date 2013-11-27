@@ -3,9 +3,12 @@
     #to access the database directly via sqlalchemy, I need my own that hav
     #the event listeners added automatically to the session
 from numpy import array
-from sqlalchemy import event
-from sqlalchemy.orm import object_session
+from sqlalchemy import event, and_
+from sqlalchemy.orm import object_session, aliased
 from database.models import Experiment, StepEdge, StepEdgeVersion, StepTC
+from database.queries import getSusTru
+from database.imports import printD
+from IPython import embed
 
 def listenForThings(session): #FIXME very broken
     """this should be 1:1 with every session where things are automated?? is it better to do this or to do it by hand, I think this is better because I can't miss with it"""
@@ -26,13 +29,13 @@ def listenForThings(session): #FIXME very broken
         print(args,kwargs)
         session.add(instance)
         def got_id(session,flush_context):
-            print(instance)
+            printD(instance)
             try:
                 for mds in instance.type.metadatasources: #FIXME test to see if we can get stuff from args/kwargs
                     session.add(instance.id,mds.id,mds.hardware_id)
                     session.flush()
             except:
-                print('it would seem your exp doesnt have a type or the type has not mdses, what kind of experiment is this!?')
+                printD('it would seem your exp doesnt have a type or the type has not mdses, what kind of experiment is this!?')
                 #raise
             finally:
                 pass
@@ -42,14 +45,71 @@ def listenForThings(session): #FIXME very broken
 
     return remover
 
+
 def logic_StepEdge(session):
     """ Enforce DAG for step dependency tree"""
     @event.listens_for(session,'before_flush')
     def history_and_tc(session,flush_context,instances):
-        def update_TC(stepedge):
-            pass
-        def delete_TC(stepedge):
-            pass
+        def update_TC(stepedge): #refactor? #FIXME this fails when not adding a single step at a time...
+            start=stepedge.step_id
+            end=stepedge.dependency_id
+            #session.add(StepTC(stepedge=stepedge)) #add the new edge, following queries won't find it
+            ail_StepTC=aliased(StepTC)
+            #start_in_tc=session.query( StepTC.step_id, StepEdge.dependency_id ).filter(
+                    #StepTC.tc_id == start, StepEdge.dependency_id == end ) #get nodes with stepedge.step_id in TC
+            start_in_tc=session.query( StepTC.step_id ).filter( StepTC.tc_id == start )
+
+            #in_end_tc=session.query( StepEdge.step_id, StepTC.tc_id ).filter(
+                    #StepEdge.step_id == start, StepTC.step_id == end ) #get TC of stepedge.step_id
+            #FIXME I also need all the nodes that point to start and end end is not on the list
+            in_end_tc=session.query( StepTC.tc_id ).filter( StepTC.step_id == end )
+
+            #other=session.query( StepTC.step_id, ail_StepTC.tc_id ).filter(
+                    #and_(StepTC.tc_id == start, ail_StepTC.step_id == end) )
+            #printD(other.all())
+
+            #all_=start_in_tc.union(in_end_tc)#,other)
+            #printD(all_)
+            #in_end_tc.append(end) #have to add end to the tc to make those connections
+            #printD(start_in_tc,in_end_tc)
+            #all_new=aliased(StepTC,all_.subquery())
+            #embed()
+            #delta=session.query(all_new).except_(session.query(StepTC)).all()
+            #printD(delta)
+            #session.add_all(delta)
+            #tctable=StepTC.__table__
+
+            #where_not_exists=StepTC.select().where(~exists([tctable.c.step_id,tctable.c.tc_id])) #~=not
+            #ins=tctable.insert().from_select(['step_id','tc_id'], where_not_exists)
+            
+            tcs=in_end_tc.all()
+            tcs.append(end)
+            steps=start_in_tc.all()
+            steps.append(start)
+            #printD(steps)
+            #printD(tcs)
+
+            for step in steps:
+                #step=step[0] #FIXME weird stuff with returning of a KeyedTuple
+                for tc in tcs: #FIXME untested... seems to work
+                    if not session.query(StepTC).filter(StepTC.step_id==step,StepTC.tc_id==tc).first(): #FIXME
+                        stc=StepTC(step_id=step,tc_id=tc) #add all the deps to the steps TC
+                        session.add(stc)
+                    #printD(StepTC(step,tc).__repr__())
+                    #tctable=StepTC.__table__
+                    #where_not_exists=select([literal('%s'%step),literal('%s'%tc)]).where(
+                            #~exists([tctable.c.step_id,tctable.c.tc_id])) #~=not
+                    #where_not_exists=tctable.select().where(
+                            #~exists([tctable.c.step_id,tctable.c.tc_id])) #~=not
+                    #ins=tctable.insert().from_select(['step_id','tc_id'], where_not_exists)
+                    #printD(ins)
+                    #session.connection().execute(ins)
+                    #FIXME problem is here?
+                    #session.add(StepTC(step_id=step,tc_id=tc)) #add all the deps to the steps TC
+
+        def delete_TC(stepedge): #FIXME this is going to be really slow for large deletes?
+            #this will be ok
+            suspects,trusty,new,delete=getSusTru(stepedge,session)
 
         for obj in session.deleted:
             if type(obj) is StepEdge:#isinstance preferred IF I subclass StepEdge (very unlikely)
@@ -64,6 +124,7 @@ def logic_StepEdge(session):
                 #print('wtf m8!') #FIXME this is being called waaay too much
                 session.add(StepEdgeVersion(step_id=obj.step_id,dependency_id=obj.dependency_id,added=True))
                 update_TC(obj)
+                #printD('update tc done')
 
 
 
@@ -77,6 +138,7 @@ def logic_StepEdge(session):
                 raise ValueError('Edge already exists!') #FIXME
             edges.append(edge_tuple)
             def makeDepDict(edges):
+                #print(edges)
                 #edges=array(edges)
                 depDict={}
                 #revDepDict={}
@@ -118,6 +180,7 @@ def logic_StepEdge(session):
 
             depDict=makeDepDict(edges)
             if not len(edges): #in the one time event that there are no edges
+                session.flush() #FIXME FIXME nasty problem with my implementation of transitive closure
                 return False
             def cycle(start,node):
                 if node==start:
@@ -141,19 +204,27 @@ def logic_StepEdge(session):
                 #session.delete(instance)
                 #session.flush()
                 #raise BaseException('Edge already exists, saving you a nasty backtrace!')
-            print('Checking if edge %s -> %s would add cycle!'%(instance.step_id,instance.dependency_id))
+            #print('Checking edge %s -> %s would add cycle.'%(instance.step_id,instance.dependency_id))
             #try:
                 #print(topoSort(*makeDepDict(edges))) #slow as balls
             #except:
                 #raise
                 #raise ValueError('[!] Edge %s -> %s would add cycle! Not adding!'%(instance.step_id,instance.dependency_id))
 
+            if session.query(StepTC.tc_id).filter(StepTC.step_id==instance.dependency_id, #super speedy now
+                                                  StepTC.tc_id==instance.step_id).first():
+                raise ValueError('[!] Edge %s -> %s would add cycle! Not adding!'%(instance.step_id,instance.dependency_id))
             if cycle(instance.step_id,instance.dependency_id):
                 #FIXME I don't want to roll back the whole session here do it?!
                 #session.delete(instance) #XXX apparently delete autoflushes!??!
                 #print('deleted?')
                 #session.flush() #FIXME this will trigger history_table_delete
+                printD('missed one!')
                 raise ValueError('[!] Edge %s -> %s would add cycle! Not adding!'%(instance.step_id,instance.dependency_id))
+            else:
+                #printD('flusing!')
+                session.flush() #FIXME FIXME nasty problem with my implementation of transitive closure
+
                 #FIXME HORRENDOUSLY SLOW as edge count grows
 
 #TODO add the history part too!

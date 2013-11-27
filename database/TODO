@@ -1,3 +1,4 @@
+-4. see mapper_config.html for ideas about versioning counters etc
 -3. a better way to make dataios is to use a DECORATOR that decorates a DO function and sticks them all in a dict! the only issue is that we would always import EVERY dataio instead of just some of them... still would be nice to just reference them by name and have the dict deal with it, probably preferable
 	a) this also suggests that there needs to be a __specific__ way to look for dataios for steps, or maybe... no, just import the dataio file to steps file and look stuff up via locals?
 -2. dissociate numbers in protocols from sanity checks and actual metadata, there are a couple of possible ways to do this
