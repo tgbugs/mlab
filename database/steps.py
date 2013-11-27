@@ -141,17 +141,19 @@ class StepBase:
         try:
             value=self.io.do(**kwargs) #FIXME maybe there is a place to chain recursive gets?
             #self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
-            self.session.add(StepRecord(experiment_id=self.experiment_id,step_id=self.Step.id,success=True)) #TODO subjects etc
+            self.session.add(StepRecord(experiment_id=self.experiment_id,step_id=self.Step.id,success=True,preceding_id=kwargs['preceding_id'])) #TODO subjects etc
             if self.checkpoint_step: #FIXME combine this into self.Step (rename to self.something?)
                 self.Step.isdone=True
             print('[OK]')
+            if self.keepRecord:
+                kwargs['preceding_id']=self.Step.id
             kwargs.update(value)
             return kwargs #ICK ICK ICK ICK man I really wish I could do this recursively
         except:
             #self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
-            raise
+            raise #FIXME breaks preceding
 
-            self.session.add(StepRecord(experiment_id=self.experiment_id,step_id=self.Step.id,success=False)) #TODO subjects etc
+            self.session.add(StepRecord(experiment_id=self.experiment_id,step_id=self.Step.id,success=False)) #TODO subjects etc, only keep track of time for steps that succeed
             printD('[!] Step failed. Trying again.') #FIXME TODO need a way to break out to fix
             self.do(writeTarget,**kwargs)
         finally:

@@ -69,6 +69,9 @@ class Get_DM_LRUD(StepBase):
     keepRecord=True
     dependencies=['Get_slice_on_rig']#,'Get_DV_LR','']
 
+class Set_WriteTarget(StepBase): #TODO this will be the base for algorithmic write target setting but for now could just query for them and confirm and/or creat new
+    pass
+
 
 def load_steps(locs): #FIXME clearly we need a way to flush these babies without updating
     from inspect import isclass

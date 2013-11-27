@@ -109,11 +109,18 @@ class StepRecord(HasNotes, Base): #in theory this could completely replace exper
     id=Column(Integer,primary_key=True)
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
     step_id=Column(Integer,ForeignKey('steps.id'),nullable=False)
-    #startDateTime=None #pretty sure we don't need this...
     endDateTime=Column(DateTime,default=datetime.now) #FIXME just have dateTime???
     success=Column(Boolean,nullable=False)
     step=relationship('Step',uselist=False)
     data=None #TODO do I need this here??
+
+    #startDateTime=None #pretty sure we don't need this...
+    preceding_id=Column(Integer,ForeignKey('steprecord.id')) #FIXME propagate from last recorded
+    preceeding=releationship('StepRecord',primaryjoin='StepRecord.preceeding_id==StepRecord.id',uselist=False) #TODO
+    @property #TODO hybrid?
+    def startDateTime(self):
+        if hasattr(self,'preceeding_id'):
+            return self.preceeding.endDateTime
 
     #FIXME is this redundant? is it enough to know that a specific reagent type is to be used at step x
         #and then to look up the actual reagent used in that experiment? what if the reagent that has data?
@@ -171,6 +178,7 @@ class Step(Base):
     dataio_id=Column(Integer,ForeignKey('dataio.id'),nullable=False) #FIXME will need to unify metadatasource, datasource, datafilesource, etc under one index? default should be 'StepEvent' or something... maybe 'StepRecord'
     dataio=relationship('DataIO')
     keepRecord=Column(Boolean,default=True) #set to false for steps that don't need to be put in the record; TODO can this double as a 'set_only'???
+    completion_times=None
     #FIXME damn, this does seem to complicate the 'HasExperiments' setup...
         #the step itself *should* specify an expected subject type
     #TODO where do we put things like 'get this subject,' 'retrieve this hardware' 'make sure you have this reagent'
