@@ -169,6 +169,7 @@ class Step(Base):
             return value
 
     dataio_id=Column(Integer,ForeignKey('dataio.id'),nullable=False) #FIXME will need to unify metadatasource, datasource, datafilesource, etc under one index? default should be 'StepEvent' or something... maybe 'StepRecord'
+    dataio=relationship('DataIO')
     keepRecord=Column(Boolean,default=True) #set to false for steps that don't need to be put in the record; TODO can this double as a 'set_only'???
     #FIXME damn, this does seem to complicate the 'HasExperiments' setup...
         #the step itself *should* specify an expected subject type
@@ -199,10 +200,12 @@ class Step(Base):
 
     dependencies=association_proxy('edges','dependency') #creator set at __init__
     #_deps=association_proxy('edges','dependency_id',viewonly=True)#FIXME
-    @property
+    #@property
     def _deps(self): #FIXME
-        return set((dep.id for dep in self.dependencies))
-    _revdeps=association_proxy('_rev_edges','step_id') #FIXME naming consistency with _rev_edges?
+        return set([dep.id for dep in self.dependencies]) #FIXME set with counts...
+    #_revdeps=association_proxy('_rev_edges','step_id') #FIXME naming consistency with _rev_edges?
+    def _revdeps(self):
+        return set([edge.step_id for edge in self._rev_edges])
     all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
         ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
     transitive_closure=association_proxy('tc_edges','tc')

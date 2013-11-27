@@ -37,7 +37,7 @@ logic_StepEdge(session)
 
 #load up the stuff we need to test dataios and steps
 rio=rigIOMan(keyDicts, session)#, globals())
-#rio.start()
+rio.start()
 
 #deal with steps
 iStepDict={}
@@ -47,6 +47,11 @@ for name,step in stepDict.items():
     iStepDict[name.lower()]=step(session,ctrlDict=rio.ctrlDict)
 locals().update(iStepDict)
 #iStepDict=stepDict
+
+sc=StepCompiler(bind_pia_xys)
+sr=StepRunner(s,sc.stepList,stepDict,rio.ctrlDict, session.query(Experiment).all()[10])
+rio.pass_locals(locals()) #FIXME some stuff seems to be missing...
+sr.do() #DUN DUN DUN!
 
 #get_at_desired_xy.do()
 

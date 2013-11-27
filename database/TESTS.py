@@ -697,7 +697,7 @@ class t_edges(TEST):
 
         #basic_tests()
         custom()
-        adv_tests()
+        #adv_tests()
 
     def commit(self):
         self.session.commit()
@@ -726,8 +726,8 @@ def run_tests(session):
 
 
     t_strain(session,2)
-    t_steps(session,100)
-    t_edges(session)
+    t_steps(session,3)
+    #t_edges(session)
     expt=t_exptype(session)
     hw=t_hardware(session)
     ds=t_datafilesource(session)

@@ -54,12 +54,43 @@ class Get_int(Get):
 ###
 #TRM
 class Get_trmDoneNB(Get): #FIXME threading nightmare
-    """ poop """
+    """ get step done/in position/state achieved without blocking """
     MappedClass=Getter
     ctrl_name='trmFuncs'
     function_name='getDoneNB'
     hardware='keyboard'
+
+class Get_trmBool(Get):
+    """ get bool via rigio """
+    MappedClass=Getter
+    ctrl_name='trmFuncs'
+    function_name='getBool'
+    hardware='keyboard'
+
+class Get_trmString(Get):
+    """ get string via rigio """
+    MappedClass=Getter
+    ctrl_name='trmFuncs'
+    function_name='getString'
+    hardware='keyboard'
+
+class Get_trmInt(Get):
+    """ get int via rigio """
+    MappedClass=Getter
+    ctrl_name='trmFuncs'
+    function_name='getInt'
+    hardware='keyboard'
+
+class Get_trmInt(Get):
+    """ get float via rigio """
+    MappedClass=Getter
+    ctrl_name='trmFuncs'
+    function_name='getFloat'
+    hardware='keyboard'
+
+
         
+
 
 ###
 #ESP

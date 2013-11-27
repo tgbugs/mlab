@@ -95,6 +95,8 @@ class StepBase:
         self.check_deps() #FIXME why didn't this call automatically?
 
     def check_deps(self):
+        if not self.dependencies:
+            return None
         deps=self.session.query(Step).filter(Step.name.in_(self.dependencies)).all()
         if len(deps) is not len(self.dependencies) and deps:
             printD('Length of deps and self.deps mismatch, check your spelling, did you create the dependency? May also be a first run Step.name = %s'%self.name)
@@ -134,6 +136,7 @@ class StepBase:
         if writeTarget:
             kwargs['writeTarget']=writeTarget
         kwargs['step_name']=self.__class__.__name__
+        printD(kwargs['step_name'])
         kwargs['dep_vals']=dep_vals #for analysis do steps and bind do steps? poorly doccumented
         try:
             value=self.io.do(**kwargs) #FIXME maybe there is a place to chain recursive gets?
@@ -142,7 +145,8 @@ class StepBase:
             if self.checkpoint_step: #FIXME combine this into self.Step (rename to self.something?)
                 self.Step.isdone=True
             print('[OK]')
-            return value
+            kwargs.update(value)
+            return kwargs #ICK ICK ICK ICK man I really wish I could do this recursively
         except:
             #self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
             raise
@@ -160,14 +164,16 @@ class StepRunner:
         compiler or maybe even directly in the database since it should all be compiled beforehand
     """
     #how do we take the list L returned by the topo sort and use it with flow control?!
-    def __init__(self,stepList,stepDict,ctrlDict,Experiment):
+    def __init__(self,session,stepList,stepDict,ctrlDict,Experiment):
+        self.session=session
         self.stepList=stepList
         self.getSteps(stepDict,ctrlDict,Experiment) #FIXME need a way to pick up where we left off??? interact w/ step record?
+        #FIXME do something bout stepDict vs iStepDict
   
-    def getSteps(self,stepDict):
+    def getSteps(self,stepDict,ctrlDict,Experiment):
         iStepDict={}
         for step in self.stepList:
-            iStepDict[step]=stepDict[step](session,Experiment,ctrlDict)
+            iStepDict[step]=stepDict[step](self.session,ctrlDict,Experiment)
         self.iStepDict=iStepDict
 
     #FIXME the step manager should probably handle all of this in conjunction with the database?
@@ -216,6 +222,7 @@ class StepRunner:
             #FIXME UNLESS we handle that here? but... we do need expman to bind subjects to data :/
 
     def do(self,**kwargs):
+        self.kwargs_state=kwargs
         current_step=self.iStepDict[self.stepList[0]]
         for name in self.stepList: #FIXME loop isnt going to work for this!
             #unless that is, I massively improve the complier?
@@ -223,7 +230,8 @@ class StepRunner:
             #but at least that means I know where the problem is ^_^
             #and hell, I guess for the time being that will do :D
             current_step=self.iStepDict[name]
-            kwargs.update(current_step.do(**kwargs))
+            self.kwargs_state.update(current_step.do(**self.kwargs_state))
+            print(self.kwargs_state)
 
 
 class StepCompiler:
@@ -245,7 +253,9 @@ class StepCompiler:
         #should not persist since they will be reused over and over.
         self.baseStep=baseStep.Step
         self.checkDeps()
-        self.stepList=self.unorderedTopoSort()
+    @property
+    def stepList(self): #FIXME
+        return self.unorderedTopoSort()
     def findConvergentNodes(self):
         #XXX good news, for convergent steps, as long as we pass the kwargs along to both children
             #all we have to do is make sure that we don't call the same node twice!
@@ -280,31 +290,47 @@ class StepCompiler:
                 #XXX actually... maybe not, because as long as something in the dep tree is persisting as True
                 #then we can just go ahead and assume that any of its deps were already met
         #TODO ordering!
-        self.unfinished_nodes=self.baseStep.transitive_closure
+        self.unfinished_nodes=set(self.baseStep.transitive_closure)
         for step in self.baseStep.checkpoints:
             if step.isdone:
+                printD(step.id)
                 self.unfinished_nodes.difference_update(step.transitive_closure)
-        self.unfinished_nodes.add(self.baseStep) #yep, the current step had better'ed not be done
-        
+
     def unorderedTopoSort(self): #TODO paralellizeable?
         from collections import deque
         S=deque() #note: order matters here too left most happen first
         depD={}
         revD={}
         names={}
+        #FIXME problem for unfinished_nodes ;_; >> we need a count to do branching
+        #all_ids = [n.id for n in self.unfinished_nodes]
+        #all_ids.append(self.baseStep.id)
         for node in self.unfinished_nodes:
-            depD[node.id]=node._deps
-            names[node.id]=node.name
+            place_holder=node.id #FIXME shitty code to deal with collisions, makes bad assumptions
+            #while depD.get(node.id): #XXX NOPE that won't work either because of how we get deps
+                #if node.id+1 not in all_ids:
+                    #place_holder=node.id+1
+
+            depD[place_holder]=node._deps()
+            names[place_holder]=node.name
             if node._revdeps: #FIXME naming
-                revD[node.id]=node._revdeps
+                revD[place_holder]=node._revdeps()
             else:
-                S.append(node.id)
+                S.append(place_holder)
+
+        #so it turns out that there is a super weird bug when adding the node itself
+            #it happens because unfinished_nodes is ACTUALLY still attached to the session!
+            #despite the rename, bam, nailed it :)
+        S.append(self.baseStep.id) #gotta have the node itself in
+        depD[self.baseStep.id]=self.baseStep._deps() #FIXME BEWARE revdeps not in...
+        names[self.baseStep.id]=self.baseStep.name
+
         L=deque()
-        printD(S)
+        discards=set()
         while S:
-            printD(S)
+            #printD(S)
             node=S.pop()
-            printD(node)
+            #printD(node)
             L.appendleft(node)
             for dep in depD[node]:
                 revD[dep].discard(node)
@@ -314,7 +340,7 @@ class StepCompiler:
                     S.append(dep)
             depD.pop(node)
         if depD or revD:
-            return depD,revD
+            #return depD,revD
             raise TypeError('Graph is not acyclic!!')
         else:
             return [names[id] for id in L]

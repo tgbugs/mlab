@@ -60,15 +60,18 @@ class rigIOMan:
         #TODO add a way for keys to enter programatic control mode, they will still need keyinput though
         #FIXME TODO
         self.ctrlDict.update(self.ikFuncDict) #FIXME temp hack to get trmFuncs through to the rest of the world
+        self.locs={} #for passing locals into ipython
     def start(self):
         self.keyThread.start()
 
+    def pass_locals(self,locs):
+        self.locs=locs
     def term_callback(self,off,on):
         self.term_off=off
         self.term_on=on
 
-    def ipython(self,globs={}):
-        locals().update(globs) #SUPER unkosher but seems safe from tampering
+    def ipython(self):
+        locals().update(self.locs) #SUPER unkosher but seems safe from tampering
         try:
             self.term_off()
             self.keyLock.acquire()

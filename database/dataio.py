@@ -1,4 +1,5 @@
 #pulled this out of api.py
+import inspect
 from database.main import printD,tdb
 #tdb.off()
 class BaseDataIO:
@@ -165,7 +166,7 @@ class baseio:
 
         try:
             self.MappedInstance=session.query(self.MappedClass).filter_by(name=self.name).order_by(self.MappedClass.id.desc()).first() #FIXME versioning?
-            printD(self.MappedInstance.name)
+            printD(self.MappedInstance.name) #FIXME somehow this line fixes everythign!?
         #assert self.MappedInstance, 'self.MappedInstance is None'
         except:
             #raise AttributeError('MappedInstance not in the database')
@@ -260,7 +261,9 @@ class Get(ctrlio): #FIXME now that this is separate from Writer... wat do?
         #TODO out={'value':self.get(**kwargs),'unit':self.units,'prefix':self.prefix,'type',self.type}
             #completely changes what dataios need to deal with :/
         #return {'%s'%self.name:out,'last_getter':self.name}#XXX NOTE: this makes it super easy to chain things by dependency name
-        return {'%s'%self.name:out,'last_getter':self.name,kwargs['step_name']:out}#XXX NOTE: this makes it super easy to chain things by dependency name
+        outDict={'%s'%self.name:out,'last_getter':self.name,kwargs['step_name']:out}#XXX NOTE: this makes it super easy to chain things by dependency name
+        printD(outDict)
+        return outDict
 
 
             #might not even need the whole step framework to keep track of deps if the dataios keep the
@@ -271,8 +274,11 @@ class Get(ctrlio): #FIXME now that this is separate from Writer... wat do?
         self.func_kwargs.update(kwargs)
         self._rec_do_kwargs(self.func_kwargs)
         function=getattr(self.ctrl,self.function_name)
-        printD(function)
-        return function(**self.func_kwargs)
+        #printD(function)
+        if inspect.getargspec(function).keywords: #TODO
+            return function(**self.func_kwargs)
+        else:
+            return function()
 
 
 class Set(ctrlio): #FIXME must always have an input value
@@ -329,7 +335,7 @@ class Bind(baseio): #this is not quite analysis, it is just a data organizing st
 
     def do(self,**kwargs):
         out=self.bind(**kwargs)
-        return {'%s'%self.name:out}
+        return {'%s'%self.name:out,kwargs['step_name']:out}
 
     def bind(self,**kwargs):
         """Modify as needed"""
@@ -337,7 +343,8 @@ class Bind(baseio): #this is not quite analysis, it is just a data organizing st
         out=[]
         for kw in self.out_format:
             out.append(kwargs[kw])
-        return {'%s'%self.name:out}
+        return out
+        #return {'%s'%self.name:out}
 
 
 class Read(baseio): #FIXME technically anything read from the database should already be annotated
