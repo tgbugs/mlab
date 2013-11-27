@@ -11,6 +11,13 @@ from database.real_dios import * #FIXME
 ### steps
 ###------
 
+class Get_checkpoint_test(StepBase):
+    """ Testing checkpoints to see if they work """
+    dataio=Get_trmDoneNB
+    keepRecord=True
+    dependencies=[]
+    checkpoint_step=True
+
 class Get_at_desired_xy(StepBase):
     """ poop """
     dataio=Get_trmDoneNB
@@ -45,7 +52,7 @@ class Bind_pia_xys(StepBase):
     """ poop """
     dataio=Bind_dep_vals
     keepRecord=True
-    dependencies=['Get_pia_xy_1','Get_pia_xy_2','Get_pia_xy_3','Get_pia_xy_4']
+    dependencies=['Get_pia_xy_1','Get_pia_xy_2','Get_pia_xy_3','Get_pia_xy_4','Get_checkpoint_test']
 
 
 def load_steps(locs): #FIXME clearly we need a way to flush these babies without updating

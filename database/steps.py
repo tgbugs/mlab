@@ -35,7 +35,7 @@
         #NOW FIXED by passing the kwargs dict around :/ village bycicle yada yada
 
 from database.models import Step, StepRecord
-from database.main import printD
+from database.imports import printD
 from IPython import embed
 class StepBase: 
     #TODO what is really cool about the way I have this set up right now is that you can use literally anything in a write step
@@ -46,7 +46,7 @@ class StepBase:
     #dataIO=None #import this #FIXME I'm a bit worried about importing and initing the same dataio many times
     dataio=None
     keepRecord=False #TODO use this so that we can doccument steps and choose not to check them, bad scientist!
-    checkpoint_step=False 
+    checkpoint_step=False  #FIXME naming
             
     dependencies=[] #this now used internally without the need for BaseExp/ExpBase
     expected_writeTarget_type=None #TODO one and only one per step
@@ -92,20 +92,27 @@ class StepBase:
         except ValueError:
             #raise
             self.persist()
-        self.check_deps()
+        self.check_deps() #FIXME why didn't this call automatically?
 
     def check_deps(self):
         deps=self.session.query(Step).filter(Step.name.in_(self.dependencies)).all()
-        if len(deps) is not len(self.dependencies):
-            raise ValueError('Length of deps and self.deps mismatch, check your spelling, did you create the dependency?')
+        if len(deps) is not len(self.dependencies) and deps:
+            printD('Length of deps and self.deps mismatch, check your spelling, did you create the dependency? May also be a first run Step.name = %s'%self.name)
+            #embed()
+            #raise ValueError('Length of deps and self.deps mismatch, check your spelling, did you create the dependency? Step.name = %s'%self.name)
+        elif not deps: #FIXME
+            printD('[!] no deps found, assuming first run through be sure to call again')
+        else:
+            pass
         if self.Step.dependencies:
             #if not set([d.name for d self.Step.dependencies]) == set(self.dependencies): 
             if not set(self.Step.dependencies) == set(deps): #TODO check if Step.deps needs {}
                 printD('[!] dependences do not match, updating!')
         self.Step.dependencies.update(deps) #TODO make sure this updates proper
+        self.session.commit()
 
 
-    def persist(self,autocommit=False): #TODO
+    def persist(self,autocommit=True): #TODO
         self.Step=Step(name=self.name,docstring=self.__doc__,checkpoint=
                        self.checkpoint_step,dataio_id=self.io.MappedInstance.id,
                        keepRecord=self.keepRecord) #TODO subject, hardware, reagent type etc
@@ -277,6 +284,7 @@ class StepCompiler:
         for step in self.baseStep.checkpoints:
             if step.isdone:
                 self.unfinished_nodes.difference_update(step.transitive_closure)
+        self.unfinished_nodes.add(self.baseStep) #yep, the current step had better'ed not be done
         
     def unorderedTopoSort(self): #TODO paralellizeable?
         from collections import deque
@@ -287,13 +295,16 @@ class StepCompiler:
         for node in self.unfinished_nodes:
             depD[node.id]=node._deps
             names[node.id]=node.name
-            if node._rev_deps:
-                revD[node.id]=node._rev_deps
+            if node._revdeps: #FIXME naming
+                revD[node.id]=node._revdeps
             else:
                 S.append(node.id)
         L=deque()
+        printD(S)
         while S:
+            printD(S)
             node=S.pop()
+            printD(node)
             L.appendleft(node)
             for dep in depD[node]:
                 revD[dep].discard(node)
@@ -303,6 +314,7 @@ class StepCompiler:
                     S.append(dep)
             depD.pop(node)
         if depD or revD:
+            return depD,revD
             raise TypeError('Graph is not acyclic!!')
         else:
             return [names[id] for id in L]

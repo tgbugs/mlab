@@ -164,11 +164,13 @@ class baseio:
         self.validate()
 
         try:
-            printD(self)
             self.MappedInstance=session.query(self.MappedClass).filter_by(name=self.name).order_by(self.MappedClass.id.desc()).first() #FIXME versioning?
+            printD(self.MappedInstance.name)
+        #assert self.MappedInstance, 'self.MappedInstance is None'
         except:
+            #raise AttributeError('MappedInstance not in the database')
             self.persist(session)
-            raise AttributeError('MappedInstace not in the database')
+            #printD('debugging to see what the issue here is with calling persist in super')
 
         self.session=session
         assert self.MappedInstance, 'MappedInstance did not init in %s'%self.name
@@ -179,6 +181,7 @@ class baseio:
 
     def persist(self,session):
         #will raise an error, this is just here for super() calls
+        printD('2 should be called AFTER in: %s'%self.name)
         if not self.__doc__:
             raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER! (add a docstring to this class)')
         self.MappedInstance.docstring=self.__doc__
@@ -226,6 +229,7 @@ class ctrlio(baseio):
         #super().validate() #TODO do we actually want to check versions of this? these are just tiny interfaces
             
     def persist(self,session):
+        printD('1 should be called BEFORE in %s'%self.name)
         self.MappedInstance=self.MappedClass(name=self.name,ctrl_name=self.ctrl_name,function_name=
                                 self.function_name,hardware_id=self.hardware_id,func_kwargs=self.func_kwargs,**self.mcKwargs)
         printD(self.MappedInstance)
@@ -312,9 +316,8 @@ class Bind(baseio): #this is not quite analysis, it is just a data organizing st
     out_format=[] #take the dep_names from above and put them in the structure you want, need not be a list
         #rewrite self.bind as need for more complex data structures
 
-    def __init__(self,session,controller_class=None,ctrlDict=None):
-        super().__init__(session,controller_class,ctrlDict)
-        #self.persist(session)
+    #def __init__(self,session,controller_class=None,ctrlDict=None):
+        #super().__init__(session,controller_class,ctrlDict)
 
     def validate(self):
         #make sure the code for the check function hasn't change, if it has, increment version

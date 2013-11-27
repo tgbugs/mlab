@@ -198,8 +198,11 @@ class Step(Base):
         #raise IOError('use add_dep to add things because this doesnt check edges properly')
 
     dependencies=association_proxy('edges','dependency') #creator set at __init__
-    _deps=association_proxy('edges','dependency_id')
-    _revdeps=association_proxy('_rev_edges','step_id')
+    #_deps=association_proxy('edges','dependency_id',viewonly=True)#FIXME
+    @property
+    def _deps(self): #FIXME
+        return set((dep.id for dep in self.dependencies))
+    _revdeps=association_proxy('_rev_edges','step_id') #FIXME naming consistency with _rev_edges?
     all_edges=relationship('StepEdgeVersion',primaryjoin='StepEdgeVersion.step_id==Step.id'
         ,order_by='-StepEdgeVersion.id') #newest first to make finding deletes simple
     transitive_closure=association_proxy('tc_edges','tc')
@@ -214,7 +217,9 @@ class Step(Base):
         #the step itself cannot be in its own tc, thus see if a step is in the union of all TCs and done
         #there may be a faster way but right now I don't really care
         cpunion=set()
-        [cpunion.update(cp.allcps) for cp in self.allcps]
+        [cpunion.update(cp.allcps) for cp in self.allcps if cp] #FIXME showhow None is showing up?
+        #cpunion.difference_update(set((None,)))
+        cpunion.add(None) #WEIRD
         return self.allcps.difference(cpunion) #cps that arent in the union of the tc cps
 
     @property
@@ -260,13 +265,21 @@ class Step(Base):
     def __dbinit__(self):
         def creator(step):
             return StepEdge(self,step)
+        #def getter(attr): #FIXME
+            #return None
+            #return [edge.dependency for edge in self._rev_edges]
+
         setattr(self.dependencies,'creator',creator)
+        #setattr(self.dependencies,'getter',getter)
+
+        #setattr(self._deps,'creator',creator)
 
     def __init__(self,**kwargs): 
         super().__init__(**kwargs)
         def creator(step):
             return StepEdge(self,step)
         setattr(self.dependencies,'creator',creator)
+        #setattr(self._deps,'creator',creator)
 
     def __repr__(self):
         return '%s %s'%(self.name,self.id)
@@ -310,7 +323,7 @@ class StepTC(Base):
     tc_id=Column(Integer,ForeignKey('steps.id'),primary_key=True)
     step=relationship('Step',primaryjoin='Step.id==StepTC.step_id',backref=backref('tc_edges',lazy=False,collection_class=set),uselist=False,lazy=True) #TODO might be possible to do cycle detection here? FIXME might want to spec a join_depth if these graphs get really big...
     tc=relationship('Step',primaryjoin='Step.id==StepTC.tc_id',uselist=False,lazy=True) #lazy should be ok, this IS used in the association_proxy...
-    cp=relationship('Step',primaryjoin='and_(Step.id==StepTC.tc_id, Step.checkpoint == True)',uselist=False,lazy=True) #FIXME this doesn't quite seem right...
+    cp=relationship('Step',primaryjoin='and_(Step.id==StepTC.tc_id, Step.checkpoint == True)',uselist=False,lazy=True,collection_class=set()) #FIXME this doesn't quite seem right...
     def __init__(self,step_id=None,tc_id=None,stepedge=None):
         self.step_id=step_id
         self.tc_id=tc_id
