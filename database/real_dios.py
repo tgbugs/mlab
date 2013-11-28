@@ -4,6 +4,7 @@ from database.dataio import Get, Set, Bind, Read, Write, Analysis, Check #FIXME 
 #should the decorator(properties) be how we do default kwargs or should we just define them locally and persist those?
 from database.models import Setter, Getter, Binder, Reader, Writer, Analyzer, Checker, MetaDataSource
 from time import sleep
+from database.imports import printD
 
 #decoratos
 
@@ -51,6 +52,17 @@ class Get_bool(Get):
     pass
 class Get_int(Get):
     pass
+
+###
+#BASIC
+
+class Check_deps_done(Check):
+    """ Use for checkpoint steps basically acts as flow control """
+    MappedClass=Checker
+    check_function=lambda **kwargs:True
+    
+
+
 ###
 #TRM
 class Get_trmDoneNB(Get): #FIXME threading nightmare
@@ -58,6 +70,13 @@ class Get_trmDoneNB(Get): #FIXME threading nightmare
     MappedClass=Getter
     ctrl_name='trmFuncs'
     function_name='getDoneNB'
+    hardware='keyboard'
+
+class Get_trmDoneORFail(Get):
+    """ Get step done or step failed should be used for any external report of a failed step """
+    MappedClass=Getter
+    ctrl_name='trmFuncs'
+    function_name='getDoneFailNB'
     hardware='keyboard'
 
 class Get_trmBool(Get):
@@ -81,15 +100,20 @@ class Get_trmInt(Get):
     function_name='getInt'
     hardware='keyboard'
 
-class Get_trmInt(Get):
+class Get_trmFloat(Get):
     """ get float via rigio """
     MappedClass=Getter
     ctrl_name='trmFuncs'
     function_name='getFloat'
     hardware='keyboard'
 
+class Get_trm_dist_um(Get_trmFloat):
+    """ get a distance in um via terminal input """
+    MappedClass=MetaDataSource
+    mcKwargs={'prefix':'u','unit':'m','mantissa':0}
 
         
+
 
 
 ###
@@ -184,6 +208,7 @@ mds_bool_kwargs={'prefix':'','unit':'bool'}
 #TODO this seems like it migth be a good place to implemnt units/conversions?
 #FIXME if we are just using function_name and ctrl_name to get all of this, we *could* just store it in the database since these classes are really just supposed to be for doccumentation and THESE shouldnt need to change
 class _Get_mcc(Get):
+    """ I AM ONE WITH THE VOID """
     MappedClass=MetaDataSource
     ctrl_name='mccControl'
     dependencies=['Set_mccChannel']
@@ -229,6 +254,7 @@ class Get_mccPipetteOffset(_Get_mcc):
 
 #FIXME NOTICE: setters are only useful in combination, don't just blindly reproduce stuff !
 class _Set_mcc(Set):
+    """ YOU SEE NOTHING """
     MappedClass=Setter
     ctrl_name='mccControl'
     #modes: V=0, I=1, IeZ=2
@@ -254,6 +280,55 @@ class Set_mccAllVnoHold(_Set_mcc):
             self.ctrl.SetMode(0)
             self.ctrl.SetHoldingEnable(0)
 
+
+###
+#Checks
+
+class Check_700B(Check): #TODO
+    """ make sure not in demo and ??? """
+    MappedClass=Checker
+    def check(self,**kwargs):
+        serial=self.ctrlDict['mccControl']._pszSerialNumber
+        printD(serial)
+        if serial != b'DEMO':
+            return True
+
+
+class Check_headstages(Check):
+    """ make sure hs matches channels """
+    MappedClass=Checker
+    def check_function(**kwargs):
+        pass
+        #stimulate from a, check channel, make sure it matches
+        #stimulate from b, check channel, make sure it matches
+
+###
+#Analysis
+
+class Comp_spline_from_points(Analysis): #TODO
+    """ compute spline from points """
+    MappedClass=Analyzer
+    def analysis_function(**kwargs):
+        printD(dep_vals)
+
+class Comp_esp300_calib(Analysis): #TODO
+    """ calc calibration data from expected distances """
+    MappedClass=Analyzer
+    def analysis_function(**kwargs):
+        printD(dep_vals)
+
+class Comp_stimulus_positions(Analysis): #TODO
+    """ Given a spline and a starting point get positions """
+    MappedClass=Analyzer
+    def analysis_function(**kwargs):
+        printD(dep_vals)
+
+class Comp_mean_position(Analysis): #TODO
+    """ compute the mean positition of a set of points """
+    MappedClass=Analyzer
+    def analysis_function(**kwargs):
+        printD(dep_vals)
+        return mean(depvals) #FIXME
 
 
 """

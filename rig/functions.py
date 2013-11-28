@@ -682,6 +682,44 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
             self.modestate.keyActDict.pop(' ')
         return True
         
+    def getDoneFailNB(self): #FIXME 
+        print('Hit space for success or \ for failure') #FIXME use a reverse dict in keybinds
+        #FIXME ick
+        try:
+            old_func=self.modestate.keyActDict[' ']
+        except:
+            old_func=None
+        try:
+            old_fail=self.modestate.keyActDict['\\']
+        except:
+            old_fail=None
+
+        self._gdnb_cb_done=False
+        self._gdnb_cb_fail=False
+        def callback():
+            self._gdnb_cb_done=True
+        def fail_cb():
+            self._gdnb_cb_fail=True
+
+        self.modestate.keyActDict[' ']=callback
+        while not self._gdnb_cb_done or not self._gbnd_cb_fail:
+            sleep(.001) #FIXME
+        printD('got it')
+
+        if self._gdnb_cb_fail:
+            out=False
+        if self._gdnb_cb_done:
+            out=True
+        
+        if old_func:
+            self.modestate.keyActDict[' ']=old_func #FIXME danger in x thread?
+        else:
+            self.modestate.keyActDict.pop(' ')
+        if old_fail:
+            self.modestate.keyActDict['\\']=old_fail #FIXME danger in x thread?
+        else:
+            self.modestate.keyActDict.pop('\\')
+        return out
 
     @keyRequest
     def getBool(self):

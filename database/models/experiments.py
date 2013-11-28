@@ -64,6 +64,7 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
 
     #TODO list of steps completed with the time of completion: association object class? seems nice for querying
     #TODO FIXME don't let someone create an experiment if specific checkpoints/check steps aren't satisfied
+    sorted_steps=Column(ArrayString)
     step_tree_version_id=None
     steprecord=relationship('StepRecord',order_by='StepRecord.id')
     steps=association_proxy('steprecord','step',creator=lambda step_id, success: StepRecord(step_id=step_id,success=success)) #FIXME make sure experiment_id gets set...
@@ -116,7 +117,7 @@ class StepRecord(HasNotes, Base): #in theory this could completely replace exper
 
     #startDateTime=None #pretty sure we don't need this...
     preceding_id=Column(Integer,ForeignKey('steprecord.id')) #FIXME propagate from last recorded
-    preceeding=releationship('StepRecord',primaryjoin='StepRecord.preceeding_id==StepRecord.id',uselist=False) #TODO
+    preceding=relationship('StepRecord',primaryjoin='StepRecord.preceding_id==StepRecord.id',uselist=False) #TODO
     @property #TODO hybrid?
     def startDateTime(self):
         if hasattr(self,'preceeding_id'):
@@ -166,6 +167,12 @@ class Step(Base):
     docstring=Column(String,nullable=False) #pulled from __doc__ and repropagated probably should be a citeable?
     checkpoint=Column(Boolean,default=False) #FIXME TODO is this the right way to do this??? nice way to delimit the scope of an 'experiment' if we still have experiments when this is all done
     isdone=Column(Boolean,default=False) #FIXME FIXME should we keep the step tree state here!???! seems ok? unless we try to run two experiments off the same step at the same time, then we will really mess stuff up... ideally we need a per experiment tree or something??? though from a science checklist point of view you don't want to reset stuff every time... hrm; using only direct dependencies is nice in that as soon as the steps registers as successful and the next step proceeds, the previous (in many cases) should be reset to false!
+    do_each_time=Column(Boolean,default=False) #FIXME we don't need this if we recompile the graph every time we pass a checkpoint, but that is silly... or maybe not, maybe it is just easier to recompile after 2 revdeps are passed or something? maybe... reset_on_compile? totally meaningless to anyone else...
+    @property
+    def should_reset(self): #if we recompile the list... from the base node every time a step ends that is going to slow stuff WAY down...
+        return self.isdone and self.do_each_time
+
+
     @validates('isdone')
     def _is_checkpoint(self, key, value):
         if not value:

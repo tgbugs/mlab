@@ -152,8 +152,11 @@ class baseio:
         return self.__class__.__name__#[4:]
 
     def __init__(self,session,controller_class=None,ctrlDict=None):
+        if not self.__doc__:
+            raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER! (add a docstring to %s)'%self.__class__)
         if getattr(self,'ctrl_name',None): #FIXME not quite correct
             if ctrlDict:
+                self.ctrlDict=ctrlDict #FIXME used for checks?
                 self.ctrl=ctrlDict[self.ctrl_name]
                 #self.ctrlDict=ctrlDict #XXX this is a really hacky way to do call dependnet dataios
                 #TODO yeah, now I'm seeing why keeing the live dataio dict might be a good idea...
@@ -183,8 +186,6 @@ class baseio:
     def persist(self,session):
         #will raise an error, this is just here for super() calls
         printD('2 should be called AFTER in: %s'%self.name)
-        if not self.__doc__:
-            raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER! (add a docstring to this class)')
         self.MappedInstance.docstring=self.__doc__
         session.add(self.MappedInstance)
         session.commit()
@@ -412,11 +413,12 @@ class Write(baseio): #wow, this massively simplifies this class since the values
 
     def do(self,**kwargs):
         out=self.write(**kwargs)
-        return {'%s'%self.name:out} #This will return None or will raise and exception
+        return {'%s'%self.name:out,kwargs['step_name']:out} #This will return None or will raise and exception
 
     def write(self,writeTarget=None,autocommit=False,**kwargs): #not handling errors here
         """Modify as needed"""
         self.writer_kwargs.update(kwargs) #XXX kwargs should include the value FIXME watch out for kwargs that don't get reset
+        self.writer_kwargs['value']=writer_kwargs['dep_vals'] #FIXME TODO mostly for get->
         self._rec_do_kwargs(self.writer_kwargs)
         self.session.add(self.MappedWriter(writeTarget=writeTarget,**self.writer_kwargs)) #TODO parent shall be speced in kwargs???
         if autocommit:
@@ -457,6 +459,7 @@ class Check(baseio):
         pass
 
     def persist(self,session):
+        printD(self.MappedClass)
         self.MappedInstance=self.MappedClass(name=self.name) #FIXME **do want some mcKwargs???
         super().persist(session)
 

@@ -276,6 +276,7 @@ def popSubjectType(session):
 def popStrains(session):
     #session.add(Website('http://jaxmice.jax.org/strain/003718.html'))
     session.add(Strain(jax_id='003718',abbrev='dkgin'))
+    session.add(Strain(jax_id='009103',abbrev='wfs1')) #wfs1-creERT2 Tg2
     session.commit()
 
 def popDataSourceAssociations(session):

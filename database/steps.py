@@ -47,6 +47,7 @@ class StepBase:
     dataio=None
     keepRecord=False #TODO use this so that we can doccument steps and choose not to check them, bad scientist!
     checkpoint_step=False  #FIXME naming
+    fail=False #TODO controls how the step fails
             
     dependencies=[] #this now used internally without the need for BaseExp/ExpBase
     expected_writeTarget_type=None #TODO one and only one per step
@@ -56,11 +57,9 @@ class StepBase:
         """ Modify as needed"""
         return self.__class__.__name__
 
-    @property
-    def __doc__(self):
-        raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER')
-
     def __init__(self,session,ctrlDict,experiment=None): #FIXME for self running steps we need the ctrlDict
+        if not self.__doc__:
+            raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER %s'%self.__class__)
         if not experiment: #FIXME
             self.experiment_id=1
         else:
@@ -132,6 +131,7 @@ class StepBase:
         printD('FIXME')
         return [kwargs[name] for name in self.dependencies] #keeps them ordered at least but overloads the meaning of the order
     def do(self,writeTarget=None,**kwargs):
+        print(self.__doc__)
         dep_vals=self.format_dep_returns(**kwargs)
         if writeTarget:
             kwargs['writeTarget']=writeTarget
@@ -139,23 +139,34 @@ class StepBase:
         printD(kwargs['step_name'])
         kwargs['dep_vals']=dep_vals #for analysis do steps and bind do steps? poorly doccumented
         try:
-            value=self.io.do(**kwargs) #FIXME maybe there is a place to chain recursive gets?
+            valueDict=self.io.do(**kwargs) #FIXME maybe there is a place to chain recursive gets?
+                #FIXME returning a dict is a artifact of haveing a bad setup for do_every_time, can fix soon
+            if self.fail:
+                if not valueDict[io.__class__.__name__]: #XXX NOTE XXX if fail dataio MUST return true or false
+                    raise IOError('Step failed, resetting to last set of checkpoints')
+
+
             #self.experiment.steprecord.append(experiment.steprecord(self.Step,True)) #logging
-            self.session.add(StepRecord(experiment_id=self.experiment_id,step_id=self.Step.id,success=True,preceding_id=kwargs['preceding_id'])) #TODO subjects etc
+            sr=StepRecord(experiment_id=self.experiment_id,step_id=self.Step.id,success=True,preceding_id=kwargs['preceding_id']) #TODO subjects
+            self.session.add(sr)
             if self.checkpoint_step: #FIXME combine this into self.Step (rename to self.something?)
                 self.Step.isdone=True
             print('[OK]')
+            self.session.flush() #need this to get the id
             if self.keepRecord:
-                kwargs['preceding_id']=self.Step.id
-            kwargs.update(value)
+                kwargs['preceding_id']=sr.id
+            kwargs.update(valueDict)
             return kwargs #ICK ICK ICK ICK man I really wish I could do this recursively
         except:
-            #self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
-            raise #FIXME breaks preceding
-
             self.session.add(StepRecord(experiment_id=self.experiment_id,step_id=self.Step.id,success=False)) #TODO subjects etc, only keep track of time for steps that succeed
-            printD('[!] Step failed. Trying again.') #FIXME TODO need a way to break out to fix
-            self.do(writeTarget,**kwargs)
+            if self.fail:
+                printD('[!] Step failed. Resetting to last checkpoints.') #FIXME TODO need a way to break out to fix
+                raise
+            else:
+                #self.experiment.steprecord.append(experiment.steprecord(self.Step,False))
+                printD('[!] Step failed. Trying again.') #FIXME TODO need a way to break out to fix
+                self.do(writeTarget,**kwargs)
+                #raise #FIXME breaks preceding
         finally:
             self.session.commit() #FIXME this make sense here?
 
@@ -166,7 +177,9 @@ class StepRunner:
         compiler or maybe even directly in the database since it should all be compiled beforehand
     """
     #how do we take the list L returned by the topo sort and use it with flow control?!
-    def __init__(self,session,stepList,stepDict,ctrlDict,Experiment):
+    def __init__(self,session,baseStep,stepDict,ctrlDict,Experiment):
+        #FIXME all base steps should be done or fail where fail is how we continue
+        self.compiler=StepCompiler
         self.session=session
         self.stepList=stepList
         self.getSteps(stepDict,ctrlDict,Experiment) #FIXME need a way to pick up where we left off??? interact w/ step record?
@@ -249,12 +262,18 @@ class StepCompiler:
     #as long as we can get parallel orderings then all that needs to happen at
         #run time is to checkCheckpoints on the fly and choose the right stepList
 
-    def __init__(self,baseStep): #FIXME should be able to compile on steps not in the db
+    def __init__(self,baseStep,stepDict): #FIXME should be able to compile on steps not in the db
         #Base steps should be checkpoint steps when they produce new subjects/
         #reagents/hardware. If they dont produce anything but data, then they
         #should not persist since they will be reused over and over.
         self.baseStep=baseStep.Step
+        self.stepDict=stepDict
         self.checkDeps()
+
+    def compile(self):
+        self.checkDeps()
+        self.branch_resets()
+        self.topoSort()
     @property
     def stepList(self): #FIXME
         return self.unorderedTopoSort()
@@ -297,8 +316,41 @@ class StepCompiler:
             if step.isdone:
                 printD(step.id)
                 self.unfinished_nodes.difference_update(step.transitive_closure)
+                self.unfinished_nodes.difference_update(step) #needed so that finished steps are dropped
+    def branch_resets(self):
+        #get all the edges for nodes in the transitive closure
+        all_edges=set()
+        dthing={}
+        id_to_name={}
+        for node in self.unfinished_nodes:
+            dthing[node.id]
+
+            all_edges.update([(edge.step_id, edge.dependency_id) for edge in node.edges])
+
+
+        for node in self.unfinished_nodes:
+            if node.do_each_time: #TODO should probably be a Check...
+                pass
+
+    
+            place_holder=node.id #FIXME shitty code to deal with collisions, makes bad assumptions
+            #while depD.get(node.id): #XXX NOPE that won't work either because of how we get deps
+                #if node.id+1 not in all_ids:
+                    #place_holder=node.id+1
+
+            names[place_holder]=node.name
+            idNameDict={n.name:n.dependency_id for n in node.dependencies}
+            ordered_deps=[idNameDict[name] for name in self.stepDict[node.name].dependencies]
+            depD[place_holder]=ordered_deps #node._deps()
+            if node._revdeps: #FIXME naming
+                revD[place_holder]=node._revdeps()
+            else:
+                S.append(place_holder)
+
 
     def unorderedTopoSort(self): #TODO paralellizeable?
+        #FIXME in theory we should just be able to call this again based on isdone...
+        #TODO this is critical
         from collections import deque
         S=deque() #note: order matters here too left most happen first
         depD={}
@@ -307,14 +359,25 @@ class StepCompiler:
         #FIXME problem for unfinished_nodes ;_; >> we need a count to do branching
         #all_ids = [n.id for n in self.unfinished_nodes]
         #all_ids.append(self.baseStep.id)
+
+        #TODO WITHOUT RECOMPILING AFTER EVERY STEP::
+            #we want to take each instance of a auto_reset
+            #node and have the only edge be to the rev_dep...
+        renameD={}
+
+        #FIXME the problem is that we need to replace the revdeps too...
+            #so revdeps come last
+
         for node in self.unfinished_nodes:
             place_holder=node.id #FIXME shitty code to deal with collisions, makes bad assumptions
             #while depD.get(node.id): #XXX NOPE that won't work either because of how we get deps
                 #if node.id+1 not in all_ids:
                     #place_holder=node.id+1
 
-            depD[place_holder]=node._deps()
             names[place_holder]=node.name
+            idNameDict={n.name:n.dependency_id for n in node.dependencies}
+            ordered_deps=[idNameDict[name] for name in self.stepDict[node.name].dependencies]
+            depD[place_holder]=ordered_deps #node._deps()
             if node._revdeps: #FIXME naming
                 revD[place_holder]=node._revdeps()
             else:

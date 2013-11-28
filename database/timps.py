@@ -9,10 +9,11 @@ Options:
 """
 #-t --test       run tests and exit
 from docopt import docopt
-from IPython import embed
+#from IPython import embed
 from database.TESTS import *
 #from database.steps import *
 #from database.dataio import Get,Set,Bind,Read,Write,Analysis,Check
+from rig.ipython import embed
 from rig.rigcontrol import rigIOMan, keyDicts
 from database.real_steps import *
 from database.steps import StepRunner, StepCompiler
