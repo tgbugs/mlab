@@ -293,6 +293,7 @@ class Got_two_cells(StepBase):
 class Check_access(StepBase): #TODO
     """ Check to make sure we still have access, not a show stopper since sometimes we get stuff back """
     dataio=tempDataIO
+    dependencies=[] #FIXME damn it datafiles
     dependencies=['Read_datafiles']
 
 

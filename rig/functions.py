@@ -51,6 +51,7 @@ def keyRequest(function): #FIXME sometimes we want to release a kr EARLY!
     _keyRequest.__name__=function.__name__
     return _keyRequest
 
+###
 #class decorator
 def hasKeyRequests(cls):
     cls.keyRequesters=[]
@@ -612,6 +613,7 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
             else:
                 ib.put(char)
 
+        #self.keyLock.acquire()
         stdout.write('\r%s'%prompt)
         while self.keyThread.is_alive():
             char=self.charBuffer.get()
@@ -672,7 +674,7 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
             self._gdnb_cb_done=True
 
         self.modestate.keyActDict[' ']=callback
-        while not self._gdnb_cb_done:
+        while not self._gdnb_cb_done and self.keyThread.is_alive(): 
             sleep(.001) #FIXME
         printD('got it')
         
@@ -685,12 +687,55 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
     def getDoneFailNB(self): #FIXME 
         print('Hit space for success or \ for failure') #FIXME use a reverse dict in keybinds
         #FIXME ick
+        success=' '
+        fail='\\'
         try:
-            old_func=self.modestate.keyActDict[' ']
+            old_func=self.modestate.keyActDict[success]
         except:
             old_func=None
         try:
-            old_fail=self.modestate.keyActDict['\\']
+            old_fail=self.modestate.keyActDict[fail]
+        except:
+            old_fail=None
+
+        self._gdnb_cb=False
+        def callback():
+            self._gdnb_cb_done=1 #'done'
+        def fail_cb():
+            self._gdnb_cb=2 #'fail'
+
+        self.modestate.keyActDict[success]=callback
+        self.modestate.keyActDict[fail]=fail_cb
+        while not self._gdnb_cb and not self.keyThread.is_alive():
+            sleep(.001) #FIXME
+        printD('got it')
+
+        if self._gdnb_cb == 1:
+            out=True
+        else:
+            out=False
+        
+        if old_func:
+            self.modestate.keyActDict[success]=old_func #FIXME danger in x thread?
+        else:
+            self.modestate.keyActDict.pop(success)
+        if old_fail:
+            self.modestate.keyActDict[fail]=old_fail #FIXME danger in x thread?
+        else:
+            self.modestate.keyActDict.pop(fail)
+        return out
+
+    def _getDoneFailNB(self): #FIXME 
+        print('Hit space for success or \ for failure') #FIXME use a reverse dict in keybinds
+        #FIXME ick
+        succss=' '
+        fail='\\'
+        try:
+            old_func=self.modestate.keyActDict[success]
+        except:
+            old_func=None
+        try:
+            old_fail=self.modestate.keyActDict[fail]
         except:
             old_fail=None
 
@@ -701,8 +746,8 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         def fail_cb():
             self._gdnb_cb_fail=True
 
-        self.modestate.keyActDict[' ']=callback
-        while not self._gdnb_cb_done or not self._gbnd_cb_fail:
+        self.modestate.keyActDict[success]=callback
+        while not self._gdnb_cb_done or not self._gdnb_cb_fail:
             sleep(.001) #FIXME
         printD('got it')
 
@@ -712,13 +757,13 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
             out=True
         
         if old_func:
-            self.modestate.keyActDict[' ']=old_func #FIXME danger in x thread?
+            self.modestate.keyActDict[success]=old_func #FIXME danger in x thread?
         else:
-            self.modestate.keyActDict.pop(' ')
+            self.modestate.keyActDict.pop(success)
         if old_fail:
-            self.modestate.keyActDict['\\']=old_fail #FIXME danger in x thread?
+            self.modestate.keyActDict[fail]=old_fail #FIXME danger in x thread?
         else:
-            self.modestate.keyActDict.pop('\\')
+            self.modestate.keyActDict.pop(fail)
         return out
 
     @keyRequest

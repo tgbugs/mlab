@@ -169,9 +169,11 @@ class baseio:
 
         try:
             self.MappedInstance=session.query(self.MappedClass).filter_by(name=self.name).order_by(self.MappedClass.id.desc()).first() #FIXME versioning?
-            printD(self.MappedInstance.name) #FIXME somehow this line fixes everythign!?
+            if not self.MappedInstance:
+                raise ValueError('MappedInstance of %s did not init!'%self.MappedClass)
+            #printD(self.MappedInstance.name) #FIXME somehow this line fixes everythign!?
         #assert self.MappedInstance, 'self.MappedInstance is None'
-        except:
+        except ValueError:
             #raise AttributeError('MappedInstance not in the database')
             self.persist(session)
             #printD('debugging to see what the issue here is with calling persist in super')
@@ -428,7 +430,10 @@ class Write(baseio): #wow, this massively simplifies this class since the values
 class Analysis(baseio):
     MappedClass=None
     #from database.models import Analyzer as MappedClass
-    analysis_function=lambda **kwargs: 2+2
+    @staticmethod
+    def analysis_function(**kwargs):
+        return 2+2
+    #analysis_function=lambda **kwargs: 2+2
     dependencies=[]
 
     def validate(self):
@@ -451,7 +456,11 @@ class Analysis(baseio):
 class Check(baseio):
     MappedClass=None
     #from database.models import Checker as MappedClass
-    check_function=lambda **kwargs:True #return type: Boolean please
+    @staticmethod
+    @staticmethod
+    def analysis_function(**kwargs):
+        return True
+    #check_function=lambda **kwargs:True #return type: Boolean please
     dependencies=[]
 
     def validate(self):

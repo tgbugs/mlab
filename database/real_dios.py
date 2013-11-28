@@ -1,4 +1,5 @@
 #see steps.py and rig/metadatasources.py for inspiration
+from numpy import mean
 from sqlalchemy.orm import object_session
 from database.dataio import Get, Set, Bind, Read, Write, Analysis, Check #FIXME make these decorators for a do() function? this should enable reusable chaining with doccumentation?
 #should the decorator(properties) be how we do default kwargs or should we just define them locally and persist those?
@@ -308,27 +309,31 @@ class Check_headstages(Check):
 class Comp_spline_from_points(Analysis): #TODO
     """ compute spline from points """
     MappedClass=Analyzer
+    @staticmethod
     def analysis_function(**kwargs):
-        printD(dep_vals)
+        printD('dep_valse',kwargs['dep_vals'])
 
 class Comp_esp300_calib(Analysis): #TODO
     """ calc calibration data from expected distances """
     MappedClass=Analyzer
+    @staticmethod
     def analysis_function(**kwargs):
-        printD(dep_vals)
+        printD('dep_valse',kwargs['dep_vals'])
 
 class Comp_stimulus_positions(Analysis): #TODO
     """ Given a spline and a starting point get positions """
     MappedClass=Analyzer
+    @staticmethod
     def analysis_function(**kwargs):
-        printD(dep_vals)
+        printD('dep_valse',kwargs['dep_vals'])
 
 class Comp_mean_position(Analysis): #TODO
     """ compute the mean positition of a set of points """
     MappedClass=Analyzer
+    @staticmethod
     def analysis_function(**kwargs):
-        printD(dep_vals)
-        return mean(depvals) #FIXME
+        printD('dep_valse',kwargs['dep_vals'])
+        return mean(kwargs['dep_vals']) #FIXME need a shape parameter??
 
 
 """

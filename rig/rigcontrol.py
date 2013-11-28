@@ -197,7 +197,7 @@ class rigIOMan:
                 ctrlDict[ctrl.__name__]=inited
             except:
                 #warnings.warn('[!] %s failed to init'%ctrl.__name__,UserWarning,0)
-                raise
+                #raise
                 printD('[!] %s failed to init'%ctrl.__name__)
      
         ctrlBindingDict={
