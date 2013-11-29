@@ -1,11 +1,13 @@
 #!/usr/bin/env python3.3
 """Streamlined file for testing postgres stuff in ipython
 Usage:
-    main.py [(-e | --echo) (-i | --ipython)]
+    main.py [(-e | --echo) (-i | --ipython) (-s | --steps) (-r | --rio-start)]
     main.py (-h | --help )
 Options:
     -e --echo       enable echo
     -i --ipython    embed
+    -s --steps      test all steps 
+    -r --rio-start  start the rig io manager (capture key input)
 """
 #-t --test       run tests and exit
 from docopt import docopt
@@ -38,7 +40,8 @@ logic_StepEdge(session)
 
 #load up the stuff we need to test dataios and steps
 rio=rigIOMan(keyDicts, session)#, globals())
-rio.start()
+if args['--rio-start']:
+    rio.start()
 
 #deal with steps
 iStepDict={}
@@ -51,24 +54,25 @@ locals().update(iStepDict)
 
 #sc=StepCompiler(bind_pia_xys,stepDict)
 #FIXME use ExperimentType???
-sr=StepRunner(session,bind_pia_xys,stepDict,rio.ctrlDict, session.query(Experiment).all()[10])
-sr.do() #DUN DUN DUN!
-rio.pass_locals(locals()) #FIXME some stuff seems to be missing...
+#sr=StepRunner(session,bind_pia_xys,stepDict,rio.ctrlDict, session.query(Experiment).all()[10])
+#sr.do() #DUN DUN DUN!
+#rio.pass_locals(locals()) #FIXME some stuff seems to be missing...
 
-for step in iStepDict.values():
-    try:
-        sr=StepRunner(session,step,stepDict,rio.ctrlDict, session.query(Experiment).all()[10])
-        sr.do()
-    except (NotImplementedError,KeyError) as e:
-        pass
-    rio.pass_locals(locals()) #FIXME some stuff seems to be missing...
+if args['--steps']:
+    for step in iStepDict.values():
+        try:
+            sr=StepRunner(session,step,stepDict,rio.ctrlDict, session.query(Experiment).all()[10])
+            sr.do()
+        except (NotImplementedError,KeyError) as e: #XXX this masks many diverse errors... given how much I use dicts...
+            #raise
+            pass
+        rio.pass_locals(locals()) #FIXME some stuff seems to be missing...
 
 #get_at_desired_xy.do()
 
 #give me some ipython!
-if args['--ipython']:
-    pass
-    #embed() #just hit i if you want it
+if args['--ipython'] and not args['--rio-start']:
+    embed() #just hit i if you want it
 
 #tests
 else:# args['--test']:

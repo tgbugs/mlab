@@ -11,6 +11,8 @@ tdb.off()
 
 #XXX WARNING XXX Spagetti code be here! some day we will refactor
 
+keyRequesters_special={} #FIXME nasty use of globals >_<
+
 def dictInit(inDict,clsDict,kr_dict): #putting this here makes everything funny but auto catches errors
     """the only EXTERNAL dicts that should be put in here are ikCtrlDicts ie in=initilized"""
     def parseValue(counter,instanceOfClass,putativeFunc,keyRequesters,kr_dict):
@@ -118,7 +120,7 @@ def dictInit(inDict,clsDict,kr_dict): #putting this here makes everything funny 
                         initedDict[key],keyRequestDict[key]=parseValue(0,ikFunc,funcStr,keyRequesters,kr_dict) #without having to know things in advance FIXME this is a god damned maze
                         #setattr(initedDict[key],'__name__',funcStr) #FIXME overkill
                         if type(funcStr) == str:
-                            keyRequestDict[funcStr]=keyRequestDict[key]
+                            keyRequesters_special[funcStr]=keyRequestDict[key] #XXX FIXME NASTY
 
 
                 #printD('hardcoded excape code follows')
@@ -162,6 +164,7 @@ def makeModeDict(ikFuncDict,kr_dict,*clsDicts):
         helpDict.update(newHD)
         modeDict[keyActDict['mode']]=keyActDict
         modeKRDict[keyActDict['mode']]=keyRequestDict
+    modeKRDict.update(keyRequesters_special) #FIXME XXX
     return helpDict, modeDict, modeKRDict
 
 #

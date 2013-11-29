@@ -627,8 +627,10 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
             stdout.write('\r%s'%prompt+str(ib)+' '*ib.pop_filler())
             stdout.write('\r%s'%prompt+ib.str_to_pos)
             stdout.flush()
-
-        return str(ib)
+        if not self.keyThread.is_alive():
+            raise IOError('Key thread is not alive!')
+        else:
+            return str(ib)
 
     @keyRequest
     def getString(self):
@@ -700,22 +702,23 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         except:
             old_fail=None
 
-        self._gdnb_cb=False
+        self._gdnb_cb=0
         def callback():
-            self._gdnb_cb_done=1 #'done'
+            self._gdnb_cb=1 #'done'
         def fail_cb():
             self._gdnb_cb=2 #'fail'
 
         self.modestate.keyActDict[success]=callback
         self.modestate.keyActDict[fail]=fail_cb
-        while not self._gdnb_cb and not self.keyThread.is_alive():
+        while not self._gdnb_cb and self.keyThread.is_alive():
             sleep(.001) #FIXME
-        printD('got it')
 
         if self._gdnb_cb == 1:
             out=True
+            printD('got success')
         else:
             out=False
+            printD('got fail')
         
         if old_func:
             self.modestate.keyActDict[success]=old_func #FIXME danger in x thread?

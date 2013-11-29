@@ -81,17 +81,24 @@ class Get_trmDoneNB(Get): #FIXME threading nightmare
 class trm_get(Get):
     """ baseclass to manage key requests"""
     def do(self,**kwargs):
-        printD(getattr(self.ctrl,self.function_name))
-        if hasattr(getattr(self.ctrl,self.function_name),'keyRequester'):
+        #print('*** 84 in real_dios.py',getattr(self.ctrl,self.function_name))
+        printD(self.function_name,self.ctrl.modestate.modeKRDict[self.function_name])
+        #if hasattr(getattr(self.ctrl,self.function_name),'keyRequester'):
+        try:
+            count=self.ctrl.modestate.modeKRDict[self.function_name]
             try:
                 self.ctrl.modestate.krdLock.acquire()
 
-                printD(self.ctrl.modestate.keyRequestDict[self.function_name])
-                self.ctrl.modestate._keyRequest+=self.ctrl.modestate.keyRequestDict[self.function_name]
+                #printD(self.ctrl.modestate.keyRequestDict[self.function_name])
+                printD(count)
+                self.ctrl.modestate._keyRequest+=count
+                #self.ctrl.modestate.keyRequestDict[self.function_name]
             except:
                 raise
             finally:
                 self.ctrl.modestate.krdLock.release()
+        except:
+            pass
 
         return super().do(**kwargs)
 
@@ -320,8 +327,10 @@ class Check_700B(Check): #TODO
 class Check_headstages(Check):
     """ make sure hs matches channels """
     MappedClass=Checker
+    @staticmethod
     def check_function(**kwargs):
         pass
+        return True
         #stimulate from a, check channel, make sure it matches
         #stimulate from b, check channel, make sure it matches
 
@@ -373,7 +382,7 @@ class Comp_spline_from_points(Analysis): #TODO
     MappedClass=Analyzer
     @staticmethod
     def analysis_function(**kwargs):
-        printD('dep_valse',kwargs['dep_vals'])
+        printD('dep_value',kwargs['dep_vals'])
 
 class Comp_esp300_calib(Analysis): #TODO
     """ calc calibration data from expected distances """

@@ -225,6 +225,7 @@ class ctrlio(baseio):
         #self.persist(session) #FIXME
 
     def validate(self):
+        printD('validating...')
         if self.ctrl_name:
             print(self.ctrl_name,self.ctrl.__class__.__name__)
             if self.ctrl_name == self.ctrl.__class__.__name__:

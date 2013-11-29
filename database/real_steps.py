@@ -72,8 +72,8 @@ class Check_chamber_setup(StepBase):
     """ Make sure the chamber is good to go """
     dataio=Check_deps_done
     dependencies=[
-        'Got_acsf',
-        'Get_flow_rate',
+        'Got_acsf', #TODO
+        'Get_flow_rate', #TODO
     ]
 
 class Get_esp300_calib(StepBase):
@@ -112,7 +112,7 @@ class Check_invitro_rig_setup(StepBase):
 ###----------------
 
 
-class Get_DM_LRUD(StepBase):
+class Get_DM_LRUD(StepBase): #FIXME this doesnt even stop to ask for the string!
     """ VITAL for identifying which side was up in the interface chamber 
         get the orientation of the slice dorsal facing and medial facing left or right or up or down
         format should be D,M and then [L,R,U,D],[L,R,U,D]
@@ -187,7 +187,7 @@ class Bind_pia_xys(StepBase):
     dataio=Bind_dep_vals
     keepRecord=True
     #checkpoint_step=True #FIXME this needs to have its state tracked but should always be false
-    dependencies=['Get_pia_xy_1','Get_pia_xy_2','Get_pia_xy_3','Get_pia_xy_4']#,'Get_checkpoint_test']
+    dependencies=['Get_pia_xy_1','Get_pia_xy_2','Get_pia_xy_3','Get_pia_xy_4','Get_pia_xy_5']#,'Get_checkpoint_test']
 
 
 for i in range(1,6): #TODO make this a function
@@ -195,8 +195,10 @@ for i in range(1,6): #TODO make this a function
     xy_s='Get_target_depth_xy_%s'%i
     at_cls=type(at_s,(Get_at_desired_xy,),
                    {'__doc__':' get at %s ith for target depth position'%i})
-    xy_cls=type(xy_s,(Get_at_desired_xy,),
-                   {'__doc__':' get %s ith xy for target depth position'%i})
+    xy_cls=type(xy_s,(Get_esp_xy,),
+                   {'__doc__':' get %s ith xy for target depth position'%i,
+                    'dependencies':['Get_at_target_depth_xy_%s'%i],
+                   })
     locals()[at_s]=at_cls
     locals()[xy_s]=xy_cls
 
@@ -264,18 +266,22 @@ class Check_slice_layout_mapped(StepBase): #TODO should be acompanied by a check
 class Got_cell_contact(StepBase):
     """ Bumped up against single cell, aka positive pressure released """
     dataio=Get_trmDoneORFail
+    fail=True
 
 class Got_giga_seal(StepBase):
     """ Giga seal on a single cell """
     dataio=Get_trmDoneORFail #TODO read from mcc resistance
+    fail=True
 
 class Got_broken_in(StepBase):
     """ Broken in to a single cell """
     dataio=Get_trmDoneORFail #TODO read from mcc or clx?
+    fail=True
 
 class Got_two_cells(StepBase):
     """ Both cells have been patched, time for DATA """
     dataio=Get_trmDoneORFail
+    fail=True
 
 class Check_access(StepBase): #TODO
     """ Check to make sure we still have access, not a show stopper since sometimes we get stuff back """
@@ -285,7 +291,7 @@ class Check_access(StepBase): #TODO
 
 class DONE_with_cell(StepBase): #FIXME damn it this does not scale with N ;_; well, you could just add 4 end steps?
     """ done with one of multiple cells :/ how to do w/o having n classes :/ """
-    dependencies=['Got_data','RESET_patch_nodes']
+    #dependencies=['Got_data','RESET_patch_nodes']
 
 class DONE_with_all_cells(StepBase): #FIXME reset one? or reset both?
     """ all the data from this pair of neurons is done """
@@ -313,6 +319,7 @@ class Set_esp_xy_position(StepBase):
 
 class Set_CLX_run_protocol(StepBase):
     """ run the protocol and collect the data """
+    dependencies=[]
 
 class Get_datafile_name(StepBase):
     """ get the name of the datafile """
@@ -322,6 +329,7 @@ class Get_datafile_name(StepBase):
 class Get_clx_savedir_url(StepBase):
     dataio=Get_clx_savedir_url
     __doc__=dataio.__doc__
+    dependencies=[]
 
 
 class Write_datafile_record(StepBase):
