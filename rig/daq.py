@@ -1,12 +1,62 @@
+""" A command line program to control the pattern the LED plays when triggered
+    if no wave is specified the type will be a square wave
+Usage:
+    daq.py [--on=<ms> --off=<ms> --rep=<int> --minV=<V> --maxV=<V>]
+    daq.py [wave (--square | --ramp | --cos) --on=<ms> --off=<ms> --rep=<int> --minV=<V> --maxV=<V>]
+    daq.py -h | --help
+Options:
+    -h, --help           Print this.
+    -o, --on=<ms>            on ms  [default: 1]
+    -f, --off=<ms>           off ms [default: 0]
+    -r, --rep=<int>          reps   [default: 1]
+    -u, --minV=<V>           minV   [default: 0]
+    -l, --maxV=<V>           maxV   [default: 4.2]
+    -s, --square
+    -a, --ramp
+    -c, --cos
+"""
+    #dqa.py <on>
+    #daq.py <off>
+    #daq.py <rep>
+    #daq.py <wave>
+    #daq.py <minV>
+    #daq.py <maxV>
+    #-on=<ms>            number of ms on  [default:1]
+    #-off=<ms>           number of ms off [default:0]
+    #-rep=<reps>         number of reps   [defalut:1]
+    #-wave=<name>        desired waveform [default:'square']
+    #-minV=<V>           Min voltage to send to the LED. NOTE: results in max intensity [default:0]
+    #-maxV=<V>           Max voltage to send to the LED. NOTE: results in min intensity [default:4.2]
+#(s | square) | (r | ramp) | (c | cos)
 from ctypes import *
 import numpy as np
 import threading
 #import time
 #import pdb
 #from tomsDebug import *
-from rigcontrol import modeState
-from rig.key.input import keyListener
+from rigcontrol import rigIOMan
+from rig.key import keyListener
 from queue import Queue
+from docopt import docopt
+
+def parse_args(args):
+    print(args)
+    if args['--square']:
+        waveName='LEDsquarePulse'
+    elif args['--ramp']:
+        waveName='LEDlinRamp'
+    elif args['--cos']:
+        waveName='LEDcos'
+    else:
+        waveName='LEDsquarePulse' #default to square pulse
+
+    on_ms=float(args['--on'][0])
+    off_ms=float(args['--off'][0])
+    reps=int(args['--rep'][0])
+    #waveForm=args['--wave'][0]
+    minV=float(args['--minV'][0])
+    maxV=float(args['--maxV'][0])
+    return minV,maxV,on_ms,off_ms,waveName,reps
 
 ni=windll.nicaiu
 
@@ -112,9 +162,37 @@ def makeWave(minV,maxV,milisecs,waveFunc): #import this for easymode? along with
     Thrd=threading.Thread(target=Task.start)
     return Task,Thrd
 
+def makeTrain(minV,maxV,on_ms,off_ms,on_wf,off_wf,repeats):
+    #TODO ability to control the intensity of each pulse?
+    if min(on_ms,off_ms) <= 10:
+        sampRate=100000.0 #100kHz to prevent aliasing
+    else:
+        sampRate= 10000.0 #10kHz is fine for most stuff
+    on_samples=(sampRate*on_ms)/1000
+    off_samples=(sampRate*off_ms)/1000
+    on_wave=on_wf(minV,maxV,on_samples)
+    off_wave=off_wf(minV,maxV,off_samples) #this works correctly with 0
+    single_period=np.concatenate([on_wave,off_wave])
+    all_periods=np.array([])
+    for i in range(repeats):
+        all_periods=np.concatenate([all_periods,single_period])
+    assert len(all_periods)==len(single_period)*repeats, 'lengths dont match'
+    Task=trigWaveTask(all_periods,sampRate)
+    Thrd=threading.Thread(target=Task.start)
+    return Task,Thrd
+
+
+
+###
+#Define waveforms
+
 def LEDlinRamp(minV,maxV,samples):
     wave=np.linspace(maxV,minV,samples)
     wave[-1]=maxV #restore to initial value at end
+    return wave
+
+def LEDoff(minV,maxV,samples):
+    wave=np.ones(samples)*maxV
     return wave
 
 def LEDsquarePulse(minV,maxV,samples):
@@ -129,18 +207,30 @@ def LEDcos(minV,maxV,samples): #FIXME need a way to deal with periodic stuff in 
     return wave
 
 def main():
+    args=docopt(__doc__)
+    minV,maxV,on_ms,off_ms,waveName,reps=parse_args(args)
+    waveFunc=globals()[waveName]
+
+    DAQTask,DAQThrd=makeTrain(minV,maxV,on_ms,off_ms,waveFunc,LEDoff,reps)
+
     ms=2
     waveFuncs=[LEDsquarePulse,LEDlinRamp,LEDcos]
     waveDict={}
 
     for wf in waveFuncs:
+        #XXX NOTE XXX 4.2 is the minimum voltage need to turn off the LED
         #waveDict[wf.__name__]=makeWave(0,4.2,ms,wf) #LOL DICT OF THREADS
         #waveDict[wf.__name__]=makeWave(4.2,4.2,ms,wf) #LOL DICT OF THREADS
-        waveDict[wf.__name__]=makeWave(0,4.2,ms,wf) #LOL DICT OF THREADS
+        waveDict[wf.__name__]=makeWave(0,4.2,ms,wf) #maximum intensity
+        waveDict[wf.__name__]=makeWave(4.1,4.2,ms,wf) #min V to evoke LED is 4.1
+
+    #Trains
+    #(1,4,LEDsquarePulase,LEDoff,5)
+    #waveDict['LED_Train_sp_o1_f4_r5']
 
     #start our keyhandler so we can break shit
     charBuffer=Queue()
-    modestate=modeState(charBuffer)
+    #modestate=rigIOMan(charBuffer)
     class KH:
         def __init__(self):
             self.stopflag=0
@@ -150,12 +240,12 @@ def main():
     kbdThrd=threading.Thread(target=keyListener,args=(charBuffer,keyHandler,)) #lambda:0 will exit on first keyhit leaving cb clean
     kbdThrd.start()
 
-    DAQTask,DAQThrd=waveDict['LEDsquarePulse'] #this could be very useful for launching these from keyboard or pairing to .pro files; one problem is the max/min and ms... balls gen on the fly?
+    #DAQTask,DAQThrd=waveDict['LEDsquarePulse'] #this could be very useful for launching these from keyboard or pairing to .pro files; one problem is the max/min and ms... balls gen on the fly?
     #DAQTask,DAQThrd=waveDict['LEDcos'] #this could be very useful for launching these from keyboard or pairing to .pro files; one problem is the max/min and ms... balls gen on the fly?
     DAQThrd.start()
     while kbdThrd.is_alive():
         key=charBuffer.get() #don't use the secrete escape key, it breaks this, should be fine in the other
-        if key=='esc' or key=='q' or key=='@':
+        if key=='esc' or key=='q' or key=='@':# FIXME
             kh.stopflag=1
             break
     DAQTask.cleanup()

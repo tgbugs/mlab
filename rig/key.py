@@ -19,7 +19,7 @@ except:
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
-#tdb.off()
+tdb.off()
 
 def kl_lin(charBuffer,keyHandler,keyLock,termInfoSet):
     #FIXME does not work properly with ipython :/
@@ -187,7 +187,7 @@ def kl_win(charBuffer,keyHandler,keyLock): #FIXME
 def keyListener(charBuffer,keyHandler,keyLock=None,termInfoSet=lambda off,on:None,cleanup=lambda:0): #FIXME
     if keyLock == None: 
         from threading import RLock
-        keyLock=Rlock()
+        keyLock=RLock()
     try:
         if globals().get('ctypes'):
             termInfoSet(lambda:None,lambda:None)
