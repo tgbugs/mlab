@@ -446,6 +446,9 @@ class espFuncs(kCtrlObj):
         self.modestate.keyActDict['esc']=self._gd_break_callback #FIXME probably going to need some try:finally:
         self.modestate.keyActDict[self._gd_own_key]=lambda:print('already in disp mode!')
 
+        def format_str(string,width=9):
+            missing=width-len(string)
+            return string+' '*missing
         dist1=1
         print(list(self.markDict.keys()))
         while self.keyThread.is_alive() and not self._gd_exit: #FIXME may need a reentrant lock here to deal w/ keyboard control
@@ -453,7 +456,8 @@ class espFuncs(kCtrlObj):
             dist=(npsum((arr(self.ctrl._BgetPos()-arr(list(pos))))**2,axis=1))**.5 #FIXME the problem here is w/ _BgetPos()
             if dist1!=dist[0]:
                 #names='%s \r'%(list(self.markDict.keys())) #FIXME sadly, it seems there is no way ;_;
-                stdout.write('\r'+''.join(map('{:1.5f} '.format,dist)))
+                #stdout.write('\r'+''.join(map('{:1.5f} '.format,dist)))
+                stdout.write('\r'+''.join([format_str('{:1.5f}'.format(d)) for d in dist]))
                 stdout.flush()
                 dist1=dist[0]
 

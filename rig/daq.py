@@ -1,11 +1,13 @@
-""" A command line program to control the pattern the LED plays when triggered
-    if no wave is specified the type will be a square wave
+""" A command line program to control the pattern the LED plays when triggered.
+    This MUST be running in order to trigger the LED.
+    If no wave is specified the type will be a square wave.
+    Hit escape or q twice to exit (or that special key once).
 Usage:
     daq.py [--on=<ms> --off=<ms> --rep=<int> --minV=<V> --maxV=<V>]
     daq.py [wave (--square | --ramp | --cos) --on=<ms> --off=<ms> --rep=<int> --minV=<V> --maxV=<V>]
     daq.py -h | --help
 Options:
-    -h, --help           Print this.
+    -h, --help               Print this. [default:1 ]
     -o, --on=<ms>            on ms  [default: 1]
     -f, --off=<ms>           off ms [default: 0]
     -r, --rep=<int>          reps   [default: 1]

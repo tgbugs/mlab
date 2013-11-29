@@ -2,6 +2,7 @@
 #control for newport esp300
 #Tom Gillespie
 import serial as ser
+import sys
 from numpy import abs as np_abs
 from threading import RLock
 #import rpdb2
@@ -208,12 +209,24 @@ class espControl:
             self._cY=pos[1]
             #group axes 1&2, velocity to two (mm/s?), acc/dec to 1, motors on, move, wait, degroup
             self.write('1HN1,2;1HV2;1HA1;1HD1;1HO;1HL'+str(self._cY)+','+str(self._cX)) #HW also blocks
-            while 1:
-                print(self.getPos())
-                if (self._cX,self._cY)==self.target: #this SHOULD always trigger...
-                    self.write('1HX') #degroup oh man this is ugly and not transparent
-                    self.target=None
-                    return self._cX,self._cY
+            bound=.000005
+            def format_str(string,width=9):
+                missing=width-len(string)
+                if missing:
+                    minus=string.count('-')
+                    string=' '*minus+string+' '*(missing-minus)
+                return string
+            while self.target:
+                xy=self.getPos()
+                xstr=str(xy[0])
+                ystr=str(xy[1])
+                sys.stdout.write('\r(%s, %s)'%(format_str(xstr),format_str(ystr)))
+                sys.stdout.flush()
+                if self.target[0]-bound <= self._cX <= self.target[0]+bound: #good old floating point errors
+                    if self.target[1]-bound <= self._cY <= self.target[1]+bound:
+                        self.write('1HX') #degroup oh man this is ugly and not transparent
+                        self.target=None
+                        return self._cX,self._cY
 
     def _setPos(self,x=None,y=None): #TODO alternate form use with *value
         pass
