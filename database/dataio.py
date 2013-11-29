@@ -154,9 +154,10 @@ class baseio:
     def __init__(self,session,controller_class=None,ctrlDict=None):
         if not self.__doc__:
             raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER! (add a docstring to %s)'%self.__class__)
+        if ctrlDict:
+            self.ctrlDict=ctrlDict
         if getattr(self,'ctrl_name',None): #FIXME not quite correct
             if ctrlDict:
-                self.ctrlDict=ctrlDict #FIXME used for checks?
                 self.ctrl=ctrlDict[self.ctrl_name]
                 #self.ctrlDict=ctrlDict #XXX this is a really hacky way to do call dependnet dataios
                 #TODO yeah, now I'm seeing why keeing the live dataio dict might be a good idea...
@@ -224,14 +225,17 @@ class ctrlio(baseio):
         #self.persist(session) #FIXME
 
     def validate(self):
-        print(self.ctrl_name,self.ctrl.__class__.__name__)
-        if self.ctrl_name == self.ctrl.__class__.__name__:
-            #TODO check the controller version!
-            pass
-        else:
-            raise TypeError('Wrong controller for this step!')
-        #super().validate() #TODO do we actually want to check versions of this? these are just tiny interfaces
-            
+        if self.ctrl_name:
+            print(self.ctrl_name,self.ctrl.__class__.__name__)
+            if self.ctrl_name == self.ctrl.__class__.__name__:
+                #TODO check the controller version!
+                #TODO check the function exists
+                if not hasattr(self.ctrl,self.function_name):
+                    raise TypeError('%s has no function by that name!'%self.ctrl)
+            else:
+                raise TypeError('Wrong controller for this step!')
+            #super().validate() #TODO do we actually want to check versions of this? these are just tiny interfaces
+                
     def persist(self,session):
         printD('1 should be called BEFORE in %s'%self.name)
         self.MappedInstance=self.MappedClass(name=self.name,ctrl_name=self.ctrl_name,function_name=
@@ -264,7 +268,7 @@ class Get(ctrlio): #FIXME now that this is separate from Writer... wat do?
         #TODO out={'value':self.get(**kwargs),'unit':self.units,'prefix':self.prefix,'type',self.type}
             #completely changes what dataios need to deal with :/
         #return {'%s'%self.name:out,'last_getter':self.name}#XXX NOTE: this makes it super easy to chain things by dependency name
-        outDict={'%s'%self.name:out,'last_getter':self.name,kwargs['step_name']:out}#XXX NOTE: this makes it super easy to chain things by dependency name
+        outDict={'%s'%self.name:out,'last_getter':self.name,'last_getter_id':self.MappedInstance.id,kwargs['step_name']:out}#XXX NOTE: this makes it super easy to chain things by dependency name
         printD(outDict)
         return outDict
 
@@ -393,6 +397,15 @@ class Write(baseio): #wow, this massively simplifies this class since the values
     writer_kwargs={}
     dependencies=[] #pretty much every writer should have get or an analysis or something
 
+    def __init__(self,session,controller_class=None,ctrlDict=None):
+        super().__init__(session,controller_class,ctrlDict)
+        argspec=inspect.getargspec(self.MappedWriter.__init__)
+        try:
+            argspec.remove('self')
+        except:
+            pass
+        self.actual_kwargs=argspec
+
     def validate(self):
         #check to make sure stuff here has not changed? ie versioning?
         #check units XXX this may have to be done at the level of steps
@@ -417,14 +430,18 @@ class Write(baseio): #wow, this massively simplifies this class since the values
         out=self.write(**kwargs)
         return {'%s'%self.name:out,kwargs['step_name']:out} #This will return None or will raise and exception
 
-    def write(self,writeTarget=None,autocommit=False,**kwargs): #not handling errors here
+    def write(self,writeTarget=None,autocommit=True,**kwargs): #not handling errors here
         """Modify as needed"""
         self.writer_kwargs.update(kwargs) #XXX kwargs should include the value FIXME watch out for kwargs that don't get reset
-        self.writer_kwargs['value']=writer_kwargs['dep_vals'] #FIXME TODO mostly for get->
+        self.writer_kwargs['value']=self.writer_kwargs['dep_vals'] #FIXME TODO mostly for get->
+        self.writer_kwargs['getter_id']=self.writer_kwargs['last_getter_id'] #FIXME a hack for get->
         self._rec_do_kwargs(self.writer_kwargs)
-        self.session.add(self.MappedWriter(writeTarget=writeTarget,**self.writer_kwargs)) #TODO parent shall be speced in kwargs???
+        kwargs_to_write={name:arg for name,arg in self.writer_kwargs if name in self.actual_kwargs}
+        written=self.MappedWriter(writeTarget=writeTarget,**kwargs_to_write) #TODO parent shall be speced in kwargs???
+        self.session.add(written)
         if autocommit:
             self.session.commit()
+        return written #FIXME make sure it is really the same instance
 
 
 class Analysis(baseio):
@@ -457,8 +474,7 @@ class Check(baseio):
     MappedClass=None
     #from database.models import Checker as MappedClass
     @staticmethod
-    @staticmethod
-    def analysis_function(**kwargs):
+    def check_function(**kwargs):
         return True
     #check_function=lambda **kwargs:True #return type: Boolean please
     dependencies=[]

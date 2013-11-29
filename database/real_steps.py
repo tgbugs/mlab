@@ -8,13 +8,6 @@ from database.real_dios import * #FIXME
 
 #XXX without the database the code only tells you what to do
     #with the database we can know what /was done/
-
-class tempDataIO(Check):
-    """ Temporary dataio so that steps can be written and tested in advance """
-    MappedClass=Checker
-    def check(self,**kwargs):
-        raise NotImplementedError('Please implement me :) !')
-
 ###------
 ### basic steps
 ###------
@@ -59,7 +52,6 @@ class Get_pipette_count(StepBase): #use this to see if the pipettes are shitty
 
 class Write_pipette_count(StepBase): #TODO
     """ Writes the count to database """
-    dataio=tempDataIO
     dependencies=['Get_pipette_count'] #NOTE: this will automatically write the result
 
 class Get_got_patch_tools(StepBase): #XXX placeholder
@@ -90,7 +82,6 @@ class Get_esp300_calib(StepBase):
 
 class Write_esp300_calib(StepBase): #TODO
     """ write dep value to db """
-    dataio=tempDataIO
     dependencies=['Get_esp300_calib']
 
 class Check_700B(StepBase): #not needed atm
@@ -249,20 +240,16 @@ class Comp_two_cells_mean_position(StepBase):
 ###-----------------
 
 class Set_MCC_headstage(StepBase): #TODO
-    dataio=tempDataIO
-    __doc__=dataio.__doc__
+    pass
 
 class Set_MCC_V_hold_off(StepBase): #TODO
-    dataio=tempDataIO
-    __doc__=dataio.__doc__
+    pass
 
 class Set_MCC_auto_pipette_offset(StepBase): #TODO
-    dataio=tempDataIO
-    __doc__=dataio.__doc__
+    pass
 
 class Set_MCC_V_neg60(StepBase): #TODO
-    dataio=tempDataIO
-    __doc__=dataio.__doc__
+    pass
 
 ###----------------
 ### patching logic!
@@ -292,19 +279,16 @@ class Got_two_cells(StepBase):
 
 class Check_access(StepBase): #TODO
     """ Check to make sure we still have access, not a show stopper since sometimes we get stuff back """
-    dataio=tempDataIO
     dependencies=[] #FIXME damn it datafiles
     dependencies=['Read_datafiles']
 
 
 class DONE_with_cell(StepBase): #FIXME damn it this does not scale with N ;_; well, you could just add 4 end steps?
     """ done with one of multiple cells :/ how to do w/o having n classes :/ """
-    dataio=tempDataIO
     dependencies=['Got_data','RESET_patch_nodes']
 
 class DONE_with_all_cells(StepBase): #FIXME reset one? or reset both?
     """ all the data from this pair of neurons is done """
-    dataio=tempDataIO
     dependencies=['Got_data','RESET_patch_nodes']
 
 class ALL_DONE_invitro_LED_control(StepBase):
@@ -315,6 +299,47 @@ class ALL_DONE_invitro_LED_control(StepBase):
 ### Data acquisition
 ###-----------------
 
+class Write_cell_record(StepBase):
+    """ add a cell record to the database """
+
+class Set_all_MCC_V_neg75(StepBase):
+    """ hold at -75mV to isolate excitatory current """
+
+class Set_CLX_protocol_dual_led_pulse(StepBase):
+    """ load the clampex protocol """
+
+class Set_esp_xy_position(StepBase):
+    """ move the scope to a specific xy """
+
+class Set_CLX_run_protocol(StepBase):
+    """ run the protocol and collect the data """
+
+class Get_datafile_name(StepBase):
+    """ get the name of the datafile """
+    dataio=Get_newest_abf
+    dependencies=['Get_clx_savedir_url','Set_CLX_run_protocol']
+
+class Get_clx_savedir_url(StepBase):
+    dataio=Get_clx_savedir_url
+    __doc__=dataio.__doc__
+
+
+class Write_datafile_record(StepBase):
+    """ write the datafile entry to the database """
+    dataio=Write_clx_datafile
+    dependencies=['Get_clx_savedir_url','Get_datafile_name']
+    def format_dep_returns(self,**kwargs):
+        return kwargs['Get_datafile_name']
+
+class Write_datafile_metadata(StepBase):
+    """ write the position to  datafile metadata """
+    dataio=Write_datafile_metadata
+    dependencies=['Get_esp_xy','Write_datafile_record']
+    #TODO use last_getter_id to pass metadatasource?
+    def format_dep_returns(self,**kwargs):
+        return kwargs['Get_esp_xy']
+
+
 
 ###------------------------
 ### Subject managment steps
@@ -322,7 +347,6 @@ class ALL_DONE_invitro_LED_control(StepBase):
 
 class Set_WriteTarget(StepBase): #TODO this will be the base for algorithmic write target setting but for now could just query for them and confirm and/or creat new
     """ set the write target for everything """
-    dataio=tempDataIO
 
 
 def load_steps(locs): #FIXME clearly we need a way to flush these babies without updating

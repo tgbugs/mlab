@@ -61,6 +61,7 @@ class rigIOMan:
         #FIXME TODO
         self.ctrlDict.update(self.ikFuncDict) #FIXME temp hack to get trmFuncs through to the rest of the world
         self.locs={} #for passing locals into ipython
+        #print(self.modeKRDict)
     def start(self):
         self.keyThread.start()
 
@@ -147,7 +148,7 @@ class rigIOMan:
 
     def keyHandler(self):
         #self.print_keyRequest()
-        if self._keyRequest: #FIXME the currently cannot deal with multiple interspersed key requesters properly!
+        if self._keyRequest > 0: #FIXME the currently cannot deal with multiple interspersed key requesters properly!
             #printD('key request has %s passing through'%self.keyRequest)
             return 1
         self.key=self.charBuffer.get() #if we're not in a key request get the key
@@ -159,6 +160,7 @@ class rigIOMan:
             #printD('krdLock try')
             self.krdLock.acquire()
             #printD('krdLock acquire')
+            #func_name=self.keyActDict[self.key].__name__
             self._keyRequest+=self.keyRequestDict.get(self.key,0) #get key requests for that key
                 # and add that number of expected callbacks to requests
         except:

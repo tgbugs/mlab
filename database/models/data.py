@@ -236,11 +236,14 @@ class DataFileMetaData(Base): #FIXME naming
     @validates('url','filename','metadatasource_id','dateTime','value','abs_error')
     def _wo(self, key, value): return self._write_once(key, value)
 
-    def __init__(self,value,metadatasource_id=None,abs_error=None,dateTime=None,DataFile=None,url=None,filename=None):
+    def __init__(self,value,metadatasource_id=None,abs_error=None,dateTime=None,DataFile=None,url=None,filename=None,getter_id=None):
         #FIXME I think sqlalchemy is smart enough to add the metadata to the file without explicitly telling it
         self.url=url
         self.filename=filename
-        self.metadatasource_id=int(metadatasource_id)
+        try:
+            self.metadatasource_id=int(metadatasource_id) #FIXME hack for now
+        except:
+            self.metadatasource_id=int(getter_id)
         self.value=value
         self.abs_error=abs_error
         self.dateTime=dateTime

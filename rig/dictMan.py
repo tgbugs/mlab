@@ -116,6 +116,10 @@ def dictInit(inDict,clsDict,kr_dict): #putting this here makes everything funny 
                         #ikFunc.__getattribute__(funcStr[0])(*funcStr[1]) #pass things in from the config files 
                     else:
                         initedDict[key],keyRequestDict[key]=parseValue(0,ikFunc,funcStr,keyRequesters,kr_dict) #without having to know things in advance FIXME this is a god damned maze
+                        #setattr(initedDict[key],'__name__',funcStr) #FIXME overkill
+                        if type(funcStr) == str:
+                            keyRequestDict[funcStr]=keyRequestDict[key]
+
 
                 #printD('hardcoded excape code follows')
                 try:

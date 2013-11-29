@@ -19,7 +19,7 @@ except:
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
-tdb.off()
+#tdb.off()
 
 def kl_lin(charBuffer,keyHandler,keyLock,termInfoSet):
     #FIXME does not work properly with ipython :/

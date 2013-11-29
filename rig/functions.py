@@ -539,6 +539,7 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
                 out=func()
                 printD(out)
                 return out
+            wrap.__name__=func.__name__
             return wrap
         #for name in self.ctrl.__dir__():
             #if name[:3]=='get':
@@ -546,6 +547,7 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         for name in self.__dir__():
             if name[:3]=='get':
                 setattr(self,name,printwrap(getattr(self,name)))
+                setattr(getattr(self,name),'__name__',name)
 
     @keyRequest
     def __getChars__(self,prompt=''):

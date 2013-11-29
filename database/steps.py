@@ -37,6 +37,15 @@
 from database.models import Step, StepRecord
 from database.imports import printD
 from rig.ipython import embed
+
+from database.dataio import Check
+class tempDataIO(Check):
+    """ Temporary dataio so that steps can be written and tested in advance """
+    from database.models import Checker
+    MappedClass=Checker
+    def check(self,**kwargs):
+        raise NotImplementedError('Please implement me :) !')
+
 class StepBase: 
     #TODO what is really cool about the way I have this set up right now is that you can use literally anything in a write step
         #I'm currently using my own backend, but anyone should be able to use the step frame work presented here WITHOUT the db
@@ -44,7 +53,8 @@ class StepBase:
         #but but but there is so much cool stuff you get by having the steps in a database :/
         #well, maybe the step database could be its own thing? ick no, we'll worry about this later
     #dataIO=None #import this #FIXME I'm a bit worried about importing and initing the same dataio many times
-    dataio=None
+
+    dataio=tempDataIO #FIXME
     keepRecord=False #TODO use this so that we can doccument steps and choose not to check them, bad scientist!
     checkpoint_step=False  #FIXME naming
     fail=False #TODO controls how the step fails
@@ -59,7 +69,11 @@ class StepBase:
 
     def __init__(self,session,ctrlDict,experiment=None): #FIXME for self running steps we need the ctrlDict
         if not self.__doc__:
-            raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER %s'%self.__class__)
+            printD(self.dataio.__name__)
+            if self.dataio.__name__=='tempDataIO':
+                self.__doc__=self.dataio.__doc__
+            else:
+                raise NotImplementedError('PLEASE DOCUMENT YOUR SCIENCE! <3 U FOREVER %s'%self.__class__)
         if not experiment: #FIXME
             self.experiment_id=1
         else:
@@ -130,9 +144,14 @@ class StepBase:
         """ format the dependency returns to pass to io.do"""
         printD('FIXME')
         return [kwargs[name] for name in self.dependencies] #keeps them ordered at least but overloads the meaning of the order
+    def add_kwargs(self,kwargs):
+        """ in place modifier of kwargs used in do """
+        pass
+        
     def do(self,writeTarget=None,**kwargs):
         print(self.__doc__)
-        dep_vals=self.format_dep_returns(**kwargs)
+        self.add_kwargs(kwargs) #add/rename kwargs to match what may be needed for the dataio
+        dep_vals=self.format_dep_returns(**kwargs) #this looks weird becuase there are kwargs that match the name of dependencies
         if writeTarget:
             kwargs['writeTarget']=writeTarget
         kwargs['step_name']=self.__class__.__name__
@@ -142,7 +161,7 @@ class StepBase:
             valueDict=self.io.do(**kwargs) #FIXME maybe there is a place to chain recursive gets?
                 #FIXME returning a dict is a artifact of haveing a bad setup for do_every_time, can fix soon
             if self.fail:
-                if not valueDict[io.__class__.__name__]: #XXX NOTE XXX if fail dataio MUST return true or false
+                if not valueDict[self.io.__class__.__name__]: #XXX NOTE XXX if fail dataio MUST return true or false
                     raise IOError('Step failed, resetting to last set of checkpoints')
 
 
@@ -238,7 +257,7 @@ class StepCompiler:
             if step.isdone:
                 printD(step.id)
                 self.unfinished_nodes.difference_update(step.transitive_closure)
-                self.unfinished_nodes.difference_update(step) #needed so that finished steps are dropped
+                self.unfinished_nodes.difference_update([step]) #needed so that finished steps are dropped
     def branch_resets(self):
         #get all the edges for nodes in the transitive closure
         all_edges=set()

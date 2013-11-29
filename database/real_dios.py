@@ -1,9 +1,11 @@
 #see steps.py and rig/metadatasources.py for inspiration
+import os
+import glob
 from numpy import mean
 from sqlalchemy.orm import object_session
 from database.dataio import Get, Set, Bind, Read, Write, Analysis, Check #FIXME make these decorators for a do() function? this should enable reusable chaining with doccumentation?
 #should the decorator(properties) be how we do default kwargs or should we just define them locally and persist those?
-from database.models import Setter, Getter, Binder, Reader, Writer, Analyzer, Checker, MetaDataSource
+from database.models import Setter, Getter, Binder, Reader, Writer, Analyzer, Checker, MetaDataSource, DataFile
 from time import sleep
 from database.imports import printD
 
@@ -60,7 +62,10 @@ class Get_int(Get):
 class Check_deps_done(Check):
     """ Use for checkpoint steps basically acts as flow control """
     MappedClass=Checker
-    check_function=lambda **kwargs:True
+    #check_function=lambda **kwargs:True
+    @staticmethod
+    def check_function(**kwargs):
+        return True
     
 
 
@@ -73,6 +78,23 @@ class Get_trmDoneNB(Get): #FIXME threading nightmare
     function_name='getDoneNB'
     hardware='keyboard'
 
+class trm_get(Get):
+    """ baseclass to manage key requests"""
+    def do(self,**kwargs):
+        printD(getattr(self.ctrl,self.function_name))
+        if hasattr(getattr(self.ctrl,self.function_name),'keyRequester'):
+            try:
+                self.ctrl.modestate.krdLock.acquire()
+
+                printD(self.ctrl.modestate.keyRequestDict[self.function_name])
+                self.ctrl.modestate._keyRequest+=self.ctrl.modestate.keyRequestDict[self.function_name]
+            except:
+                raise
+            finally:
+                self.ctrl.modestate.krdLock.release()
+
+        return super().do(**kwargs)
+
 class Get_trmDoneORFail(Get):
     """ Get step done or step failed should be used for any external report of a failed step """
     MappedClass=Getter
@@ -80,28 +102,28 @@ class Get_trmDoneORFail(Get):
     function_name='getDoneFailNB'
     hardware='keyboard'
 
-class Get_trmBool(Get):
+class Get_trmBool(trm_get):
     """ get bool via rigio """
     MappedClass=Getter
     ctrl_name='trmFuncs'
     function_name='getBool'
     hardware='keyboard'
 
-class Get_trmString(Get):
+class Get_trmString(trm_get):
     """ get string via rigio """
     MappedClass=Getter
     ctrl_name='trmFuncs'
     function_name='getString'
     hardware='keyboard'
 
-class Get_trmInt(Get):
+class Get_trmInt(trm_get):
     """ get int via rigio """
     MappedClass=Getter
     ctrl_name='trmFuncs'
     function_name='getInt'
     hardware='keyboard'
 
-class Get_trmFloat(Get):
+class Get_trmFloat(trm_get):
     """ get float via rigio """
     MappedClass=Getter
     ctrl_name='trmFuncs'
@@ -302,6 +324,46 @@ class Check_headstages(Check):
         pass
         #stimulate from a, check channel, make sure it matches
         #stimulate from b, check channel, make sure it matches
+
+###
+#Writers
+
+class Get_clx_savedir_url(Get):
+    """ get the path where abf file are saved """
+    MappedClass=Getter
+    def get(self,**kwargs):
+        return '/home/tom/Dropbox/mlab/' #TESTING
+        #return 'C:/Axon/Data' #TODO check the path or better yet read it from somewhere
+
+class Get_newest_abf(Get): #TODO check that name doesn match the previous?
+    """ get the newest abf """
+    MappedClass=Getter
+    def _get(self,**kwargs): #FIXME doesnt work!
+        path=kwargs['Get_clx_savedir_url']
+        path=path.rstrip('/')+'/'
+        filepath=max(glob.iglob(path+'*.abf'), key=os.path.getctime)
+        file=filepath[len(path):]
+        return file
+        
+    def get(self,**kwargs):
+        files=os.listdir(kwargs['Get_clx_savedir_url'])
+        abf_files=[file for file in files if file[-3:]=='abf']
+        abf_files.sort() #FIXME make sure the filenames order correctly
+        out=abf_files[-1] #get the last/newest file
+        return out
+
+
+class Write_clx_datafile(Write):
+    """ recored the datafile in the database """
+    MappedClass=Writer
+    MappedWriter=DataFile
+    writer_kwargs={} #TODO check the path
+
+class Write_datafile_metadata(Write):
+    """ write data to datafile """
+    MappedClass=Writer
+    MappedWriter=DataFile
+    writer_kwargs={}
 
 ###
 #Analysis
