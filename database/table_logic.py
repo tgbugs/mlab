@@ -10,6 +10,16 @@ from database.queries import getSusTru
 from database.imports import printD
 from IPython import embed
 
+def add_table_logic(cls):
+    """class decorator for session makers to wrap them in table logic"""
+    def new_call(*args,**kwargs):
+        printD('table logic added to session maker!')
+        out=logic_stepEdge(cls.__call__(*args,**kwargs))
+        return out
+    new_call.__name__='__call__'
+    cls.__call__=new_call
+    return cls
+
 def listenForThings(session): #FIXME very broken
     """this should be 1:1 with every session where things are automated?? is it better to do this or to do it by hand, I think this is better because I can't miss with it"""
     class Holder:

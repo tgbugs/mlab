@@ -17,14 +17,14 @@ from debug import TDB,ploc
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
-#tdb.off()
+tdb.off()
 
 #TODO need to integrate stuff from experiments, but maybe it makes sense to do that elsewhere somehow?
 #since they will need to be integrated with keys to launch them or something
 
 class rigIOMan:
     """Terminal input manager, control the rig from a terminal window"""
-    def __init__(self,keyDicts,session_maker):
+    def __init__(self,keyDicts,session):
         #self.globs=globs #for passing in to for openIPyton and embed()
         self.keyDicts=keyDicts
         self.krdLock=threading.RLock()
@@ -51,11 +51,12 @@ class rigIOMan:
         self.keyThread=threading.Thread(target=keyListener,args=(self.charBuffer,self.keyHandler,self.keyLock,self.term_callback,self.cleanup))
         #self.keyThread=keyThread
 
-        self.initControllers() #these need charBuffer and keyThread to work FIXME nope, dupe for ':':'cmd'
-        self.setMode('rig')
-        self.Session=session_maker #FIXME how do we ACTUALLy want to deal with this? I feel like I have isolated most of the database io that the keyboard interacts with to the dataios-write
+        self.session=session #FIXME how do we ACTUALLy want to deal with this? I feel like I have isolated most of the database io that the keyboard interacts with to the dataios-write
             #but what if I want to query something on the fly? urg
             #just open a new terminal m8
+
+        self.initControllers() #these need charBuffer and keyThread to work FIXME nope, dupe for ':':'cmd'
+        self.setMode('rig')
 
         #TODO add a way for keys to enter programatic control mode, they will still need keyinput though
         #FIXME TODO
@@ -172,7 +173,8 @@ class rigIOMan:
 
         try: #then call the function
             function=self.keyActDict[self.key]
-            #printD(self.key)
+            #if hasattr(function,'sameThread'):
+                #function()
             if function:
                 calledThread=threading.Thread(target=function)
                 calledThread.start()
@@ -200,8 +202,13 @@ class rigIOMan:
             except:
                 #warnings.warn('[!] %s failed to init'%ctrl.__name__,UserWarning,0)
                 #raise
-                printD('[!] %s failed to init'%ctrl.__name__)
-     
+                print('[!] %s failed to init'%ctrl.__name__) #XXX print
+
+        #init trmFuncs since it really should be part of key...
+        #self.trm_io=trmFuncs(self)
+        #self.ikFuncDict['trmFuncs']=self.trm_io
+        #self.ikFuncDict['trmFuncs']=lambda:raise DeprecationWarning('replace with reference to .trm_io please')
+        #init the rest 
         ctrlBindingDict={
                 'clxControl':clxFuncs,
                 'espControl':espFuncs,
@@ -211,10 +218,12 @@ class rigIOMan:
             initedFunc=ctrlBindingDict[ctrl_name](self,ctrlDict[ctrl_name]) #callback to register functions as keyRequesters happends here
             self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
-        FUNCS=keyFuncs,trmFuncs #datFuncs has been removed for now
+
+        FUNCS=keyFuncs,trmFuncs,datFuncs #must init dat after trm?
         for func in FUNCS:
             initedFunc=func(self) #callback to register functions as keyRequesters happends here
             self.ikFuncDict[initedFunc.__mode__]=initedFunc
+
 
         self.updateModeDict() #bind keys to functions
         self.ctrlDict=ctrlDict #FIXME make more explicit
@@ -222,9 +231,10 @@ class rigIOMan:
 
    
 def main():
-    from database.engines import sqliteMem
-    Session=None #TODO
-    rigIO=rigIOMan(keyDicts,Session)
+    from database.sessions import get_pg_sessionmaker
+    pg_sm=get_pg_sessionmaker()
+    session=pg_sm()
+    rigIO=rigIOMan(keyDicts,session)
     rigIO.start()
 
 

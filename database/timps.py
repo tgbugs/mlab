@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.3
 """Streamlined file for testing postgres stuff in ipython
 Usage:
-    main.py [options]
+    main.py [ --echo --ipython --steps --rio-start ]
     main.py (-h | --help )
 Options:
     -e --echo       enable echo
@@ -12,6 +12,7 @@ Options:
     #main.py [(-e | --echo) (-i | --ipython) (-s | --steps) (-r | --rio-start)]
 #-t --test       run tests and exit
 from docopt import docopt
+args=docopt(__doc__) #do this early to prevent all the lags
 #from IPython import embed
 from database.TESTS import *
 #from database.steps import *
@@ -26,8 +27,6 @@ from database.queries import *
 from database.table_logic import *
 from database.main import printFD
 from sqlalchemy.orm import Session
-args=docopt(__doc__)
-print(args)
 engine=pgTest(args['--echo'])
 session=Session(engine)
 s=session

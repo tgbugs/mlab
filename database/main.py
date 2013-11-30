@@ -129,5 +129,5 @@ if __name__=='__main__':
     #global ipython #FIXME LOL MASSIVE HACK
     session=main(args['--echo'],args['--pgsql'],args['--wipe'],args['--setup'],args['--test']) #THAT WAS EASY
     if args['--ipython']:
-        from IPython import embed
+        from rig.ipython import embed
         embed()

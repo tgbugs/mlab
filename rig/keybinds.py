@@ -78,7 +78,8 @@ def rigDict():
 def clxDict():
     protPath='C:/tom_axon/' #FIXME this is hidden this needs to go somewhere else or be removed period
     programDict={
-                 '1':protPath+'2ch_scope'+'.pro',
+                 #'1':protPath+'2ch_scope'+'.pro',
+                 '1':protPath+'0_led_loose_patch'+'.pro',
                  '2':protPath+'current_step_-100-1000'+'.pro',
                  '3':protPath+'pair_test_0-1'+'.pro',
                  '4':protPath+'pair_test_1-0'+'.pro',
@@ -96,8 +97,11 @@ def clxDict():
              'clxFuncs':{
                          '#!':('readProgDict',(programDict,)),
                          'l':'load',
+                         'r':'record',
+                         'v':'view',
                          'g':'getStatus',
-                         's':'startMembTest',
+                         's':'stop_rec',
+                         'm':'startMembTest',
                         },
             }
     
@@ -122,13 +126,18 @@ def mccDict():
                     '0':['allIeZ','allVCnoHold','allVChold_60'],
                     '9':{'mccFuncs':{ #FIXME this is bloodly useless >_< replace w/ actual programatic control
                                      0:'allIeZ',
-                                     2:'allICnoHold',
-                                     4:'inpWait',
+                                     3:'allICnoHold',
                                     },
                          'clxFuncs':{
-                                     1:('load','0'),
-                                     3:('load','1'),
+                                     1:('load','1'),
+                                     2:'record',
+                                     4:('load','2'),
+                                     5:'record',
+                                    10:'stop_rec',
                                     },
+                         'trmFuncs':{
+                                     9:'getKbdHit',
+                                    }
                         },
                     'y':'getState',
                    },

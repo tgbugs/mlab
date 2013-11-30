@@ -342,7 +342,7 @@ class Get_clx_savedir_url(Get):
     MappedClass=Getter
     def get(self,**kwargs):
         return '/home/tom/Dropbox/mlab/' #TESTING
-        #return 'C:/Axon/Data' #TODO check the path or better yet read it from somewhere
+        return 'D:/tom_data/clampex/' #this is the path in question
 
 class Get_newest_abf(Get): #TODO check that name doesn match the previous?
     """ get the newest abf """
@@ -360,7 +360,6 @@ class Get_newest_abf(Get): #TODO check that name doesn match the previous?
         abf_files.sort() #FIXME make sure the filenames order correctly
         out=abf_files[-1] #get the last/newest file
         return out
-
 
 class Write_clx_datafile(Write):
     """ recored the datafile in the database """

@@ -3,6 +3,7 @@ import os
 import inspect as ins
 from debug import TDB
 from time import sleep
+from threading import RLock
 #import rpdb2
 #rpdb2.settrace()
 
@@ -64,13 +65,15 @@ def errPrint(pnErr):
     if errval==4000:
         return 1
     else:
-        raise(errdict[errval])
+        raise BaseException(errdict[errval])
         #printD(errdict[errval],context=5)
         #return 0
 
 #main class
 class clxControl: #clxmsg
     def __init__(self):
+        #create a lock so that we can pass this around
+        self.clxLock=RLock()
         #load the clx msg dll
         clxDllPath='C:/Axon/pCLAMP9.2/3rd Party Support/AxClampexMsg/' #change this to match install loc
         #or put it in the same folder with your code! NOPE doesnt work!
@@ -90,22 +93,27 @@ class clxControl: #clxmsg
         #self.hClxmsg=self.CreateObject() #FIXME
 
         #wrap all the methods from the API to try to prevent the nasty crashing
-        class wrap:
-            def __init__(self,pre,call,post):
-                self.start=pre
-                self.do=call
-                self.stop=post
-            def go(self,*args):
-                self.start()
-                out=self.do(*args)
-                self.stop()
-                return out
+        def wrap(func,start,stop):
+            #def wrapped(*args,**kwargs):
+            def wrapped(*args):
+                try:
+                    self.clxLock.acquire()
+                    start()
+                    out=func(*args)
+                    stop()
+                    return out
+                except:
+                    raise
+                finally:
+                    self.clxLock.release()
+            wrapped.__name__=func.__name__
+            return wrapped
         mems=ins.getmembers(self)
         excluded=['cleanup', 'DestroyObject', 'CreateObject', '__init__']
         funcs=[func for func in mems if ins.ismethod(func[1]) and func[0] not in excluded]
         #printFuncDict(funcs)
         for tup in funcs:
-            setattr(self,tup[0],wrap(self.CreateObject,tup[1],self.DestroyObject).go)
+            setattr(self,tup[0],wrap(tup[1],self.CreateObject,self.DestroyObject))
 
         #if everything goes well create the rest of the pointers
         self._pnPointer=byref(c_int(0))
@@ -443,16 +451,17 @@ CLXMSG_TEL_INSTRU_NAMESIZE         = 260
 
 def main():
     #import pdb
-    ctrl=clxmsg()
+    ctrl=clxControl()
     #pdb.set_trace()
     printD(ctrl.GetStatus())
-    printD(ctrl.StartMembTest(120))
-    sleep(5)
-    printD(ctrl.CloseMembTest(120))
-    sleep(.5)
-    printD(ctrl.StartMembTest(121))
-    sleep(5)
-    printD(ctrl.CloseMembTest(121))
+    ctrl.StartAcquisition(108) #VIEW
+    #printD(ctrl.StartMembTest(120))
+    #sleep(5)
+    #printD(ctrl.CloseMembTest(120))
+    #sleep(.5)
+    #printD(ctrl.StartMembTest(121))
+    #sleep(5)
+    #printD(ctrl.CloseMembTest(121))
 
     #ctrl.cleanup()
 

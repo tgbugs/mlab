@@ -25,6 +25,19 @@ class Person(Base):
     p2p_assoc=relationship('person_to_project',backref='people')
     projects=association_proxy('p2p_assoc','projects')
 
+    @reconstructor
+    def __dbinit__(self):
+        from database.models import person_to_project
+        def creator(project):
+            return person_to_project(person_id=self,project_id=project)
+        setattr(self.projects,'creator',creator)
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        def creator(project):
+            return person_to_project(person_id=self,project_id=project)
+        setattr(self.projects,'creator',creator)
+
+
     def __repr__(self):
         def xstr(string):
             return '' if string is None else str(string)

@@ -30,11 +30,20 @@ class Project(Base): #FIXME ya know this looks REALLY similar to a paper or a jo
     #FIXME do we really want write access here? viewonly=True might be useful?
     people=association_proxy('p2p_assoc','people') #people.append but make sure nothing wierd happends
     relationship
+    @reconstructor
+    def __dbinit__(self):
+        def creator(person):
+            return person_to_project(project_id=self,person_id=person)
+        setattr(self.people,'creator',creator)
     def __init__(self,lab=None,iacuc_protocol_id=None,blurb=None):
         #self.pi_id=pi_id
         self.lab=lab
         self.iacuc_protocol_id=iacuc_protocol_id
         self.blurb=blurb
+
+        def creator(person):
+            return person_to_project(project_id=self,person_id=person)
+        setattr(self.people,'creator',creator)
         #if PI:
             #if PI.id:
                 #pi_id=PI.id

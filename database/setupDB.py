@@ -222,15 +222,27 @@ def popDataIO(session):
     session.add(DataIO(name='urio',docstring='mareti'))
 
 def popStep(session): #FIXME we really should never have to do this directly!
-    session.add(Step(name='test step',docstring='fixme',dataio_id=1))
+    session.add(Step(name='no steps',docstring='fixme',dataio_id=1))
+
+def popPeople(session):
+    session.add(Person(FirstName='Tom',LastName='Gillespie'))
+    session.flush()
+
+def popProject(session):
+    proj=Project(lab='Scanziani',blurb='Horizontal projections on to SOM cells')
+    session.add(proj)
+    tom=session.query(Person).filter(Person.FirstName=='Tom',Person.LastName=='Gillespie').one()
+    proj.people.append(tom) #FIXME this should autoprop from experiments?
+
 
 
 def popExperimentType(session): #FIXME
-    session.add(ExperimentType('acute slice prep','prep',1))
+    session.add(ExperimentType('acute slice prep','slice',1))
     session.add(ExperimentType('in vitro patch','patch',1))
 
 def popDataFileSources(session):
     session.add(DataFileSource(name='clampex9_scope',extension='abf',docstring='a clampex!'))
+    session.add(DataFileSource(name='clampex 9.2',extension='abf',docstring='a clampex!'))
 
 def popMetaDataSources(session):
     espX=None
@@ -288,6 +300,8 @@ def popDataSourceAssociations(session):
 
 def populateConstraints(session): #FIXME this has become testing because of how things have been reworked
     """Populate the tables used to constrain datatypes"""
+    popPeople(session)
+    popProject(session)
     popSIUnit(session)
     popNonSIUnit(session)
     popSIPrefix(session)
