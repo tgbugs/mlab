@@ -1,23 +1,24 @@
-from sqlalchemy.orm import sessionmaker
+#XXX deprecated just import the engines directly this is too prone to issues
+from sqlalchemy.orm import Session #sessionmaker
 from database.engines import sqliteMem, pgTest, pgEng
-from database.table_logic import add_table_logic
+
+#class LogicSessionMaker(sessionmaker): #FIXME not working...
+    #def __call__(self,**local_kw):
+        #out=super().__call__(**local_kw)
+        #out=add_table_logic(out)
+        #return out
+    
+
 
 #note: done this way so that engines wont be created willy nilly
 
-@add_table_logic
-def get_pgt_sessionmaker():
-    pgt_engine=pgTest()
-    return sessionmaker(bind=pgt_engine)
+#pgt_engine=pgTest()
+#pgt_sessionmaker=add_table_logic(sessionmaker(bind=pgt_engine))
 
-@add_table_logic
-def get_sqm_sessionmaker():
-    sqm_engine=sqliteMem()
-    return sessionmaker(bind=sqm_engine)
+#sqm_engine=sqliteMem()
+#sqm_sessionmaker=add_table_logic(sessionmaker(bind=sqm_engine))
 
-@add_table_logic
-def get_pge_sessionmaker():
-    pge_engine=pgEng()
-    return sessionmaker(bind=pge_engine)
+#pge_engine=pgEng()
+#pge_sessionmaker=sessionmaker(bind=pge_engine)
 
-get_pg_sessionmaker=get_pgt_sessionmaker #XXX CHANGE WHEN NO LONGER TESTING!
-#get_pg_sessionmaker=get_pge_sessionmaker #XXX CHANGE WHEN NO LONGER TESTING!
+#pg_sessionmaker=pgt_sessionmaker #XXX CHANGE WHEN NO LONGER TESTING!

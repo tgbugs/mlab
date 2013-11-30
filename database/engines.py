@@ -1,6 +1,7 @@
 import socket
 import os
 from sqlalchemy import create_engine
+from psycopg2.extras import register_hstore
 
 def sqliteMem(echo=False):
     from sqlalchemy.engine import Engine
@@ -28,9 +29,17 @@ def pgTest(echo=False,wipe_db=False,username='sqla',password='asdf',host='localh
         con.execute('commit')
         con.close()
         del(engine)
-    return create_engine(pg%(username,password,host,port,'db_test'),echo=echo)
+    engine=create_engine(pg%(username,password,host,port,'db_test'),echo=echo)
+    return engine
 
-def pgEng(username,password,host,port=5432,database='postgres',echo=False): #FIXME postgres probably shouldn't be default
+def pgReal(username,password,host,port=5432,database='postgres',echo=False): #FIXME postgres probably shouldn't be default
     pg='postgresql://%s:%s@%s:%s/%s'
-    return create_engine(pg%(username,password,host,port,database),echo=echo)
+    engine=create_engine(pg%(username,password,host,port,database),echo=echo)
+    #con.execute('CREATE EXTENSION hstore;')
+    #register_hstore(engine.raw_connection(),True)
+    return engine
 
+
+pgEng=pgTest #XXX switch over at some point
+
+engine=pgTest() #XXX THIS IS THE ONE YOU SHOULD USE! update when ready!

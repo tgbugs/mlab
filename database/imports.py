@@ -33,7 +33,7 @@ from sqlalchemy.ext.associationproxy    import association_proxy
 
 from debug                              import TDB,ploc
 
-from database.types_                    import ArrayFloat, ArrayString, DictType
+from database.types_                    import Array, DictType
 
 _tdb=TDB()
 printD=_tdb.printD

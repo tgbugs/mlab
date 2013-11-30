@@ -175,6 +175,7 @@ def popHardwareType(session):
         ('pipette puller','Make that cappilary pointy!'),
         ('chamber','Box for keeping dead brain slices alive.'),
         ('actuator','something (usually motoroized) for moving something else very accurately, seems related to a manipulator'),
+        ('keyboard','quite useful for typing in data manually >_<'),
     )
     session.add_all([HardwareType(id=t,description=d) for t,d in _HWTYPES])
 
@@ -214,6 +215,8 @@ def popHardware(session):
     nidaq=session.query(Hardware).filter_by(name='nidaq')[0]
     session.add(Hardware(parent_id=nidaq,type_id='led',name='470',Properties={'model':'M470L2','unique_id':'M00277763'}))
     session.commit()
+    
+    session.add(Hardware(name='keyboard',type_id='keyboard'))
 
 def popReagentType(session):
     acsf=ReagentType(name='acsf')#,iupac=None)

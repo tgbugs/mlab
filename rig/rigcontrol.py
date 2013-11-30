@@ -24,7 +24,7 @@ tdb.off()
 
 class rigIOMan:
     """Terminal input manager, control the rig from a terminal window"""
-    def __init__(self,keyDicts,session):
+    def __init__(self,keyDicts,sessionmaker):
         #self.globs=globs #for passing in to for openIPyton and embed()
         self.keyDicts=keyDicts
         self.krdLock=threading.RLock()
@@ -52,7 +52,7 @@ class rigIOMan:
         #self.keyThread=keyThread
 
         #XXX WARNING XXX passing this between threads is BAD
-        self.session=session #FIXME how do we ACTUALLy want to deal with this? I feel like I have isolated most of the database io that the keyboard interacts with to the dataios-write
+        self.Session=sessionmaker #FIXME how do we ACTUALLy want to deal with this? I feel like I have isolated most of the database io that the keyboard interacts with to the dataios-write
             #but what if I want to query something on the fly? urg
             #just open a new terminal m8
 
@@ -232,10 +232,17 @@ class rigIOMan:
 
    
 def main():
-    from database.sessions import get_pg_sessionmaker
-    pg_sm=get_pg_sessionmaker()
-    session=pg_sm()
-    rigIO=rigIOMan(keyDicts,session)
+    from database.engines import engine
+    from sqlalchemy.orm import sessionmaker
+    from database.table_logic import logic_StepEdge
+
+    _Session=sessionmaker(bind=engine)
+    def Session():
+        session=_Session()
+        logic_StepEdge(session)
+        return session
+
+    rigIO=rigIOMan(keyDicts,Session)
     rigIO.start()
 
 

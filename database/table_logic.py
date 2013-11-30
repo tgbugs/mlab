@@ -13,8 +13,8 @@ from IPython import embed
 def add_table_logic(cls):
     """class decorator for session makers to wrap them in table logic"""
     def new_call(*args,**kwargs):
-        printD('table logic added to session maker!')
-        out=logic_stepEdge(cls.__call__(*args,**kwargs))
+        #printD('table logic added to session maker!')
+        out=logic_StepEdge(cls.__call__(*args,**kwargs))
         return out
     new_call.__name__='__call__'
     cls.__call__=new_call
@@ -140,6 +140,7 @@ def logic_StepEdge(session):
 
     @event.listens_for(session,'before_attach')
     def check_for_cycles(session,instance): #FIXME monumentally slow for repeated adds and high edge counts
+        print('its working in list for and check... edges')
         if type(instance) is StepEdge:
             #FIXME since this is now called at before_attach the edge cannot find itself!
             edges=session.query(StepEdge.step_id,StepEdge.dependency_id).all() #ICK horrible for repeatedly adding edges :/

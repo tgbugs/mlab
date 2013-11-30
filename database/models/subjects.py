@@ -80,7 +80,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
 
         self.experiments.extend(Experiments)
         self.hardware.extend(Hardware)
-        self.properties.update(Properties)
+        self.properties=Properties
         #[self.Properties(self,key,value) for key,value in Properties.items()]
 
 

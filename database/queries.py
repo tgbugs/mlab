@@ -4,6 +4,7 @@ from database.models import *
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import object_session
+from sqlalchemy.ext.mutable import MutableDict
 
 def q(session):
     s=session
@@ -37,7 +38,8 @@ def qTree(session):
 
 #queries to sort subjects by whether they have a certain property
 def hasProperty(session,Object,key):
-    return session.query(Object).join((Object.Properties,Object.properties.local_attr)).filter_by(key=key)
+    #return session.query(Object).join((Object.Properties,Object.properties.local_attr)).filter_by(key=key)
+    return [obj for obj in session.query(Object).filter(Object.properties!=(MutableDict({}))).all() if obj.properties.get(key)]
 
 def hasKVPair(session,Object,key,value):
     return session.query(Object).join((Object.Properties,Object.properties.local_attr)).filter(Object.Properties.key==key,Object.Properties.value==value)

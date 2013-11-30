@@ -5,7 +5,7 @@ from sys import stdout,stdin
 from time import sleep
 from debug import TDB,ploc
 from rig.ipython import embed
-from database.decorators import new_abf_DataFile
+from database.decorators import Get_newest, new_abf_DataFile, hardware_interface, is_mds
 #from IPython import embed
 try:
     import rpdb2
@@ -191,36 +191,39 @@ class clxFuncs(kCtrlObj):
 class datFuncs(kCtrlObj): 
     #interface with the database TODO this should be able to run independently?
     """Put ANYTHING permanent that might be data in here"""
-    from database.sessions import get_pg_sessionmaker
-    pg_sm=get_pg_sessionmaker()
-    session=pg_sm()
     from database.models import Person, ExperimentType, Experiment, Cell, Slice, Mouse
     def __init__(self,modestate,*args):
         super().__init__(modestate)
-        #self.session=modestate.session #FIXME maybe THIS was the problem?
+        self.Session=modestate.Session #FIXME maybe THIS was the problem?
         self.__getChars__=modestate.ikFuncDict['trmFuncs'].__getChars__
-        self.c_person=self.session.query(self.Person).filter(self.Person.FirstName=='Tom',self.Person.LastName=='Gillespie').one()
+        session=self.Session()
+        self.c_person=session.query(self.Person).filter(self.Person.FirstName=='Tom',self.Person.LastName=='Gillespie').one()
         self.c_project=self.c_person.projects[0] #FIXME
+        session.close()
 
     def newExperiment(self): #FIXME this fails because of how dictMan works...
-        types=self.session.query(self.ExperimentType).all()
+        session=self.Session()
+        types=session.query(self.ExperimentType).all()
         print('please enter the type of experiment, available types are: %s'%[t.abbrev for t in types])
         type_=None
         type_string=self.__getChars__('type>')
         type_=[t for t in types if t.abbrev==type_string]
         if type_:
             self.c_experiment=self.Experiment(type_id=type_[0],project_id=self.c_project,person_id=self.c_person)
-            self.session.add(self.c_experiment)
+            session.add(self.c_experiment)
             try: 
-                self.session.commit()
+                session.commit()
                 print('new experiment added with id=%s'%self.c_experiment)
             except:
                 session.rollback() #FIXME could be dangerous? if others are in the session?
+            finally:
+                session.close()
         else:
             print('Invalid type: experiment not created')
         return self
     newExperiment.keyRequester=True
 
+@hardware_interface('mc1') #FIXME or is it software interface?
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
     def __init__(self, modestate, controller):
         try:
@@ -369,6 +372,7 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
 
 
 @hasKeyRequests
+@hardware_interface('ESP300')
 class espFuncs(kCtrlObj):
     def __init__(self, modestate, controller):
         try:
@@ -601,8 +605,8 @@ class keyFuncs(kCtrlObj):
     def esc(self):
         return 0
 
-
 @hasKeyRequests
+@hardware_interface('keyboard')
 class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
     def __init__(self, modestate):
         self._keyThread=modestate.keyThread

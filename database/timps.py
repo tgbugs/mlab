@@ -18,16 +18,16 @@ from database.TESTS import *
 #from database.steps import *
 #from database.dataio import Get,Set,Bind,Read,Write,Analysis,Check
 #from rig.ipython import embed
-from rig.rigcontrol import rigIOMan, keyDicts
 from database.real_steps import *
 from database.steps import StepRunner, StepCompiler
 from database.models import *
-from database.engines import *
+from database.engines import engine
 from database.queries import *
 from database.table_logic import *
 from database.main import printFD
 from sqlalchemy.orm import Session
-engine=pgTest(args['--echo'])
+#engine=pgTest(args['--echo'])
+engine.echo=args['--echo']
 session=Session(engine)
 s=session
 
@@ -40,18 +40,10 @@ dbtype=session.connection().engine.name #dialect.name??
 logic_StepEdge(session)
 
 #load up the stuff we need to test dataios and steps
-rio=rigIOMan(keyDicts, session)#, globals())
 if args['--rio-start']:
+    from rig.rigcontrol import rigIOMan, keyDicts
+    rio=rigIOMan(keyDicts, session)#, globals())
     rio.start()
-
-#deal with steps
-iStepDict={}
-printFD(stepDict)
-for name,step in stepDict.items():
-    #printD(name,step.__name__)
-    iStepDict[name.lower()]=step(session,ctrlDict=rio.ctrlDict)
-locals().update(iStepDict)
-#iStepDict=stepDict
 
 #sc=StepCompiler(bind_pia_xys,stepDict)
 #FIXME use ExperimentType???
@@ -59,7 +51,15 @@ locals().update(iStepDict)
 #sr.do() #DUN DUN DUN!
 #rio.pass_locals(locals()) #FIXME some stuff seems to be missing...
 
+#deal with steps
 if args['--steps']:
+    iStepDict={}
+    printFD(stepDict)
+    for name,step in stepDict.items():
+        #printD(name,step.__name__)
+        iStepDict[name.lower()]=step(session,ctrlDict=rio.ctrlDict)
+    locals().update(iStepDict)
+
     for step in iStepDict.values():
         try:
             sr=StepRunner(session,step,stepDict,rio.ctrlDict, session.query(Experiment).all()[10])

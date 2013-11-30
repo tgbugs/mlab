@@ -20,7 +20,7 @@ class HardwareType(Base):
         return '\n%s\n%s%s'%(self.id, self.description, ''.join([thing.strHelper(1) for thing in self.hardware]))
 
 
-class Hardware(HasMetaData, HasExperiments, HasCiteables, HasProperties, HasTreeStructure, Base): #FIXME unique_id back to the base? ehhhh???? tradeoffs
+class Hardware(HasMetaData, HasExperiments, HasCiteables, HasTreeStructure, Base): #FIXME unique_id back to the base? ehhhh???? tradeoffs
     #TODO implement something like has ontogeny for has tools and require an experiment
     #even if it is just sanity checking stuff there will be a record of stuff like the pull protocol
     #FIXME well, ideally you just want to keep track of when it changes because it is technically a protocol
@@ -31,6 +31,7 @@ class Hardware(HasMetaData, HasExperiments, HasCiteables, HasProperties, HasTree
     name=Column(String,unique=True,nullable=False) #FIXME unique or not unique? also pk? or move to properties
     type_id=Column(String,ForeignKey('hardwaretype.id'),nullable=False) #FIXME this should be like keywords the point is to make life easier not to put up walls
     parent_id=Column(Integer,ForeignKey('hardware.id')) #FIXME pipettes are hardware made by hardware using a certain protocol, looks similar to an experiment and so physical hierarchy and generative heirarchy are different, 
+    properties=Column(DictType)
     tools=None #relationship('Hardware') #TODO many to one used w/ blueprint to make stuff, WARNING this approach is almost certainly overly complicated and should be scrapped #FIXME super cool, when you have a mutable tree structure then you CAN have ontogeny and part-whole between the same types of objects... does raise the issue that experiments are starting to look awefully similar to protocols in the sense that when pulling pipettes there isn't really any... wait, yes there is, the exact parameteres of the puller on that day... sweet!
     children=relationship('Hardware',primaryjoin='Hardware.id==Hardware.parent_id',backref=backref('parent',uselist=False,remote_side=[id]))
 
@@ -42,7 +43,7 @@ class Hardware(HasMetaData, HasExperiments, HasCiteables, HasProperties, HasTree
             self.parent_id=int(parent_id)
         self.name=name
         self.citeables.extend(Citeables)
-        self.properties.update(Properties)
+        self.properties=Properties
 
     def strHelper(self,depth=0):
         ts='\t'*depth

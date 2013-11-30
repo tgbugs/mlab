@@ -229,8 +229,10 @@ class DataFileMetaData(Base): #FIXME naming
     __table_args__=(ForeignKeyConstraint([url,filename],['datafile.url','datafile.filename']), {})
     metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False) #TODO how to get this?
     dateTime=Column(DateTime,default=datetime.now)
-    value=Column(Float(53),nullable=False)
-    abs_error=Column(Float(53)) #TODO
+    #value=Column(Float(53),nullable=False)
+    #abs_error=Column(Float(53)) #TODO
+    value=Column( Array(Float(53)) ,nullable=False) #TODO 
+    abs_error=Column( Array(Float(53)) ) #TODO
     metadatasource=relationship('MetaDataSource')
 
     @validates('url','filename','metadatasource_id','dateTime','value','abs_error')
@@ -322,7 +324,7 @@ class File(Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces 
 
     def checkExists(self): #TODO
         #URL_STAND.ping(self.full_url)
-        print('TURN ME BACK ON YOU IDIOT')
+        printD('TURN ME BACK ON YOU IDIOT')
 
     def __init__(self,filename=None,url=None,creationDateTime=None): #args could be useful... for conveying nullable=False or primary_key...
         self.url=URL_STAND.urlClean(str(url))

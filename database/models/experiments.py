@@ -64,7 +64,7 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
 
     #TODO list of steps completed with the time of completion: association object class? seems nice for querying
     #TODO FIXME don't let someone create an experiment if specific checkpoints/check steps aren't satisfied
-    sorted_steps=Column(ArrayString)
+    sorted_steps=Column(Array(String))
     step_tree_version_id=None
     steprecord=relationship('StepRecord',order_by='StepRecord.id')
     steps=association_proxy('steprecord','step',creator=lambda step_id, success: StepRecord(step_id=step_id,success=success)) #FIXME make sure experiment_id gets set...

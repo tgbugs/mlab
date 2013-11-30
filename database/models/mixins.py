@@ -92,8 +92,10 @@ class HasMetaDataSources:
 class MetaData: #the way to these is via ParentClass.MetaData which I guess makes sense?
     #this stuff is not vectorized... a VectorizedData might be worth considering ala ArrayData
     dateTime=Column(DateTime,default=datetime.now)
-    value=Column(Float(53),nullable=False)
-    abs_error=Column(Float(53))
+    #value=Column(Float(53),nullable=False)
+    #abs_error=Column(Float(53))
+    value=Column( Array(Float(53)) ,nullable=False) #TODO 
+    abs_error=Column( Array(Float(53)) ) #TODO
     @validates('parent_id','metadatasource_id','dateTime','value','abs_error')
     def _wo(self, key, value): return self._write_once(key, value)
 
@@ -101,7 +103,7 @@ class MetaData: #the way to these is via ParentClass.MetaData which I guess make
     def __init__(self,value,parent_id,metadatasource_id,abs_error=None,dateTime=None): #FIXME want *args @ all?
         self.value=value
         self.abs_error=abs_error
-        self.parent_id=int(parent_id)
+        self.parent_id=int(parent_id) #this is here because of the write once
         self.dateTime=dateTime
         self.metadatasource_id=int(metadatasource_id)
             
@@ -384,6 +386,10 @@ class Properties: #FIXME HasKeyValueStore
 class HasProperties: #FIXME set this up to use hstore if postgres is detected
     #TODO __init__ with kwargs and the like for all these or what?
     @declared_attr
+    def properties(cls):
+        return Column(DictType)
+    """
+    @declared_attr
     def properties(cls): #this is an UNVALIDATED STORE
         cls.Properties=type(
                 '%sProperties'%cls.__name__,
@@ -398,6 +404,7 @@ class HasProperties: #FIXME set this up to use hstore if postgres is detected
         #FIXME I don't understand why I do not need to init with parent_id...
         return association_proxy('__properties','value',creator=lambda k,v: cls.Properties(key=k,value=v))
         #return relationship(cls.Properties,collection_class=attribute_mapped_collection('key'))
+    """
 
 
 ###-------------------------------------------
