@@ -11,6 +11,9 @@ session=pg_sm()
 def Get_current_experiment():
     return session.query(Experiment).order_by(Experiment.id.desc()).first() #FIXME dangerous hack
 
+def Get_current_datafile():
+    return session.query(DataFile).order_by(DataFile.creationDateTime.desc()).first()
+
 def Get_newest_abf(url):
     files=os.listdir(url)
     abf_files=[file for file in files if file[-3:]=='abf']
@@ -24,15 +27,31 @@ def new_abf_DataFile(function): #TODO could wrap it one more time in a file type
     if not dfs:
         dfs=DataFileSource(name='clampex 9.2',extension='abf',docstring='a clampex!')
         session.add(dfs)
-        session.commit()
+        try:
+            session.commit()
+        except:
+            session.rollback()
     def wrapped(*args,**kwargs):
         function(*args,**kwargs)
         experiment=Get_current_experiment()
         filename=Get_newest_abf(url)
-        new_df=DataFile(filename=filename,url=url,datafilesource_id=dfs)
+        print(filename,'will be added to the current experiment!')
+        new_df=DataFile(filename=filename,url='file:///'+url,datafilesource_id=dfs,experiment_id=experiment)
         session.add(new_df)
-        session.commit()
+        try:
+            session.commit()
+        except:
+            print('[!] Error commiting file! Rolling back!')
+            session.rollback()
     wrapped.__name__=function.__name__
     return wrapped
+
+def new_DF_MetaData(function):
+    """ add metadata to the most recent datafile"""
+    def wrapper(*args,**kwargs):
+        value=function(*args,**kwargs)
+        df=Get_current_datafile()
+        mds=None #XXX TODO
+        df.metadata_.append(df.MetaData(value,metadatasource_id=None))
 
 

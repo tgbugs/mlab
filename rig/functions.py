@@ -191,33 +191,35 @@ class clxFuncs(kCtrlObj):
 class datFuncs(kCtrlObj): 
     #interface with the database TODO this should be able to run independently?
     """Put ANYTHING permanent that might be data in here"""
-    #from database.sessions import get_pg_sessionmaker
-    #pg_sessionmaker=get_pg_sessionamaker()
-    #session=pg_sessionmaker
+    from database.sessions import get_pg_sessionmaker
+    pg_sm=get_pg_sessionmaker()
+    session=pg_sm()
     from database.models import Person, ExperimentType, Experiment, Cell, Slice, Mouse
     def __init__(self,modestate,*args):
         super().__init__(modestate)
-        self.session=modestate.session
-        #self.__getChars2__=modestate.ikFuncDict['trmFuncs'].__getChars__
+        #self.session=modestate.session #FIXME maybe THIS was the problem?
+        self.__getChars__=modestate.ikFuncDict['trmFuncs'].__getChars__
         self.c_person=self.session.query(self.Person).filter(self.Person.FirstName=='Tom',self.Person.LastName=='Gillespie').one()
         self.c_project=self.c_person.projects[0] #FIXME
 
-    #@keyRequest
-    #def __getChars2__(self,prompt=None): #compile name collisions >_<
-        #return self.modestate.trm_io.__getChars__(prompt)
-
-    #@keyRequest
     def newExperiment(self): #FIXME this fails because of how dictMan works...
         types=self.session.query(self.ExperimentType).all()
         print('please enter the type of experiment, available types are: %s'%[t.abbrev for t in types])
         type_=None
-        #type_string=self.__getChars2__('type>')
+        type_string=self.__getChars__('type>')
         type_=[t for t in types if t.abbrev==type_string]
         if type_:
-            self.session.add(self.Experiment(type_id=type_[0],project_id=self.c_project,person_id=self.c_person))
-            self.session.commit()
+            self.c_experiment=self.Experiment(type_id=type_[0],project_id=self.c_project,person_id=self.c_person)
+            self.session.add(self.c_experiment)
+            try: 
+                self.session.commit()
+                print('new experiment added with id=%s'%self.c_experiment)
+            except:
+                session.rollback() #FIXME could be dangerous? if others are in the session?
         else:
             print('Invalid type: experiment not created')
+        return self
+    newExperiment.keyRequester=True
 
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
     def __init__(self, modestate, controller):
@@ -693,9 +695,11 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         while self.keyThread.is_alive():
             char=self.charBuffer.get()
             #printD('got a key:', char) 
-            if char == '\n':
-                break
+            if char == '\n' or char == '\r':
                 printD('done')
+                stdout.write('\n\r')
+                stdout.flush()
+                break
             charHand(char)
             stdout.write('\r%s'%prompt+str(ib)+' '*ib.pop_filler())
             stdout.write('\r%s'%prompt+ib.str_to_pos)
@@ -703,6 +707,7 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         if not self.keyThread.is_alive():
             raise IOError('Key thread is not alive!')
         else:
+            #print(str(ib))
             return str(ib)
 
     @keyRequest

@@ -51,6 +51,7 @@ class rigIOMan:
         self.keyThread=threading.Thread(target=keyListener,args=(self.charBuffer,self.keyHandler,self.keyLock,self.term_callback,self.cleanup))
         #self.keyThread=keyThread
 
+        #XXX WARNING XXX passing this between threads is BAD
         self.session=session #FIXME how do we ACTUALLy want to deal with this? I feel like I have isolated most of the database io that the keyboard interacts with to the dataios-write
             #but what if I want to query something on the fly? urg
             #just open a new terminal m8
