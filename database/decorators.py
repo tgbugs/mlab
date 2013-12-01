@@ -47,11 +47,19 @@ def Get_newest_abf(url):
     out=abf_files[-1] #get the last/newest file
     return out
 
+def get_local_abf_path():
+    if os.name == 'posix': #re: sys.platform
+        fpath='/home/tom/Dropbox/mlab/data' #TIL that //home/ is a valid path
+    elif os.name == 'nt':
+        fpath='D:/tom_data/clampex/'
+    return fpath
+
 ###
 #function decorators
 def new_abf_DataFile(subjects_getter=None): #TODO could wrap it one more time in a file type or url
     def inner(function): #TODO could wrap it one more time in a file type or url
-        fpath='D:/tom_data/clampex/' #FIXME
+        #fpath='D:/tom_data/clampex/' #FIXME
+        fpath=get_local_abf_path()
         url='file:///'+fpath
 
         init_sess=Session()
@@ -129,12 +137,14 @@ def is_mds(prefix,unit,hardware_name,mantissa=None,wt_getter=None):
         hardware=init_sess.query(Hardware).filter_by(name=hardware_name).one()
         try:
             mds=init_sess.query(MetaDataSource).filter(MetaDataSource.hardware_id==hardware.id).filter_by(name=name).one()
+            mds_id=mds.id
         except:
             mds=MetaDataSource(name=name,prefix=prefix,unit=unit,mantissa=mantissa,
                                hardware_id=hardware,docstring=function.__doc__)
             init_sess.add(mds)
             try:
                 init_sess.commit()
+                mds_id=mds.id
             except:
                 print('[!] Commit failed! Rolling back!')
                 raise
@@ -156,7 +166,7 @@ def is_mds(prefix,unit,hardware_name,mantissa=None,wt_getter=None):
             else:
                 abs_error=None
 
-            md_kwargs={'value':value,'abs_error':abs_error,'metadatasource_id':mds.id}
+            md_kwargs={'value':value,'abs_error':abs_error,'metadatasource_id':mds_id}
             for write_target in write_targets:
                 if type(write_target) == DataFile:
                     md=write_target.MetaData(DataFile=write_target,**md_kwargs)

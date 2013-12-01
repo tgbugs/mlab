@@ -26,7 +26,8 @@ def dictInit(inDict,clsDict,kr_dict): #putting this here makes everything funny 
             if putativeFunc in keyRequesters: #see if this is a key requester
                 key_request_count+=1
                 #TODO
-            return instanceOfClass.__getattribute__(putativeFunc), key_request_count
+            return getattr(instanceOfClass,putativeFunc,
+                lambda:print('No function %s exists on %s'%(putativeFunc,instanceOfClass.__class__.__name__))), key_request_count
 
         except (TypeError,AttributeError) as e:
             #printD(putativeFunc,'wasnt a function')

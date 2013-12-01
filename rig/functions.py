@@ -305,7 +305,6 @@ class datFuncs(kCtrlObj):
             print('not a type, try fiddling with ipython if you really need to spec soemthing')
 
 
-
     def getDFSubjects(self):
         """ used to pass the current cells to the new_abf_DataFile decorator """
         return self.c_cells
@@ -343,13 +342,13 @@ class datFuncs(kCtrlObj):
             raise
 
     def printAll(self):
-        print(repr(self.c_person))
+        print(self.c_person.strHelper())
         print(repr(self.c_project))
         print(repr(self.c_experiment))
         print(repr(self.c_slice))
-        print(repr(self.c_slice.markDict))
         print(self.c_cells)
         print(repr(self.c_datafile))
+        print('target:',repr(self.c_target))
 
     def newDataFileCallback(self):
         new_df=self.session.query(DataFile).order_by(DataFile.creationDateTime.desc()).first()
@@ -761,6 +760,7 @@ class espFuncs(kCtrlObj):
         #self.initController(npControl)
         self.modestate=modestate
         self.setMoveDict()
+        self.move_list=[]
         #self.event=modestate.event
         
         #associated metadatasources:
@@ -791,24 +791,28 @@ class espFuncs(kCtrlObj):
         self._current_move_list_pos=0
 
     def moveNext(self):
-        print('Moving to next position')
-        self.ctrl.BsetPos(self.move_list[self._current_move_list_pos])
-        if self._current_move_list_pos + 1 < len(self.move_list):
-            self._current_move_list_pos+=1
+        if not self.move_list:
+            print('No movelist! not moving')
+            return None
         else:
-            print('Move list is done! Resetting to the start!')
-            self._current_move_list_pos=0
+            #stdout.write('\rMoving to next position')
+            #stdout.flush()
+            self.ctrl.BsetPos(self.move_list[self._current_move_list_pos])
+            if self._current_move_list_pos + 1 < len(self.move_list):
+                self._current_move_list_pos+=1
+            else:
+                print('Move list is done! Resetting to the start!')
+                self._current_move_list_pos=0
 
     @keyRequest
     def mark(self): #FIXME
         """mark/store the position of a cell using a character sorta like vim"""
         try:
             slice_md=self.modestate.ctrlDict['datFuncs'].c_slice.markDict
+            self.markDict=slice_md
         except AttributeError:
-            raise
-            slice_md={}
-        self.markDict.update(slice_md)
-        stdout.write('\rmark:')
+            pass
+        stdout.write('\rmark> ')
         stdout.flush()
         key=self.charBuffer.get()
         #printD('we got the key from charBuffer')
@@ -830,8 +834,9 @@ class espFuncs(kCtrlObj):
         #self.keyHandler(getMark) #fuck, this could be alot slower...
         try:
             self.modestate.ctrlDict['datFuncs'].set_slice_md(self.markDict)
-        except:
-            raise
+        except AttributeError:
+            pass
+            #raise
         return self
     #mark.keyRequester=True
 
@@ -896,12 +901,10 @@ class espFuncs(kCtrlObj):
         """print out all marks and their associated coordinates"""
         try:
             slice_md=self.modestate.ctrlDict['datFuncs'].c_slice.markDict
+            self.markDict=slice_md
         except AttributeError:
-            raise
-            slice_md={}
-        self.markDict.update(slice_md)
+            pass
         print(re.sub('\), ','),\r\n ',str(self.markDict)))
-        #self.doneCB()
         return self
 
     def fakeMove(self):
@@ -916,13 +919,13 @@ class espFuncs(kCtrlObj):
         return self
 
     #callback to break out of display mode
-    def _gd_break_callback(self):
+    def _gd_break_callback(self): #XXX showDisp now
         print('leaving disp mode!')
         self._gd_exit=1
         self.modestate.keyActDict['esc']=self._gd_old_esc
         self._gd_old_esc=None
         del(self._gd_old_esc)
-        self.modestate.keyActDict[self._gd_own_key]=self.getDisp
+        self.modestate.keyActDict[self._gd_own_key]=self.showDisp
         self._gd_own_key=None
         del(self._gd_own_key)
 
@@ -935,7 +938,9 @@ class espFuncs(kCtrlObj):
         print('entering disp mode')
 
         if not len(self.markDict):
-            self.mark()
+            self.markDict.update(self.modestate.ctrlDict['datFuncs'].c_slice.markDict)
+            if not len(self.markDict):
+                self.mark()
         else:
             self._releaseKR() #XXX release whether we got it or not
 
@@ -947,7 +952,7 @@ class espFuncs(kCtrlObj):
 
 
         self._gd_old_esc=self.modestate.keyActDict['esc']
-        self._gd_own_key=get_key(self.modestate.keyActDict,self.getDisp)
+        self._gd_own_key=get_key(self.modestate.keyActDict,self.showDisp)
         printD('get disp key:',self._gd_own_key)
 
         self._gd_exit=0

@@ -49,11 +49,11 @@ def rigDict():
                     'D':'move',
                     'v':'moveNext',
                     'M':'printMarks',
-                    'p':'getPos',
+                    'p':'getPos___',
                     'x':'printError',
                     #'w':'printPosDict',
                     #'e':('setMode','esp'),
-                    #'t':'showDisp', #FIXME Mod, Ctrl etc... :/
+                    'I':'showDisp', #FIXME Mod, Ctrl etc... :/
                     #'s':'setSpeedDef',
                     'g':'getPos',
                     'G':'getWT_getPos', #FIXME some subjects dont move?
@@ -67,7 +67,8 @@ def rigDict():
 
         'datFuncs':{
                     't':'print_write_target',
-                    'T':'printAll',
+                    'T':'setWriteTargets',
+                    'P':'printAll',
                     'n':('setMode','new'),
                     'e':('setMode','end'),
                     #'o':'test',

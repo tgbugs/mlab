@@ -216,7 +216,6 @@ class espControl:
                     minus=string.count('-')
                     string=' '*minus+string+' '*(missing-minus)
                 return string
-            print(self.target)
             while self.target:
                 xy=self.getPos()
                 xstr=str(xy[0])

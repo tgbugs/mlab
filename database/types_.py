@@ -13,9 +13,9 @@ Array=array_base
 
 _DictType = MutableDict.as_mutable(PickleType)
 _DictType.with_variant(MutableDict.as_mutable(postgres.HSTORE), 'postgres')
-_DictType.with_variant(MutableDict.as_mutable(postgresql.HSTORE), 'postgresql')
-_DictType.with_variant(MutableDict.as_mutable(postgresql.HSTORE), 'psycopg2')
-_DictType.with_variant(MutableDict.as_mutable(postgresql.HSTORE), 'postgresql+psycopg2')
+#_DictType.with_variant(MutableDict.as_mutable(postgresql.HSTORE), 'postgresql')
+#_DictType.with_variant(MutableDict.as_mutable(postgresql.HSTORE), 'psycopg2')
+#_DictType.with_variant(MutableDict.as_mutable(postgresql.HSTORE), 'postgresql+psycopg2')
 DictType=_DictType #FIXME not working as hstore :/
 
 
