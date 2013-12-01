@@ -104,6 +104,8 @@ class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Bas
         self.reagents.extend(Reagents)
         self.subjects.extend(Subjects)
 
+    def __repr__(self):
+        return 'Experiment %s %s'%(self.type.abbrev,self.id)
 
 
 class StepRecord(HasNotes, Base): #in theory this could completely replace experiment...

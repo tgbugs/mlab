@@ -78,6 +78,11 @@ class rigIOMan:
         try:
             self.term_off()
             self.keyLock.acquire()
+            from database import models
+            for name in models.__all__:
+                locals()[name]=getattr(models,name)
+            session=self.Session()
+            s=session
             embed() #FIXME WHAT IS THIS WIZARDRY!? how is this even in the name space O_O
         finally:
             self.term_on()

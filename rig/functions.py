@@ -5,7 +5,8 @@ from sys import stdout,stdin
 from time import sleep
 from debug import TDB,ploc
 from rig.ipython import embed
-from database.decorators import Get_newest, new_abf_DataFile, hardware_interface, is_mds
+from database.decorators import Get_newest, datafile_maker, new_abf_DataFile, hardware_interface, is_mds
+from threading import RLock
 #from IPython import embed
 try:
     import rpdb2
@@ -15,7 +16,7 @@ except:
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
-tdb.off()
+#tdb.off()
 
 #file to consolidate all the different functions I want to execute using the xxx.Control classes
 #TODO this file needs a complete rework so that it can pass data to the database AND so that it can be used by keyboard AND so that it can be used by experiment scripts... means I may need to split stuff up? ;_;
@@ -96,11 +97,243 @@ class kCtrlObj:
         self.keyThread=modestate.keyThread
         self.ctrl=controller
 
+        #some way to pass the state along to other controllers XXX REQUIRED FOR CLASS DECORATORS TO WORK XXX
+        def dat_get_write_targets():
+            return modestate.ctrlDict['datFuncs'].getWriteTargets()
+        def dat_get_df_subjects():
+            return modestate.ctrlDict['datFuncs'].getDFSubjects()
+        def dat_new_df():
+            return modestate.ctrlDict['datFuncs'].newDataFileCallback()
+        self._wt_getter=dat_get_write_targets
+        self._sub_getter=dat_get_df_subjects #name needs to match for decorators to work >_<
+        self._new_datafile=dat_new_df
+
     def cleanup(self):
         pass
 
-
+from database.models import Person, ExperimentType, Experiment, Cell, Slice, Mouse, DataFile
+from datetime import datetime
+from database.imports import NoResultFound
 @hasKeyRequests
+class datFuncs(kCtrlObj): 
+    #interface with the database TODO this should be able to run independently?
+    """Put ANYTHING permanent that might be data in here"""
+    def __init__(self,modestate,*args):
+        super().__init__(modestate)
+        self.Session=modestate.Session #FIXME maybe THIS was the problem?
+        self.__getChars__=modestate.ikFuncDict['trmFuncs'].__getChars__
+        session=self.Session()
+        self.c_person=session.query(Person).filter(Person.FirstName=='Tom',Person.LastName=='Gillespie').one()
+        self.c_project=self.c_person.projects[0] #FIXME
+        self.getUnfinished(session)
+        self.c_datafile=None
+        self.session=session #FIXME
+        self.sLock=RLock() #a lock for the session, see if we need it
+        #session.close()
+
+    def getUnfinished(self,session): #FIXME it is possible to get cells or slices w/o experiment...
+        def queryUnf(obj):
+            return session.query(obj).filter(obj.endDateTime==None)
+        #experiemtns
+        try:
+            self.c_experiment=queryUnf(Experiment).one()
+            self.c_target=self.c_experiment
+            print('Got unfinished experiment ',repr(self.c_experiment))
+        except NoResultFound:
+            self.c_experiment=None
+            self.c_target=None
+        #slices
+        try:
+            self.c_slice=queryUnf(Slice).one()
+            self.c_target=self.c_slice
+            print('Got unfinished slice ',self.c_slice.strHelper())
+        except NoResultFound:
+            self.c_slice=None
+        #cells
+        try:
+            cells=queryUnf(Cell).join(Experiment,Cell.experiments).filter(Experiment.id==self.c_experiment.id).join(Slice,Cell.parent).filter(Slice.id==self.c_slice.id).all()
+            print('Got unfinished cells ',[c.strHelper() for c in cells])
+            self.c_cells=cells
+            self.c_target=self.c_cells
+        except AttributeError: #catch NoneType
+            self.c_cells=[]
+        #datafiles #TODO
+
+    def getDFSubjects(self):
+        """ used to pass the current cells to the new_abf_DataFile decorator """
+        return self.c_cells
+    
+    def newDataFileCallback(self):
+        new_df=self.session.query(DataFile).order_by(DataFile.creationDateTime.desc()).first()
+        printD('c_datafile set to %s'%new_df)
+        self.c_datafile=new_df
+
+    def getWriteTargets(self):
+        targets=[]
+        target=self.c_target
+        try:
+            iter(target)
+            targets.extend(target)
+        except TypeError:
+            targets.append(target)
+
+        return targets
+
+    def printAll(self):
+        print(repr(self.c_person))
+        print(repr(self.c_project))
+        print(repr(self.c_experiment))
+        print(repr(self.c_slice))
+        print(self.c_cells)
+        print(repr(self.c_datafile))
+
+    def endCells(self):
+        if not self.c_cells:
+            print('No cells to end.')
+            return self
+        session=self.session
+        #session=self.Session()
+        for cell in self.c_cells:
+            cell.endDateTime=datetime.now()
+            #session.add(cell)
+            session.commit()
+            print('Ended cell %s'%cell.strHelper())
+        self.c_cells=[]
+        self.c_target=self.c_slice
+
+    def endSlice(self): #TODO location in the pfa well?
+        if not self.c_slice:
+            print('No slice to end.')
+            return self
+        if self.c_cells:
+            print('You still have cells! Please end them first!')
+            return self
+        self.c_slice.endDateTime=datetime.now()
+        session=self.session
+        #session=self.Session()
+        #session.add(self.c_slice)
+        session.commit()
+        print('Ended slice %s'%self.c_slice.strHelper())
+        self.c_slice=None
+        self.c_target=self.c_experiment
+
+    def endExperiment(self):
+        if not self.c_experiment:
+            print('No experiment to end.')
+            return self
+        if self.c_slice:
+            print('[!] You still have slices! End them first!')
+            return self
+        self.c_experiment.endDateTime=datetime.now()
+        session=self.session
+        #session=self.Session()
+        #session.add(self.c_experiment)
+        session.commit()
+        print('Ended experiment %s'%self.c_experiment.strHelper())
+        self.c_experiment=None
+        self.c_target=None
+        
+    def newExperiment(self): #FIXME this fails because of how dictMan works...
+        session=self.session
+        #session=self.Session()
+        types=session.query(ExperimentType).all()
+        print('please enter the type of experiment, available types are: %s'%[t.abbrev for t in types])
+        type_=None
+        type_string=self.__getChars__('type>')
+        type_=[t for t in types if t.abbrev==type_string]
+        if self.c_experiment: #FIXME this is here to prevent keyhandler from going haywire
+            #if session.query(Experiment).get(self.c_experiment.id): #FIXME if an experiment is deled elsewhere
+            print('[!] You already have an experiment, end the current one first!')
+            return self
+            #else:
+                #self.c_experiment=None #FIXME actually noat an issue it would seem
+                #print('[!] It would seem that you current expeirment got deleted...')
+        if type_:
+            if type_[0].abbrev=='patch':
+                se=session.query(Experiment).join(ExperimentType,Experiment.type).filter(ExperimentType.abbrev=='slice').order_by(Experiment.id.desc()).first()
+                if not se:
+                    print('[!] There is no slice experiment on record! Please add one!')
+                    return self
+            experiment=Experiment(type_id=type_[0],project_id=self.c_project,person_id=self.c_person)
+            session.add(experiment)
+            try: 
+                session.commit()
+                self.c_experiment=experiment
+                self.c_target=experiment
+                print('New experiment added = %s'%self.c_experiment.strHelper())
+            except:
+                session.rollback() #FIXME could be dangerous? if others are in the session?
+            finally:
+                #session.close()
+                pass
+        else:
+            print('Invalid type: experiment not created')
+        return self
+    newExperiment.keyRequester=True
+
+    def newSlice(self):
+        if self.c_slice:
+            #raise BaseException('You already have a slice on the rig!')
+            print('[!] You already have a slice on the rig!')
+            return self
+        elif not self.c_experiment:
+            print('[!] You have not added an experiment!')
+            return self
+        session=self.session
+        #session=self.Session()
+        ge=session.query(Experiment).join(ExperimentType,Experiment.type).filter(ExperimentType.abbrev=='slice').order_by(Experiment.id.desc()).first()
+        if not ge:
+            print('[!] There is no slice experiment on record! Please add one!')
+            return self
+        slice_=Slice(generating_experiment_id=ge)
+        slice_.experiments.append(self.c_experiment)
+        session.add(slice_)
+        try:
+            session.commit()
+            self.c_slice=slice_
+            self.c_target=slice_
+            print('New slice added = %s'%repr(self.c_slice))
+        except:
+            session.rollback()
+        finally:
+            #session.close()
+            pass
+
+    def newCell(self):
+        if not self.c_experiment:
+            print('[!] Cells dont really belong in slice prep experiments')
+            return self
+        elif self.c_experiment.type.abbrev=='slice':
+            print('[!] Cells dont really belong in slice prep experiments')
+            return self
+        if len(self.c_cells) >=2:
+            print('[!] You already have 2 cells! New rig eh?')
+            return self
+        if not self.c_slice:
+            print('You do not have a slice on the rig!')
+            return self
+            #raise BaseException('You do not have a slice on the rig!')
+        #self.__getChars__('headstage>')
+        cell=Cell(parent_id=self.c_slice.id,generating_experiment_id=self.c_experiment)
+        cell.experiments.append(self.c_experiment)
+        session=self.session
+        #session=self.Session()
+        session.add(cell)
+        try:
+            session.commit()
+            self.c_cells.append(cell)
+            self.c_target=cell #FIXME
+            print('New cell added = %s'%repr(cell))
+        except:
+            session.rollback()
+        finally:
+            #session.close()
+            pass
+    #newCell.keyRequester=True
+
+
+@hasKeyRequests #@hardware_interface('Digidata 1322A')
+@datafile_maker
 class clxFuncs(kCtrlObj):
     def __init__(self, modestate, controller):
         try:
@@ -155,7 +388,7 @@ class clxFuncs(kCtrlObj):
             #raise
         return self
 
-    @new_abf_DataFile
+    @new_abf_DataFile()
     def record(self):
         #RECORD=109, RERECORD=110, VIEW=108
         try:
@@ -186,42 +419,6 @@ class clxFuncs(kCtrlObj):
         self.ctrl.StartMembTest(121)
         return self
 
-
-@hasKeyRequests
-class datFuncs(kCtrlObj): 
-    #interface with the database TODO this should be able to run independently?
-    """Put ANYTHING permanent that might be data in here"""
-    from database.models import Person, ExperimentType, Experiment, Cell, Slice, Mouse
-    def __init__(self,modestate,*args):
-        super().__init__(modestate)
-        self.Session=modestate.Session #FIXME maybe THIS was the problem?
-        self.__getChars__=modestate.ikFuncDict['trmFuncs'].__getChars__
-        session=self.Session()
-        self.c_person=session.query(self.Person).filter(self.Person.FirstName=='Tom',self.Person.LastName=='Gillespie').one()
-        self.c_project=self.c_person.projects[0] #FIXME
-        session.close()
-
-    def newExperiment(self): #FIXME this fails because of how dictMan works...
-        session=self.Session()
-        types=session.query(self.ExperimentType).all()
-        print('please enter the type of experiment, available types are: %s'%[t.abbrev for t in types])
-        type_=None
-        type_string=self.__getChars__('type>')
-        type_=[t for t in types if t.abbrev==type_string]
-        if type_:
-            self.c_experiment=self.Experiment(type_id=type_[0],project_id=self.c_project,person_id=self.c_person)
-            session.add(self.c_experiment)
-            try: 
-                session.commit()
-                print('new experiment added with id=%s'%self.c_experiment)
-            except:
-                session.rollback() #FIXME could be dangerous? if others are in the session?
-            finally:
-                session.close()
-        else:
-            print('Invalid type: experiment not created')
-        return self
-    newExperiment.keyRequester=True
 
 @hardware_interface('mc1') #FIXME or is it software interface?
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
@@ -395,17 +592,19 @@ class espFuncs(kCtrlObj):
         #self.EspXDataSource=None
         #self.EspYDataSource=None
 
+    @is_mds('m','m','ESP300',5)
     def getPos(self):
+        """ get the (x,y) position of the eps300 """
         #may want to demand a depth input (which can be bank)
         #try:
         pos=self.ctrl.getPos()
         #self.doneCB()
-        self.posDict[datetime.datetime.utcnow()]=pos #FIXME dat should handle ALL of this internally
+        self.posDict[datetime.now()]=pos #FIXME dat should handle ALL of this internally
         print(pos)
         #except:
             #printD('oops')
             #raise
-        return self
+        return list(pos)
 
     def printPosDict(self):
         #self.doneCB()
@@ -492,7 +691,7 @@ class espFuncs(kCtrlObj):
         del(self._gd_own_key)
 
     #@keyRequest #just added the getDisp.keyRequester=True at the bottom and we're good to go
-    def getDisp(self):
+    def showDisp(self):
         """BLOCKING stream the displacement from a set point"""
         #self.doneCB()
         from numpy import sum as npsum #FIXME should these go here!?
@@ -555,7 +754,7 @@ class espFuncs(kCtrlObj):
                 #pass
         printD('done! loops broken!')
         return self
-    getDisp.keyRequester=True
+    showDisp.keyRequester=True
 
     def setSpeedDef(self):
         #self.doneCB()
@@ -573,13 +772,15 @@ class espFuncs(kCtrlObj):
 
     def move(self): #FIXME this does not work in displacement mode because modestate.key is always i
         key=self.modestate.key
+        printD(key)
         if key.isupper(): #shit, this never triggers :(
-            #printD('upper')
-            self.ctrl.move(self.moveDict[key.lower()],.2) #FIXME
+            printD('upper')
+            self.ctrl.move(self.moveDict[key.lower()],.05) #FIXME
         else:
             #printD('lower')
             self.ctrl.move(self.moveDict[key.lower()],.1)
         return self
+
     def printError(self):
         print('Error:',self.ctrl.getErr().decode('utf-8'))
         return self
@@ -604,6 +805,7 @@ class keyFuncs(kCtrlObj):
         return self
     def esc(self):
         return 0
+
 
 @hasKeyRequests
 @hardware_interface('keyboard')
@@ -896,8 +1098,10 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         print('testing testing 123')
 
 def main():
-    esp=espFuncs(None,None,None,None)
+    #esp=espFuncs()
+    #clx=clxFuncs()
     #mcc=mccFuncs(None,None,None,None)
+    pass
 
 __all__=(
     'clxFuncs',

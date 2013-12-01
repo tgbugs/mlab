@@ -306,7 +306,7 @@ class Mouse(HasSex, HasGenetics, HasLocation, Subject):
         #super().__init__(**kwargs)
 
 
-class Slice(HasGeneratingExperiment, Subject): #FIXME slice should probably be a subject
+class Slice(HasGeneratingExperiment, HasLocation, Subject): #FIXME slice should probably be a subject
     @property
     def dateTimeToRig(self): #FIXME is the how I want to do this... I could do this via type...?
         return self.startDateTime

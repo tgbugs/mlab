@@ -16,6 +16,7 @@ try:
 except:
     pass
 
+from rig.ipython import embed
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
@@ -158,7 +159,11 @@ def kl_win(charBuffer,keyHandler,keyLock): #FIXME
                         keyEvent = inbuf[0].event.keyEvent
                         if not keyEvent.keyDown:
                             continue
-                        char = keyEvent.char.UnicodeChar.lower()
+                        printD( keyEvent.controlKeyState )
+                        if keyEvent.controlKeyState==48: #SHIFT_PRESSED
+                            char = keyEvent.char.UnicodeChar.upper()
+                        else:
+                            char = keyEvent.char.UnicodeChar.lower()
                         printD(keyEvent.virtualKeyCode)
                         if char == '\x00':
                             try:
@@ -181,6 +186,7 @@ def kl_win(charBuffer,keyHandler,keyLock): #FIXME
             else:
                 print("Warning: Unknown return value '%s'" % ret)
         except:
+            raise
             keyLock.release() #FIXME
         ctypes.windll.kernel32.FlushConsoleInputBuffer(ch)
 

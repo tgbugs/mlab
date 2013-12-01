@@ -43,13 +43,18 @@ def rigDict():
                     'a':'move',
                     's':'move',
                     'd':'move',
+                    'W':'move',
+                    'A':'move',
+                    'S':'move',
+                    'D':'move',
                     'p':'printMarks',
-                    'e':'printError',
+                    #'e':'printError',
                     #'w':'printPosDict',
                     #'e':('setMode','esp'),
-                    't':'getDisp', #FIXME Mod, Ctrl etc... :/
+                    't':'showDisp', #FIXME Mod, Ctrl etc... :/
                     #'s':'setSpeedDef',
-                    'g':'getPos',
+                    #'g':'getPos',
+                    'g':'getWT_getPos', #FIXME some subjects dont move?
                     'f':'gotoMark',
                     #'r':'read',
                     'z':'fakeMove',
@@ -59,6 +64,7 @@ def rigDict():
 
         'datFuncs':{
                     'n':('setMode','new'),
+                    'e':('setMode','end'),
                     #'o':'test',
                     #'d':('setMode','dat'),
                    },
@@ -97,7 +103,8 @@ def clxDict():
              'clxFuncs':{
                          '#!':('readProgDict',(programDict,)),
                          'l':'load',
-                         'r':'record',
+                         #'r':'record',
+                         'r':'getSub_record',
                          'v':'view',
                          'g':'getStatus',
                          's':'stop_rec',
@@ -145,7 +152,7 @@ def mccDict():
 
     return mccDict
 
-def datDict():
+def newDict():
     datDict={
         'mode':'new',
         'datFuncs':
@@ -153,7 +160,22 @@ def datDict():
                 's':'newSlice',
                 'c':'newCell',
                 'e':'newExperiment',
-            }
+                'p':'printAll',
+            },
+    }
+    return datDict
+
+def endDict():
+    datDict={
+        'mode':'end',
+        'datFuncs':
+        {
+            's':'endSlice',
+            'c':'endCells',
+            'e':'endExperiment',
+            'p':'printAll',
+            'n':('setMode','new'),
+        },
     }
     return datDict
 
