@@ -27,6 +27,8 @@ from sqlalchemy.orm.collections         import attribute_mapped_collection
 
 from sqlalchemy.ext.hybrid              import hybrid_property, hybrid_method
 
+from sqlalchemy.ext.mutable             import MutableDict
+
 from sqlalchemy.ext.declarative         import declared_attr
 
 from sqlalchemy.ext.associationproxy    import association_proxy

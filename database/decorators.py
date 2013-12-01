@@ -58,7 +58,7 @@ def new_abf_DataFile(subjects_getter=None): #TODO could wrap it one more time in
 
         repo=init_sess.query(Repository).get(url)
         dfs=init_sess.query(DataFileSource).filter_by(name='clampex 9.2').first()
-        printD(repo)
+        #printD(repo)
         if not repo or not dfs:
             if not repo:
                 init_sess.add(Repository(url=url))
@@ -170,6 +170,8 @@ def is_mds(prefix,unit,hardware_name,mantissa=None,wt_getter=None):
         wrapper.__doc__=function.__doc__+"\n This function REQUIRES a write_target, a fake one won't work"
         wrapper.hardware_name=hardware_name
         wrapper.is_mds=True
+        if hasattr(function,'keyRequester'): #FIXME
+            wrapper.keyRequester=True
         return wrapper
     return inner
 
@@ -186,10 +188,13 @@ def hardware_interface(name): #XXX FIXME rename
     def get_wt_hack(cls,member): #reproduce for dfs
         def wt_func(self,*args,**kwargs):
             func=getattr(self,member.__name__)
+            printD(func)
             wt=self._wt_getter()
             return func(*args,write_targets=wt,**kwargs)
         wt_func.__name__='getWT_'+member.__name__
         wt_func.__doc__=member.__doc__
+        if hasattr(member,'keyRequester'): #FIXME
+            wt_func.keyRequester=True
         setattr(cls,wt_func.__name__,wt_func)
         return cls
 

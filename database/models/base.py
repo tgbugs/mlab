@@ -23,7 +23,7 @@ class DefaultBase:
             raise TypeError('%s has no id or id is not an int'%self.__class__.__name__)
             return None
     def __repr__(self,attr='id'):
-        return '\n%s %s'%(self.__class__.__name__,getattr(self,attr,'no id, set this to primary key column'))
+        return '%s %s'%(self.__class__.__name__,getattr(self,attr,'no id, set this to primary key column'))
     def __str__(self):
         return '%s'%(self.__class__.__name__)
 

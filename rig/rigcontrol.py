@@ -1,4 +1,14 @@
 #!/usr/bin/env python3.3
+""" Rig controller. Does ALL THE THINGS.
+Usage:
+    main.py [ --echo ]
+    main.py -h | --help
+Options:
+    -h --help       print this
+    -e --echo       enable echo on the db engine
+"""
+from docopt import docopt
+args=docopt(__doc__) #do this early to prevent all the lags
 import threading
 import warnings
 from queue import Queue,Empty
@@ -63,7 +73,7 @@ class rigIOMan:
         #FIXME TODO
         self.ctrlDict.update(self.ikFuncDict) #FIXME temp hack to get trmFuncs through to the rest of the world
         self.locs={} #for passing locals into ipython
-        #print(self.modeKRDict)
+        printD(self.modeKRDict)
     def start(self):
         self.keyThread.start()
 
@@ -121,11 +131,11 @@ class rigIOMan:
     def registerKeyRequest(self,className,functionName):
         #if self.kr_dict.get(className): #really __mode__ but hey
         #printD(locals())
+        printD('kr_dict',self.kr_dict)
         try:
             self.kr_dict[className].append(functionName)
         except:
             self.kr_dict[className]=[functionName]
-        #printD('kr_dict',self.kr_dict)
 
     #def acquireKeyRequest(self): #FIXME does this require locking? I don't think so because the passthrough will prevent a the thread from being spawned anyway unless something else trys to get() from charBuffer in which case wtf!
         #self.keyRequest=1
@@ -240,6 +250,9 @@ def main():
     from database.engines import engine
     from sqlalchemy.orm import sessionmaker
     from database.table_logic import logic_StepEdge
+
+    if args['--echo']:
+        engine.echo=True
 
     _Session=sessionmaker(bind=engine)
     def Session():

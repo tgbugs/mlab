@@ -307,6 +307,7 @@ class Mouse(HasSex, HasGenetics, HasLocation, Subject):
 
 
 class Slice(HasGeneratingExperiment, HasLocation, Subject): #FIXME slice should probably be a subject
+    markDict=Column(DictType,default=MutableDict({}))
     @property
     def dateTimeToRig(self): #FIXME is the how I want to do this... I could do this via type...?
         return self.startDateTime
@@ -324,6 +325,7 @@ class Slice(HasGeneratingExperiment, HasLocation, Subject): #FIXME slice should 
 class Cell(HasGeneratingExperiment, Subject):
     pass
     #def __repr__(self):
+        #return '%s %s'%(self.__clas__.__name__,self.id)
         #base=super().__repr__()
         #return base
         #return '%s%s%s%s'%(base,''.join([h.strHelper(1) for h in self.hardware]),self.parent.strHelper(1),''.join([c.strHelper(1) for c in self.datafiles[0].subjects]))

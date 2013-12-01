@@ -5,6 +5,7 @@ from sys import stdout,stdin
 from time import sleep
 from debug import TDB,ploc
 from rig.ipython import embed
+from sqlalchemy.orm import object_session #FIXME vs database.imports?
 from database.decorators import Get_newest, datafile_maker, new_abf_DataFile, hardware_interface, is_mds
 from threading import RLock
 #from IPython import embed
@@ -16,7 +17,7 @@ except:
 tdb=TDB()
 printD=tdb.printD
 printFD=tdb.printFuncDict
-#tdb.off()
+tdb.off()
 
 #file to consolidate all the different functions I want to execute using the xxx.Control classes
 #TODO this file needs a complete rework so that it can pass data to the database AND so that it can be used by keyboard AND so that it can be used by experiment scripts... means I may need to split stuff up? ;_;
@@ -46,29 +47,36 @@ def keyRequest(function): #FIXME sometimes we want to release a kr EARLY!
     def _keyRequest(self,*args,**kwargs):
         def wrapper():
             try:
-                self._kr_not_done+=1 #this enables keyRequesters to call eachother safely if they are in the same class
+                self.krdLock.acquire()
+                self._kr_not_done+=1
+                printD(self._kr_not_done)
                 out=function(self,*args,**kwargs)
                 self._kr_not_done-=1
+                printD(self._kr_not_done)
             except:
                 self._kr_not_done-=1
                 raise
                 #printD('an error has occured while calling func!')
             finally:
-                printD('_kr_not_done=',self._kr_not_done)
+                self.krdLock.release()
+                assert self._kr_not_done >= 0 ,'utoh! _kr_not_done < 0 !'
+                printD('kr_not_done=',self._kr_not_done)
                 if not self._kr_not_done: #TODO prevent multiple unlocks
                     self._releaseKR()
-                    assert self._kr_not_done >= 0, 'oh no! _kr_not_done is negative!!'
             return out
         return wrapper() #FIXME this seems to be needed to prevent some other race condition >_<
     _keyRequest.keyRequester=True
     _keyRequest.__name__=function.__name__
+    _keyRequest.__doc__=function.__doc__
+    if hasattr(function,'is_mds'):
+        _keyRequest.is_mds=True
     return _keyRequest
 
 ###
 #class decorator
 def hasKeyRequests(cls):
     cls.keyRequesters=[]
-    cls._kr_not_done=False #FIXME will we get nasty threading collisions here?
+    cls._kr_not_done=0 #FIXME will we get nasty threading collisions here?
     def init_wrap(init):
         def __init__(self,modestate,*args):
             self._releaseKR=modestate.releaseKeyRequest
@@ -86,7 +94,6 @@ def hasKeyRequests(cls):
 
 class kCtrlObj:
     """key controller object"""
-
     def __init__(self, modestate, controller=None):
         self.charBuffer=modestate.charBuffer
         #self.releaseKeyReq=modestate.releaseKeyRequest #FIXME don't even have to do this, @keyRequest can do it for me! :)
@@ -96,6 +103,16 @@ class kCtrlObj:
         self.__mode__=self.__class__.__name__
         self.keyThread=modestate.keyThread
         self.ctrl=controller
+
+        self._kr_not_done=0
+        self._releaseKR=modestate.releaseKeyRequest
+        self.krdLock=modestate.krdLock
+        self.keyRequesters=[]
+        for name,method in ins.getmembers(self):
+            #printD(name,method)
+            if ins.ismethod(method) and hasattr(method,'keyRequester'):
+                self.keyRequesters.append(name)
+                modestate.registerKeyRequest(self.__class__.__name__,name)
 
         #some way to pass the state along to other controllers XXX REQUIRED FOR CLASS DECORATORS TO WORK XXX
         def dat_get_write_targets():
@@ -108,20 +125,132 @@ class kCtrlObj:
         self._sub_getter=dat_get_df_subjects #name needs to match for decorators to work >_<
         self._new_datafile=dat_new_df
 
+    @keyRequest
+    def __getChars__(self,prompt=''):
+        """ replacement for input()"""
+
+        class inputBuffer:
+            char_list=[]
+            pos=0
+            _filler=0 #used to make the display update correct
+            def put(self,char):
+                self.char_list.insert(self.pos,char)
+                #if self._filler > 0: #don't need it is ok to overfill
+                    #self._filler -= 1
+                self.goR()
+            def goR(self):
+                if self.pos + 1 <= len(self.char_list):
+                    self.pos += 1
+            def goL(self):
+                if self.pos -1 >= 0:
+                    self.pos -= 1
+            def home(self):
+                self.pos = 0
+            def end(self):
+                self.pos = len(self.char_list)
+            def backspace(self):
+                if self.pos: #if we're already at zero dont go!
+                    self._filler+=1
+                    self.char_list.pop(self.pos-1)
+                    self.goL()
+            def delete(self):
+                try:
+                    self.char_list.pop(self.pos)
+                    self._filler+=1
+                except IndexError:
+                    pass
+            def __str__(self):
+                return ''.join(self.char_list)
+            @property
+            def str_to_pos(self):
+                return ''.join(self.char_list[:self.pos])
+            def pop_filler(self):
+                out=self._filler #ick this is terrible TODO FIXME
+                self._filler=0
+                return out
+
+        ib=inputBuffer()
+
+        cmddict={
+        '[A':lambda:None,
+        '[B':lambda:None,
+        '[C':ib.goR,
+        '[D':ib.goL,
+        '\x7f':ib.backspace,
+        '[3~':ib.delete,
+        '[7~':ib.home,
+        '[8~':ib.end,
+        'esc':lambda:None,
+        }
+
+        def charHand(char):
+            if cmddict.get(char):
+                cmddict[char]()
+            elif len(char) > 1:
+                pass #prevents escape sequences from printing
+            else:
+                ib.put(char)
+
+        #self.keyLock.acquire()
+        stdout.write('\r%s'%prompt)
+        while self.keyThread.is_alive():
+            char=self.charBuffer.get()
+            #printD('got a key:', char) 
+            if char == '\n' or char == '\r':
+                printD('done')
+                stdout.write('\n\r')
+                stdout.flush()
+                break
+            charHand(char)
+            stdout.write('\r%s'%prompt+str(ib)+' '*ib.pop_filler())
+            stdout.write('\r%s'%prompt+ib.str_to_pos)
+            stdout.flush()
+        if not self.keyThread.is_alive():
+            raise IOError('Key thread is not alive!')
+        else:
+            #print(str(ib))
+            return str(ib)
+
+    @keyRequest
+    def getString(self,prompt='string> '):
+        print("Please enter a string.",)
+        return self.__getChars__(prompt)
+
+    @keyRequest
+    def getFloat(self,prompt='float> '):
+        print('Please enter a floating point value.',)
+        while 1:
+            string=self.__getChars__(prompt)
+            try:
+                out=float(string)
+                return out
+            except:
+                print('Could not convert value to float, try again!')
+
+    @keyRequest
+    def getInt(self,prompt='int> '):
+        print('please enter an integer',)
+        while 1:
+            string=self.__getChars__(prompt)
+            try:
+                out=int(string)
+                return out
+            except ValueError as e:
+                print(e,'Try again!')
+                #print('could not convert value to int, try again!')
+
     def cleanup(self):
         pass
 
 from database.models import Person, ExperimentType, Experiment, Cell, Slice, Mouse, DataFile
 from datetime import datetime
 from database.imports import NoResultFound
-@hasKeyRequests
 class datFuncs(kCtrlObj): 
     #interface with the database TODO this should be able to run independently?
     """Put ANYTHING permanent that might be data in here"""
     def __init__(self,modestate,*args):
         super().__init__(modestate)
         self.Session=modestate.Session #FIXME maybe THIS was the problem?
-        self.__getChars__=modestate.ikFuncDict['trmFuncs'].__getChars__
         session=self.Session()
         self.c_person=session.query(Person).filter(Person.FirstName=='Tom',Person.LastName=='Gillespie').one()
         self.c_project=self.c_person.projects[0] #FIXME
@@ -152,22 +281,35 @@ class datFuncs(kCtrlObj):
         #cells
         try:
             cells=queryUnf(Cell).join(Experiment,Cell.experiments).filter(Experiment.id==self.c_experiment.id).join(Slice,Cell.parent).filter(Slice.id==self.c_slice.id).all()
-            print('Got unfinished cells ',[c.strHelper() for c in cells])
             self.c_cells=cells
-            self.c_target=self.c_cells
+            if cells:
+                print('Got unfinished cells ',[c.strHelper() for c in cells])
+                self.c_target=self.c_cells
         except AttributeError: #catch NoneType
             self.c_cells=[]
         #datafiles #TODO
+
+    @keyRequest
+    def setWriteTargets(self):
+        print('slice','cells','exp','data')
+        type_=self.__getChars__('target> ')
+        if type_ == 'exp':
+            self.c_target=self.c_experiment
+        elif type_ == 'slice':
+            self.c_target=self.c_slice
+        elif type_ == 'cells':
+            self.c_target=self.c_cells
+        elif type_ == 'data':
+            self.c_target=self.c_datafile
+        else:
+            print('not a type, try fiddling with ipython if you really need to spec soemthing')
+
+
 
     def getDFSubjects(self):
         """ used to pass the current cells to the new_abf_DataFile decorator """
         return self.c_cells
     
-    def newDataFileCallback(self):
-        new_df=self.session.query(DataFile).order_by(DataFile.creationDateTime.desc()).first()
-        printD('c_datafile set to %s'%new_df)
-        self.c_datafile=new_df
-
     def getWriteTargets(self):
         targets=[]
         target=self.c_target
@@ -179,60 +321,43 @@ class datFuncs(kCtrlObj):
 
         return targets
 
+    def print_write_target(self):
+        print(repr(self.c_target))
+        try:
+            iter(self.c_target)
+            for t in self.c_target:
+                self.session.refresh(t)
+                print(t.metadata_)
+        except:
+            self.session.refresh(self.c_target)
+            print(self.c_target.metadata_)
+
+    def set_slice_md(self,markDict):
+        self.c_slice.markDict=markDict
+        self.session.add(self.c_slice)
+        #print(self.c_slice.markDict)
+        try:
+            self.session.commit()
+        except:
+            session.rollback()
+            raise
+
     def printAll(self):
         print(repr(self.c_person))
         print(repr(self.c_project))
         print(repr(self.c_experiment))
         print(repr(self.c_slice))
+        print(repr(self.c_slice.markDict))
         print(self.c_cells)
         print(repr(self.c_datafile))
 
-    def endCells(self):
-        if not self.c_cells:
-            print('No cells to end.')
-            return self
-        session=self.session
-        #session=self.Session()
-        for cell in self.c_cells:
-            cell.endDateTime=datetime.now()
-            #session.add(cell)
-            session.commit()
-            print('Ended cell %s'%cell.strHelper())
-        self.c_cells=[]
-        self.c_target=self.c_slice
-
-    def endSlice(self): #TODO location in the pfa well?
-        if not self.c_slice:
-            print('No slice to end.')
-            return self
-        if self.c_cells:
-            print('You still have cells! Please end them first!')
-            return self
-        self.c_slice.endDateTime=datetime.now()
-        session=self.session
-        #session=self.Session()
-        #session.add(self.c_slice)
-        session.commit()
-        print('Ended slice %s'%self.c_slice.strHelper())
-        self.c_slice=None
-        self.c_target=self.c_experiment
-
-    def endExperiment(self):
-        if not self.c_experiment:
-            print('No experiment to end.')
-            return self
-        if self.c_slice:
-            print('[!] You still have slices! End them first!')
-            return self
-        self.c_experiment.endDateTime=datetime.now()
-        session=self.session
-        #session=self.Session()
-        #session.add(self.c_experiment)
-        session.commit()
-        print('Ended experiment %s'%self.c_experiment.strHelper())
-        self.c_experiment=None
-        self.c_target=None
-        
+    def newDataFileCallback(self):
+        new_df=self.session.query(DataFile).order_by(DataFile.creationDateTime.desc()).first()
+        printD('c_datafile set to %s'%new_df)
+        self.c_datafile=new_df
+        self.c_target=new_df
+    
+    @keyRequest
     def newExperiment(self): #FIXME this fails because of how dictMan works...
         session=self.session
         #session=self.Session()
@@ -269,7 +394,7 @@ class datFuncs(kCtrlObj):
         else:
             print('Invalid type: experiment not created')
         return self
-    newExperiment.keyRequester=True
+    #newExperiment.keyRequester=True
 
     def newSlice(self):
         if self.c_slice:
@@ -331,9 +456,60 @@ class datFuncs(kCtrlObj):
             pass
     #newCell.keyRequester=True
 
+    def endDataFile(self):
+        if not self.c_datafile:
+            print('No datafile to end')
+            return None
+        self.c_datafile=None
+        self.c_target=self.c_cell
 
-@hasKeyRequests #@hardware_interface('Digidata 1322A')
-@datafile_maker
+    def endCells(self):
+        if not self.c_cells:
+            print('No cells to end.')
+            return self
+        session=self.session
+        #session=self.Session()
+        for cell in self.c_cells:
+            cell.endDateTime=datetime.now()
+            #session.add(cell)
+            session.commit()
+            print('Ended cell %s'%cell.strHelper())
+        self.c_cells=[]
+        self.c_target=self.c_slice
+
+    def endSlice(self): #TODO location in the pfa well?
+        if not self.c_slice:
+            print('No slice to end.')
+            return self
+        if self.c_cells:
+            print('You still have cells! Please end them first!')
+            return self
+        self.c_slice.endDateTime=datetime.now()
+        session=self.session
+        #session=self.Session()
+        #session.add(self.c_slice)
+        session.commit()
+        print('Ended slice %s'%self.c_slice.strHelper())
+        self.c_slice=None
+        self.c_target=self.c_experiment
+
+    def endExperiment(self):
+        if not self.c_experiment:
+            print('No experiment to end.')
+            return self
+        if self.c_slice:
+            print('[!] You still have slices! End them first!')
+            return self
+        self.c_experiment.endDateTime=datetime.now()
+        session=self.session
+        #session=self.Session()
+        #session.add(self.c_experiment)
+        session.commit()
+        print('Ended experiment %s'%self.c_experiment.strHelper())
+        self.c_experiment=None
+        self.c_target=None
+    
+@datafile_maker#@hardware_interface('Digidata 1322A')
 class clxFuncs(kCtrlObj):
     def __init__(self, modestate, controller):
         try:
@@ -568,7 +744,6 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
             pass
 
 
-@hasKeyRequests
 @hardware_interface('ESP300')
 class espFuncs(kCtrlObj):
     def __init__(self, modestate, controller):
@@ -611,9 +786,28 @@ class espFuncs(kCtrlObj):
         print(re.sub('\), ',')\r\n',str(self.posDict)))
         return self
 
+    def set_move_list(self,move_list): #FIXME TODO should probably be saved at the... slice level?
+        self.move_list=move_list
+        self._current_move_list_pos=0
+
+    def moveNext(self):
+        print('Moving to next position')
+        self.ctrl.BsetPos(self.move_list[self._current_move_list_pos])
+        if self._current_move_list_pos + 1 < len(self.move_list):
+            self._current_move_list_pos+=1
+        else:
+            print('Move list is done! Resetting to the start!')
+            self._current_move_list_pos=0
+
     @keyRequest
     def mark(self): #FIXME
         """mark/store the position of a cell using a character sorta like vim"""
+        try:
+            slice_md=self.modestate.ctrlDict['datFuncs'].c_slice.markDict
+        except AttributeError:
+            raise
+            slice_md={}
+        self.markDict.update(slice_md)
         stdout.write('\rmark:')
         stdout.flush()
         key=self.charBuffer.get()
@@ -634,6 +828,10 @@ class espFuncs(kCtrlObj):
             self.markDict[key]=self.ctrl.getPos()
             print(key,'=',self.markDict[key])
         #self.keyHandler(getMark) #fuck, this could be alot slower...
+        try:
+            self.modestate.ctrlDict['datFuncs'].set_slice_md(self.markDict)
+        except:
+            raise
         return self
     #mark.keyRequester=True
 
@@ -644,6 +842,10 @@ class espFuncs(kCtrlObj):
             mark=self.charBuffer.get()
             pos=self.markDict.pop(mark)
             print("umarked '%s' at pos %s"%(mark,pos))
+            try:
+                self.modestate.ctrlDict['datFuncs'].set_slice_md(self.markDict)
+            except:
+                raise
         except KeyError:
             pass
         return self
@@ -662,8 +864,42 @@ class espFuncs(kCtrlObj):
         return self
     #gotoMark.keyRequester=True
 
+    @keyRequest
+    def mark_to_movelist(self):
+        names='origin','target'
+        args=[]
+        for i in range(2):
+            stdout.write(names[i]+'> ')
+            stdout.flush()
+            key=self.charBuffer.get()
+            stdout.write(key)
+            stdout.flush()
+            if key in self.markDict:
+                args.extend(self.markDict[key]) #x,y,x,y
+                stdout.write('\n')
+                stdout.flush()
+            else:
+                print('Mark not found exiting.')
+                return None
+        step=self.getFloat('step um>')
+        number=self.getInt('number>')
+        from rig.calcs import random_vector_points, vector_points
+        moves=random_vector_points(*args,number=number,spacing=step/1000) #.05 mm = 50um
+        #moves=vector_points(*args,number=number,spacing=step/1000) #.05 mm = 50um
+        print(moves)
+        self.set_move_list(moves)
+        
+
+
+
     def printMarks(self):
         """print out all marks and their associated coordinates"""
+        try:
+            slice_md=self.modestate.ctrlDict['datFuncs'].c_slice.markDict
+        except AttributeError:
+            raise
+            slice_md={}
+        self.markDict.update(slice_md)
         print(re.sub('\), ','),\r\n ',str(self.markDict)))
         #self.doneCB()
         return self
@@ -772,9 +1008,9 @@ class espFuncs(kCtrlObj):
 
     def move(self): #FIXME this does not work in displacement mode because modestate.key is always i
         key=self.modestate.key
-        printD(key)
+        #printD(key)
         if key.isupper(): #shit, this never triggers :(
-            printD('upper')
+            #printD('upper')
             self.ctrl.move(self.moveDict[key.lower()],.05) #FIXME
         else:
             #printD('lower')
@@ -807,7 +1043,6 @@ class keyFuncs(kCtrlObj):
         return 0
 
 
-@hasKeyRequests
 @hardware_interface('keyboard')
 class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
     def __init__(self, modestate):
@@ -815,134 +1050,27 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         self.keyLock=modestate.keyLock
         self.modestate=modestate #need this to det the current modestate
         super().__init__(modestate)
-        def printwrap(func):
-            def wrap(*args,**kwargs):
-                out=func()
-                printD(out)
-                return out
-            wrap.__name__=func.__name__
-            return wrap
+        #def printwrap(func):
+            #def wrap(*args,**kwargs):
+                #out=func()
+                #printD(out)
+                #return out
+            #wrap.__name__=func.__name__
+            #return wrap
         #for name in self.ctrl.__dir__():
             #if name[:3]=='get':
                 #setattr(self,name,printwrap(getattr(self.ctrl,name)))
-        for name in self.__dir__():
-            if name[:3]=='get':
-                setattr(self,name,printwrap(getattr(self,name)))
-                setattr(getattr(self,name),'__name__',name)
+        #for name in self.__dir__():
+            #if name[:3]=='get':
+                #setattr(self,name,printwrap(getattr(self,name)))
+                #setattr(getattr(self,name),'__name__',name)
 
+    @is_mds('u','m','BX51WI',0)
     @keyRequest
-    def __getChars__(self,prompt=''):
-        """ replacement for input()"""
-
-        class inputBuffer:
-            char_list=[]
-            pos=0
-            _filler=0 #used to make the display update correct
-            def put(self,char):
-                self.char_list.insert(self.pos,char)
-                #if self._filler > 0: #don't need it is ok to overfill
-                    #self._filler -= 1
-                self.goR()
-            def goR(self):
-                if self.pos + 1 <= len(self.char_list):
-                    self.pos += 1
-            def goL(self):
-                if self.pos -1 >= 0:
-                    self.pos -= 1
-            def home(self):
-                self.pos = 0
-            def end(self):
-                self.pos = len(self.char_list)
-            def backspace(self):
-                if self.pos: #if we're already at zero dont go!
-                    self._filler+=1
-                    self.char_list.pop(self.pos-1)
-                    self.goL()
-            def delete(self):
-                try:
-                    self.char_list.pop(self.pos)
-                    self._filler+=1
-                except IndexError:
-                    pass
-            def __str__(self):
-                return ''.join(self.char_list)
-            @property
-            def str_to_pos(self):
-                return ''.join(self.char_list[:self.pos])
-            def pop_filler(self):
-                out=self._filler #ick this is terrible TODO FIXME
-                self._filler=0
-                return out
-
-        ib=inputBuffer()
-
-        cmddict={
-        '[A':lambda:None,
-        '[B':lambda:None,
-        '[C':ib.goR,
-        '[D':ib.goL,
-        '\x7f':ib.backspace,
-        '[3~':ib.delete,
-        '[7~':ib.home,
-        '[8~':ib.end,
-        'esc':lambda:None,
-        }
-
-        def charHand(char):
-            if cmddict.get(char):
-                cmddict[char]()
-            elif len(char) > 1:
-                pass #prevents escape sequences from printing
-            else:
-                ib.put(char)
-
-        #self.keyLock.acquire()
-        stdout.write('\r%s'%prompt)
-        while self.keyThread.is_alive():
-            char=self.charBuffer.get()
-            #printD('got a key:', char) 
-            if char == '\n' or char == '\r':
-                printD('done')
-                stdout.write('\n\r')
-                stdout.flush()
-                break
-            charHand(char)
-            stdout.write('\r%s'%prompt+str(ib)+' '*ib.pop_filler())
-            stdout.write('\r%s'%prompt+ib.str_to_pos)
-            stdout.flush()
-        if not self.keyThread.is_alive():
-            raise IOError('Key thread is not alive!')
-        else:
-            #print(str(ib))
-            return str(ib)
-
-    @keyRequest
-    def getString(self):
-        print("Please enter a string.",)
-        return self.__getChars__('string> ')
-
-    @keyRequest
-    def getFloat(self):
-        print('Please enter a floating point value.',)
-        while 1:
-            string=self.__getChars__('float> ')
-            try:
-                out=float(string)
-                return out
-            except:
-                print('Could not convert value to float, try again!')
-
-    @keyRequest
-    def getInt(self):
-        print('please enter an integer',)
-        while 1:
-            string=self.__getChars__('int> ')
-            try:
-                out=int(string)
-                return out
-            except ValueError as e:
-                print(e,'Try again!')
-                #print('could not convert value to int, try again!')
+    def getDistance_um(self):
+        """ get a distance in um in this case read from the olympus bx51wi wheel """
+        value=self.getFloat('distance um> ')
+        return value
 
     @keyRequest
     def getKbdHit(self):

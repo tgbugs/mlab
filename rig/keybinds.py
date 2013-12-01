@@ -20,7 +20,7 @@ def rigDict():
 
         'clxFuncs':{
                     'r':('setMode','clx'),
-                    'l':'load',
+                    #'l':'load',
                    },
 
         'mccFuncs':{
@@ -47,22 +47,27 @@ def rigDict():
                     'A':'move',
                     'S':'move',
                     'D':'move',
-                    'p':'printMarks',
-                    #'e':'printError',
+                    'v':'moveNext',
+                    'M':'printMarks',
+                    'p':'getPos',
+                    'x':'printError',
                     #'w':'printPosDict',
                     #'e':('setMode','esp'),
-                    't':'showDisp', #FIXME Mod, Ctrl etc... :/
+                    #'t':'showDisp', #FIXME Mod, Ctrl etc... :/
                     #'s':'setSpeedDef',
-                    #'g':'getPos',
-                    'g':'getWT_getPos', #FIXME some subjects dont move?
+                    'g':'getPos',
+                    'G':'getWT_getPos', #FIXME some subjects dont move?
                     'f':'gotoMark',
+                    '\'':'gotoMark',
                     #'r':'read',
                     'z':'fakeMove',
                     'm':'mark',
-                    '\'':'gotoMark',
+                    'l':'mark_to_movelist',
                    },
 
         'datFuncs':{
+                    't':'print_write_target',
+                    'T':'printAll',
                     'n':('setMode','new'),
                     'e':('setMode','end'),
                     #'o':'test',
@@ -71,6 +76,7 @@ def rigDict():
 
         'trmFuncs':{
             'k':('setMode','trm'),
+            'U':'getWT_getDistance_um',
             #'i':'ipython',
             #':':'test' #this works, so not sure why command doesnt
             ':':'command',
@@ -102,7 +108,7 @@ def clxDict():
              'mode':'clx',
              'clxFuncs':{
                          '#!':('readProgDict',(programDict,)),
-                         'l':'load',
+                         #'l':'load',
                          #'r':'record',
                          'r':'getSub_record',
                          'v':'view',
@@ -174,6 +180,7 @@ def endDict():
             'c':'endCells',
             'e':'endExperiment',
             'p':'printAll',
+            'd':'endDataFile',
             'n':('setMode','new'),
         },
     }
@@ -190,6 +197,7 @@ def trmDict():
                 '3':'getInt',
                 '4':'getBool',
                 '5':'getKbdHit',
+                'u':'getWT_getDistance_um',
             },
     }
     return trmDict

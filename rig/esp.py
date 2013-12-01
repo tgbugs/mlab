@@ -209,13 +209,14 @@ class espControl:
             self._cY=pos[1]
             #group axes 1&2, velocity to two (mm/s?), acc/dec to 1, motors on, move, wait, degroup
             self.write('1HN1,2;1HV2;1HA1;1HD1;1HO;1HL'+str(self._cY)+','+str(self._cX)) #HW also blocks
-            bound=.000005
+            bound=.0005 #have a um of error
             def format_str(string,width=9):
                 missing=width-len(string)
                 if missing:
                     minus=string.count('-')
                     string=' '*minus+string+' '*(missing-minus)
                 return string
+            print(self.target)
             while self.target:
                 xy=self.getPos()
                 xstr=str(xy[0])

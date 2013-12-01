@@ -36,7 +36,7 @@ import threading
 #import time
 #import pdb
 #from tomsDebug import *
-from rigcontrol import rigIOMan
+#from rigcontrol import rigIOMan
 from rig.key import keyListener
 from queue import Queue
 from docopt import docopt

@@ -184,6 +184,7 @@ def popHardware(session):
     session.add(root)
     session.commit()
 
+    session.add(Hardware(type_id='microscope',name='BX51WI'))
     chamber=Hardware(type_id='chamber',name='interface chamber',Properties={'model':'jim\'s'})
     session.add(chamber)
 
