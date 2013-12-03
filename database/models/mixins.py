@@ -45,11 +45,11 @@ class HasNotes: #FIXME this works ok, will allow the addition of the same note t
                 'parent_id':Column(Integer, #FIXME nasty errors inbound
                     ForeignKey('%s.id'%tname),nullable=False),
                 'parent':relationship('%s'%cls.__name__, uselist=False, #FIXME uselist???
-                    backref=backref('__notes')),
+                    backref=backref('_notes')),
             }
         )
         #return relationship(cls.Note,backref=backref('parent',uselist=False))
-        return association_proxy('__notes','text',creator=lambda text: cls.Note(text))
+        return association_proxy('_notes','text',creator=lambda text: cls.Note(text))
 
 ###-------------
 ###  datasource mixins

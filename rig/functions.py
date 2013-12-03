@@ -327,9 +327,11 @@ class datFuncs(kCtrlObj):
             for t in self.c_target:
                 self.session.refresh(t)
                 print(t.metadata_)
+                print(t.notes)
         except:
             self.session.refresh(self.c_target)
             print(self.c_target.metadata_)
+            print(self.c_target.notes)
 
     def set_slice_md(self,markDict):
         self.c_slice.markDict=markDict
@@ -356,6 +358,20 @@ class datFuncs(kCtrlObj):
         self.c_datafile=new_df
         self.c_target=new_df
     
+    @keyRequest
+    def newNote(self): #FIXME need a way to hit a single cell
+        note=self.__getChars__('note> ')
+        try:
+            iter(self.c_target)
+            for t in self.c_target:
+                n=t.Note(note,t)
+                self.session.add(n)
+        except:
+            n=self.c_target.Note(note,self.c_target)
+            self.session.add(n)
+        finally:
+            self.session.commit()
+
     @keyRequest
     def newExperiment(self): #FIXME this fails because of how dictMan works...
         session=self.session
@@ -761,6 +777,7 @@ class espFuncs(kCtrlObj):
         self.modestate=modestate
         self.setMoveDict()
         self.move_list=[]
+        self.motor_on=False
         #self.event=modestate.event
         
         #associated metadatasources:
@@ -781,6 +798,8 @@ class espFuncs(kCtrlObj):
             #raise
         return list(pos)
 
+    def motorToggle(self):
+        self.ctrl.motorToggle()
     def printPosDict(self):
         #self.doneCB()
         print(re.sub('\), ',')\r\n',str(self.posDict)))

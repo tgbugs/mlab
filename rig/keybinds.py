@@ -39,6 +39,7 @@ def rigDict():
 
         'espFuncs':{
                     #'o':'readProgram',
+                    'o':'motorToggle',
                     'w':'move',
                     'a':'move',
                     's':'move',
@@ -116,6 +117,9 @@ def clxDict():
                          'g':'getStatus',
                          's':'stop_rec',
                          'm':'startMembTest',
+                         ' ':{'clxFuncs':{0:'getSub_record'},
+                              'espFuncs':{1:'getWT_getPos'},
+                         }
                         },
             }
     
@@ -164,6 +168,7 @@ def newDict():
         'mode':'new',
         'datFuncs':
             {
+                'n':'newNote',
                 's':'newSlice',
                 'c':'newCell',
                 'e':'newExperiment',

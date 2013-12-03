@@ -1,8 +1,8 @@
 add a way to mark harpstrings!
 add to the datafile record a HSTORE or something? that can track all the settings used on the multiclamp or even just put it in an array or add properties to datafiles?
-add a way to access note datetime
-add a key to turn off the motors!
-automatically get esp position when a datafile is recorded!
+#add a way to access note datetime, via _notes
+#add a key to turn off the motors!
+#automatically get esp position when a datafile is recorded!
 
 -4. see mapper_config.html for ideas about versioning counters etc
 -3. a better way to make dataios is to use a DECORATOR that decorates a DO function and sticks them all in a dict! the only issue is that we would always import EVERY dataio instead of just some of them... still would be nice to just reference them by name and have the dict deal with it, probably preferable

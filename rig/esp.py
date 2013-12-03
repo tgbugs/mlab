@@ -68,6 +68,8 @@ class espControl:
         self.jhSpd=1 #FIXME check this!
         self.jwSpd=.1
         self.setSpeedDefaults()
+        self.motors_on=False
+        self.write('1MF;2MF')
 
 
 
@@ -81,6 +83,14 @@ class espControl:
         out=self.esp.read(100)
         if not len(out):
             raise IOError('esp300 not responding, is it on?')
+
+    def motorToggle(self):
+        if self.motors_on:
+            self.motors_on=False
+            self.write('1MF;2MF')
+        else:
+            self.motors_on=True
+            self.write('1MO;2MO')
 
     def write(self,string,writeback=0): #FIXME may need an rlock here... yep, writeTimeout doesnt work
         out=string+'\r\n'
@@ -225,6 +235,8 @@ class espControl:
                 if self.target[0]-bound <= self._cX <= self.target[0]+bound: #good old floating point errors
                     if self.target[1]-bound <= self._cY <= self.target[1]+bound:
                         self.write('1HX') #degroup oh man this is ugly and not transparent
+                        if not self.motors_on: #if the motors were off turn them back off
+                            self.write('1MF;2MF')
                         self.target=None
                         return self._cX,self._cY
 
