@@ -460,7 +460,7 @@ class datFuncs(kCtrlObj):
             print('No datafile to end')
             return None
         self.c_datafile=None
-        self.c_target=self.c_cell
+        self.c_target=self.c_cells
 
     def endCells(self):
         if not self.c_cells:

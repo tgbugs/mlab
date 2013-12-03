@@ -723,7 +723,9 @@ def run_tests(session):
     #d=t_datafile(session,10,50,4)
     
     #[print(df.creation_DateTime) for df in session.query(DataFile)]
-
+    
+    if session.connection().engine.url.database != 'db_test':
+        return None
 
     t_strain(session,2)
     t_steps(session,3)

@@ -32,9 +32,24 @@ def pgTest(echo=False,wipe_db=False,username='sqla',password='asdf',host='localh
     engine=create_engine(pg%(username,password,host,port,'db_test'),echo=echo)
     return engine
 
-def pgReal(username,password,host,port=5432,database='postgres',echo=False): #FIXME postgres probably shouldn't be default
+def pgReal(username,password,host,port=54321,database='postgres',echo=False): #FIXME postgres probably shouldn't be default
     pg='postgresql://%s:%s@%s:%s/%s'
-    engine=create_engine(pg%(username,password,host,port,database),echo=echo)
+    try:
+        engine=create_engine(pg%(username,password,host,port,database),echo=echo)
+        con=engine.connect()
+
+    except: #FIXME specific please
+        del(engine)
+        print('database not found: creating!')
+        engine = create_engine(pg%(username,password,host,port,'postgres'),echo=echo)
+        con=engine.connect()
+        con.execute('commit')
+        con.execute('create database %s'%database)
+        con.execute('commit')
+        con.close()
+        del(engine)
+        engine=create_engine(pg%(username,password,host,port,database),echo=echo)
+
     #con.execute('CREATE EXTENSION hstore;')
     #register_hstore(engine.raw_connection(),True)
     return engine
@@ -42,4 +57,4 @@ def pgReal(username,password,host,port=5432,database='postgres',echo=False): #FI
 
 pgEng=pgTest #XXX switch over at some point
 
-engine=pgTest() #XXX THIS IS THE ONE YOU SHOULD USE! update when ready!
+engine=pgReal('sqla','asdf','localhost',54321,'scidb_v1',False) #XXX THIS IS THE ONE YOU SHOULD USE! update when ready!

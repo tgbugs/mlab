@@ -92,11 +92,11 @@ def clxDict():
     protPath='C:/tom_axon/' #FIXME this is hidden this needs to go somewhere else or be removed period
     programDict={
                  #'1':protPath+'2ch_scope'+'.pro',
-                 '1':protPath+'0_led_loose_patch'+'.pro',
-                 '2':protPath+'current_step_-100-1000'+'.pro',
+                 '1':protPath+'1_led_loose_patch'+'.pro',
+                 '2':protPath+'1_scope'+'.pro',
+                 #'2':protPath+'current_step_-100-1000'+'.pro',
                  '3':protPath+'pair_test_0-1'+'.pro',
                  '4':protPath+'pair_test_1-0'+'.pro',
-                 '5':protPath+'protname'+'.pro',
                  '6':protPath+'protname'+'.pro',
                  '7':protPath+'protname'+'.pro',
                  '8':protPath+'protname'+'.pro',
