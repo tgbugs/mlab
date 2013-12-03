@@ -284,7 +284,7 @@ class datFuncs(kCtrlObj):
             self.c_cells=cells
             if cells:
                 print('Got unfinished cells ',[c.strHelper() for c in cells])
-                self.c_target=self.c_cells
+                self.c_target=self.c_cells[0]
         except AttributeError: #catch NoneType
             self.c_cells=[]
         #datafiles #TODO
@@ -298,7 +298,11 @@ class datFuncs(kCtrlObj):
         elif type_ == 'slice':
             self.c_target=self.c_slice
         elif type_ == 'cells':
-            self.c_target=self.c_cells
+            print('cell number 0-n amongst current cells n probably <=3')
+            index=self.getInt('cell #> ')
+            if index >= len(self.c_cells):
+                index=len(self.c_cells)-1
+            self.c_target=self.c_cells[index]
         elif type_ == 'data':
             self.c_target=self.c_datafile
         else:
@@ -309,14 +313,14 @@ class datFuncs(kCtrlObj):
         """ used to pass the current cells to the new_abf_DataFile decorator """
         return self.c_cells
     
-    def getWriteTargets(self):
-        targets=[]
+    def getWriteTargets(self): #XXX NOTE XXX there is only a SINGLE write target at a time now!
+        targets=[] #FIXME change calling methods to match
         target=self.c_target
-        try:
-            iter(target)
-            targets.extend(target)
-        except TypeError:
-            targets.append(target)
+        #try:
+            #iter(target)
+            #targets.extend(target)
+        #except TypeError:
+        targets.append(target)
 
         return targets
 
@@ -361,16 +365,16 @@ class datFuncs(kCtrlObj):
     @keyRequest
     def newNote(self): #FIXME need a way to hit a single cell
         note=self.__getChars__('note> ')
-        try:
-            iter(self.c_target)
-            for t in self.c_target:
-                n=t.Note(note,t)
-                self.session.add(n)
-        except:
-            n=self.c_target.Note(note,self.c_target)
-            self.session.add(n)
-        finally:
-            self.session.commit()
+        #try:
+            #iter(self.c_target)
+            #for t in self.c_target:
+                #n=t.Note(note,t)
+                #self.session.add(n)
+        #except:
+        n=self.c_target.Note(note,self.c_target)
+        self.session.add(n)
+        #finally:
+        self.session.commit()
 
     @keyRequest
     def newExperiment(self): #FIXME this fails because of how dictMan works...
@@ -476,7 +480,7 @@ class datFuncs(kCtrlObj):
             print('No datafile to end')
             return None
         self.c_datafile=None
-        self.c_target=self.c_cells
+        self.c_target=self.c_cells[0]
 
     def endCells(self):
         if not self.c_cells:
@@ -1222,6 +1226,8 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         #cmdDict={'ipython':'ipython'} #can't put ipython here due to race conditions
         cmdDict={}
         def parse_command(com_str): #TODO
+            if com_str=='\n':
+                return None
             def match_key(com_str):
                 printD(com_str)
                 matches = [key for key in cmdDict.keys() if key[:len(com_str)]==com_str]
@@ -1229,7 +1235,14 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
                 return matches
             matches=match_key(com_str)
             printD(matches)
-            func=getattr(self,matches[0],lambda:None)
+            try:
+                if matches:
+                    func=getattr(self,matches[0],lambda:None)
+                else:
+                    return None
+            except:
+                print('[!] no function found')
+                return None
             func()
             #printD(com_str,'TODO FIXME')
             return com_str

@@ -1,3 +1,4 @@
+change ':' command so that it looks up function names in a dict?
 add a way to mark harpstrings!
 add to the datafile record a HSTORE or something? that can track all the settings used on the multiclamp or even just put it in an array or add properties to datafiles?
 #add a way to access note datetime, via _notes

@@ -260,6 +260,7 @@ def main():
         logic_StepEdge(session)
         return session
 
+    print('Connected to:',engine.url.database)
     rigIO=rigIOMan(keyDicts,Session)
     rigIO.start()
 
