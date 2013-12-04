@@ -332,6 +332,10 @@ class datFuncs(kCtrlObj):
                 self.session.refresh(t)
                 print(t.metadata_)
                 print(t.notes)
+                try:
+                    print(t.datafiles)
+                except:
+                    pass
         except:
             self.session.refresh(self.c_target)
             print(self.c_target.metadata_)

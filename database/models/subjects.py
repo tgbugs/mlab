@@ -316,6 +316,10 @@ class Slice(HasGeneratingExperiment, HasLocation, Subject): #FIXME slice should 
         exp=self.generating_experiment
         return exp.endDateTime
     @property
+    def chamberTime(self):
+        td=self.startDateTime-self.dateTimeOut
+        return '%s hours'%(td.seconds/60/60)
+    @property
     def thickness(self): #FIXME
         return None
         #FIXME TODO using a dict doesn't work for sanity checks, need a per experiment sanity check table that matches the protocol values, either by association or something else, whatever the mechanism it needs to generalize to making sure hardware matches
