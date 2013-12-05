@@ -33,6 +33,9 @@ def pgTest(echo=False,wipe_db=False,username='sqla',password='asdf',host='localh
     return engine
 
 def pgReal(username,password,host,port=54321,database='postgres',echo=False): #FIXME postgres probably shouldn't be default
+    if socket.gethostname()=='athena' and os.name == 'posix':
+        port=5432
+        database='scidb_v1_test'
     pg='postgresql://%s:%s@%s:%s/%s'
     try:
         engine=create_engine(pg%(username,password,host,port,database),echo=echo)

@@ -77,7 +77,8 @@ zero=transform_maker(0,400) #FIXME why is this *20 again? gain is only @ 20
 one=transform_maker(0,5) #FIXME why do I need this!?
 
 image_path='D:/tom_data/macroscope/'
-path='D:/tom_data/clampex/'
+#path='D:/tom_data/clampex/'
+path='/mnt/tgdata/clampex/'
 filenames=[
     '2013_12_04_0024.abf',
     '2013_12_04_0025.abf',
@@ -95,25 +96,37 @@ test_map={0:zero,1:one}
 #raw,block,segments=load_abf(path+filenames[0])
 
 
-def detect_spikes(array,threshold):
-    first=array[:-1]
-    second=array[1:]
-    base=len(first)-1
+def detect_spikes(array,thresh=3,max_thresh=5): #FIXME need an actual threshold?
+    try:
+        iter(array.base)
+        array=array.base
+    except:
+        pass
+
+    avg=np.mean(array)
+    std=np.std(array)
+    if max(array) > avg+std*max_thresh:
+        threshold=avg+thresh*std
+    else:
+        threshold=avg+max_thresh
+
+    space=5
+    first=array[:-space] #5 to hopefully prevent the weirdness with tiny fluctuations
+    second=array[space:]
+    base=len(first)-space
     s_list=[ i for i in range(base) if first[i]<=threshold and second[i]>threshold ]
+    s_list=s_list[0:-1:space]
     return s_list
-
-
-
-def count_spikes(filepath,signal_map): #TODO
+def plot_count_spikes(filepath,signal_map): #FIXME integrate this with count_spikes properly
+    """ useful for manual review """
     raw,block,segments=load_abf(filepath)
     nseg=len(segments)
     zero=transform_maker(0,400) #cell
     one=transform_maker(0,5) #led
     plt.figure()
+    counts=[]
     for seg,n in zip(segments,range(nseg)):
         plt.subplot(5,1,n+1)
-        #plt.title(block.file_origin)
-        #plt.title('%s Segment %s'%(block.file_origin,n))
         nas=seg.size()['analogsignals']
         signal=zero(seg.analogsignals[0])
         led=one(seg.analogsignals[1])
@@ -126,19 +139,48 @@ def count_spikes(filepath,signal_map): #TODO
         sm_arr=base*sig_mean
         std_arr=base*sig_std
 
-        s_list=detect_spikes(sig_on,sig_mean+sig_std*2.5)
+        thresh=3.3
+
+        s_list=detect_spikes(sig_on,thresh,5)
+        counts.append(len(s_list))
 
         [plt.plot(s,sig_on[s],'ro') for s in s_list] #plot all the spikes
 
         plt.plot(sig_on,'k-')
         plt.plot(sm_arr,'b-')
-        plt.fill_between(np.arange(len(sm_arr)),sm_arr-std_arr*2,sm_arr+std_arr*2,color=(.8,.8,1))
+        plt.fill_between(np.arange(len(sm_arr)),sm_arr-std_arr*thresh,sm_arr+std_arr*thresh,color=(.8,.8,1))
+        plt.xlim((0,len(sig_on)))
 
-        plt.title('%s spikes'%len(s_list))
+        plt.title('%s spikes %s'%(len(s_list),block.file_origin))
+        #plt.title(block.file_origin)
+        #plt.title('%s Segment %s'%(block.file_origin,n))
+    return np.mean(counts)
 
-count_spikes(path+filenames[0],None)
-[count_spikes(path+fn,test_map) for fn in filenames]
-plt.show()
+
+def count_spikes(filepath,signal_map): #TODO
+    raw,block,segments=load_abf(filepath)
+    nseg=len(segments)
+    zero=transform_maker(0,400) #cell
+    one=transform_maker(0,5) #led
+    counts=[]
+    for seg,n in zip(segments,range(nseg)):
+        nas=seg.size()['analogsignals']
+        signal=zero(seg.analogsignals[0])
+        led=one(seg.analogsignals[1])
+        led_on_index=np.where(led.base < led.base[0]-.05)[0]
+        base=np.ones_like(led_on_index)
+        sig_on=signal.base[led_on_index]
+
+        thresh=3.3
+
+        s_list=detect_spikes(sig_on,thresh,5)
+        counts.append(len(s_list))
+    return np.mean(counts),np.var(counts)
+
+#count_spikes(path+filenames[0],None)
+#[count_spikes(path+fn,test_map) for fn in filenames]
+#plt.show()
+#embed()
 
 def get_disp(origin,target):
     a2=(origin[0]-target[0])**2
@@ -171,6 +213,41 @@ def get_metadata_query(MappedClass,id_,mds_name):
         filter_by(name=mds_name).order_by(MD.id)
     return md_query
 
+    #name:spikes #FIXME make it so manual threshold works AND align all spikes from the detection forward
+for_review={
+    '03_0117':[0,0,0,0,0],
+    '03_0121':[0,0,0,0,0],
+    '03_0125':[0,0,0,0,0],
+    '04_0007':[26,23,22,20,20],
+    '04_0009':[28,25,22,20,19],
+    '04_0010':[14,13,12,13,12],
+    '04_0011':[19,18,16,15,15],
+    '04_0012':[17,15,14,14,15],
+    '04_0013':[17,19,17,17,16],
+    '04_0014':[15,17,15,14,12],
+    '04_0015':[11,9,11,11,11],
+    '04_0031':[0,0,0,0,0],
+}
+reviews=['2013_12_'+review+'.abf' for review in for_review.keys()]
+#[plot_count_spikes(path+fn,test_map) for fn in reviews]
+reviewed={'2013_12_'+review+'.abf':list_ for review,list_ in for_review.items()}
+
+#TODO threading with a callback that returns our numbers
+from threading import Thread
+
+class accumulator: #FIXME Queue??
+    positions=[]
+    distances=[]
+    spike_means=[]
+    spike_vars=[]
+    def append(pos,dist,mean,var):
+        self.positions.append(position)
+        self.distances.append(dist)
+        self.spike_means.append(mean)
+        self.spike_vars.append(var)
+
+
+
 def run_stuff():
     cell_ids=16,26 #based on num files
     DFMD=DataFile.MetaData
@@ -186,8 +263,15 @@ def run_stuff():
         #print(s_pos)
         files=s.query(DataFile).join(Cell,DataFile.subjects).filter(Cell.id==cid).order_by(DataFile.creationDateTime).all()
         positions=[]
+        dists=[]
+        smeans=[] #for spike counts
+        svars=[] #for spike counts
         for file in files:
-            filepath=file.full_url[8:]
+            if os.name=='posix':
+                filepath='/mnt/tgdata/clampex/'+file.filename
+
+            else:
+                filepath=file.full_url[8:]
             try:
                 file_pos=s.query(DFMD).filter(DFMD.url==file.url,DFMD.filename==file.filename).\
                     join(MetaDataSource,Cell.MetaData.metadatasource).\
@@ -197,24 +281,37 @@ def run_stuff():
                 print('%s does not have a position! Assuming the previous file position'%filepath)
             print(file_pos)
             positions.append(file_pos)
-            print(get_disp(cell_pos,file_pos))
+            dists.append(get_disp(cell_pos,file_pos))
             size=os.path.getsize(filepath)
             print(size)
-            #spike_count=count_spikes(filepath,None) #TODO OH NOSE MEMORY USAGE
+
+            try:
+                _scount=reviewed[file.filename]
+                spike_mean=np.mean(_scount)
+                spike_var=np.var(_scount)
+               
+            except KeyError:
+                spike_mean,spike_var=count_spikes(filepath,None) #TODO OH NOSE MEMORY USAGE
+            smeans.append(spike_mean)
+            svars.append(spike_var)
         pos=np.array(positions)
+
+        plt.figure()
+        plt.bar(np.array(dists),smeans,np.ones_like(dists)*.025,color=(.8,.8,1),yerr=svars,align='center')
         plt.figure()
         plt.title('Cell %s'%cid)
         plt.plot(esp_fix_x(pos[:,0]),pos[:,1],'bo') #TODO these are flipped from reality!
-        plt.plot(esp_fix_x(cell_pos[0]),cell_pos[1],'ro')
+        plt.plot(esp_fix_x(cell_pos[0]),cell_pos[1],'ro') #FIXME dake the math and shit out of here for readability 
         [plt.plot(esp_fix_x(p.value[0]),p.value[1],'go') for p in s_pos] #plot the slice positions
-
-#run_stuff()
+        for count,x,y in zip(smeans,esp_fix_x(pos[:,0]),pos[:,1]):
+           plt.annotate(
+                '%s'%count,  #aka label
+                xy = (x,y), xytext = (-20,20),
+                textcoords = 'offset points', ha = 'right', va = 'bottom',
+                bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
+                arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'),
+           )
+run_stuff()
 
 
 plt.show()
-
-
-
-
-
-
