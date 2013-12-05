@@ -9,7 +9,6 @@ def pA(sig,gain): #XXX dep
         return sig/gain
     else:
         raise TypeError('units werent pA')
-
 def mV(pA_signal,clx_rescale=2): #XXX dep
     base=pA_signal.base
     out=AnalogSignal(base/clx_rescale,  units='mV', name=pA_signal.name,
@@ -17,12 +16,10 @@ def mV(pA_signal,clx_rescale=2): #XXX dep
                      t_start=pA_signal.t_start,#*0,
                      channel_index=pA_signal.channel_index)
     return out  #FIXME the raw for the abf file seems to be pA no matter what to get mV divide by two?!
-
 def V(pA_signal): #FIXME, only need this if the file is stopped half way through recording (wtf)
     out=mV(pA_signal)
     out.units='V'
     return out
-
 def set_gain_and_time_func(gain=1,zero_times=False):
     def set_gain(sig):
         if zero_times:
@@ -56,17 +53,6 @@ def plot_abf(filepath,signal_map): #FIXME need better abstraction for the sigmap
             plot_signal(stp)
             #plot_signal(anasig)
 
-image_path='D:/tom_data/macroscope/'
-path='D:/tom_data/clampex/'
-filenames=[
-    #'2013_12_04_0024.abf',
-    '2013_12_04_0025.abf',
-    #'2013_12_04_0026.abf',
-]
-
-sig_map={0:set_gain_and_time_func(20,True),1:set_gain_and_time_func(1,True)}
-sig_map_nt={0:set_gain_and_time_func(20,False),1:set_gain_and_time_func(1,False)} #FIXME why is the time doubled?
-
 fADC_DO_0=9.5017
 fADC_DA_0=24.7521
 fDAC_scale_0=20
@@ -87,32 +73,46 @@ def transform_maker(offset,gain):#,scale):
     return t_signal
 
 
-#zero=transform_maker(fADC_DO_0,fADC_DA_0,fDAC_scale_0)
-#zero=transform_maker(4.2741,24.7521*20)
-#one=transform_maker(2.1144,4.2731)#9.5017)
-#one=transform_maker(fADC_DO_1,fADC_DA_1)#,fDAC_scale_1)
-#one=transform_maker(-16.9,1)
-
-zero=transform_maker(0,400)
+zero=transform_maker(0,400) #FIXME why is this *20 again? gain is only @ 20
 one=transform_maker(0,5) #FIXME why do I need this!?
+
+image_path='D:/tom_data/macroscope/'
+path='D:/tom_data/clampex/'
+filenames=[
+    '2013_12_04_0024.abf',
+    '2013_12_04_0025.abf',
+    '2013_12_04_0026.abf',
+    '2013_12_04_0036.abf', #perfect pathalogical example
+]
+
+sig_map={0:set_gain_and_time_func(20,True),1:set_gain_and_time_func(1,True)}
+sig_map_nt={0:set_gain_and_time_func(20,False),1:set_gain_and_time_func(1,False)} #FIXME why is the time doubled?
+
 test_map={0:zero,1:one}
 
 #[plot_abf(path+fn,sig_map_nt) for fn in filenames]
-[plot_abf(path+fn,test_map) for fn in filenames]
+#[plot_abf(path+fn,test_map) for fn in filenames]
+#raw,block,segments=load_abf(path+filenames[0])
 
-raw,block,segments=load_abf(path+filenames[0])
 
-#plt.show()
-#embed()
+def detect_spikes(array,threshold):
+    first=array[:-1]
+    second=array[1:]
+    base=len(first)-1
+    s_list=[ i for i in range(base) if first[i]<=threshold and second[i]>threshold ]
+    return s_list
+
+
 
 def count_spikes(filepath,signal_map): #TODO
     raw,block,segments=load_abf(filepath)
     nseg=len(segments)
     zero=transform_maker(0,400) #cell
     one=transform_maker(0,5) #led
+    plt.figure()
     for seg,n in zip(segments,range(nseg)):
-        plt.figure()
-        plt.title(block.file_origin)
+        plt.subplot(5,1,n+1)
+        #plt.title(block.file_origin)
         #plt.title('%s Segment %s'%(block.file_origin,n))
         nas=seg.size()['analogsignals']
         signal=zero(seg.analogsignals[0])
@@ -122,13 +122,22 @@ def count_spikes(filepath,signal_map): #TODO
         sig_on=signal.base[led_on_index]
         sig_mean=np.mean(sig_on)
         sig_std=np.std(sig_on)
-        plt.plot(sig_on)
         #plt.plot(sig_std+sig_mean)
         sm_arr=base*sig_mean
-        plt.plot(sm_arr)
-        plt.fill_between(sm_arr,sm_arr-(base*sig_std),sm_arr+(base*sig_std))
+        std_arr=base*sig_std
+
+        s_list=detect_spikes(sig_on,sig_mean+sig_std*2.5)
+
+        [plt.plot(s,sig_on[s],'ro') for s in s_list] #plot all the spikes
+
+        plt.plot(sig_on,'k-')
+        plt.plot(sm_arr,'b-')
+        plt.fill_between(np.arange(len(sm_arr)),sm_arr-std_arr*2,sm_arr+std_arr*2,color=(.8,.8,1))
+
+        plt.title('%s spikes'%len(s_list))
 
 count_spikes(path+filenames[0],None)
+[count_spikes(path+fn,test_map) for fn in filenames]
 plt.show()
 
 def get_disp(origin,target):
@@ -137,9 +146,9 @@ def get_disp(origin,target):
     return (a2+b2)**.5
 
 sqrt2=get_disp([0,0],[1,1])
-print('This should be square root of 2',sqrt2)
+#print('This should be square root of 2',sqrt2)
 sqrt2=get_disp([0,0],[-1,-1])
-print('And so should this!',sqrt2)
+#print('And so should this!',sqrt2)
 
 
 def esp_fix_x(x_vector):
