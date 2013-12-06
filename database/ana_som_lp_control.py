@@ -232,6 +232,12 @@ reviews=['2013_12_'+review+'.abf' for review in for_review.keys()]
 #[plot_count_spikes(path+fn,test_map) for fn in reviews]
 reviewed={'2013_12_'+review+'.abf':list_ for review,list_ in for_review.items()}
 
+to_ignore=[ #see LB1:81
+    '03_0041', #aperature was closed
+    '03_0042', #aperature about half open
+]
+ignored=['2013_12_'+ignore+'.abf' for ignore in to_ignore]
+
 #TODO threading with a callback that returns our numbers
 from threading import Thread
 
@@ -246,9 +252,7 @@ class accumulator: #FIXME Queue??
         self.spike_means.append(mean)
         self.spike_vars.append(var)
 
-
-
-def run_stuff():
+def main():
     cell_ids=16,26 #based on num files
     DFMD=DataFile.MetaData
     for cid in cell_ids:
@@ -267,6 +271,8 @@ def run_stuff():
         smeans=[] #for spike counts
         svars=[] #for spike counts
         for file in files:
+            if file.filename is in ignored:
+                continue
             if os.name=='posix':
                 filepath='/mnt/tgdata/clampex/'+file.filename
 
@@ -289,7 +295,6 @@ def run_stuff():
                 _scount=reviewed[file.filename]
                 spike_mean=np.mean(_scount)
                 spike_var=np.var(_scount)
-               
             except KeyError:
                 spike_mean,spike_var=count_spikes(filepath,None) #TODO OH NOSE MEMORY USAGE
             smeans.append(spike_mean)
@@ -311,7 +316,42 @@ def run_stuff():
                 bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
                 arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'),
            )
-run_stuff()
+    plt.show()
+
+def get_dist_data(file,callback=None): #get data from a datafile
+    if file.filename is in ignored:
+        continue
+    if os.name=='posix':
+        filepath='/mnt/tgdata/clampex/'+file.filename
+
+    else:
+        filepath=file.full_url[8:]
+    size=os.path.getsize(filepath) #TODO
+    try:
+        file_pos=s.query(DFMD).filter(DFMD.url==file.url,DFMD.filename==file.filename).\
+            join(MetaDataSource,Cell.MetaData.metadatasource).\
+            filter_by(name='getPos').order_by(Cell.MetaData.dateTime).first().value
+        #print(filepath)
+    except:
+        print('%s does not have a position! Assuming the previous file position'%filepath)
+        file_pos=None
+        return None #FIXME there is no previous here :/
+    for subject in file.subjects:
+        s_pos=get_metadata_query(Cell,subject.id,'getPos').all()[:0] #FIXME order_by?
+        if not file_pos:
+            file_pos=None #TODO
+
+        distance=get_disp(s_pos,file_pos))
+
+        try:
+            _scount=reviewed[file.filename]
+            spike_mean=np.mean(_scount)
+            spike_var=np.var(_scount)
+        except KeyError:
+            spike_mean,spike_var=count_spikes(filepath,None) #TODO OH NOSE MEMORY USAGE
+    callback()
+    return file_pos
 
 
-plt.show()
+if __name__=='__main__':
+    main()

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3.3
 """ Rig controller. Does ALL THE THINGS.
 Usage:
-    main.py [ --echo ]
+    main.py [ --echo --test ]
     main.py -h | --help
 Options:
     -h --help       print this
     -e --echo       enable echo on the db engine
+    -t --test       launch into the test database
 """
 from docopt import docopt
 args=docopt(__doc__) #do this early to prevent all the lags
@@ -247,9 +248,13 @@ class rigIOMan:
 
    
 def main():
-    from database.engines import engine
     from sqlalchemy.orm import sessionmaker
     from database.table_logic import logic_StepEdge
+    if args['--test']:
+        from database.engines import pgTest
+        engine=pgTest()
+    else:
+        from database.engines import engine
 
     if args['--echo']:
         engine.echo=True
