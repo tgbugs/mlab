@@ -150,6 +150,7 @@ def mccDict():
                     'g':{#FIXME need a check to prevent running when cells are already gotten, but that requires the steps to work, cant do it with this setup :/
                          #FIXME also need a way to auto switch to next headstage if one is already occupied otherwise we will cook shit :(
                          'mccFuncs':{
+                             #-1:'new', #TODO checkpoints so that we dont go when when have a cell #TODO headstage <-> cell linkage can happen here naturally
                              0:'setVCholdOFF',
                              1:('setVChold',-.06),  #FIXME HUGE PROBLEM
                              2:'autoOffset',
@@ -157,9 +158,12 @@ def mccDict():
                              5:'setVCholdON',
                          },
                          'trmFuncs':{
+                             -1:'getDistance_um',
                              4:('getKbdHit','hit a key when you bump a cell'), #FIXME move to datFuncs? well it is trying to be a step but >_<
                          },
+                         'espFuncs':{-2:'getWT_getPos'},
                          'datFuncs':{
+                             -3:'newCell',
                              6:'getBrokenIn', #TODO FIXME getDoneFailNB?
                          },
                     },
@@ -176,10 +180,10 @@ def mccDict():
 #check connected pairs
                     'p':{
                          'mccFuncs':{
-                             0:('testZtO',-.075),
-                             5:('testZtO',-.06),
-                             8:('testOtZ',-.075),
-                             13:('testOtZ',-.06),
+                             0:('testZtO',-.075), #excitation
+                             5:('testZtO',-.05), #inhibition
+                             8:('testOtZ',-.075), #excitation
+                             13:('testOtZ',-.05), #inhibition
                              16:'allIeZ',
                          },
                          'clxFuncs':{
@@ -243,7 +247,7 @@ def endDict():
         'datFuncs':
         {
             's':'endSlice',
-            'c':'endCells',
+            'c':'endCell', 
             'e':'endExperiment',
             'p':'printAll',
             'd':'endDataFile',

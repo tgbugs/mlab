@@ -299,13 +299,13 @@ class datFuncs(kCtrlObj):
 
     @keyRequest
     def setWriteTargets(self):
-        print('slice','cells','exp','data')
+        print('slice','cell','exp','data')
         type_=self.__getChars__('target> ')
         if type_ == 'exp':
             self.c_target=self.c_experiment
         elif type_ == 'slice':
             self.c_target=self.c_slice
-        elif type_ == 'cells':
+        elif type_ == 'cell':
             print('cell number 0-n amongst current cells n probably <=3')
             index=self.getInt('cell #> ')
             if index >= len(self.c_cells):
@@ -490,9 +490,11 @@ class datFuncs(kCtrlObj):
     @keyRequest #FIXME?
     def getBrokenIn(self):
         if self.getBool('Hit space if you broke in otherwise fail!'):
-            self.newCell()
+            pass #TODO metadata on breakin?
         else:
             print('Your failure has been noted.')
+            #self.c_target.notes.append('FAILURE MESSAGE') #TODO
+            self.endCell(self.c_target) #FIXME make sure this works?
         return self
 
     def endDataFile(self):
@@ -502,19 +504,25 @@ class datFuncs(kCtrlObj):
         self.c_datafile=None
         self.c_target=self.c_cells[0]
 
-    def endCells(self):
+    def endCell(self,cell=None): #TODO I think it might be worth having a c_cell in addition??!?
         if not self.c_cells:
-            print('No cells to end.')
+            print('No cell to end.')
             return self
-        session=self.session
-        #session=self.Session()
-        for cell in self.c_cells:
-            cell.endDateTime=datetime.now()
-            #session.add(cell)
-            session.commit()
-            print('Ended cell %s'%cell.strHelper())
-        self.c_cells=[]
-        self.c_target=self.c_slice
+        if not cell and type(self.c_target) is not Cell:
+            print('Current target is not a cell!')
+            return self
+        elif not cell: #FIXME
+            cell=self.c_target
+
+        cell.endDateTime=datetime.now()
+        self.session.commit()
+        self.c_cells.remove(cell)
+        print('Ended cell %s'%cell.strHelper())
+        if self.c_cells:
+            self.c_target=self.c_cells[0] #FIXME
+        else:
+            self.c_target=self.c_slice
+        return self
 
     def endSlice(self): #TODO location in the pfa well?
         if not self.c_slice:
