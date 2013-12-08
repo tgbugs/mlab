@@ -84,6 +84,7 @@ class mccControl:
         if errval==6000:
             return errval
         else:
+            self._pnError=byref(c_int(6000))
             printD(errdict[errval])
             return errval
 

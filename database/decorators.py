@@ -5,7 +5,7 @@ import inspect
 from sqlalchemy.orm import sessionmaker, object_session
 from database.table_logic import logic_StepEdge
 from database.models import DataFile,DataFileSource,Experiment,Hardware,MetaDataSource,Repository
-from database.engines import engine
+from database.engines import engine #FIXME tests >_< need a way to synchornize this ;_; need a way to make decorators based on the session, but right now we are just going to switch stuff manually
 from database.imports import printD
 
 _Session=sessionmaker(bind=engine)
@@ -19,18 +19,19 @@ def session_add_wrapper(object_to_add):
     session.add(object_to_add)
     try:
         session.commit()
-    except:
-        raise
+    except BaseException as e:
+        print(e)
         print('[!] %s could not be added! Rolling back!'%object_to_add)
         session.rollback()
         raise
     finally:
         session.close()
 
-def Get_newest(MappedClass): #FIXME this doesnt go here...
+def Get_newest_id(MappedClass): #FIXME this doesnt go here...
     session=Session()
     out=session.query(MappedClass).order_by(MappedClass.id.desc()).first() #FIXME dangerous hack
     session.close()
+    printD(out.id)
     return out
 
 #def Get_current_experiment():
@@ -42,6 +43,7 @@ def Get_current_datafile():
     return out
 
 def Get_newest_abf(url):
+    print(url)
     files=os.listdir(url)
     abf_files=[file for file in files if file[-3:]=='abf']
     abf_files.sort() #FIXME make sure the filenames order correctly
@@ -87,7 +89,7 @@ def new_abf_DataFile(subjects_getter=None): #TODO could wrap it one more time in
 
         def wrapped(*args,subjects=[],**kwargs):
             function(*args,**kwargs)
-            experiment=Get_newest(Experiment)
+            experiment=Get_newest_id(Experiment)
             if not subjects:
                 try:
                     subjects=subjects_getter()
@@ -105,6 +107,7 @@ def new_abf_DataFile(subjects_getter=None): #TODO could wrap it one more time in
                 except:
                     print('[!] %s could not be added! Rolling back!'%new_df)
                     session.rollback()
+                    raise
             else:
                 session_add_wrapper(new_df)
         wrapped.__name__=function.__name__

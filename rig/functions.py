@@ -6,7 +6,7 @@ from time import sleep
 from debug import TDB,ploc
 from rig.ipython import embed
 from sqlalchemy.orm import object_session #FIXME vs database.imports?
-from database.decorators import Get_newest, datafile_maker, new_abf_DataFile, hardware_interface, is_mds
+from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds
 from threading import RLock
 #from IPython import embed
 try:
@@ -570,6 +570,10 @@ class clxFuncs(kCtrlObj):
         self.programDict=progDict
         return self
 
+    def setProtocolPath(self,protoPath):
+        print('PROTOCOL PATH SET')
+        self.protocolPath=protoPath
+
     def cleanup(self):
         super().cleanup()
         try:
@@ -590,17 +594,27 @@ class clxFuncs(kCtrlObj):
         gs=self.ctrl.GetStatus
         while gs() != 'CLXMSG_ACQ_STATUS_IDLE':
             sleep(.001) #FIXME
+        print('Done recording')
 
-    @keyRequest
-    def load(self,key=None):
-        if not key:
-            print('Please enter the program to load')
-            key=self.charBuffer.get()
+    def loadfile(self,filename):
         try:
-            path=self.programDict[key]
-            #printD(path)
-            self.ctrl.LoadProtocol(path.encode('ascii'))
-            self.current_program=path
+            filepath=self.protocolPath+filename
+            self.ctrl.LoadProtocol(filepath.encode('ascii'))
+            self.current_program=filepath
+            print('%s loaded!'%path)
+        except BaseException as e:
+            print(e)
+
+    #@keyRequest
+    def load(self,key):
+        #if not key:
+            #print('Please enter the program to load')
+            #key=self.charBuffer.get()
+        try:
+            filename=self.programDict[key]
+            filepath=self.protocolPath+filename
+            self.ctrl.LoadProtocol(filepath.encode('ascii'))
+            self.current_program=filepath
             print('%s loaded!'%path)
         except BaseException as e:
             print(e)

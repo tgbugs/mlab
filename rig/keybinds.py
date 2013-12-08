@@ -90,18 +90,18 @@ def rigDict():
 ##Method to convert the static dicts into their equivalent functions at runtime
 
 def clxDict():
-    protPath='C:/tom_axon/' #FIXME this is hidden this needs to go somewhere else or be removed period
+    protoPath='C:/tom_axon/' #FIXME this is hidden this needs to go somewhere else or be removed period
     programDict={
                  #'1':protPath+'2ch_scope'+'.pro',
-                 '1':protPath+'1_led_loose_patch'+'.pro',
-                 '2':protPath+'1_scope'+'.pro',
-                 '3':protPath+'current_step_-100-1000'+'.pro',
-                 '4':protPath+'pair_test_0-1'+'.pro',
-                 '5':protPath+'pair_test_1-0'+'.pro',
-                 '6':protPath+'protname'+'.pro',
-                 '7':protPath+'protname'+'.pro',
-                 '8':protPath+'protname'+'.pro',
-                 '9':protPath+'led_test'+'.pro',
+                 '1':'1_led_loose_patch'+'.pro',
+                 '2':'1_scope'+'.pro',
+                 '3':'current_step_-100-1000'+'.pro',
+                 '4':'pair_test_0-1'+'.pro',
+                 '5':'pair_test_1-0'+'.pro',
+                 '6':'protname'+'.pro',
+                 '7':'protname'+'.pro',
+                 '8':'protname'+'.pro',
+                 '9':'led_test'+'.pro',
                  #'0':protPath+'nidaq_sync_test'+'.pro',
                 }
                  
@@ -109,7 +109,8 @@ def clxDict():
     clxDict={
              'mode':'clx',
              'clxFuncs':{
-                         '#!':('readProgDict',(programDict,)),
+                         '#!1':('setProtocolPath',(protoPath,)), #FIXME massive hack as usual
+                         '#!2':('readProgDict',(programDict,)),
                          #'l':'load',
                          #'r':'record',
                          #'r':'getSub_record',
@@ -139,18 +140,18 @@ def mccDict():
                     '0':'allIeZ',
                     #'2':'allVCnoHold',
                     #'3':'allVChold_60',
-                    '4':'allICnoHold',
-                    '5':'testZtO_75',
-                    '6':'testOtZ_75',
-                    '7':'zeroVChold_60',
-                    '8':'oneVChold_60',
+                    #'4':'allICnoHold',
+                    #'5':'testZtO_75',
+                    #'6':'testOtZ_75',
+                    #'7':'zeroVChold_60',
+                    #'8':'oneVChold_60',
                     #'0':['allIeZ','allVCnoHold','allVChold_60'],
-
-                    'g':{ #get cell steps #FIXME need a check to prevent running when cells are already gotten, but that requires the steps to work, cant do it with this setup :/
+#get cell steps 
+                    'g':{#FIXME need a check to prevent running when cells are already gotten, but that requires the steps to work, cant do it with this setup :/
                          #FIXME also need a way to auto switch to next headstage if one is already occupied otherwise we will cook shit :(
                          'mccFuncs':{
-                             0:('setVChold',-.06), 
-                             1:'setVCholdOFF',
+                             0:'setVCholdOFF',
+                             1:('setVChold',-.06),  #FIXME HUGE PROBLEM
                              2:'autoOffset',
                              3:'autoCap',
                              5:'setVCholdON',
@@ -162,17 +163,18 @@ def mccDict():
                              6:'getBrokenIn', #TODO FIXME getDoneFailNB?
                          },
                     },
-
-                    'c':{ #current steps
-                         'mccFuncs':{0:'allICnoHold',3:'allIeZ'},
+#current steps
+                    'c':{ 
+                         'mccFuncs':{0:'allICnoHold',4:'allIeZ'},
                          'clxFuncs':{
-                            1:('load','3'), #FIXME naming
+                            1:('loadfile','current_step_-100-1000'+'.pro'),
                             2:'getSub_record',
+                            3:'wait_till_done',
                          },
-                         'trmFuncs':{3:''},
+                         #'trmFuncs':{3:''},
                     },
-
-                    'p':{ #check connected pairs
+#check connected pairs
+                    'p':{
                          'mccFuncs':{
                              0:('testZtO',-.075),
                              5:('testZtO',-.06),
@@ -181,12 +183,12 @@ def mccDict():
                              16:'allIeZ',
                          },
                          'clxFuncs':{
-                             1:('load','4'), #FIXME zero-to-one
+                             1:('loadfile','pair_test_0-1'+'.pro'), #FIXME zero-to-one
                              3:'getSub_record',
                              4:'wait_till_done',
                              6:'getSub_record',
                              7:'wait_till_done',
-                             9:('load','5'), #FIXME one-to-zero
+                             9:('loadfile','pair_test_1-0'+'.pro'), #FIXME one-to-zero
                              11:'getSub_record',
                              12:'wait_till_done',
                              14:'getSub_record',
@@ -197,6 +199,8 @@ def mccDict():
                              10:('getKbdHit','Hit a key after adjusting the program so that the cell will spike'),
                          },
                     },
+#run the optogenetic stimulation!
+                    's':{},
 
                     '9':{'mccFuncs':{ #FIXME this is bloodly useless >_< replace w/ actual programatic control
                                      0:'allIeZ',

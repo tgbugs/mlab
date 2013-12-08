@@ -59,12 +59,13 @@ errdict={\
     5014:'CLXMSG_ERROR_MEMB_INVALIDOUTPUTDAC',\
     }
 
-def errPrint(pnErr):
+def errPrint(self):
     """returns false if there was an error and prints it"""
-    errval=val(pnErr,c_int_p)
+    errval=val(self._pnError,c_int_p)
     if errval==4000:
         return 1
     else:
+        self._pnError=byref(c_int(4000)) #this prevents errors that have been ahdneled from sticking
         raise BaseException(errdict[errval])
         #printD(errdict[errval],context=5)
         #return 0
@@ -160,7 +161,7 @@ class clxControl: #clxmsg
     def SetTimeOut(self, u):
         uTimeOutMS=c_uint(u)
         self.aDLL.CLXMSG_SetTimeOut(self.hClxmsg, uTimeOutMS, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     #==============================================================================================
     # Acquisition functions
@@ -172,7 +173,7 @@ class clxControl: #clxmsg
         #probably should be a byte string so b'' but test, actually ctypes is good
         _pszFilename=c_char_p(filePath)
         self.aDLL.CLXMSG_LoadProtocol(self.hClxmsg, _pszFilename, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Request the Clampex status.
     def GetStatus(self):
@@ -194,18 +195,18 @@ class clxControl: #clxmsg
     def SetRepeat(self, b):
         bRepeat=c_bool(b)
         self.aDLL.CLXMSG_SetRepeat(self.hClxmsg, bRepeat, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Initiate Clampex VIEW, RECORD or RERECORD.
     def StartAcquisition(self, u):
         uMode=c_uint(u)
         self.aDLL.CLXMSG_StartAcquisition(self.hClxmsg, uMode, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Initiate Clampex STOP.
     def StopAcquisition(self):
         self.aDLL.CLXMSG_StopAcquisition(self.hClxmsg, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     #==============================================================================================
     # Telegraph functions
@@ -236,18 +237,18 @@ class clxControl: #clxmsg
     def StartMembTest(self, u):
         uOut=c_uint(u) #this one will require the constants...
         self.aDLL.CLXMSG_StartMembTest(self.hClxmsg, uOut, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Close the Clampex membrane test.
     def CloseMembTest(self, u):
         uOut=c_uint(u)
         self.aDLL.CLXMSG_CloseMembTest(self.hClxmsg, uOut, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Set the Clampex membrane test holding.
     def SetMembTestHolding(self):
         self.aDLL.CLXMSG_SetMembTestHolding(self.hClxmsg, dHolding, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Get the Clampex membrane test holding.
     def GetMembTestHolding(self):
@@ -257,7 +258,7 @@ class clxControl: #clxmsg
     # Set the Clampex membrane test pulse height.
     def SetMembTestPulseHeight(self):
         self.aDLL.CLXMSG_SetMembTestPulseHeight(self.hClxmsg, dPulseHeight, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Get the Clampex membrane test pulse height.
     def GetMembTestPulseHeight(self):
@@ -267,7 +268,7 @@ class clxControl: #clxmsg
     # Flush the membrane test cache.
     def FlushMembTestCache(self):
         self.aDLL.CLXMSG_FlushMembTestCache(self.hClxmsg, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Get the current size of the membrane test cache.
     def GetMembTestCacheSize(self):
@@ -278,7 +279,7 @@ class clxControl: #clxmsg
     def SetMembTestCacheMaxSize(self, u):
         uMaxSize=c_uint(u)
         self.aDLL.CLXMSG_SetMembTestCacheMaxSize(self.hClxmsg, uMaxSize, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Get the average membrane test cache data for the number of entries specified by *puCount
     def GetMembTestCacheData(self):
@@ -296,11 +297,11 @@ class clxControl: #clxmsg
     def ScaleMembTestYAxis(self, u):
         uScale=c_uint(u)
         self.aDLL.CLXMSG_ScaleMembTestYAxis(self.hClxmsg, uScale, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
     # Set the membrane test update rate in Hertz
     def SetMembTestRate(self):
         self.aDLL.CLXMSG_SetMembTestRate(self.hClxmsg, dRate, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Get the membrane test update rate in Hertz
     def GetMembTestRate(self):
@@ -312,7 +313,7 @@ class clxControl: #clxmsg
         uNumEdges=c_uint(u)
         bAveraging=c_bool(b)
         self.aDLL.CLXMSG_SetMembTestAveraging(self.hClxmsg, bAveraging, uNumEdges, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Get the membrane test averaging state and number of edges per average.
     def GetMembTestAveraging(self):
@@ -325,7 +326,7 @@ class clxControl: #clxmsg
     def StartSealTest(self, u):
         uOut=c_uint(u) #this one will require the constants...
         self.aDLL.CLXMSG_StartSealTest(self.hClxmsg, uOut, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Get the current size of the seal test cache.
     def GetSealTestCacheSize(self):
@@ -336,12 +337,12 @@ class clxControl: #clxmsg
     def SetSealTestCacheMaxSize(self, u):
         uMaxSize=c_uint(u)
         self.aDLL.CLXMSG_SetSealTestCacheMaxSize(self.hClxmsg, uMaxSize, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Flush the seal test cache.
     def FlushSealTestCache(self):
         self.aDLL.CLXMSG_FlushSealTestCache(self.hClxmsg, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     # Get the average seal test cache data for the number of entries specified by *puCount
     def GetSealTestCacheData(self):
@@ -351,19 +352,26 @@ class clxControl: #clxmsg
     # Set the Clampex seal test holding.
     def SetSealTestHolding(self):
         self.aDLL.CLXMSG_SetSealTestHolding(self.hClxmsg, dHolding, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
     # Set the Clampex seal test pulse height.
     def SetSealTestPulseHeight(self):
         self.aDLL.CLXMSG_SetSealTestPulseHeight(self.hClxmsg, dPulseHeight, self._pnError)
-        return errPrint(self._pnError)
+        return errPrint(self)
 
     #==============================================================================================
     # Error functions
     #==============================================================================================
 
     # Errors etc.
-    #def BuildErrorText(self):
-        #self.aDLL.CLXMSG_BuildErrorText(self.hClxmsg, int nErrorNum, LPSTR sTxtBuf, UINT uMaxLen)
+    #def BuildErrorText(self,error_num):
+        #nErrorNum=c_int(error_num)
+        #uMaxLen=c_uint(256)
+        #c_char_p=POINTER(c_char)
+        #sTxtBuf=''
+        #self.aDLL.CLXMSG_BuildErrorText(self.hClxmsg, nErrorNum, LPSTR sTxtBuf, uMaxLen)
+        #out=self.aDLL.CLXMSG_BuildErrorText(self.hClxmsg, nErrorNum, sTxtBuf, uMaxLen)
+        #print(out)
+        #return out
 
 #==============================================================================================
 # Error codes

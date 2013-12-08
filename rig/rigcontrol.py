@@ -251,8 +251,9 @@ def main():
     from sqlalchemy.orm import sessionmaker
     from database.table_logic import logic_StepEdge
     if args['--test']:
-        from database.engines import pgTest
-        engine=pgTest()
+        #from database.engines import pgTest
+        #engine=pgTest()
+        raise TypeError('Please change the engine by hand in engines.py so that decorators will work propertly, at some point I will figure out how to generate decorators based on the session >_<')
     else:
         from database.engines import engine
 

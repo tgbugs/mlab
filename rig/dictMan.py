@@ -110,7 +110,7 @@ def dictInit(inDict,clsDict,kr_dict): #putting this here makes everything funny 
                 for key,funcStr in keyDict.items():
                     #if key=='c':
                     #printD('initDict: function to call is:',ikCtrl,funcStr,'key is:',key)
-                    if key=='#!':                        #SPECIAL KEYCODE TO IMMEDIATELY EXECUTE so we can 
+                    if key in ['#!'+str(n) for n in range(10)]: #FIXME FUCK EVERYTHING ABOUT THIS #SPECIAL KEYCODE TO IMMEDIATELY EXECUTE so we can  
                     #FIXME
                     #use of '#!' expects a tuple ('funcName',args)
                         name,args=funcStr
