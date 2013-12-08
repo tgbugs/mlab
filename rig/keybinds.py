@@ -24,14 +24,14 @@ def rigDict():
                    },
 
         'mccFuncs':{
-                    '1':'allIeZ',
-                    '2':'allVCnoHold',
-                    '3':'allVChold_60',
-                    '4':'allICnoHold',
-                    '5':'testZtO_75',
-                    '6':'testOtZ_75',
-                    '7':'zeroVChold_60',
-                    '8':'oneVChold_60',
+                    #'1':'allIeZ',
+                    #'2':'allVCnoHold',
+                    #'3':'allVChold_60',
+                    #'4':'allICnoHold',
+                    #'5':'testZtO_75',
+                    #'6':'testOtZ_75',
+                    #'7':'zeroVChold_60',
+                    #'8':'oneVChold_60',
                     #'a':'printMCCstate',
                     'c':('setMode','mcc'),
                     'y':'getState',
@@ -95,14 +95,14 @@ def clxDict():
                  #'1':protPath+'2ch_scope'+'.pro',
                  '1':protPath+'1_led_loose_patch'+'.pro',
                  '2':protPath+'1_scope'+'.pro',
-                 #'2':protPath+'current_step_-100-1000'+'.pro',
-                 '3':protPath+'pair_test_0-1'+'.pro',
-                 '4':protPath+'pair_test_1-0'+'.pro',
+                 '3':protPath+'current_step_-100-1000'+'.pro',
+                 '4':protPath+'pair_test_0-1'+'.pro',
+                 '5':protPath+'pair_test_1-0'+'.pro',
                  '6':protPath+'protname'+'.pro',
                  '7':protPath+'protname'+'.pro',
                  '8':protPath+'protname'+'.pro',
                  '9':protPath+'led_test'+'.pro',
-                 '0':protPath+'nidaq_sync_test'+'.pro',
+                 #'0':protPath+'nidaq_sync_test'+'.pro',
                 }
                  
     # the #! opperator works by calling the the 'funcName' of the outer key name
@@ -112,7 +112,7 @@ def clxDict():
                          '#!':('readProgDict',(programDict,)),
                          #'l':'load',
                          #'r':'record',
-                         'r':'getSub_record',
+                         #'r':'getSub_record',
                          'v':'view',
                          'g':'getStatus',
                          's':'stop_rec',
@@ -133,15 +133,71 @@ def mccDict():
         'mode':'mcc',
         'mccFuncs':{
                     'r':'reloadControl',
-                    '1':'allIeZ',
-                    '2':'allVCnoHold',
-                    '3':'allVChold_60',
+                    '1':'set_hs0',
+                    '2':'set_hs1',
+                    #'3':'set_hsAll',
+                    '0':'allIeZ',
+                    #'2':'allVCnoHold',
+                    #'3':'allVChold_60',
                     '4':'allICnoHold',
                     '5':'testZtO_75',
                     '6':'testOtZ_75',
                     '7':'zeroVChold_60',
                     '8':'oneVChold_60',
-                    '0':['allIeZ','allVCnoHold','allVChold_60'],
+                    #'0':['allIeZ','allVCnoHold','allVChold_60'],
+
+                    'g':{ #get cell steps #FIXME need a check to prevent running when cells are already gotten, but that requires the steps to work, cant do it with this setup :/
+                         #FIXME also need a way to auto switch to next headstage if one is already occupied otherwise we will cook shit :(
+                         'mccFuncs':{
+                             0:('setVChold',-.06), 
+                             1:'setVCholdOFF',
+                             2:'autoOffset',
+                             3:'autoCap',
+                             5:'setVCholdON',
+                         },
+                         'trmFuncs':{
+                             4:('getKbdHit','hit a key when you bump a cell'), #FIXME move to datFuncs? well it is trying to be a step but >_<
+                         },
+                         'datFuncs':{
+                             6:'getBrokenIn', #TODO FIXME getDoneFailNB?
+                         },
+                    },
+
+                    'c':{ #current steps
+                         'mccFuncs':{0:'allICnoHold',3:'allIeZ'},
+                         'clxFuncs':{
+                            1:('load','3'), #FIXME naming
+                            2:'getSub_record',
+                         },
+                         'trmFuncs':{3:''},
+                    },
+
+                    'p':{ #check connected pairs
+                         'mccFuncs':{
+                             0:('testZtO',-.075),
+                             5:('testZtO',-.06),
+                             8:('testOtZ',-.075),
+                             13:('testOtZ',-.06),
+                             16:'allIeZ',
+                         },
+                         'clxFuncs':{
+                             1:('load','4'), #FIXME zero-to-one
+                             3:'getSub_record',
+                             4:'wait_till_done',
+                             6:'getSub_record',
+                             7:'wait_till_done',
+                             9:('load','5'), #FIXME one-to-zero
+                             11:'getSub_record',
+                             12:'wait_till_done',
+                             14:'getSub_record',
+                             15:'wait_till_done',
+                         },
+                         'trmFuncs':{
+                             2:('getKbdHit','Hit a key after adjusting the program so that the cell will spike'),
+                             10:('getKbdHit','Hit a key after adjusting the program so that the cell will spike'),
+                         },
+                    },
+
                     '9':{'mccFuncs':{ #FIXME this is bloodly useless >_< replace w/ actual programatic control
                                      0:'allIeZ',
                                      3:'allICnoHold',

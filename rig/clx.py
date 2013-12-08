@@ -176,15 +176,16 @@ class clxControl: #clxmsg
 
     # Request the Clampex status.
     def GetStatus(self):
-        statusDict={\
-        0:'CLAMPEX IS NOT RUNNING',\
-        100:'CLXMSG_ACQ_STATUS_IDLE',\
-        101:'CLXMSG_ACQ_STATUS_DIALOGOPEN',\
-        102:'CLXMSG_ACQ_STATUS_TRIGWAIT',\
-        103:'CLXMSG_ACQ_STATUS_VIEWING',\
-        104:'CLXMSG_ACQ_STATUS_RECORDING',\
-        105:'CLXMSG_ACQ_STATUS_PAUSEVIEW',\
-        106:'CLXMSG_ACQ_STATUS_PAUSED',\
+        statusDict={
+        0:'CLAMPEX IS NOT RUNNING',
+        100:'CLXMSG_ACQ_STATUS_IDLE',
+        101:'CLXMSG_ACQ_STATUS_DIALOGOPEN',
+        102:'CLXMSG_ACQ_STATUS_TRIGWAIT',
+        103:'CLXMSG_ACQ_STATUS_VIEWING',
+        104:'CLXMSG_ACQ_STATUS_RECORDING',
+        105:'CLXMSG_ACQ_STATUS_PAUSEVIEW',
+        106:'CLXMSG_ACQ_STATUS_PAUSED',
+        107:'CLXMSG_ACQ_STATUS_DISABLED',
         }
         self.aDLL.CLXMSG_GetStatus(self.hClxmsg, self._puPointer, self._pnError)
         return statusDict[val(self._puPointer, c_uint_p)]

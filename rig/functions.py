@@ -239,6 +239,14 @@ class kCtrlObj:
                 print(e,'Try again!')
                 #print('could not convert value to int, try again!')
 
+    @keyRequest
+    def getBool(self,prompt='Boolean: hit space for True, anything else for False.'):
+        print(prompt)
+        true_key=' '
+        #self.keyHandler(1) #requesting key passthrough
+        out=self.charBuffer.get() == true_key
+        return out
+
     def cleanup(self):
         pass
 
@@ -478,6 +486,14 @@ class datFuncs(kCtrlObj):
             #session.close()
             pass
     #newCell.keyRequester=True
+    
+    @keyRequest
+    def getBrokenIn(self):
+        if self.getBool('Hit space if you broke in otherwise fail!'):
+            self.newCell()
+        else:
+            print('Your failure has been noted.')
+        return self
 
     def endDataFile(self):
         if not self.c_datafile:
@@ -569,6 +585,11 @@ class clxFuncs(kCtrlObj):
         status=self.ctrl.GetStatus()
         print(status)
         return self
+
+    def wait_till_done(self):
+        gs=self.ctrl.GetStatus
+        while gs() != 'CLXMSG_ACQ_STATUS_IDLE':
+            sleep(.001) #FIXME
 
     @keyRequest
     def load(self,key=None):
@@ -692,6 +713,38 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         #self.ctrl.selectMC()
         return self
 
+    def set_hs0(self):
+        print('Setting headstage 0')
+        self.ctrl.selectMC(0)
+        return self
+    def set_hs1(self):
+        print('Setting headstage 1')
+        self.ctrl.selectMC(1)
+        return self
+    def set_hsAll(self): #FIXME
+        self.ALL_HS=True
+
+    def autoOffset(self):
+        self.ctrl.AutoPipetteOffset()
+    def autoCap(self):
+        self.ctrl.AutoFastComp()
+        self.ctrl.AutoSlowComp()
+    def setVCholdOFF(self):
+        self.ctrl.SetMode(0)
+        self.ctrl.SetHoldingEnable(0)
+    def setVCholdON(self):
+        self.ctrl.SetMode(0)
+        self.ctrl.SetHoldingEnable(1)
+
+    def setVChold(self,holding_volts):
+        self.ctrl.SetMode(0)
+        self.ctrl.SetHolding(holding_volts)
+        #self.ctrl.SetHoldingEnable(1)
+    def setICnoHold(self):
+        self.ctrl.SetMode(1)
+        self.ctrl.SetHoldingEnable(0)
+
+
     def allIeZ(self):
         self.ctrl.selectMC(0)
         self.ctrl.SetMode(2)
@@ -727,19 +780,19 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         self.ctrl.SetMode(1)
         self.ctrl.SetHoldingEnable(0)
         return self
-    def testZtO_75(self):
+    def testZtO(self,holding_voltage):
         self.ctrl.selectMC(0)
         self.ctrl.SetMode(1)
         self.ctrl.SetHoldingEnable(0)
         self.ctrl.selectMC(1)
         self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(-.075)
+        self.ctrl.SetHolding(holding_voltage)
         self.ctrl.SetHoldingEnable(1)
         return self
-    def testOtZ_75(self):
+    def testOtZ(self,holding_voltage):
         self.ctrl.selectMC(0)
         self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(-.075)
+        self.ctrl.SetHolding(holding_voltage)
         self.ctrl.SetHoldingEnable(1)
         self.ctrl.selectMC(1)
         self.ctrl.SetMode(1)
@@ -1105,8 +1158,8 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
         return value
 
     @keyRequest
-    def getKbdHit(self):
-        print('Hit any key to advance.')
+    def getKbdHit(self,prompt='Hit any key to advance.'):
+        print(prompt)
         self.charBuffer.get()
         return True
 
@@ -1215,13 +1268,6 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
             self.modestate.keyActDict.pop(fail)
         return out
 
-    @keyRequest
-    def getBool(self):
-        print('Boolean: hit space for True, anything else for False.')
-        true_key=' '
-        #self.keyHandler(1) #requesting key passthrough
-        out=self.charBuffer.get() == true_key
-        return out
 
     @keyRequest
     def command(self): #TODO

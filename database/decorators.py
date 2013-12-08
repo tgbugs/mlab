@@ -20,6 +20,7 @@ def session_add_wrapper(object_to_add):
     try:
         session.commit()
     except:
+        raise
         print('[!] %s could not be added! Rolling back!'%object_to_add)
         session.rollback()
         raise
