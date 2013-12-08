@@ -51,13 +51,13 @@ def keyRequest(function): #FIXME sometimes we want to release a kr EARLY!
                 self._kr_not_done+=1
                 printD(self._kr_not_done)
                 out=function(self,*args,**kwargs)
-                self._kr_not_done-=1
-                printD(self._kr_not_done)
             except:
-                self._kr_not_done-=1
+                #self._kr_not_done-=1
                 raise
                 #printD('an error has occured while calling func!')
             finally:
+                self._kr_not_done-=1 #moved this here to prevent weird errors?
+                printD(self._kr_not_done)
                 self.krdLock.release()
                 assert self._kr_not_done >= 0 ,'utoh! _kr_not_done < 0 !'
                 printD('kr_not_done=',self._kr_not_done)
@@ -487,7 +487,7 @@ class datFuncs(kCtrlObj):
             pass
     #newCell.keyRequester=True
     
-    @keyRequest
+    @keyRequest #FIXME?
     def getBrokenIn(self):
         if self.getBool('Hit space if you broke in otherwise fail!'):
             self.newCell()
@@ -571,7 +571,7 @@ class clxFuncs(kCtrlObj):
         return self
 
     def setProtocolPath(self,protoPath):
-        print('PROTOCOL PATH SET')
+        print('PROTOCOL PATH SET %s'%protoPath)
         self.protocolPath=protoPath
 
     def cleanup(self):
@@ -601,7 +601,7 @@ class clxFuncs(kCtrlObj):
             filepath=self.protocolPath+filename
             self.ctrl.LoadProtocol(filepath.encode('ascii'))
             self.current_program=filepath
-            print('%s loaded!'%path)
+            print('%s loaded!'%filepath)
         except BaseException as e:
             print(e)
 
@@ -615,7 +615,7 @@ class clxFuncs(kCtrlObj):
             filepath=self.protocolPath+filename
             self.ctrl.LoadProtocol(filepath.encode('ascii'))
             self.current_program=filepath
-            print('%s loaded!'%path)
+            print('%s loaded!'%filepath)
         except BaseException as e:
             print(e)
             #print('Program not found')
@@ -730,10 +730,12 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
     def set_hs0(self):
         print('Setting headstage 0')
         self.ctrl.selectMC(0)
+        self.current_headstage=0
         return self
     def set_hs1(self):
         print('Setting headstage 1')
         self.ctrl.selectMC(1)
+        self.current_headstage=1 #TODO use this to link cells to the headstage!
         return self
     def set_hsAll(self): #FIXME
         self.ALL_HS=True

@@ -137,8 +137,8 @@ def mccDict():
                     '1':'set_hs0',
                     '2':'set_hs1',
                     #'3':'set_hsAll',
-                    '0':'allIeZ',
-                    #'2':'allVCnoHold',
+                    '0':'allIeZ', #FIXME make this generalize by allow a list of the headstages!
+                    'n':'allVCnoHold',
                     #'3':'allVChold_60',
                     #'4':'allICnoHold',
                     #'5':'testZtO_75',
@@ -146,7 +146,7 @@ def mccDict():
                     #'7':'zeroVChold_60',
                     #'8':'oneVChold_60',
                     #'0':['allIeZ','allVCnoHold','allVChold_60'],
-#get cell steps 
+#get WHOLE cell steps 
                     'g':{#FIXME need a check to prevent running when cells are already gotten, but that requires the steps to work, cant do it with this setup :/
                          #FIXME also need a way to auto switch to next headstage if one is already occupied otherwise we will cook shit :(
                          'mccFuncs':{
@@ -165,7 +165,7 @@ def mccDict():
                     },
 #current steps
                     'c':{ 
-                         'mccFuncs':{0:'allICnoHold',4:'allIeZ'},
+                         'mccFuncs':{0:'allICnoHold',4:'allIeZ'}, #FIXME need a check that we arent running
                          'clxFuncs':{
                             1:('loadfile','current_step_-100-1000'+'.pro'),
                             2:'getSub_record',
@@ -202,7 +202,7 @@ def mccDict():
 #run the optogenetic stimulation!
                     's':{},
 
-                    '9':{'mccFuncs':{ #FIXME this is bloodly useless >_< replace w/ actual programatic control
+                    'asdf':{'mccFuncs':{ #FIXME this is bloodly useless >_< replace w/ actual programatic control
                                      0:'allIeZ',
                                      3:'allICnoHold',
                                     },
