@@ -26,6 +26,18 @@ def random_vector_points(origin_x,origin_y,vec_x,vec_y,number=10,spacing=.01):
     np.random.shuffle(out)
     return out
 
+def random_vector_ret_start(origin_x,origin_y,vec_x,vec_y,number=10,spacing=.01):
+    out=vector_points(origin_x,origin_y,vec_x,vec_y,number,spacing)
+    np.random.shuffle(out)
+    def intersperse(iterable,delim):
+        it = iter(iterable)
+        yield next(it)
+        for x in it:
+            yield delim
+            yield x
+    out=[i for i in intersperse(out,(origin_x,origin_y))] #FIXME
+    return out
+
 def get_spline(points):
     """ min 5 points """
     pts=np.array(points) #turns a tuple of tuples into a column vector

@@ -992,9 +992,10 @@ class espFuncs(kCtrlObj):
                 return None
         step=self.getFloat('step um>')
         number=self.getInt('number>')
-        from rig.calcs import random_vector_points, vector_points
-        moves=random_vector_points(*args,number=number,spacing=step/1000) #.05 mm = 50um
+        from rig.calcs import random_vector_points, vector_points, random_vector_ret_start
         #moves=vector_points(*args,number=number,spacing=step/1000) #.05 mm = 50um
+        #moves=random_vector_points(*args,number=number,spacing=step/1000) #.05 mm = 50um
+        moves=random_vector_ret_start(*args,number=number,spacing=step/1000)
         print(moves)
         self.set_move_list(moves)
         
