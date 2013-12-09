@@ -117,21 +117,37 @@ def detect_spikes(array,thresh=3,max_thresh=5): #FIXME need an actual threshold?
     s_list=[ i for i in range(base) if first[i]<=threshold and second[i]>threshold ]
     s_list=s_list[0:-1:space]
     return s_list
+
+def detect_led(led_array):
+    maxV=max(led_array.base)
+    minV=min(led_array.base)
+    led_on_index=np.where(led_array.base < led_array.base[0]-.05)[0]
+    base=np.ones_like(led_on_index)
+    return led_on_index,base,maxV,minV
+
 def plot_count_spikes(filepath,signal_map): #FIXME integrate this with count_spikes properly
     """ useful for manual review """
     raw,block,segments=load_abf(filepath)
+    if list(raw.read_header()['nADCSamplingSeq'][:2]) != [1,2]:
+        print('Not a ledstim file')
+        return None,None
     nseg=len(segments)
     zero=transform_maker(0,400) #cell
     one=transform_maker(0,5) #led
     plt.figure()
     counts=[]
     for seg,n in zip(segments,range(nseg)):
+        if len(seg.analogsignals) != 2:
+            print('No led channel found.')
+            continue
         plt.subplot(5,1,n+1)
         nas=seg.size()['analogsignals']
         signal=zero(seg.analogsignals[0])
         led=one(seg.analogsignals[1])
-        led_on_index=np.where(led.base < led.base[0]-.05)[0]
-        base=np.ones_like(led_on_index)
+        led_on_index,base,maxV,minV=detect_led(led)
+        if not len(led_on_index):
+            print('No led detected maxV: %s minV: %s'%(maxV,minV))
+            continue
         sig_on=signal.base[led_on_index]
         sig_mean=np.mean(sig_on)
         sig_std=np.std(sig_on)
@@ -154,7 +170,7 @@ def plot_count_spikes(filepath,signal_map): #FIXME integrate this with count_spi
         plt.title('%s spikes %s'%(len(s_list),block.file_origin))
         #plt.title(block.file_origin)
         #plt.title('%s Segment %s'%(block.file_origin,n))
-    return np.mean(counts)
+    return np.mean(counts),np.var(counts)
 
 
 def count_spikes(filepath,signal_map): #TODO
@@ -173,6 +189,7 @@ def count_spikes(filepath,signal_map): #TODO
 
         thresh=3.3
 
+        print(filepath)
         s_list=detect_spikes(sig_on,thresh,5)
         counts.append(len(s_list))
     return np.mean(counts),np.var(counts)
@@ -235,6 +252,7 @@ reviewed={'2013_12_'+review+'.abf':list_ for review,list_ in for_review.items()}
 to_ignore=[ #see LB1:81
     '03_0041', #aperature was closed
     '03_0042', #aperature about half open
+    '08_0002', #something got recalibrated in the middle
 ]
 ignored=['2013_12_'+ignore+'.abf' for ignore in to_ignore]
 
@@ -253,7 +271,8 @@ class accumulator: #FIXME Queue??
         self.spike_vars.append(var)
 
 def main():
-    cell_ids=16,26 #based on num files
+    #cell_ids=16,26 #based on num files
+    cell_ids=32,#34
     DFMD=DataFile.MetaData
     for cid in cell_ids:
         cell=s.query(Cell).get(cid)
@@ -270,8 +289,12 @@ def main():
         dists=[]
         smeans=[] #for spike counts
         svars=[] #for spike counts
+        count=0
         for file in files:
-            if file.filename is in ignored:
+            count+=1
+            if count > 25: #FIXME low memory on the computer at lab ;_;
+                break
+            if file.filename in ignored:
                 continue
             if os.name=='posix':
                 filepath='/mnt/tgdata/clampex/'+file.filename
@@ -286,9 +309,11 @@ def main():
             except:
                 print('%s does not have a position! Assuming the previous file position'%filepath)
             print(file_pos)
+            size=os.path.getsize(filepath)
+            if size != 10009088: #FIXME another way to detect filetype really just need a way to get the protocol
+                continue
             positions.append(file_pos)
             dists.append(get_disp(cell_pos,file_pos))
-            size=os.path.getsize(filepath)
             print(size)
 
             try:
@@ -296,7 +321,7 @@ def main():
                 spike_mean=np.mean(_scount)
                 spike_var=np.var(_scount)
             except KeyError:
-                spike_mean,spike_var=count_spikes(filepath,None) #TODO OH NOSE MEMORY USAGE
+                spike_mean,spike_var=plot_count_spikes(filepath,None) #TODO OH NOSE MEMORY USAGE
             smeans.append(spike_mean)
             svars.append(spike_var)
         pos=np.array(positions)
@@ -319,8 +344,8 @@ def main():
     plt.show()
 
 def get_dist_data(file,callback=None): #get data from a datafile
-    if file.filename is in ignored:
-        continue
+    if file.filename in ignored:
+        return None
     if os.name=='posix':
         filepath='/mnt/tgdata/clampex/'+file.filename
 
@@ -341,7 +366,7 @@ def get_dist_data(file,callback=None): #get data from a datafile
         if not file_pos:
             file_pos=None #TODO
 
-        distance=get_disp(s_pos,file_pos))
+        distance=get_disp(s_pos,file_pos)
 
         try:
             _scount=reviewed[file.filename]

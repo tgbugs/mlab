@@ -31,6 +31,8 @@ engine.echo=args['--echo']
 session=Session(engine)
 s=session
 
+print('Connected to:',engine.url.database)
+
 
 #session type
 dbtype=session.connection().engine.name #dialect.name??
