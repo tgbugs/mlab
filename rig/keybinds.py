@@ -114,10 +114,10 @@ def clxDict():
                          #'l':'load',
                          #'r':'record',
                          #'r':'getSub_record',
-                         'v':'view',
+                         #'v':'view', #FIXME try not to have things overlap >_<
                          'g':'getStatus',
                          's':'stop_rec',
-                         'm':'startMembTest',
+                         #'m':'startMembTest',
                          ' ':{'clxFuncs':{0:'getSub_record'},
                               'espFuncs':{1:'getWT_getPos'},
                          }

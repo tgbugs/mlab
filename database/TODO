@@ -1,3 +1,4 @@
+make intersperse the distances with the spot over the cell
 fix minV maxV
 ADD NOTES TO DATAFILES AND EXPERIMENTS!!!
 change ':' command so that it looks up function names in a dict?
