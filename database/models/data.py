@@ -356,6 +356,36 @@ class DataFile(File): #data should be collected in the scope of an experiment
 
     experiment=relationship('Experiment',backref='datafiles',uselist=False)
 
+    @property
+    def position(self):
+        try: 
+            return [ d.value for d in self.metadata_ if d.metadatasource.name=='getPos' ][0] #FIXME getPos is a terrible way to name this >_< and not extensible
+        except:
+            return None
+
+    @property
+    def distances(self):
+        if not self.position:
+            return []
+        def norm(cell,file):
+            a2=(cell[0]-file[0])**2
+            b2=(cell[1]-file[1])**2
+            return (a2+b2)**.5
+        dists=[]
+        #dists={} #FIXME return a dict with subject ids as keys?
+        for subject in self.subjects:
+            #if subject.type=='cell' #TODO?
+            try:
+                subject_pos=[ d.value for d in subject.metadata_ if d.metadatasource.name=='getPos' ][0] #FIXME
+            except:
+                raise
+                subject_pos=[]
+            if not subject_pos:
+                continue
+            else:
+                dists.append(norm(subject_pos,self.position))
+        return dists
+
     @validates('_filename')#TODO verify that datafile isnt being fed garbage filenames by accident!
     def _fileextension_matchs_dfs(self, key, value): #FIXME... aint loaded...
         dfe=self.datafilesource.extension
