@@ -30,14 +30,15 @@ def dictInit(inDict,clsDict,kr_dict): #putting this here makes everything funny 
                 lambda:print('No function %s exists on %s'%(putativeFunc,instanceOfClass.__class__.__name__))), key_request_count
 
         except (TypeError,AttributeError) as e:
-            #printD(putativeFunc,'wasnt a function')
+            printD(putativeFunc,'wasnt a function')
             if type(putativeFunc)==tuple: #is it a func tupel?
                 try:
                     #'function',args
                     function=instanceOfClass.__getattribute__(putativeFunc[0])
                     if putativeFunc[0] in keyRequesters: #check and wrap if kr
                         key_request_count+=1
-                    return argsCaller(function,putativeFunc[1]), key_request_count
+                    args=putativeFunc[1:]
+                    return argsCaller(function,putativeFunc[1:]), key_request_count
                 except (TypeError,AttributeError) as e:
                     printD(putativeFunc,'func arg tuple not inited')
                     pass
@@ -45,7 +46,6 @@ def dictInit(inDict,clsDict,kr_dict): #putting this here makes everything funny 
                 funcList=[]
                 for item in putativeFunc:
                     try:
-
                         function,kr_count=parseValue(counter+1,instanceOfClass,item,keyRequesters,kr_dict) #RECURSE AWEYISS
                         funcList.append(function)
                         key_request_count+=kr_count
@@ -129,12 +129,12 @@ def dictInit(inDict,clsDict,kr_dict): #putting this here makes everything funny 
                     if initedDict['mode']=='rig':
                         initedDict['esc']=lambda:0 #hardcoded escape
                     elif initedDict['mode']: #anything with a mode gets this
-                        initedDict['esc']=argsCaller(ikFunc.setMode,'rig')
+                        initedDict['esc']=argsCaller(ikFunc.setMode,('rig',))
                 except:
                     try:
                         if initedDict['mode']:
                             #initedDict['esc']=argsCaller(ikCtrl.setMode,'rig')
-                            initedDict['esc']=argsCaller(ikFunc.setMode,'rig')
+                            initedDict['esc']=argsCaller(ikFunc.setMode,('rig',))
                     except:
                         printD("no mode set, cannot be put in mode dict, so no esc set")
         except:
@@ -180,7 +180,13 @@ def dictCaller(dict):
         return lambda :[item() for item in dict.items()] #don't need the dict because already in local()
 
 #argsCaller=lambda func,args:(lambda :func(args)) #awe yeah magic! FIXME?
-def argsCaller(func,args): return lambda:func(args)
+def argsCaller(func,args):
+    def caller():
+        #print(func)
+        #print(args)
+        return func(*args)
+    caller.__name__=func.__name__
+    return caller
 
 #listCaller=lambda list:(lambda:[func() for func in list]) #this will just fail on me since they dont have try/except
 def listCaller(list): return lambda:[func() for func in list] #this will just fail on me since they dont have try/except

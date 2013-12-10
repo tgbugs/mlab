@@ -219,7 +219,7 @@ class kCtrlObj:
     @keyRequest
     def getFloat(self,prompt='float> '):
         print('Please enter a floating point value.',)
-        while 1:
+        while self.keyThread.is_alive():
             string=self.__getChars__(prompt)
             try:
                 out=float(string)
@@ -230,7 +230,7 @@ class kCtrlObj:
     @keyRequest
     def getInt(self,prompt='int> '):
         print('please enter an integer',)
-        while 1:
+        while self.keyThread.is_alive():
             string=self.__getChars__(prompt)
             try:
                 out=int(string)
@@ -490,7 +490,8 @@ class datFuncs(kCtrlObj):
     @keyRequest #FIXME?
     def getBrokenIn(self):
         if self.getBool('Hit space if you broke in otherwise fail!'):
-            pass #TODO metadata on breakin?
+            #TODO metadata on breakin?
+            print('Yay!')
         else:
             print('Your failure has been noted.')
             #self.c_target.notes.append('FAILURE MESSAGE') #TODO
@@ -600,7 +601,7 @@ class clxFuncs(kCtrlObj):
 
     def wait_till_done(self):
         gs=self.ctrl.GetStatus
-        while gs() != 'CLXMSG_ACQ_STATUS_IDLE':
+        while gs() != 'CLXMSG_ACQ_STATUS_IDLE' and self.keyThread.is_alive():
             sleep(.001) #FIXME
         print('Done recording')
 
@@ -679,6 +680,10 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         #associated metadata sources
         #self.state1DataSource=None
 
+    def setGain(self,value=1):
+        self.ctrl.SetPrimarySignalGain(value)
+        print('Primary signal gain set to %s'%value)
+        return self
 
     def inpWait(self): #XXX depricated
         #wait for keypress to move to the next program, this may need to spawn its own thread?
@@ -761,8 +766,13 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         self.ctrl.SetHoldingEnable(1)
 
     def setVChold(self,holding_volts):
+        #print(holding_volts)
         self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(holding_volts)
+        print(holding_volts)
+        self.ctrl.SetHolding(float(holding_volts))
+        h=self.ctrl.GetHolding()
+        print(h)
+        #sleep(.001) #FIXME trying to figure out why holding set to -1000mV
         #self.ctrl.SetHoldingEnable(1)
     def setICnoHold(self):
         self.ctrl.SetMode(1)
@@ -810,13 +820,13 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         self.ctrl.SetHoldingEnable(0)
         self.ctrl.selectMC(1)
         self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(holding_voltage)
+        self.ctrl.SetHolding(float(holding_voltage))
         self.ctrl.SetHoldingEnable(1)
         return self
     def testOtZ(self,holding_voltage):
         self.ctrl.selectMC(0)
         self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(holding_voltage)
+        self.ctrl.SetHolding(float(holding_voltage))
         self.ctrl.SetHoldingEnable(1)
         self.ctrl.selectMC(1)
         self.ctrl.SetMode(1)
@@ -956,6 +966,8 @@ class espFuncs(kCtrlObj):
             except:
                 raise
         except KeyError:
+            stdout.write('\n')
+            stdout.flush()
             pass
         return self
 
@@ -998,7 +1010,59 @@ class espFuncs(kCtrlObj):
         moves=random_vector_ret_start(*args,number=number,spacing=step/1000)
         print(moves)
         self.set_move_list(moves)
-        
+
+    @keyRequest
+    def mark_to_cardinal(self,step_um=25,number=8): #FIXME need a way to reload marks at startup!
+        from numpy.random import shuffle
+        from rig.calcs import vector_points, intersperse
+        #step_um=self.getFloat('step um>') #FIXME stupid having to compile this at startup >_<
+        #number=self.getInt('number>')
+
+        start='origin'
+        stdout.write(start+'> ')
+        stdout.flush()
+        key=self.charBuffer.get()
+        stdout.write(key)
+        stdout.flush()
+        #base_args=[]
+        if key in self.markDict:
+            base_args=self.markDict[key] #x,y,x,y #XXX NOTE XXX this is the origin!
+            stdout.write('\n')
+            stdout.flush()
+        else:
+            print('Mark not found!')
+            return None
+
+        dirs='dorsal','ventral','medial','lateral'
+        base=[base_args] #include the origin somewhere in the list
+        for i in range(len(dirs)):
+            args=[]
+            args.extend(base_args)
+            stdout.write(dirs[i]+'> ')
+            stdout.flush()
+            key=self.charBuffer.get()
+            stdout.write(key)
+            stdout.flush()
+            if key in self.markDict:
+                args.extend(self.markDict[key]) #x,y,x,y
+                stdout.write('\n')
+                stdout.flush()
+                #print(base_args,args)
+                #pts=vector_points(args[0],args[1],args[2],args[3],number=number,spacing=step_um/1000)
+                pts=vector_points(*args,number=number,spacing=step_um/1000)[1:] #[1:] to prevent redundant origin calls
+                #print(pts)
+                base.extend(pts)
+            else:
+                print('Mark not found exiting.')
+                return None
+        shuffle(base)
+        moves=[m for m in intersperse(base,base_args)]
+        moves.append(base_args) #add the last validation origin point
+        print(moves)
+        print(len(moves))
+        self.set_move_list(moves)
+        return moves
+
 
 
 

@@ -123,6 +123,7 @@ def clxDict():
                          }
                         },
             }
+
     
     for key in programDict.keys():
         clxDict['clxFuncs'][key]=('load',key)
@@ -147,12 +148,13 @@ def mccDict():
                     #'8':'oneVChold_60',
                     #'0':['allIeZ','allVCnoHold','allVChold_60'],
 #get WHOLE cell steps 
+                    'a':'autoOffset',
                     'g':{#FIXME need a check to prevent running when cells are already gotten, but that requires the steps to work, cant do it with this setup :/
                          #FIXME also need a way to auto switch to next headstage if one is already occupied otherwise we will cook shit :(
                          'mccFuncs':{
                              #-1:'new', #TODO checkpoints so that we dont go when when have a cell #TODO headstage <-> cell linkage can happen here naturally
                              0:'setVCholdOFF',
-                             1:('setVChold',-.06),  #FIXME HUGE PROBLEM
+                             1:('setVChold',-.06),  #FIXME HUGE PROBLEM the 2nd headstage to be set somehow goes to -1000mV this happens because the program hits the end of the pipette offset and so it wraps around
                              2:'autoOffset',
                              3:'autoCap',
                              5:'setVCholdON',
@@ -224,6 +226,48 @@ def mccDict():
                     'y':'getState',
                    },
     }
+    #mccDict['mccFuncs']['l']=None
+    def make_led_dict(step_um,number): #FIXME it is monumentally stupid to have to compile this only at startup >_<
+        led_dict={}
+        led_dict['espFuncs']={}
+        led_dict['mccFuncs']={0:('setGain',10),1:'allIeZ'}
+        led_dict['clxFuncs']={}
+        base_steps={
+            'clxFuncs':{
+                1:('loadfile','1_led_loose_patch'+'.pro'),
+                6:('loadfile','1_led_loose_cell'+'.pro'),
+                2:'getSub_record',
+                3:'wait_till_done',
+                7:'getSub_record',
+                8:'wait_till_done',
+                       },
+            'espFuncs':{
+                0:'moveNext',
+                4:'getWT_getPos',
+                5:'moveNext',
+                9:'getWT_getPos',
+            },
+        }
+        start=2 #FIXME generalize it instead of hardcoding
+        nsteps=10 # zero to nine
+        check={}
+        for i in range(number*4-3): #the -3 accounts for the fact that 3 of the 4 origins are are left out
+            loop_start=i*nsteps+start
+            for func_name,dodict in base_steps.items():
+                #print(func_name)
+                for step_number,thing in dodict.items():
+                    #print('\t',thing)
+                    led_dict[func_name][step_number+loop_start]=thing
+                    check[step_number+loop_start]=thing
+        #print(check)
+        #print(led_dict)
+        return led_dict
+    step_um=100
+    number=2 #XXX note that you need step_um * dist-1 to get to max dist here because zero counts as a stop
+    mccDict['espFuncs']={'m':('mark_to_cardinal',step_um,number)} #this means we need to multipy by number by 4 each position-origin pair should be accounted for
+    mccDict['mccFuncs']['l']=make_led_dict(step_um,number)
+
+
 
     return mccDict
 

@@ -1,21 +1,29 @@
 import numpy as np
 from scipy.interpolate import UnivariateSpline, SmoothBivariateSpline, InterpolatedUnivariateSpline
 
+def intersperse(iterable,delim):
+    it = iter(iterable)
+    yield next(it) #this prevents the delimiter from showing up first
+    for x in it:
+        yield delim
+        yield x
+
 def vector_points(origin_x,origin_y,vec_x,vec_y,number=10,spacing=.01):
     """ returns a list of points spaced along the line between origin and vector"""
     norm=spacing
     dx=(vec_x-origin_x)
     dy=(vec_y-origin_y)
     sx=np.sign(dx)
-    theta=np.arctan(dy/dx)
+    theta=np.arctan2(dy,dx)
+    #theta=np.arctan(dy/dx)
     def imstupid(sx):
         """ I CANNOT MATH HALP """
         if sx < 0: #if the x coord is negative arctan will be wonky
             return np.pi
         else:
             return 0
-    cost=np.cos(theta+imstupid(sx))
-    sint=np.sin(theta+imstupid(sx))
+    cost=np.cos(theta)#+imstupid(sx))
+    sint=np.sin(theta)#+imstupid(sx))
     #x coord = norm * cos(o)
     #y coord = norm * sin(o)
     points=[(n*norm*cost+origin_x,n*norm*sint+origin_y) for n in range(number)]
@@ -29,12 +37,6 @@ def random_vector_points(origin_x,origin_y,vec_x,vec_y,number=10,spacing=.01):
 def random_vector_ret_start(origin_x,origin_y,vec_x,vec_y,number=10,spacing=.01):
     out=vector_points(origin_x,origin_y,vec_x,vec_y,number,spacing)
     np.random.shuffle(out)
-    def intersperse(iterable,delim):
-        it = iter(iterable)
-        yield next(it)
-        for x in it:
-            yield delim
-            yield x
     out=[i for i in intersperse(out,(origin_x,origin_y))] #FIXME
     return out
 
