@@ -1063,6 +1063,37 @@ class espFuncs(kCtrlObj):
         self.set_move_list(moves)
         return moves
 
+    @keyRequest
+    def mark_to_spline(self,step_um=100,number=10):
+        from rig.calcs import get_points_from_spline
+        from numpy.random import shuffle
+        import pylab as plt
+
+        marks='start','two','three','four','five'
+        points=[]
+        for i in range(len(marks)):
+            stdout.write(marks[i]+'> ')
+            stdout.flush()
+            key=self.charBuffer.get()
+            stdout.write(key)
+            stdout.flush()
+            if key in self.markDict:
+                points.append(self.markDict[key]) #x,y,x,y
+                stdout.write('\n')
+                stdout.flush()
+            else:
+                print('Mark not found exiting.')
+                return None
+        moves=get_points_from_spline(points)
+        plt.plot(-moves[0][0],moves[0][1]+.01,'yo')
+        shuffle(moves)
+        [plt.plot(-m[0],m[1],'ro') for m in points]
+        [plt.plot(-m[0],m[1],'go') for m in moves]
+        plt.show()
+        print(moves)
+        print(len(moves))
+        self.set_move_list(moves)
+
 
 
 

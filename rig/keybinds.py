@@ -206,7 +206,7 @@ def mccDict():
                          },
                     },
 #run the optogenetic stimulation!
-                    's':{},
+                    #'s':{},
 
                     'asdf':{'mccFuncs':{ #FIXME this is bloodly useless >_< replace w/ actual programatic control
                                      0:'allIeZ',
@@ -230,7 +230,7 @@ def mccDict():
     def make_led_dict(step_um,number): #FIXME it is monumentally stupid to have to compile this only at startup >_<
         led_dict={}
         led_dict['espFuncs']={}
-        led_dict['mccFuncs']={0:('setGain',10),1:'allIeZ'}
+        led_dict['mccFuncs']={1:('setGain',10),0:'allIeZ'}
         led_dict['clxFuncs']={}
         base_steps={
             'clxFuncs':{
@@ -267,6 +267,12 @@ def mccDict():
     mccDict['espFuncs']={'m':('mark_to_cardinal',step_um,number)} #this means we need to multipy by number by 4 each position-origin pair should be accounted for
     mccDict['mccFuncs']['l']=make_led_dict(step_um,number)
 
+    def make_som_dict(step_um,number): #TODO
+        return {}
+    step_um=100
+    number=10
+    mccDict['mccFuncs']['d']=make_som_dict(step_um,number)
+    mccDict['espFuncs'].update({'s':('mark_to_spline',step_um,number)}) #*2 for left and right traversal
 
 
     return mccDict
