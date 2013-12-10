@@ -305,6 +305,8 @@ class File(Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces 
     #this does mean that files need to have m-m with repositories
     #TODO need verfication that the file is actually AT the repository
     #fuck, what order do I do this in esp for my backup code
+
+    #TODO must hash all files on creation!
     __tablename__='file'
     url=Column(String,ForeignKey('repository.url'),primary_key=True)
     mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
@@ -366,24 +368,21 @@ class DataFile(File): #data should be collected in the scope of an experiment
     @property
     def distances(self):
         if not self.position:
-            return []
+            return {}
         def norm(cell,file):
             a2=(cell[0]-file[0])**2
             b2=(cell[1]-file[1])**2
             return (a2+b2)**.5
-        dists=[]
-        #dists={} #FIXME return a dict with subject ids as keys?
+        #dists=[]
+        dists={} #FIXME return a dict with subject ids as keys?
         for subject in self.subjects:
             #if subject.type=='cell' #TODO?
-            try:
-                subject_pos=[ d.value for d in subject.metadata_ if d.metadatasource.name=='getPos' ][0] #FIXME
-            except:
-                raise
-                subject_pos=[]
-            if not subject_pos:
+            if not hasattr(subject,'position'):
+                continue
+            elif not subject.position:
                 continue
             else:
-                dists.append(norm(subject_pos,self.position))
+                dists[subject.id]=norm(subject.position,self.position)
         return dists
 
     @validates('_filename')#TODO verify that datafile isnt being fed garbage filenames by accident!

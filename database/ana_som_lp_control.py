@@ -1,6 +1,7 @@
 from rig.ipython import embed
+import socket
 import numpy as np
-import scipy as sci
+#import scipy as sci
 import pylab as plt
 from neo import AxonIO, AnalogSignal
 
@@ -78,7 +79,8 @@ one=transform_maker(0,5) #FIXME why do I need this!?
 
 image_path='D:/tom_data/macroscope/'
 #path='D:/tom_data/clampex/'
-path='/mnt/tgdata/clampex/'
+#path='/mnt/tgdata/clampex/'
+path='D:/clampex/'
 filenames=[
     '2013_12_04_0024.abf',
     '2013_12_04_0025.abf',
@@ -114,7 +116,8 @@ def detect_spikes(array,thresh=3,max_thresh=5): #FIXME need an actual threshold?
     first=array[:-space] #5 to hopefully prevent the weirdness with tiny fluctuations
     second=array[space:]
     base=len(first)-space
-    s_list=[ i for i in range(base) if first[i]<=threshold and second[i]>threshold ]
+    #s_list=[ i for i in range(base) if first[i]<=threshold and second[i]>threshold ]
+    s_list=[ i for i in range(base-1) if first[i]<=threshold and second[i]>threshold and first[i+1]<=threshold and second[i+1]>threshold ]
     s_list=s_list[0:-1:space]
     return s_list
 
@@ -128,7 +131,7 @@ def detect_led(led_array):
 def plot_count_spikes(filepath,signal_map): #FIXME integrate this with count_spikes properly
     """ useful for manual review """
     raw,block,segments=load_abf(filepath)
-    if list(raw.read_header()['nADCSamplingSeq'][:2]) != [1,2]:
+    if list(raw.read_header()['nADCSamplingSeq'][:2]) != [1,2]: #FIXME
         print('Not a ledstim file')
         return None,None
     nseg=len(segments)
@@ -144,7 +147,7 @@ def plot_count_spikes(filepath,signal_map): #FIXME integrate this with count_spi
         nas=seg.size()['analogsignals']
         signal=zero(seg.analogsignals[0])
         led=one(seg.analogsignals[1])
-        led_on_index,base,maxV,minV=detect_led(led)
+        led_on_index,base,maxV,minV=detect_led(led) #FIXME move this to count_spikes
         if not len(led_on_index):
             print('No led detected maxV: %s minV: %s'%(maxV,minV))
             continue
@@ -170,7 +173,7 @@ def plot_count_spikes(filepath,signal_map): #FIXME integrate this with count_spi
         plt.title('%s spikes %s'%(len(s_list),block.file_origin))
         #plt.title(block.file_origin)
         #plt.title('%s Segment %s'%(block.file_origin,n))
-    return np.mean(counts),np.var(counts)
+    return np.mean(counts),np.var(counts),counts
 
 
 def count_spikes(filepath,signal_map): #TODO
@@ -189,10 +192,10 @@ def count_spikes(filepath,signal_map): #TODO
 
         thresh=3.3
 
-        print(filepath)
+        #print(filepath)
         s_list=detect_spikes(sig_on,thresh,5)
         counts.append(len(s_list))
-    return np.mean(counts),np.var(counts)
+    return np.mean(counts),np.var(counts),counts
 
 #count_spikes(path+filenames[0],None)
 #[count_spikes(path+fn,test_map) for fn in filenames]
@@ -253,6 +256,19 @@ to_ignore=[ #see LB1:81
     '03_0041', #aperature was closed
     '03_0042', #aperature about half open
     '08_0002', #something got recalibrated in the middle
+    '08_0001', #shutter closed
+    '08_0002', #shutter closed
+    '08_0003', #shutter closed
+    '08_0022', #min was at 0V so way more spikes #FIXME automate?
+    '08_0023', #min was at 0V so way more spikes
+    '08_0024', #min was at 0V so way more spikes
+    '08_0025', #min was at 0V so way more spikes
+    '08_0026', #min was at 0V so way more spikes
+    '08_0027', #min was at 0V so way more spikes
+    '08_0028', #min was at 0V so way more spikes
+    '08_0053', #shutter open
+    '08_0076', #accident with membrane test
+    '08_0077', #accident with membrane test
 ]
 ignored=['2013_12_'+ignore+'.abf' for ignore in to_ignore]
 
@@ -270,112 +286,106 @@ class accumulator: #FIXME Queue??
         self.spike_means.append(mean)
         self.spike_vars.append(var)
 
-def main():
-    #cell_ids=16,26 #based on num files
-    cell_ids=32,#34
-    DFMD=DataFile.MetaData
-    for cid in cell_ids:
-        cell=s.query(Cell).get(cid)
-        cell_pos=s.query(Cell.MetaData).filter_by(parent_id=cid).\
-            join(MetaDataSource,Cell.MetaData.metadatasource).\
-            filter_by(name='getPos').order_by(Cell.MetaData.id).first().value
-        #print(cell_pos)
-        #TODO get slice points
-        slice_=cell.parent
-        s_pos=get_metadata_query(Slice,slice_.id,'getPos').all()[:3]
-        #print(s_pos)
-        files=s.query(DataFile).join(Cell,DataFile.subjects).filter(Cell.id==cid).order_by(DataFile.creationDateTime).all()
-        positions=[]
-        dists=[]
-        smeans=[] #for spike counts
-        svars=[] #for spike counts
-        count=0
-        for file in files:
-            count+=1
-            if count > 25: #FIXME low memory on the computer at lab ;_;
-                break
-            if file.filename in ignored:
-                continue
-            if os.name=='posix':
-                filepath='/mnt/tgdata/clampex/'+file.filename
+def bin_dists(dist,mean,var,bin_width=.01): #FIXME return dont plot?
+    bin_lefts=np.arange(0,.2,bin_width)
+    bin_dict={}
+    for v in bin_lefts:
+        bin_dict[v]=[[],[]]
+    for d,m,v in zip(dist,mean,var):
+        left=bin_lefts[bin_lefts<=d][-1] #left inclusive
+        right=left+bin_width
+        bin_dict[left][0].append(m)
+        bin_dict[left][1].append(v)
+    for left_bin,lst in bin_dict.items():
+        new_mean=np.mean(lst[0])
+        new_std=np.std(lst[0]) #FIXME ignores the individual vars
+        plt.bar(left_bin,new_mean,bin_width,color=(.8,.8,1),yerr=new_std)
 
-            else:
-                filepath=file.full_url[8:]
-            try:
-                file_pos=s.query(DFMD).filter(DFMD.url==file.url,DFMD.filename==file.filename).\
-                    join(MetaDataSource,Cell.MetaData.metadatasource).\
-                    filter_by(name='getPos').order_by(Cell.MetaData.dateTime).first().value
-                print(filepath)
-            except:
-                print('%s does not have a position! Assuming the previous file position'%filepath)
-            print(file_pos)
-            size=os.path.getsize(filepath)
-            if size != 10009088: #FIXME another way to detect filetype really just need a way to get the protocol
-                continue
-            positions.append(file_pos)
-            dists.append(get_disp(cell_pos,file_pos))
-            print(size)
-
-            try:
-                _scount=reviewed[file.filename]
-                spike_mean=np.mean(_scount)
-                spike_var=np.var(_scount)
-            except KeyError:
-                spike_mean,spike_var=plot_count_spikes(filepath,None) #TODO OH NOSE MEMORY USAGE
-            smeans.append(spike_mean)
-            svars.append(spike_var)
-        pos=np.array(positions)
-
-        plt.figure()
-        plt.bar(np.array(dists),smeans,np.ones_like(dists)*.025,color=(.8,.8,1),yerr=svars,align='center')
-        plt.figure()
-        plt.title('Cell %s'%cid)
-        plt.plot(esp_fix_x(pos[:,0]),pos[:,1],'bo') #TODO these are flipped from reality!
-        plt.plot(esp_fix_x(cell_pos[0]),cell_pos[1],'ro') #FIXME dake the math and shit out of here for readability 
-        [plt.plot(esp_fix_x(p.value[0]),p.value[1],'go') for p in s_pos] #plot the slice positions
-        for count,x,y in zip(smeans,esp_fix_x(pos[:,0]),pos[:,1]):
-           plt.annotate(
-                '%s'%count,  #aka label
-                xy = (x,y), xytext = (-20,20),
-                textcoords = 'offset points', ha = 'right', va = 'bottom',
-                bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
-                arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'),
-           )
-    plt.show()
-
-def get_dist_data(file,callback=None): #get data from a datafile
-    if file.filename in ignored:
-        return None
-    if os.name=='posix':
-        filepath='/mnt/tgdata/clampex/'+file.filename
-
-    else:
-        filepath=file.full_url[8:]
-    size=os.path.getsize(filepath) #TODO
-    try:
-        file_pos=s.query(DFMD).filter(DFMD.url==file.url,DFMD.filename==file.filename).\
-            join(MetaDataSource,Cell.MetaData.metadatasource).\
-            filter_by(name='getPos').order_by(Cell.MetaData.dateTime).first().value
-        #print(filepath)
-    except:
-        print('%s does not have a position! Assuming the previous file position'%filepath)
-        file_pos=None
-        return None #FIXME there is no previous here :/
-    for subject in file.subjects:
-        s_pos=get_metadata_query(Cell,subject.id,'getPos').all()[:0] #FIXME order_by?
-        if not file_pos:
-            file_pos=None #TODO
-
-        distance=get_disp(s_pos,file_pos)
-
+def get_cell_data(cid):
+    cell=s.query(Cell).get(cid)
+    #DFMD=DataFile.MetaData
+    #cell_pos=s.query(Cell.MetaData).filter_by(parent_id=cid).\
+        #join(MetaDataSource,Cell.MetaData.metadatasource).\
+        #filter_by(name='getPos').order_by(Cell.MetaData.id).first().value
+    #print(cell_pos)
+    #TODO get slice points
+    slice_=cell.parent
+    s_pos=get_metadata_query(Slice,slice_.id,'getPos').all()[:3]
+    #print(s_pos)
+    files=s.query(DataFile).join(Cell,DataFile.subjects).filter(Cell.id==cid).order_by(DataFile.creationDateTime).all()
+    positions=[]
+    dists=[]
+    smeans=[] #for spike counts
+    svars=[] #for spike counts
+    counts={} #raw counts
+    path='D:/tom_data/clampex/'
+    for filename,distance in cell.distances.items(): #XXX NOTE XXX not ordered
+        if filename in ignored:
+            continue
+        if os.name=='posix':
+            filepath='/mnt/tgdata/clampex/'+filename #FIXME
+        if socket.gethostname()=='andromeda':
+            filepath='D:/clampex/'+filename
+        else:
+            filepath=path+filename #FIXME
+        size=os.path.getsize(filepath)
+        #print(size)
+        if size != 10009088: #FIXME another way to detect filetype really just need a way to get the protocol
+            continue
+        print((path,filename))
+        fp=s.query(DataFile).get(('file:///'+path,filename)).position #FIXME ;_; add eq ne hash to datafile
+        positions.append(fp)
+        dists.append(distance)
         try:
-            _scount=reviewed[file.filename]
+            _scount=reviewed[filename]
             spike_mean=np.mean(_scount)
             spike_var=np.var(_scount)
         except KeyError:
-            spike_mean,spike_var=count_spikes(filepath,None) #TODO OH NOSE MEMORY USAGE
+            spike_mean,spike_var,_scount=count_spikes(filepath,None) #TODO OH NOSE MEMORY USAGE
+        counts[filename]=_scount
+        smeans.append(spike_mean)
+        svars.append(spike_var)
+
+    #TODO use a Queue to block on threads until all the spikes are gotten
+
+    pos=np.array(positions)
+    #embed()
+    return cid,cell.position,pos,dists,smeans,svars,s_pos,counts
+
+
+def plot_cell_data(cid,cell_pos,df_pos,dists,smeans,svars,slice_pos):
+    plt.figure()
+    plt.title('Cell %s'%cid)
+    bin_dists(dists,smeans,svars) #TODO
+    #plt.bar(np.array(dists),smeans,np.ones_like(dists)*.025,color=(.8,.8,1),yerr=svars,align='center')
+
+    plt.figure()
+    plt.title('Cell %s'%cid)
+    plt.plot(esp_fix_x(df_pos[:,0]),df_pos[:,1],'bo') #TODO these are flipped from reality!
+    plt.plot(esp_fix_x(cell_pos[0]),cell_pos[1],'ro') #FIXME dake the math and shit out of here for readability 
+    [plt.plot(esp_fix_x(p.value[0]),p.value[1],'go') for p in slice_pos] #plot the slice positions
+    for count,x,y in zip(smeans,esp_fix_x(df_pos[:,0]),df_pos[:,1]):
+       plt.annotate(
+            '%s'%count,  #aka label
+            xy = (x,y), xytext = (-20,20),
+            textcoords = 'offset points', ha = 'right', va = 'bottom',
+            bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
+            arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'),
+       )
+
+def get_dist_data(file,callback=None): #get data from a datafile
+    #TODO
     callback()
-    return file_pos
+    return
+
+def main():
+    #cell_ids=16,26 #based on num files
+    cell_ids=32,34
+    for cid in cell_ids:
+        data=get_cell_data(cid)
+        plot_cell_data(*data[:-1])
+    plt.show()
+
 
 
 if __name__=='__main__':

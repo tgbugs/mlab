@@ -327,7 +327,34 @@ class Slice(HasGeneratingExperiment, HasLocation, Subject): #FIXME slice should 
 
 
 class Cell(HasGeneratingExperiment, Subject):
-    pass
+    @property
+    def position(self):
+        try: 
+            return [ d.value for d in self.metadata_ if d.metadatasource.name=='getPos' ][0] #FIXME getPos is a terrible way to name this >_< and not extensible
+        except:
+            return None
+    @property
+    def distances(self):
+        if not self.position:
+            return {}
+        def norm(cell,file):
+            a2=(cell[0]-file[0])**2
+            b2=(cell[1]-file[1])**2
+            return (a2+b2)**.5
+        #dists=[]
+        dists={} #FIXME return a dict with subject ids as keys?
+        for file in self.datafiles:
+            #if subject.type=='cell' #TODO?
+            if not hasattr(file,'position'):
+                continue
+            elif not file.position:
+                continue
+            else:
+                dists[file.filename]=norm(self.position,file.position)
+        return dists
+
+
+
     #def __repr__(self):
         #return '%s %s'%(self.__clas__.__name__,self.id)
         #base=super().__repr__()

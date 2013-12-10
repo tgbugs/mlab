@@ -37,6 +37,8 @@ def pgReal(username,password,host,port=54321,database='postgres',echo=False): #F
         port=5432
         database='scidb_v1_test'
     pg='postgresql://%s:%s@%s:%s/%s'
+    if socket.gethostname()=='andromeda':
+        database='scidb_v1_test'
     try:
         engine=create_engine(pg%(username,password,host,port,database),echo=echo)
         con=engine.connect()
