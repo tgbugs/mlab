@@ -262,8 +262,8 @@ def mccDict():
         #print(check)
         #print(led_dict)
         return led_dict
-    step_um=100
-    number=2 #XXX note that you need step_um * dist-1 to get to max dist here because zero counts as a stop
+    step_um=25
+    number=8 #XXX note that you need step_um * dist-1 to get to max dist here because zero counts as a stop
     mccDict['espFuncs']={'m':('mark_to_cardinal',step_um,number)} #this means we need to multipy by number by 4 each position-origin pair should be accounted for
     mccDict['mccFuncs']['l']=make_led_dict(step_um,number)
 

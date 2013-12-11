@@ -90,6 +90,7 @@ class rigIOMan:
             self.term_off()
             self.keyLock.acquire()
             from database import models
+            from datetime import datetime
             for name in models.__all__:
                 locals()[name]=getattr(models,name)
             session=self.Session()
