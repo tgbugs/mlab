@@ -1102,11 +1102,12 @@ class espFuncs(kCtrlObj):
             else:
                 print('Mark not found exiting.')
                 return None
-        moves=get_points_from_spline(points)
+        moves=get_points_from_spline(points,switch_xy=True) #XXX NOTE THE SWITCH XXX
         plt.plot(-moves[0][0],moves[0][1]+.01,'yo')
         shuffle(moves)
         [plt.plot(-m[0],m[1],'ro') for m in points]
         [plt.plot(-m[0],m[1],'go') for m in moves]
+        plt.axis('equal')
         plt.show()
         print(moves)
         print(len(moves))

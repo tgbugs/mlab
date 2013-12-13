@@ -54,7 +54,9 @@ def get_spline(points):
     spline=UnivariateSpline(xs,ys)
     #spline=SmoothBivariateSpline(xs,ys)
     integral=[]
-    space=np.linspace(min(xs),max(xs),1000) #XXX NOTE XXX
+    #space=np.linspace(min(xs),max(xs),1000) #XXX NOTE XXX
+    dis=np.abs(np.abs(max(xs))-np.abs(min(xs)))
+    space=np.linspace(min(xs)-dis,max(xs)+dis,3*1000)
     #for n in space:
         #start=np.random.randint(0,1000)
         #out=spline.integral(start,n)
@@ -101,13 +103,22 @@ def get_xys_at_dist(spline,base,start_x,distances): #FIXME which way to mount th
         points.append((x2,y2))
     return points
 
-def get_points_from_spline(points,number=10,spacing=.05):
+def get_points_from_spline(points,number=10,spacing=.05,switch_xy=False):
     """ note that total points is number*2 """
+    if switch_xy: #since X would often not be a function
+        points=[(b,a) for a,b in points]
+    import pylab as plt
+    plt.plot([a for a,b in points],[b for a,b in points],'ro')
     spline,base,inte,xs,ys=get_spline(points)
+    plt.plot(base,spline(base))
+    plt.axis('equal')
+    plt.show()
     dists=[spacing*i for i in range(1,number)]
     start_x=points[0][0]
     out=[(start_x,spline(start_x))]
     out+=get_xys_at_dist(spline,base,start_x,dists)
+    if switch_xy:
+        out=[(b,a) for a,b in out]
     return out
 
 

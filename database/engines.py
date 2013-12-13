@@ -62,5 +62,5 @@ def pgReal(username,password,host,port=54321,database='postgres',echo=False): #F
 
 pgEng=pgTest #XXX switch over at some point
 
-engine=pgReal('sqla','asdf','localhost',54321,'scidb_v1',False) #XXX THIS IS THE ONE YOU SHOULD USE! update when ready!
-#engine=pgTest()
+#engine=pgReal('sqla','asdf','localhost',54321,'scidb_v1',False) #XXX THIS IS THE ONE YOU SHOULD USE! update when ready!
+engine=pgTest()
