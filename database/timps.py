@@ -26,6 +26,8 @@ from database.queries import *
 from database.table_logic import *
 from database.main import printFD
 from sqlalchemy.orm import Session
+
+from neo import AxonIO, AnalogSignal
 #engine=pgTest(args['--echo'])
 engine.echo=args['--echo']
 session=Session(engine)

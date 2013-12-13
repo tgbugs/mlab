@@ -38,7 +38,8 @@ def load_abf(filepath):
     raw=AxonIO(filename=filepath)
     block=raw.read_block(lazy=False,cascade=True)
     segments=block.segments
-    return raw,block,segments
+    header=raw.read_header()
+    return raw,block,segments,header
 
 def plot_abf(filepath,signal_map): #FIXME need better abstraction for the sigmap
     raw,block,segments=load_abf(filepath)
@@ -98,7 +99,7 @@ test_map={0:zero,1:one}
 #raw,block,segments=load_abf(path+filenames[0])
 
 
-def detect_spikes(array,thresh=3,max_thresh=5): #FIXME need an actual threshold?
+def detect_spikes(array,thresh=3,max_thresh=5,threshold=None): #FIXME need an actual threshold?
     try:
         iter(array.base)
         array=array.base
@@ -107,7 +108,9 @@ def detect_spikes(array,thresh=3,max_thresh=5): #FIXME need an actual threshold?
 
     avg=np.mean(array)
     std=np.std(array)
-    if max(array) > avg+std*max_thresh:
+    if threshold:
+        pass
+    elif max(array) > avg+std*max_thresh:
         threshold=avg+thresh*std
     else:
         threshold=avg+max_thresh
@@ -118,24 +121,29 @@ def detect_spikes(array,thresh=3,max_thresh=5): #FIXME need an actual threshold?
     base=len(first)-space
     #s_list=[ i for i in range(base) if first[i]<=threshold and second[i]>threshold ]
     s_list=[ i for i in range(base-1) if first[i]<=threshold and second[i]>threshold and first[i+1]<=threshold and second[i+1]>threshold ]
-    s_list=s_list[0:-1:space]
-    return s_list
+    s_index=s_list[0::space] #take only the first spike
+    return s_index
 
 def detect_led(led_array):
     maxV=max(led_array.base)
     minV=min(led_array.base)
-    led_on_index=np.where(led_array.base < led_array.base[0]-.05)[0]
+    if maxV-minV < .095:
+        return [],base,maxV,minV
+    half=maxV-(maxV-minV)/2
+    led_on_index=np.where(led_array.base < half)[0]
+    #led_on_index=np.where(led_array.base)[0]
     base=np.ones_like(led_on_index)
     return led_on_index,base,maxV,minV
 
 def plot_count_spikes(filepath,signal_map): #FIXME integrate this with count_spikes properly
     """ useful for manual review """
-    raw,block,segments=load_abf(filepath)
+    raw,block,segments,header=load_abf(filepath)
     if list(raw.read_header()['nADCSamplingSeq'][:2]) != [1,2]: #FIXME
         print('Not a ledstim file')
         return None,None
     nseg=len(segments)
-    zero=transform_maker(0,400) #cell
+    gains=header['fTelegraphAdditGain'] #TODO
+    zero=transform_maker(0,20*gains[0]) #cell
     one=transform_maker(0,5) #led
     plt.figure()
     counts=[]
@@ -143,7 +151,7 @@ def plot_count_spikes(filepath,signal_map): #FIXME integrate this with count_spi
         if len(seg.analogsignals) != 2:
             print('No led channel found.')
             continue
-        plt.subplot(5,1,n+1)
+        plt.subplot(nseg,1,n+1)
         nas=seg.size()['analogsignals']
         signal=zero(seg.analogsignals[0])
         led=one(seg.analogsignals[1])
@@ -175,11 +183,11 @@ def plot_count_spikes(filepath,signal_map): #FIXME integrate this with count_spi
         #plt.title('%s Segment %s'%(block.file_origin,n))
     return np.mean(counts),np.var(counts),counts
 
-
 def count_spikes(filepath,signal_map): #TODO
-    raw,block,segments=load_abf(filepath)
+    raw,block,segments,header=load_abf(filepath)
     nseg=len(segments)
-    zero=transform_maker(0,400) #cell
+    gains=header['fTelegraphAdditGain'] #TODO
+    zero=transform_maker(0,20*gains[0]) #cell
     one=transform_maker(0,5) #led
     counts=[]
     for seg,n in zip(segments,range(nseg)):
@@ -196,6 +204,7 @@ def count_spikes(filepath,signal_map): #TODO
         s_list=detect_spikes(sig_on,thresh,5)
         counts.append(len(s_list))
     return np.mean(counts),np.var(counts),counts
+
 
 #count_spikes(path+filenames[0],None)
 #[count_spikes(path+fn,test_map) for fn in filenames]
@@ -301,7 +310,7 @@ def bin_dists(dist,mean,var,bin_width=.01): #FIXME return dont plot?
         new_std=np.std(lst[0]) #FIXME ignores the individual vars
         plt.bar(left_bin,new_mean,bin_width,color=(.8,.8,1),yerr=new_std)
 
-def get_cell_data(cid):
+def get_cell_data(cid,abfpath):
     cell=s.query(Cell).get(cid)
     #DFMD=DataFile.MetaData
     #cell_pos=s.query(Cell.MetaData).filter_by(parent_id=cid).\
@@ -318,22 +327,16 @@ def get_cell_data(cid):
     smeans=[] #for spike counts
     svars=[] #for spike counts
     counts={} #raw counts
-    path='D:/tom_data/clampex/'
     for filename,distance in cell.distances.items(): #XXX NOTE XXX not ordered
         if filename in ignored:
             continue
-        if os.name=='posix':
-            filepath='/mnt/tgdata/clampex/'+filename #FIXME
-        if socket.gethostname()=='andromeda':
-            filepath='D:/clampex/'+filename
-        else:
-            filepath=path+filename #FIXME
+        filepath=abfpath+filename
         size=os.path.getsize(filepath)
         #print(size)
-        if size != 10009088: #FIXME another way to detect filetype really just need a way to get the protocol
+        if size != 10009088 or size != 2009088: #FIXME another way to detect filetype really just need a way to get the protocol
+            #print(size)
             continue
-        print((path,filename))
-        fp=s.query(DataFile).get(('file:///'+path,filename)).position #FIXME ;_; add eq ne hash to datafile
+        fp=s.query(DataFile).get(('file:///'+abfpath,filename)).position #FIXME ;_; add eq ne hash to datafile
         positions.append(fp)
         dists.append(distance)
         try:
@@ -352,6 +355,83 @@ def get_cell_data(cid):
     #embed()
     return cid,cell.position,pos,dists,smeans,svars,s_pos,counts
 
+def get_cell_traces(cid,abfpath):
+    cell=s.query(Cell).get(cid)
+    filepaths=[]
+    dists=[]
+    files=cell.datafiles
+    files.sort(key=lambda file:file.filename) #FIXME assuming not sorted
+    for file in files:
+        filename=file.filename
+        distance=file.distances[cid]
+        if filename in ignored:
+            continue
+        filepath=abfpath+filename #FIXME
+        size=os.path.getsize(filepath)
+        if size != 10009088 and size != 2009088: #FIXME another way to detect filetype really just need a way to get the protocol
+            continue
+        filepaths.append(abfpath+filename)
+        dists.append(distance)
+    return filepaths,dists
+
+def plot_abf_traces(filepaths,dists,spikes=False,sdt_thrs=3,sdt_max=5,threshold=None): #FIXME this is for 58 alternating
+    for filepath,distance in zip(filepaths,dists):
+        raw,block,segments,header=load_abf(filepath)
+        if list(raw.read_header()['nADCSamplingSeq'][:2]) != [1,2]: #FIXME
+            print('Not a ledstim file')
+            return None,None
+        gains=header['fTelegraphAdditGain'] #TODO
+        #TODO cell.headstage number?!
+        headstage_number=1
+        zero=transform_maker(0,20*gains[headstage_number]) #cell
+        #one=transform_maker(0,5) #led
+        one=transform_maker(0,10) #led no idea why the gain is different for these
+        nseg=len(segments)
+        if nseg!=1:
+            plt.figure()
+        for seg,n in zip(segments,range(nseg)):
+            if nseg == 1:
+                plt.subplot(6,1,6)
+            else:
+                plt.subplot(6,1,n+1)
+            signal=zero(seg.analogsignals[0])
+            led=one(seg.analogsignals[1])
+            #signal=seg.analogsignals[0]
+            #led=seg.analogsignals[1]
+            led_on_index,base,maxV,minV=detect_led(led) #FIXME move this to count_spikes
+            if not len(led_on_index):
+                print('No led detected maxV: %s minV: %s'%(maxV,minV))
+                continue
+            sig_on=signal.base[led_on_index]
+            sig_on_times=signal.times.base[led_on_index] #FIXME may not be synch?
+            sig_mean=np.mean(sig_on)
+            sig_std=np.std(sig_on)
+            #plt.plot(sig_std+sig_mean)
+            sm_arr=base*sig_mean
+            sm_arr_times=signal.times.base[led_on_index]
+            std_arr=base*sig_std
+            
+            #do spike detection
+            if spikes:
+                spike_indexes=detect_spikes(sig_on,std_thrs,std_max,threshold)
+                spike_times=signal.times.base[led_on_index][spike_indexes]
+                sc=len(spike_indexes)
+                plt.plot(spike_times,sig_on[spike_indexes],'ro')
+                plt.title('%s spikes %s um from cell %s'%(sc,int(distance*1000),block.file_origin))
+            else:
+                plt.title('%s um from cell %s'%(distance*1000,block.file_origin))
+
+            plt.xlabel(signal.times.units)
+            plt.ylabel(signal.units)
+
+            #plt.xlabel(led.times.units)
+            #plt.ylabel(led.units)
+            #plt.plot(led.times.base[led_on_index],led.base[led_on_index])
+
+            plt.plot(sig_on_times,sig_on,'k-')
+            plt.plot(sm_arr_times,sm_arr,'b-')
+            plt.fill_between(np.arange(len(sm_arr)),sm_arr-std_arr,sm_arr+std_arr,color=(.8,.8,1))
+            plt.xlim((sig_on_times[0],sig_on_times[-1]))
 
 def plot_cell_data(cid,cell_pos,df_pos,dists,smeans,svars,slice_pos):
     plt.figure()
@@ -378,13 +458,57 @@ def get_dist_data(file,callback=None): #get data from a datafile
     callback()
     return
 
+def get_n_before(n,filepaths,end_file):
+    """ FILEPATHS MUST BE SORTED!!! """
+    print(len(filepaths))
+    #base=[0]*len(filepaths)
+    index=filepaths.index(end_file)
+    #for i in range(index-57,index+1):
+        #base[i]=1
+    #print(base)
+    return np.arange(index-(n-2),index+1)
+
+def get_abf_path():
+    """ return the abf path for a given computer """
+    if os.name=='posix':
+        abfpath='/mnt/tgdata/clampex/'
+    elif socket.gethostname()=='andromeda':
+        abfpath='D:/clampex/'
+    else:
+        abfpath='D:/tom_data/clampex/'
+    return abfpath
+
+def notes():
+    #_cell_endfile=review;threshold,max_above
+    _36_0060=1,8,19,39,55;3,5
+
 def main():
+    abfpath=get_abf_path()
     #cell_ids=16,26 #based on num files
-    cell_ids=32,34
+    #cell_ids=32,34
+    #cell_ids=36,37,41,43 #39, 40 no data
+    cell_ids=36,37,41,43
+    end=[
+        #'2013_12_10_0060', #36
+        '2013_12_10_0118', #37 4V
+        '2013_12_10_0176', #37 4.1V #health failed
+        '2013_12_11_0000', #41 3V
+        '2013_12_11_0058', #41 0V
+        '2013_12_11_0127', #43 3V
+        '2013_12_11_0208', #43 0V, could go farther back and review the files around crash
+    ]
     for cid in cell_ids:
-        data=get_cell_data(cid)
-        plot_cell_data(*data[:-1])
-    plt.show()
+        all_files,dists=get_cell_traces(cid,abfpath)
+        for endf in end:
+            try:
+                indexes=get_n_before(58,all_files,abfpath+endf+'.abf')
+            except ValueError:
+                continue
+            print(indexes)
+            plot_abf_traces(np.array(all_files)[indexes],np.array(dists)[indexes],spikes=True)
+        #data=get_cell_data(cid)
+        #plot_cell_data(*data[:-1])
+            plt.show()
 
 
 
