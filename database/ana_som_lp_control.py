@@ -374,7 +374,7 @@ def get_cell_traces(cid,abfpath):
         dists.append(distance)
     return filepaths,dists
 
-def plot_abf_traces(filepaths,dists,spikes=False): #FIXME this is for 58 alternating
+def plot_abf_traces(filepaths,dists,spikes=False,sdt_thrs=3,sdt_max=5,threshold=None): #FIXME this is for 58 alternating
     for filepath,distance in zip(filepaths,dists):
         raw,block,segments,header=load_abf(filepath)
         if list(raw.read_header()['nADCSamplingSeq'][:2]) != [1,2]: #FIXME
@@ -413,7 +413,7 @@ def plot_abf_traces(filepaths,dists,spikes=False): #FIXME this is for 58 alterna
             
             #do spike detection
             if spikes:
-                spike_indexes=detect_spikes(sig_on)
+                spike_indexes=detect_spikes(sig_on,std_thrs,std_max,threshold)
                 spike_times=signal.times.base[led_on_index][spike_indexes]
                 sc=len(spike_indexes)
                 plt.plot(spike_times,sig_on[spike_indexes],'ro')
