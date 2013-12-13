@@ -33,6 +33,34 @@ class Note: #basically metadata for text... grrrrrr why no arbitrary datatypes :
         self.parent_id=int(parent_id)
         self.dateTime=dateTime #FIXME may not want this...
 
+class fNote(Note):
+    def __init__(self,text,parent_id=None,dateTime=None):
+        self.text=text
+        self.url=parent_id.url #FIXME misleading?
+        self.filename=parent_id.filename
+        self.dateTime=dateTime
+
+
+class fHasNotes: #for files :/ #TODO V2 we are switching files to ids
+    @declared_attr
+    def notes(cls):
+        tname=cls.__tablename__
+        cls.Note=type(
+            '%sNote'%cls.__name__,
+            (fNote, Base, ),
+            {   '__tablename__':'%s_notes'%tname,
+                'url':Column(String, #FIXME nasty errors inbound
+                    nullable=False),
+                'filename':Column(String, #FIXME nasty errors inbound
+                    nullable=False),
+                'parent':relationship('%s'%cls.__name__, uselist=False, #FIXME uselist???
+                    backref=backref('_notes')),
+                '__table_args__':(ForeignKeyConstraint(['url','filename'],['%s.url'%tname,'%s.filename'%tname]),{})
+            }
+        )
+        #return relationship(cls.Note,backref=backref('parent',uselist=False))
+        return association_proxy('_notes','text',creator=lambda text: cls.Note(text))# FIXME BROKEN creator
+
 
 class HasNotes: #FIXME this works ok, will allow the addition of the same note to anything basically
     @declared_attr

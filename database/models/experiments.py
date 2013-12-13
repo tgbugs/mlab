@@ -44,7 +44,7 @@ class ExperimentType(HasReagentTypes, HasDataFileSources, HasMetaDataSources, Ba
         return super().__repr__()
 
 
-class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, Base): #TODO figure out how to unify with steps and 'sub checkpoint' deps
+class Experiment(HasMetaData, HasReagents, HasMdsHwRecords, HasDfsHwRecords, HasNotes, Base): #TODO figure out how to unify with steps and 'sub checkpoint' deps
     #TODO somewhere in here this needs to reference the version of the code used to generate it
     #probably a commit hash will be sufficient but that assumes the people use git
     __tablename__='experiments'
