@@ -171,7 +171,7 @@ def mccDict():
                     },
 #current steps
                     'c':{ 
-                         'mccFuncs':{0:'allICnoHold',4:'allIeZ'}, #FIXME need a check that we arent running
+                        'mccFuncs':{-1:'allICnoHold',0:('allGain',1),4:'allIeZ'}, #FIXME need a check that we arent running
                          'clxFuncs':{
                             1:('loadfile','current_step_-100-1000'+'.pro'),
                             2:'getSub_record',
@@ -268,7 +268,32 @@ def mccDict():
     mccDict['mccFuncs']['l']=make_led_dict(step_um,number)
 
     def make_som_dict(step_um,number): #TODO
-        return {}
+        led_dict={}
+        led_dict['espFuncs']={}
+        led_dict['mccFuncs']={1:('allGain',2),0:('allVChold',-.075)} #FIXME gain?
+        led_dict['clxFuncs']={2:('loadfile','01_led_whole_cell_voltage'+'.pro')}
+        base_steps={
+            'clxFuncs':{
+                1:'getSub_record',
+                2:'wait_till_done',
+                       },
+            'espFuncs':{
+                0:'moveNext',
+                3:'getWT_getPos',
+                #TODO 4: compute the resistance
+            },
+        }
+        start=3
+        nsteps=4
+        check={}
+        for i in range(number-1): #-1 to comp for no zero?
+            loop_start=i*nsteps+start
+            for func_name,dodict in base_steps.items():
+                for step_number,thing in dodict.items():
+                    led_dict[func_name][step_number+loop_start]=thing
+                    check[step_number+loop_start]=thing
+        print(check)
+        return led_dict
     step_um=100
     number=10
     mccDict['mccFuncs']['d']=make_som_dict(step_um,number)

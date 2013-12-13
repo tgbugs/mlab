@@ -685,6 +685,14 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         print('Primary signal gain set to %s'%value)
         return self
 
+    def allGain(self,value=1):
+        self.ctrl.selectMC(0)
+        self.ctrl.SetPrimarySignalGain(value)
+        self.ctrl.selectMC(1)
+        self.ctrl.SetPrimarySignalGain(value)
+        return self
+
+
     def inpWait(self): #XXX depricated
         #wait for keypress to move to the next program, this may need to spawn its own thread?
         raise DeprecationWarning('please use trmFuncs.getKbdHit()')
@@ -778,6 +786,16 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         self.ctrl.SetMode(1)
         self.ctrl.SetHoldingEnable(0)
 
+    def allVChold(self,holding_volts):
+        self.ctrl.selectMC(0)
+        self.ctrl.SetMode(0)
+        self.ctrl.SetHolding(float(holding_volts))
+        #self.ctrl.SetHoldingEnable(1)
+        self.ctrl.selectMC(1)
+        self.ctrl.SetMode(0)
+        self.ctrl.SetHolding(float(holding_volts))
+        #self.ctrl.SetHoldingEnable(1)
+        return self
 
     def allIeZ(self):
         self.ctrl.selectMC(0)
