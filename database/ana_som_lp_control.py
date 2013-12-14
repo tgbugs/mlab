@@ -5,6 +5,8 @@ import numpy as np
 import pylab as plt
 from neo import AxonIO, AnalogSignal
 
+from abf_analysis import get_abf_path, load_abf
+
 def pA(sig,gain): #XXX dep
     if sig.unit=='pA':
         return sig/gain
@@ -34,12 +36,6 @@ def plot_signal(sig):
     plt.xlabel(sig.times.units)
     plt.ylabel(sig.units)
 
-def load_abf(filepath):
-    raw=AxonIO(filename=filepath)
-    block=raw.read_block(lazy=False,cascade=True)
-    segments=block.segments
-    header=raw.read_header()
-    return raw,block,segments,header
 
 def plot_abf(filepath,signal_map): #FIXME need better abstraction for the sigmap
     raw,block,segments=load_abf(filepath)
@@ -468,15 +464,6 @@ def get_n_before(n,filepaths,end_file):
     #print(base)
     return np.arange(index-(n-2),index+1)
 
-def get_abf_path():
-    """ return the abf path for a given computer """
-    if os.name=='posix':
-        abfpath='/mnt/tgdata/clampex/'
-    elif socket.gethostname()=='andromeda':
-        abfpath='D:/clampex/'
-    else:
-        abfpath='D:/tom_data/clampex/'
-    return abfpath
 
 def notes():
     #_cell_endfile=review;threshold,max_above

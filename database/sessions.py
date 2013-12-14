@@ -2,6 +2,8 @@
 from sqlalchemy.orm import Session #sessionmaker
 from database.engines import sqliteMem, pgTest, pgEng
 
+from database.table_logic import logic_StepEdge
+
 #class LogicSessionMaker(sessionmaker): #FIXME not working...
     #def __call__(self,**local_kw):
         #out=super().__call__(**local_kw)
