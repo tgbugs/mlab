@@ -5,6 +5,23 @@ from scipy import integrate, optimize #for quad or simps or whatever
 from neo import AxonIO
 from rig.ipython import embed
 import pylab as plt
+import gc
+
+from multiprocessing import Process,Pipe
+def spawn(f):
+    def fun(pipe,x):
+        pipe.send(f(x))
+        pipe.close()
+    return fun
+def parmap(f,X):
+    """ Function to make multiprocessing work correctly """
+    pipe=[Pipe() for x in X]
+    proc=[Process(target=spawn(f),args=(c,x)) for x,(p,c) in zip(X,pipe)]
+    [p.start() for p in proc]
+    [p.join() for p in proc]
+    return [p.recv() for (p,c) in pipe]
+
+
 
 def get_abf_path():
     """ return the abf path for a given computer """
@@ -158,7 +175,7 @@ def plot_tp_stats(analogsignal,start,length,A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline
     fit_times=times[fit_start_index-start:end]
     fit=single_exp(zeroed_times,A,Tau,C)
 
-    fig=plt.figure(figsize=(10,5),frameon=False)
+    fig=plt.figure(figsize=(20,10),frameon=False)
     plt.title(analogsignal.segment.block.file_origin+' Tau= %3.2f, Q=%3.2f Rs= %3.2f, Rs_est= %3.2f, Rm= %3.2f'%(Tau*1000,Q,Rs,Rs_est,Rm) )
     plt.xlabel(analogsignal.times.units)
     plt.ylabel(analogsignal.units)
@@ -172,7 +189,21 @@ def plot_tp_stats(analogsignal,start,length,A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline
 
     return fig
 
-
+def plot_all_tp_stats(segments,starts,lengths,volts):
+    sigit=range(len(starts))
+    fn=segments[0].block.file_origin
+    for segment in segments:
+        for analogsignal,i in zip(segment.analogsignals,sigit):
+            A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index=compute_test_pulse_statistics(analogsignal, starts[i], lengths[i], volts[i])
+            if Tau:
+                fig=plot_tp_stats(analogsignal,starts[i],lengths[i],A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index,fn)
+                spath='/tmp/'+fn[:-4]+'_'+str(segment.index)+'_tp.png'
+                print(spath)
+                fig.savefig(spath,bbox_inches='tight', pad_inches=0)
+                fig.clf()
+                plt.close()
+                del(fig)
+                gc.collect()
 
 def single_exp(t,A,Tau,C):
     return A*np.exp(-t/Tau)+C
@@ -193,19 +224,21 @@ def lin_exp_fit(t,y,C=0):
     A=np.exp(A_log)
     return A,Tau,C
 
-def plot_raw_aligned(block):
-    segments=block.segments
+def plot_raw_aligned(segments):
     number_segments=len(segments)
     number_analog_signals=len(segments[0].analogsignals)
+    fn=segments[0].block.file_origin
 
     number_subplots=number_analog_signals
 
-    plt.figure()
+    figure=plt.figure(figsize=(20,20))
     for segment in segments:
         for i in range(number_subplots):
             plt.subplot(number_subplots,1,i+1)
             plt.plot(segment.analogsignals[i].base)
-            plt.title('%s'%block.file_origin)
+            plt.title('%s'%fn)
+    plt.close()
+    return figure
 
 def plot_raw_serries(block):
     pass
@@ -257,23 +290,24 @@ def print_tp_stats(filepath):
     print('Rs_ests',Rs_ests)
     print('Rms',Rms)
     
-def get_segments(path,fn):
-    fp=path+fn
+def get_segments_with_step(filepath):
     try:
-        raw=AxonIO(fp)
+        raw=AxonIO(filepath)
         header=raw.read_header()
     except FileNotFoundError as e:
         print(e)
+        del(raw)
         return None,None,None,None
     starts,lengths,volts=find_rs_test(header)
     if not volts:
         return None,None,None,None
     else:
         segments=raw.read_block().segments
-    #dict_callback(fn,segments,starts,lengths,volts)
+    del(raw)
     return segments,starts,lengths,volts
 
 def main():
+    import socket
     from sqlalchemy.orm import Session
     from database.table_logic import logic_StepEdge
     from database.engines import engine
@@ -293,68 +327,51 @@ def main():
 
     #filepaths = [path+filename for filename in filenames]
 
-    #from threading import Thread
-    #from queue import Queue
-
-    #q=Queue()
-
-    #seg_dict={}
-    #def dict_callback(filename,segments,starts,lengths,volts):
-        #seg_dict[filename]=segments,starts,lengths,volts
-        #print(filename)
-        #q.task_done()
-
-    #for fn in filenames:
-        #fp=path+fn
-        #monkey_business(path,fn,dict_callback)
-        #print(fn)
-        #new_thread=Thread(target=monkey_business,args=(path,fn,dict_callback))
-        #q.put(new_thread)
-        #t=q.get()
-        #t.start()
-    
-
     def plot_stuff(args):
         path,fn=args
-        segments,starts,lengths,volts=get_segments(path,fn)
-        if not segments:
-            return None
-        sigit=range(len(starts))
-        for segment in segments:
-            for analogsignal,i in zip(segment.analogsignals,sigit):
-                A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index=compute_test_pulse_statistics(analogsignal, starts[i], lengths[i], volts[i])
-                if Tau:
-                    fig=plot_tp_stats(analogsignal,starts[i],lengths[i],A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index,fn)
-                    spath='/tmp/'+fn[:-4]+'_'+str(segment.index)+'.png'
-                    print(spath)
-                    fig.savefig(spath,bbox_inches='tight', pad_inches=0)
-                    plt.close()
-
-    
-    from multiprocessing import Process,Pipe
+        segments,starts,lengths,volts=get_segments_with_step(path+fn)
+        if segments:
+            plot_all_tp_stats(segments,starts,lengths,volts)
+        else:
+            try:
+                segments=AxonIO(path+fn).read_block().segments
+            except FileNotFoundError as e:
+                print(e)
+                return None
+        fig=plot_raw_aligned(segments)
+        spath='/tmp/'+fn[:-4]+'_al.png'
+        print(spath)
+        fig.savefig(spath,bbox_inches='tight', pad_inches=0)
+        fig.clf()
+        plt.close()
+        del(fig,segments)
+        gc.collect() #FIXME none of this seemes to make any difference for memory usage :/
+                     #WELL on the otherhand it did reduce it enough to prevent the explosion...
+   
     from datetime import datetime
-
-    def spawn(f):
-        def fun(pipe,x):
-            pipe.send(f(x))
-            pipe.close()
-        return fun
-    def parmap(f,X):
-        pipe=[Pipe() for x in X]
-        proc=[Process(target=spawn(f),args=(c,x)) for x,(p,c) in zip(X,pipe)]
-        [p.start() for p in proc]
-        [p.join() for p in proc]
-        return [p.recv() for (p,c) in pipe]
-
     
     items=[(path,fn) for fn in filenames]
     print(len(items))
-    #items=items[:320]
-    #items=items[320:640]
-    items=items[640:975]
-    #items=items[900:920]
+    itemss=[]
+    #itemss.append(items[900:920])
+    divs=12 #memory limits man :/
+    divisions=np.int32(np.linspace(0,975,divs))
+    for d in range(divs-1):
+        print(divisions[d],divisions[d+1])
+        dl=divisions[d]
+        dr=divisions[d+1]
+        itemss.append(items[dl:dr])
+    itemss.append(items[divisions[-1]:])
+    #itemss.append(items[:320])
+    #itemss.append(items[320:640])
+    #itemss.append(items[640:975])
+    if socket.gethostname() != 'athena':
+        if len(items) > 20:
+            raise OSError('seriously dude, check your memory, 32gigs is only barely enough for some of this')
     start=datetime.now()
-    parmap(plot_stuff, items)#, seg_dict.items()) #HOLY FUCK
+    for item,i in zip(itemss,range(len(itemss))):
+        print('starting batch %s'%i)
+        parmap(plot_stuff, item) #XXX WARNING!!! This will explode anything but athena
     end=datetime.now()
     print(start,end,(end-start))
     #items=[(fn,tup) for fn,tup in seg_dict.items()]
@@ -363,7 +380,6 @@ def main():
         #nt.start()
 
 
-    #q.join()
 
 
 

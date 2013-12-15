@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.3
 from rig.ipython import embed
 import socket
 import numpy as np
@@ -370,64 +371,76 @@ def get_cell_traces(cid,abfpath):
         dists.append(distance)
     return filepaths,dists
 
-def plot_abf_traces(filepaths,dists,spikes=False,sdt_thrs=3,sdt_max=5,threshold=None): #FIXME this is for 58 alternating
-    for filepath,distance in zip(filepaths,dists):
-        raw,block,segments,header=load_abf(filepath)
-        if list(raw.read_header()['nADCSamplingSeq'][:2]) != [1,2]: #FIXME
-            print('Not a ledstim file')
-            return None,None
-        gains=header['fTelegraphAdditGain'] #TODO
-        #TODO cell.headstage number?!
-        headstage_number=1
-        zero=transform_maker(0,20*gains[headstage_number]) #cell
-        #one=transform_maker(0,5) #led
-        one=transform_maker(0,10) #led no idea why the gain is different for these
-        nseg=len(segments)
-        if nseg!=1:
-            plt.figure()
-        for seg,n in zip(segments,range(nseg)):
-            if nseg == 1:
-                plt.subplot(6,1,6)
-            else:
-                plt.subplot(6,1,n+1)
-            signal=zero(seg.analogsignals[0])
-            led=one(seg.analogsignals[1])
-            #signal=seg.analogsignals[0]
-            #led=seg.analogsignals[1]
-            led_on_index,base,maxV,minV=detect_led(led) #FIXME move this to count_spikes
-            if not len(led_on_index):
-                print('No led detected maxV: %s minV: %s'%(maxV,minV))
-                continue
-            sig_on=signal.base[led_on_index]
-            sig_on_times=signal.times.base[led_on_index] #FIXME may not be synch?
-            sig_mean=np.mean(sig_on)
-            sig_std=np.std(sig_on)
-            #plt.plot(sig_std+sig_mean)
-            sm_arr=base*sig_mean
-            sm_arr_times=signal.times.base[led_on_index]
-            std_arr=base*sig_std
-            
-            #do spike detection
-            if spikes:
-                spike_indexes=detect_spikes(sig_on,std_thrs,std_max,threshold)
-                spike_times=signal.times.base[led_on_index][spike_indexes]
-                sc=len(spike_indexes)
-                plt.plot(spike_times,sig_on[spike_indexes],'ro')
-                plt.title('%s spikes %s um from cell %s'%(sc,int(distance*1000),block.file_origin))
-            else:
-                plt.title('%s um from cell %s'%(distance*1000,block.file_origin))
+def plot_abf_traces(filepaths,dists,spikes=False,std_thrs=3,std_max=5,threshold=None,cell_id=None): #FIXME this is for 58 alternating
+    #for filepath,distance in 
+    from abf_analysis import parmap
+    #args=zip(filepaths,dists)
+    args=[(f1,f2,d) for f1,f2,d in zip(filepaths[0::2],filepaths[1::2],dists)]
+    def dothing(args):
+        fp1,fp2,distance=args
+        fn=fp1.split('/')[-1]
+        for filepath in (fp1,fp2):
+            figure=plt.figure(figsize=(20,20))
+            raw,block,segments,header=load_abf(filepath)
+            if list(raw.read_header()['nADCSamplingSeq'][:2]) != [1,2]: #FIXME
+                print('Not a ledstim file')
+                return None,None
+            gains=header['fTelegraphAdditGain'] #TODO
+            #TODO cell.headstage number?!
+            headstage_number=1
+            zero=transform_maker(0,20*gains[headstage_number]) #cell
+            #one=transform_maker(0,5) #led
+            one=transform_maker(0,10) #led no idea why the gain is different for these
+            nseg=len(segments)
+            for seg,n in zip(segments,range(nseg)):
+                if nseg == 1:
+                    plt.subplot(6,1,6)
+                else:
+                    plt.subplot(6,1,n+1)
+                signal=zero(seg.analogsignals[0])
+                led=one(seg.analogsignals[1])
+                #signal=seg.analogsignals[0]
+                #led=seg.analogsignals[1]
+                led_on_index,base,maxV,minV=detect_led(led) #FIXME move this to count_spikes
+                if not len(led_on_index):
+                    print('No led detected maxV: %s minV: %s'%(maxV,minV))
+                    continue
+                sig_on=signal.base[led_on_index]
+                sig_on_times=signal.times.base[led_on_index] #FIXME may not be synch?
+                sig_mean=np.mean(sig_on)
+                sig_std=np.std(sig_on)
+                #plt.plot(sig_std+sig_mean)
+                sm_arr=base*sig_mean
+                sm_arr_times=signal.times.base[led_on_index]
+                std_arr=base*sig_std
+                
+                #do spike detection
+                if spikes:
+                    spike_indexes=detect_spikes(sig_on,std_thrs,std_max,threshold)
+                    spike_times=signal.times.base[led_on_index][spike_indexes]
+                    sc=len(spike_indexes)
+                    plt.plot(spike_times,sig_on[spike_indexes],'ro')
+                    plt.title('%s spikes %s um from cell %s'%(sc,int(distance*1000),block.file_origin))
+                else:
+                    plt.title('%s um from cell %s %s'%(distance*1000,cell_id,block.file_origin))
 
-            plt.xlabel(signal.times.units)
-            plt.ylabel(signal.units)
+                plt.xlabel(signal.times.units)
+                plt.ylabel(signal.units)
 
-            #plt.xlabel(led.times.units)
-            #plt.ylabel(led.units)
-            #plt.plot(led.times.base[led_on_index],led.base[led_on_index])
+                #plt.xlabel(led.times.units)
+                #plt.ylabel(led.units)
+                #plt.plot(led.times.base[led_on_index],led.base[led_on_index])
 
-            plt.plot(sig_on_times,sig_on,'k-')
-            plt.plot(sm_arr_times,sm_arr,'b-')
-            plt.fill_between(np.arange(len(sm_arr)),sm_arr-std_arr,sm_arr+std_arr,color=(.8,.8,1))
-            plt.xlim((sig_on_times[0],sig_on_times[-1]))
+                plt.plot(sig_on_times,sig_on,'k-')
+                plt.plot(sm_arr_times,sm_arr,'b-')
+                plt.fill_between(np.arange(len(sm_arr)),sm_arr-std_arr,sm_arr+std_arr,color=(.8,.8,1))
+                plt.xlim((sig_on_times[0],sig_on_times[-1]))
+        
+        spath='/tmp/'+str(cell_id)+'_'+fn[:-4]+'.png'
+        print(spath)
+        figure.savefig(spath,bbox_inches='tight',pad_inches=0)
+        figure.clf() #might reduce mem footprint
+    parmap(dothing,args)
 
 def plot_cell_data(cid,cell_pos,df_pos,dists,smeans,svars,slice_pos):
     plt.figure()
@@ -474,9 +487,9 @@ def main():
     #cell_ids=16,26 #based on num files
     #cell_ids=32,34
     #cell_ids=36,37,41,43 #39, 40 no data
-    cell_ids=36,37,41,43
+    cell_ids=36,#37,41,43
     end=[
-        #'2013_12_10_0060', #36
+        '2013_12_10_0060', #36
         '2013_12_10_0118', #37 4V
         '2013_12_10_0176', #37 4.1V #health failed
         '2013_12_11_0000', #41 3V
@@ -489,13 +502,14 @@ def main():
         for endf in end:
             try:
                 indexes=get_n_before(58,all_files,abfpath+endf+'.abf')
-            except ValueError:
+            except ValueError as e:
+                #print(e)
                 continue
             print(indexes)
-            plot_abf_traces(np.array(all_files)[indexes],np.array(dists)[indexes],spikes=True)
+            plot_abf_traces(np.array(all_files)[indexes],np.array(dists)[indexes],spikes=True,cell_id=cid)
         #data=get_cell_data(cid)
         #plot_cell_data(*data[:-1])
-            plt.show()
+            #plt.show()
 
 
 
