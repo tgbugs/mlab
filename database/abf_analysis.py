@@ -147,7 +147,6 @@ def compute_test_pulse_statistics(trace,start=7816,length=4000,milivolts=5):
 
 
 def plot_tp_stats(analogsignal,start,length,A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index,fn='lolwut'):
-    import pylab as plt_
     end=start+length
     times=analogsignal.times.base[start:end]
     signal=analogsignal.base[start:end]
@@ -160,16 +159,16 @@ def plot_tp_stats(analogsignal,start,length,A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline
     fit=single_exp(zeroed_times,A,Tau,C)
 
     fig=plt.figure(figsize=(10,5),frameon=False)
-    plt_.title(analogsignal.segment.block.file_origin+' Tau= %3.2f, Q=%3.2f Rs= %3.2f, Rs_est= %3.2f, Rm= %3.2f'%(Tau*1000,Q,Rs,Rs_est,Rm) )
-    plt_.xlabel(analogsignal.times.units)
-    plt_.ylabel(analogsignal.units)
-    plt_.plot( times, signal, 'b-' , label='trace' ) #plot the signal
-    plt_.plot( fit_times, fit, 'r-', label='fit' ) #plot the fit and add the rest baseline back in (in addition to C)
-    plt_.plot( lrt, [rest_baseline]*2, 'c-', label='mean rest' ) #plot the rest baseline
-    plt_.plot( lrt, [pulse_baseline]*2, 'g-', label='mean pulse' ) #plot the pulse baseline
-    plt_.legend()
-    plt_.xlim(lrt)
-    plt_.ylim((pulse_baseline-100,pulse_baseline+400))
+    plt.title(analogsignal.segment.block.file_origin+' Tau= %3.2f, Q=%3.2f Rs= %3.2f, Rs_est= %3.2f, Rm= %3.2f'%(Tau*1000,Q,Rs,Rs_est,Rm) )
+    plt.xlabel(analogsignal.times.units)
+    plt.ylabel(analogsignal.units)
+    plt.plot( times, signal, 'b-' , label='trace' ) #plot the signal
+    plt.plot( fit_times, fit, 'r-', label='fit' ) #plot the fit and add the rest baseline back in (in addition to C)
+    plt.plot( lrt, [rest_baseline]*2, 'c-', label='mean rest' ) #plot the rest baseline
+    plt.plot( lrt, [pulse_baseline]*2, 'g-', label='mean pulse' ) #plot the pulse baseline
+    plt.legend()
+    plt.xlim(lrt)
+    plt.ylim((pulse_baseline-100,pulse_baseline+400))
 
     return fig
 
@@ -258,20 +257,21 @@ def print_tp_stats(filepath):
     print('Rs_ests',Rs_ests)
     print('Rms',Rms)
     
-def monkey_business(path,fn,dict_callback):
+def get_segments(path,fn):
     fp=path+fn
     try:
         raw=AxonIO(fp)
         header=raw.read_header()
     except FileNotFoundError as e:
         print(e)
-        return None
+        return None,None,None,None
     starts,lengths,volts=find_rs_test(header)
     if not volts:
-        return None
+        return None,None,None,None
     else:
         segments=raw.read_block().segments
-    dict_callback(fn,segments,starts,lengths,volts)
+    #dict_callback(fn,segments,starts,lengths,volts)
+    return segments,starts,lengths,volts
 
 def main():
     from sqlalchemy.orm import Session
@@ -282,8 +282,8 @@ def main():
     logic_StepEdge(session)
 
     path=get_abf_path()
-    #filenames=[f[0] for f in session.query(DataFile.filename).all()]
-    filenames=[f.filename for f in session.query(Cell).get(66).datafiles]
+    filenames=[f[0] for f in session.query(DataFile.filename).all()]
+    #filenames=[f.filename for f in session.query(Cell).get(66).datafiles]
     #filenames= ['2013_12_13_0038.abf']
     #filenames= ['2013_12_13_0038.abf']
     #filenames= ['2013_12_13_0007.abf']
@@ -293,71 +293,77 @@ def main():
 
     #filepaths = [path+filename for filename in filenames]
 
-    from threading import Thread
-    from queue import Queue
+    #from threading import Thread
+    #from queue import Queue
 
-    q=Queue()
+    #q=Queue()
 
-    seg_dict={}
-    def dict_callback(filename,segments,starts,lengths,volts):
-        seg_dict[filename]=segments,starts,lengths,volts
-        print(filename)
-        q.task_done()
+    #seg_dict={}
+    #def dict_callback(filename,segments,starts,lengths,volts):
+        #seg_dict[filename]=segments,starts,lengths,volts
+        #print(filename)
+        #q.task_done()
 
-    for fn in filenames:
-        fp=path+fn
+    #for fn in filenames:
+        #fp=path+fn
         #monkey_business(path,fn,dict_callback)
         #print(fn)
-        new_thread=Thread(target=monkey_business,args=(path,fn,dict_callback))
-        q.put(new_thread)
-        t=q.get()
-        t.start()
+        #new_thread=Thread(target=monkey_business,args=(path,fn,dict_callback))
+        #q.put(new_thread)
+        #t=q.get()
+        #t.start()
     
-    print('middle')
 
-    def test_thrd(seg_dict):
-        #print(seg_dict)
-        def asdf(inp):
-            fn,tup=inp
-            segments,starts,lengths,volts=tup
-            sigit=range(len(starts))
-            for segment in segments:
-                for analogsignal,i in zip(segment.analogsignals,sigit):
-                    A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index=compute_test_pulse_statistics(analogsignal, starts[i], lengths[i], volts[i])
-                    if Tau:
-                        fig=plot_tp_stats(analogsignal,starts[i],lengths[i],A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index,fn)
-                        spath='/tmp/'+fn[:-4]+'_'+str(segment.index)+'.png'
-                        print(spath)
-                        fig.savefig(spath,bbox_inches='tight', pad_inches=0)
-                        plt.close()
+    def plot_stuff(args):
+        path,fn=args
+        segments,starts,lengths,volts=get_segments(path,fn)
+        if not segments:
+            return None
+        sigit=range(len(starts))
+        for segment in segments:
+            for analogsignal,i in zip(segment.analogsignals,sigit):
+                A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index=compute_test_pulse_statistics(analogsignal, starts[i], lengths[i], volts[i])
+                if Tau:
+                    fig=plot_tp_stats(analogsignal,starts[i],lengths[i],A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index,fn)
+                    spath='/tmp/'+fn[:-4]+'_'+str(segment.index)+'.png'
+                    print(spath)
+                    fig.savefig(spath,bbox_inches='tight', pad_inches=0)
+                    plt.close()
 
-        
-        from multiprocessing import Process,Pipe
-        #from itertools import izip
+    
+    from multiprocessing import Process,Pipe
+    from datetime import datetime
 
-        def spawn(f):
-            def fun(pipe,x):
-                pipe.send(f(x))
-                pipe.close()
-            return fun
-        def parmap(f,X):
-            pipe=[Pipe() for x in X]
-            proc=[Process(target=spawn(f),args=(c,x)) for x,(p,c) in zip(X,pipe)]
-            [p.start() for p in proc]
-            [p.join() for p in proc]
-            return [p.recv() for (p,c) in pipe]
+    def spawn(f):
+        def fun(pipe,x):
+            pipe.send(f(x))
+            pipe.close()
+        return fun
+    def parmap(f,X):
+        pipe=[Pipe() for x in X]
+        proc=[Process(target=spawn(f),args=(c,x)) for x,(p,c) in zip(X,pipe)]
+        [p.start() for p in proc]
+        [p.join() for p in proc]
+        return [p.recv() for (p,c) in pipe]
+
+    
+    items=[(path,fn) for fn in filenames]
+    print(len(items))
+    #items=items[:320]
+    #items=items[320:640]
+    items=items[640:975]
+    #items=items[900:920]
+    start=datetime.now()
+    parmap(plot_stuff, items)#, seg_dict.items()) #HOLY FUCK
+    end=datetime.now()
+    print(start,end,(end-start))
+    #items=[(fn,tup) for fn,tup in seg_dict.items()]
+    #for fn,tup in seg_dict.items():
+        #nt=Thread(target=asdf,args=(fn,tup))
+        #nt.start()
 
 
-        #items=[(fn,tup) for fn,tup in seg_dict.items()]
-        parmap(asdf, seg_dict.items()) #HOLY FUCK
-        #for fn,tup in seg_dict.items():
-            #nt=Thread(target=asdf,args=(fn,tup))
-            #nt.start()
-
-        print('all done!')
-
-    q.join()
-    test_thrd(seg_dict)
+    #q.join()
 
 
 
