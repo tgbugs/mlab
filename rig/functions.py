@@ -332,6 +332,10 @@ class datFuncs(kCtrlObj):
 
         return targets
 
+    def get_df_statistics(self):
+        from database.abf_analysis import print_tp_stats
+        print_tp_stats(self.c_datafile.full_url[8:])
+        
     def print_write_target(self):
         print(repr(self.c_target))
         try:
