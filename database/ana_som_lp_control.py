@@ -115,12 +115,13 @@ def detect_spikes(array,thresh=3,max_thresh=5,threshold=None,space=5): #FIXME ne
         threshold=avg+std*max_thresh
         if max(array) < threshold:
             #print('yep it was')
-            return []
+            return [],threshold
 
     first=array[:-space] #5 to hopefully prevent the weirdness with tiny fluctuations
     second=array[space:]
     base=len(first)-space
     def check_thrs(i):
+        #for n in range((space+1)//2,space):
         for n in range(space):
             if (first[i+n]<=threshold and second[i+n]>threshold):
                 pass
@@ -131,7 +132,7 @@ def detect_spikes(array,thresh=3,max_thresh=5,threshold=None,space=5): #FIXME ne
     #s_list=[ i for i in range(base) if first[i]<=threshold and second[i]>threshold ]
     #s_list=[ i for i in range(base-1) if first[i]<=threshold and second[i]>threshold and first[i+1]<=threshold and second[i+1]>threshold ]
     #s_index=s_list[0::space] #take only the first spike #need the -1 to prevent aliasing?
-    return s_list
+    return s_list,threshold
     #return s_index
 
 def detect_led(led_array):
@@ -295,6 +296,7 @@ to_ignore=[ #see LB1:81
     '10_0011', #complete garbage and not even in the list for cell 36
     '10_0012', #somehow this was recorded as a control despite being even? thing it has to do with the problems above
 ]
+to_ignore.extend(['10_0%s'%i for i in range(143,177)])  #lost the cell here
 ignored=['2013_12_'+ignore+'.abf' for ignore in to_ignore]
 
 #TODO threading with a callback that returns our numbers
@@ -310,6 +312,7 @@ class accumulator: #FIXME Queue??
         self.distances.append(dist)
         self.spike_means.append(mean)
         self.spike_vars.append(var)
+
 
 def bin_dists(dist,mean,var,bin_width=.01): #FIXME return dont plot?
     bin_lefts=np.arange(0,.2,bin_width)
@@ -407,9 +410,10 @@ def plot_abf_traces(filepaths,dists,spikes=False,std_thrs=3,std_max=5,threshold_
             if list(raw.read_header()['nADCSamplingSeq'][:2]) != [1,2]: #FIXME
                 print('Not a ledstim file')
                 return None,None
-            print(header['nADCSamplingSeq'])
-            print(header['nTelegraphEnable'])
-            print(header['fTelegraphAdditGain'])
+
+            #print(header['nADCSamplingSeq']) #gain debugging
+            #print(header['nTelegraphEnable'])
+            #print(header['fTelegraphAdditGain'])
             #gains=header['fTelegraphAdditGain'] #TODO
             #print(fn,gains)
             #TODO cell.headstage number?!
@@ -447,7 +451,7 @@ def plot_abf_traces(filepaths,dists,spikes=False,std_thrs=3,std_max=5,threshold_
                 
                 #do spike detection
                 if spikes:
-                    spike_indexes=detect_spikes(sig_on,std_thrs,std_max,threshold_func(filepath))
+                    spike_indexes,threshold=detect_spikes(sig_on,std_thrs,std_max,threshold_func(filepath))
                     spike_times=sig_on_times[spike_indexes]
                     sc=len(spike_indexes)
                     plt.plot(spike_times,sig_on[spike_indexes],'ro')
@@ -465,14 +469,15 @@ def plot_abf_traces(filepaths,dists,spikes=False,std_thrs=3,std_max=5,threshold_
                 #plt.ylabel(led.units)
                 #plt.plot(led.times.base[led_on_index],led.base[led_on_index])
                 lrf=(sig_on_times[0],sig_on_times[-1])
-                plt.plot(sig_on_times,sig_on,'k-')
-                plt.plot(lrf,[sig_mean]*2,'b-')
+                plt.plot(sig_on_times[::10],sig_on[::10],'k-',linewidth=1)
+                plt.plot(lrf,[sig_mean]*2,'b-', label = 'sig mean' )
+                plt.plot(lrf,[threshold]*2,'m-', label = 'threshold' )
+                plt.plot(lrf,[sig_mean+sig_std*std_max]*2,'y-', label = 'max thresh' )
                 if threshold_func(filepath):
-                    plt.plot(lrf,[threshold_func(filepath)]*2,'g-')
-                else:
-                    plt.plot(lrf,[sig_mean+sig_std*std_max]*2,'m-')
+                    plt.plot(lrf,[threshold_func(filepath)]*2,'g-', label = 'manual thresh' )
                 plt.fill_between(np.arange(len(sm_arr)),sm_arr-std_arr*std_thrs,sm_arr+std_arr*std_thrs,color=(.8,.8,1))
                 plt.xlim((sig_on_times[0],sig_on_times[-1]))
+                plt.legend(loc='upper right',fontsize='xx-small',frameon=False)
         
         spath='/tmp/'+str(cell_id)+'_'+fn[:-4]+'.png'
         print(spath)
@@ -517,7 +522,7 @@ def get_n_before(n,filepaths,end_file):
     #for i in range(index-57,index+1):
         #base[i]=1
     #print(base)
-    return np.arange(index-(n-2),index+1)
+    return np.arange(index-(n-1),index+1)
 
 
 def notes():
@@ -538,24 +543,140 @@ THRS_DICT={ #FIXME may need to include sub channels?
     '2013_12_10_0019':.7,
     '2013_12_10_0039':1,
     '2013_12_10_0055':1,
+    '2013_12_10_0069':1.5,
+    '2013_12_10_0079':1.2,
+    '2013_12_10_0088':0.9,
+    '2013_12_10_0097':1.5,
+    '2013_12_10_0189':2.7,
+    '2013_12_10_0214':3.3,
+    '2013_12_10_0216':3.27,
+    '2013_12_10_0217':3.55,
+    #'2013_12_10_0221':3.25,
+    '2013_12_10_0222':3.4,
+    '2013_12_10_0223':3.4,
+    '2013_12_10_0225':3.7,
+    #'2013_12_10_0226':3.45,
+    '2013_12_10_0227':3.5,
+    '2013_12_10_0233':3.41,
+    '2013_12_11_0000':3.5,
+    '2013_12_11_0074':1.2,
+    '2013_12_11_0081':1.2,
+    '2013_12_11_0083':1.5,
+    '2013_12_11_0085':1.8,
+    '2013_12_11_0089':2.5,
+    '2013_12_11_0090':2.0,
+    '2013_12_11_0092':2.0,
+    '2013_12_11_0093':2.3,
+    '2013_12_11_0094':2.5,
+    '2013_12_11_0100':2.7,
+    '2013_12_11_0102':2.7,
+    '2013_12_11_0104':2.7,
+    '2013_12_11_0116':3.0,
+    '2013_12_11_0187':5.3,
+    '2013_12_11_0186':5.2,
+    '2013_12_11_0188':5.1,
+    '2013_12_11_0190':5.1,
+}
+
+def make_spike_count_dict(path,COUNT_DICT={}):
+    count_dict={path+k+'.abf':v for k,v in COUNT_DICT.items()}
+    def count_func(filepath):
+        try:
+            count=count_dict[filepath]
+        except:
+            count=None #FIXME lenght?
+        return count
+    return count_func
+COUNT_DICT={ #manual counts for traces that are super rough and I don't fell like down sampling right now
+    '2013_12_10_0221':[8],
+    '2013_12_10_0222':[7,7,6,7,5],
+    '2013_12_10_0223':[6],
+    '2013_12_10_0225':[6],
+    '2013_12_10_0226':[6,5,5,4,6],
+    '2013_12_10_0227':[5],
+    '2013_12_10_0228':[3,3,3,3,3],
+    '2013_12_10_0229':[6],
+    '2013_12_10_0230':[4,5,5,4,4],
+    '2013_12_10_0231':[6],
+    '2013_12_10_0232':[3,3,3,3,4],
+    '2013_12_10_0233':[6],
+    '2013_12_11_0000':[8],
+    '2013_12_11_0001':[2,0,0,2,2],
+    '2013_12_11_0002':[8],
+    '2013_12_11_0004':[8],
+    '2013_12_11_0005':[6,6,6,6,6,6],
+    '2013_12_11_0006':[6],
+    '2013_12_11_0008':[8],
+    '2013_12_11_0011':[7,7,6,5,6],
+    '2013_12_11_0012':[6],
+    '2013_12_11_0014':[8],
+    '2013_12_11_0016':[8],
+    '2013_12_11_0018':[9],
+    '2013_12_11_0019':[8,7,5,7,7],
+    '2013_12_11_0020':[7],
+    '2013_12_11_0022':[8],
+    '2013_12_11_0023':[2,2,2,2,1],
+    '2013_12_11_0024':[8],
+    '2013_12_11_0026':[10],
+    '2013_12_11_0027':[5,4,5,4,4],
+    '2013_12_11_0028':[8],
+    '2013_12_11_0029':[3,3,3,3,3],
+    '2013_12_11_0030':[7],
+    '2013_12_11_0031':[6,7,7,7,7],
+    '2013_12_11_0032':[7],
+    '2013_12_11_0033':[3,4,5,4,4],
+    '2013_12_11_0034':[9],
+    '2013_12_11_0036':[9],
+    '2013_12_11_0038':[9],
+    '2013_12_11_0040':[9],
+    '2013_12_11_0042':[8],
+    '2013_12_11_0044':[8],
+    '2013_12_11_0045':[6,6,5,6,5],
+    '2013_12_11_0046':[7],
+    '2013_12_11_0048':[9], #observe the 9 after nothing prior
+
+
+
+
+
+
 
 }
+
+
+def files_by_dist(cid,abfpath):
+    all_files,dists=get_cell_traces(cid,abfpath)
+    afd=[(file,dist) for file,dist in zip(all_files,dists)]
+    afd.sort(key=lambda tup: tup[1])
+    plt.figure(figsize=(20,20))
+    for filepath,distance in afd:
+        raw,block,segments,header=load_abf(filepath)
+        for segment in segments:
+            for ass in segment.analogsignals:
+                xs=np.linspace(0,.025,len(ass.times.base))+dist #center by distance
+                ys=(ass.base-np.min(ass.base))/(np.max(ass.base)-np.min(ass.base))-segment.index*1.5 #move down by segment number
+                plt.plot(xs,ys,label='%s'dist)
+    plt.savefig('/tmp/fd_%s.png'%cid,bbox_inches='tight',pad_inches=0)
+
+
+
 
 def main():
     abfpath=get_abf_path()
     #cell_ids=16,26 #based on num files
     #cell_ids=32,34
-    #cell_ids=36,37,41,43 #39, 40 no data
-    cell_ids=37,#41,43
-    cell_ids=36,
+    cell_ids=36,37,41,43 #39, 40 no data
+    #cell_ids=37,#41,43
+    #cell_ids=36,
+    #cell_ids=41,
     end=[#filename, go back, std_thrs, std_max
-        ('2013_12_10_0060', 57, 2.5, 5), #36 missing file 11 from the list due to weird bug #space=5
-        ('2013_12_10_0118', 10, 2.5, 5), #37 4V #space =3
-        ('2013_12_10_0176', 0, 2.5, 5), #37 4.1V #health failed
+        ('2013_12_10_0060', 58, 2.5, 5), #36 missing file 11 from the list due to weird bug #space=5
+        ('2013_12_10_0118', 58, 2.5, 5), #37 4V #space =3
+        ('2013_12_10_0176', 58, 2.5, 5), #37 4.1V #health failed
         ('2013_12_11_0000', 58, 3.0, 5), #41 3V
         ('2013_12_11_0058', 58, 3.0, 5), #41 0V
         ('2013_12_11_0127', 58, 3.3, 5), #43 3V
-        ('2013_12_11_0208', 58, 2.5, 5), #43 0V, could go farther back and review the files around crash
+        ('2013_12_11_0208', 58, 2.5, 3.8), #43 0V, could go farther back and review the files around crash
     ]
     for cid in cell_ids:
         all_files,dists=get_cell_traces(cid,abfpath)
@@ -570,6 +691,10 @@ def main():
             print(np.array(all_files)[indexes])
             print(np.array(dists)[indexes])
             plot_abf_traces(np.array(all_files)[indexes],np.array(dists)[indexes],std_thrs=std_thrs,std_max=std_max,threshold_func=threshold_maker(abfpath,THRS_DICT),spikes=True,cell_id=cid)
+
+            #plot_abf_traces([abfpath+'2013_12_10_0188.abf',abfpath+'2013_12_10_0189.abf'],[0,0],std_thrs=std_thrs,std_max=std_max,threshold_func=threshold_maker(abfpath,THRS_DICT),spikes=True,cell_id=cid)
+            #plot_abf_traces([abfpath+'2013_12_10_0216.abf',abfpath+'2013_12_10_0217.abf'],[0,0],std_thrs=std_thrs,std_max=std_max,threshold_func=threshold_maker(abfpath,THRS_DICT),spikes=True,cell_id=cid)
+
 
         #data=get_cell_data(cid)
         #plot_cell_data(*data[:-1])
