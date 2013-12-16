@@ -2,6 +2,7 @@
 from rig.ipython import embed
 import socket
 import numpy as np
+import gc
 #import scipy as sci
 import pylab as plt
 from neo import AxonIO, AnalogSignal
@@ -96,7 +97,7 @@ test_map={0:zero,1:one}
 #raw,block,segments=load_abf(path+filenames[0])
 
 
-def detect_spikes(array,thresh=3,max_thresh=5,threshold=None): #FIXME need an actual threshold?
+def detect_spikes(array,thresh=3,max_thresh=5,threshold=None,space=5): #FIXME need an actual threshold?
     try:
         iter(array.base)
         array=array.base
@@ -110,24 +111,38 @@ def detect_spikes(array,thresh=3,max_thresh=5,threshold=None): #FIXME need an ac
     elif max(array) > avg+std*max_thresh:
         threshold=avg+thresh*std
     else:
-        threshold=avg+max_thresh
+        #print('guessing noise')
+        threshold=avg+std*max_thresh
+        if max(array) < threshold:
+            #print('yep it was')
+            return []
 
-    space=5
     first=array[:-space] #5 to hopefully prevent the weirdness with tiny fluctuations
     second=array[space:]
     base=len(first)-space
+    def check_thrs(i):
+        for n in range(space):
+            if (first[i+n]<=threshold and second[i+n]>threshold):
+                pass
+            else:
+                return 0
+        return 1
+    s_list=[ i for i in range(base) if check_thrs(i) ]
     #s_list=[ i for i in range(base) if first[i]<=threshold and second[i]>threshold ]
-    s_list=[ i for i in range(base-1) if first[i]<=threshold and second[i]>threshold and first[i+1]<=threshold and second[i+1]>threshold ]
-    s_index=s_list[0::space] #take only the first spike
-    return s_index
+    #s_list=[ i for i in range(base-1) if first[i]<=threshold and second[i]>threshold and first[i+1]<=threshold and second[i+1]>threshold ]
+    #s_index=s_list[0::space] #take only the first spike #need the -1 to prevent aliasing?
+    return s_list
+    #return s_index
 
 def detect_led(led_array):
-    maxV=max(led_array.base)
-    minV=min(led_array.base)
+    if led_array.base:
+        led_array=led_array.base
+    maxV=max(led_array)
+    minV=min(led_array)
     if maxV-minV < .095:
         return [],base,maxV,minV
     half=maxV-(maxV-minV)/2
-    led_on_index=np.where(led_array.base < half)[0]
+    led_on_index=np.where(led_array < half)[0]
     #led_on_index=np.where(led_array.base)[0]
     base=np.ones_like(led_on_index)
     return led_on_index,base,maxV,minV
@@ -275,6 +290,10 @@ to_ignore=[ #see LB1:81
     '08_0053', #shutter open
     '08_0076', #accident with membrane test
     '08_0077', #accident with membrane test
+    '10_0001', #was a test run with a completely open aperature
+    '10_0010', #missing 3 channels not sure what happened
+    '10_0011', #complete garbage and not even in the list for cell 36
+    '10_0012', #somehow this was recorded as a control despite being even? thing it has to do with the problems above
 ]
 ignored=['2013_12_'+ignore+'.abf' for ignore in to_ignore]
 
@@ -362,84 +381,107 @@ def get_cell_traces(cid,abfpath):
         filename=file.filename
         distance=file.distances[cid]
         if filename in ignored:
+            print(filename,'ignored')
             continue
         filepath=abfpath+filename #FIXME
         size=os.path.getsize(filepath)
         if size != 10009088 and size != 2009088: #FIXME another way to detect filetype really just need a way to get the protocol
+            print(filepath,size)
             continue
         filepaths.append(abfpath+filename)
         dists.append(distance)
     return filepaths,dists
 
-def plot_abf_traces(filepaths,dists,spikes=False,std_thrs=3,std_max=5,threshold=None,cell_id=None): #FIXME this is for 58 alternating
+def plot_abf_traces(filepaths,dists,spikes=False,std_thrs=3,std_max=5,threshold_func=lambda filepath:None,cell_id=None): #FIXME this is for 58 alternating
     #for filepath,distance in 
     from abf_analysis import parmap
     #args=zip(filepaths,dists)
-    args=[(f1,f2,d) for f1,f2,d in zip(filepaths[0::2],filepaths[1::2],dists)]
+    args=[(f1,f2,d1,d2) for f1,f2,d1,d2 in zip(filepaths[0::2],filepaths[1::2],dists[0::2],dists[1::2])]
+    #[print(arg) for arg in args]
     def dothing(args):
-        fp1,fp2,distance=args
+        fp1,fp2,d1,d2=args
         fn=fp1.split('/')[-1]
-        for filepath in (fp1,fp2):
-            figure=plt.figure(figsize=(20,20))
+        figure=plt.figure(figsize=(20,20))
+        for filepath,distance in zip((fp1,fp2),(d1,d2)):
             raw,block,segments,header=load_abf(filepath)
             if list(raw.read_header()['nADCSamplingSeq'][:2]) != [1,2]: #FIXME
                 print('Not a ledstim file')
                 return None,None
-            gains=header['fTelegraphAdditGain'] #TODO
+            print(header['nADCSamplingSeq'])
+            print(header['nTelegraphEnable'])
+            print(header['fTelegraphAdditGain'])
+            #gains=header['fTelegraphAdditGain'] #TODO
+            #print(fn,gains)
             #TODO cell.headstage number?!
-            headstage_number=1
-            zero=transform_maker(0,20*gains[headstage_number]) #cell
+            #headstage_number=1 #FIXME
+            #gain=gains[headstage_number] #FIXME the problem I think is still in AxonIO
+            #zero=transform_maker(0,20*gain) #FIXME where does the first 20 come from !?
             #one=transform_maker(0,5) #led
-            one=transform_maker(0,10) #led no idea why the gain is different for these
+            #one=transform_maker(0,10) #led no idea why the gain is different for these
             nseg=len(segments)
             for seg,n in zip(segments,range(nseg)):
+                title_base=''
                 if nseg == 1:
                     plt.subplot(6,1,6)
                 else:
                     plt.subplot(6,1,n+1)
-                signal=zero(seg.analogsignals[0])
-                led=one(seg.analogsignals[1])
-                #signal=seg.analogsignals[0]
-                #led=seg.analogsignals[1]
+                #signal=zero(seg.analogsignals[0])
+                #led=one(seg.analogsignals[1])
+                signal=seg.analogsignals[0].base#/(20*gain)
+                units_sig=seg.analogsignals[0].units
+                sig_times=seg.analogsignals[0].times.base
+                units_sig_times=seg.analogsignals[0].times.units
+                led=seg.analogsignals[1].base#/10
                 led_on_index,base,maxV,minV=detect_led(led) #FIXME move this to count_spikes
                 if not len(led_on_index):
                     print('No led detected maxV: %s minV: %s'%(maxV,minV))
                     continue
-                sig_on=signal.base[led_on_index]
-                sig_on_times=signal.times.base[led_on_index] #FIXME may not be synch?
+                sig_on=signal[led_on_index]
+                sig_on_times=sig_times[led_on_index] #FIXME may not be synch?
                 sig_mean=np.mean(sig_on)
                 sig_std=np.std(sig_on)
                 #plt.plot(sig_std+sig_mean)
                 sm_arr=base*sig_mean
-                sm_arr_times=signal.times.base[led_on_index]
+                sm_arr_times=sig_on_times #[led_on_index]
                 std_arr=base*sig_std
                 
                 #do spike detection
                 if spikes:
-                    spike_indexes=detect_spikes(sig_on,std_thrs,std_max,threshold)
-                    spike_times=signal.times.base[led_on_index][spike_indexes]
+                    spike_indexes=detect_spikes(sig_on,std_thrs,std_max,threshold_func(filepath))
+                    spike_times=sig_on_times[spike_indexes]
                     sc=len(spike_indexes)
                     plt.plot(spike_times,sig_on[spike_indexes],'ro')
-                    plt.title('%s spikes %s um from cell %s'%(sc,int(distance*1000),block.file_origin))
-                else:
-                    plt.title('%s um from cell %s %s'%(distance*1000,cell_id,block.file_origin))
+                    title_base+='%s spikes '%(sc)
 
-                plt.xlabel(signal.times.units)
-                plt.ylabel(signal.units)
+                
+                title_base+='%s um from cell %s %s '%(int(distance*1000),cell_id,block.file_origin)
+                #title_base+='gain = %s *20'%gain
+                plt.title(title_base)
+
+                plt.xlabel(units_sig_times)
+                plt.ylabel(units_sig)
 
                 #plt.xlabel(led.times.units)
                 #plt.ylabel(led.units)
                 #plt.plot(led.times.base[led_on_index],led.base[led_on_index])
-
+                lrf=(sig_on_times[0],sig_on_times[-1])
                 plt.plot(sig_on_times,sig_on,'k-')
-                plt.plot(sm_arr_times,sm_arr,'b-')
-                plt.fill_between(np.arange(len(sm_arr)),sm_arr-std_arr,sm_arr+std_arr,color=(.8,.8,1))
+                plt.plot(lrf,[sig_mean]*2,'b-')
+                if threshold_func(filepath):
+                    plt.plot(lrf,[threshold_func(filepath)]*2,'g-')
+                else:
+                    plt.plot(lrf,[sig_mean+sig_std*std_max]*2,'m-')
+                plt.fill_between(np.arange(len(sm_arr)),sm_arr-std_arr*std_thrs,sm_arr+std_arr*std_thrs,color=(.8,.8,1))
                 plt.xlim((sig_on_times[0],sig_on_times[-1]))
         
         spath='/tmp/'+str(cell_id)+'_'+fn[:-4]+'.png'
         print(spath)
-        figure.savefig(spath,bbox_inches='tight',pad_inches=0)
+        plt.savefig(spath,bbox_inches='tight',pad_inches=0)
+        #plt.show()
         figure.clf() #might reduce mem footprint
+        plt.close()
+        gc.collect()
+    #[dothing(arg) for arg in args]
     parmap(dothing,args)
 
 def plot_cell_data(cid,cell_pos,df_pos,dists,smeans,svars,slice_pos):
@@ -482,31 +524,53 @@ def notes():
     #_cell_endfile=review;threshold,max_above
     _36_0060=1,8,19,39,55;3,5
 
+def threshold_maker(path,THRS_DICT={}):
+    threshold_dict={path+k+'.abf':v for k,v in THRS_DICT.items()}
+    def threshold_func(filepath):
+        try:
+            threshold=threshold_dict[filepath]
+        except:
+            threshold=None
+        return threshold
+    return threshold_func
+
+THRS_DICT={ #FIXME may need to include sub channels?
+    '2013_12_10_0019':.7,
+    '2013_12_10_0039':1,
+    '2013_12_10_0055':1,
+
+}
+
 def main():
     abfpath=get_abf_path()
     #cell_ids=16,26 #based on num files
     #cell_ids=32,34
     #cell_ids=36,37,41,43 #39, 40 no data
-    cell_ids=36,#37,41,43
-    end=[
-        '2013_12_10_0060', #36
-        '2013_12_10_0118', #37 4V
-        '2013_12_10_0176', #37 4.1V #health failed
-        '2013_12_11_0000', #41 3V
-        '2013_12_11_0058', #41 0V
-        '2013_12_11_0127', #43 3V
-        '2013_12_11_0208', #43 0V, could go farther back and review the files around crash
+    cell_ids=37,#41,43
+    cell_ids=36,
+    end=[#filename, go back, std_thrs, std_max
+        ('2013_12_10_0060', 57, 2.5, 5), #36 missing file 11 from the list due to weird bug #space=5
+        ('2013_12_10_0118', 10, 2.5, 5), #37 4V #space =3
+        ('2013_12_10_0176', 0, 2.5, 5), #37 4.1V #health failed
+        ('2013_12_11_0000', 58, 3.0, 5), #41 3V
+        ('2013_12_11_0058', 58, 3.0, 5), #41 0V
+        ('2013_12_11_0127', 58, 3.3, 5), #43 3V
+        ('2013_12_11_0208', 58, 2.5, 5), #43 0V, could go farther back and review the files around crash
     ]
     for cid in cell_ids:
         all_files,dists=get_cell_traces(cid,abfpath)
-        for endf in end:
+        for endf,counts,std_thrs,std_max in end:
             try:
-                indexes=get_n_before(58,all_files,abfpath+endf+'.abf')
+                indexes=get_n_before(counts,all_files,abfpath+endf+'.abf')
+                #indexes=get_n_before(18,all_files,abfpath+endf+'.abf')
             except ValueError as e:
                 #print(e)
                 continue
             print(indexes)
-            plot_abf_traces(np.array(all_files)[indexes],np.array(dists)[indexes],spikes=True,cell_id=cid)
+            print(np.array(all_files)[indexes])
+            print(np.array(dists)[indexes])
+            plot_abf_traces(np.array(all_files)[indexes],np.array(dists)[indexes],std_thrs=std_thrs,std_max=std_max,threshold_func=threshold_maker(abfpath,THRS_DICT),spikes=True,cell_id=cid)
+
         #data=get_cell_data(cid)
         #plot_cell_data(*data[:-1])
             #plt.show()
