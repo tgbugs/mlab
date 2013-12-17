@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.3
 import os
+import socket
 import numpy as np
 from scipy import integrate, optimize #for quad or simps or whatever
 from neo import AxonIO
@@ -20,8 +21,6 @@ def parmap(f,X):
     [p.start() for p in proc]
     [p.join() for p in proc]
     return [p.recv() for (p,c) in pipe]
-
-
 
 def get_abf_path():
     """ return the abf path for a given computer """
@@ -79,6 +78,7 @@ def find_rs_test(header):
     return starts,lengths,volts
 
 def compute_test_pulse_statistics(trace,start=7816,length=4000,milivolts=5):
+    """ Passed the massimo seal of looks about right"""
     #FIXME the values here need to have the correct gains applied
     #TODO units!
     unit=trace.dimensionality.string
@@ -162,7 +162,6 @@ def compute_test_pulse_statistics(trace,start=7816,length=4000,milivolts=5):
 
     return A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index
 
-
 def plot_tp_stats(analogsignal,start,length,A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index,fn='lolwut'):
     end=start+length
     times=analogsignal.times.base[start:end]
@@ -195,9 +194,10 @@ def plot_all_tp_stats(segments,starts,lengths,volts):
     for segment in segments:
         for analogsignal,i in zip(segment.analogsignals,sigit):
             A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index=compute_test_pulse_statistics(analogsignal, starts[i], lengths[i], volts[i])
+            print(A,Tau,C)
             if Tau:
                 fig=plot_tp_stats(analogsignal,starts[i],lengths[i],A,Tau,C,Q,Rs,Rs_est,Rm,rest_baseline,pulse_baseline,fit_start_index,fn)
-                spath='/tmp/'+fn[:-4]+'_'+str(segment.index)+'_tp.png'
+                spath=get_tmp_path()+fn[:-4]+'_'+str(segment.index)+'_tp.png'
                 print(spath)
                 fig.savefig(spath,bbox_inches='tight', pad_inches=0)
                 fig.clf()
@@ -306,8 +306,19 @@ def get_segments_with_step(filepath):
     del(raw)
     return segments,starts,lengths,volts
 
+def get_tmp_path(): #FIXME move to utils or something
+    hostname=socket.gethostname()
+    if os.name == 'posix':
+        return '/tmp/'
+    else: #'nt'
+        if hostname=='HILL_RIG':
+            return 'D:/tmp' #rig comp
+        elif hostname == 'andromeda':
+            return 'C:/tmp/' #a poor substitue but whatever
+        elif hostname == 'athena':
+            return  None #'T:/asdf/' #FIXME
+
 def main():
-    import socket
     from sqlalchemy.orm import Session
     from database.table_logic import logic_StepEdge
     from database.engines import engine
@@ -316,6 +327,7 @@ def main():
     logic_StepEdge(session)
 
     path=get_abf_path()
+    savepath=get_tmp_path() 
     filenames=[f[0] for f in session.query(DataFile.filename).all()]
     #filenames=[f.filename for f in session.query(Cell).get(66).datafiles]
     #filenames= ['2013_12_13_0038.abf']
@@ -329,6 +341,7 @@ def main():
 
     def plot_stuff(args):
         path,fn=args
+        print(path)
         segments,starts,lengths,volts=get_segments_with_step(path+fn)
         if segments:
             plot_all_tp_stats(segments,starts,lengths,volts)
@@ -338,14 +351,14 @@ def main():
             except FileNotFoundError as e:
                 print(e)
                 return None
-        fig=plot_raw_aligned(segments)
-        spath='/tmp/'+fn[:-4]+'_al.png'
-        print(spath)
-        fig.savefig(spath,bbox_inches='tight', pad_inches=0)
-        fig.clf()
-        plt.close()
-        del(fig,segments)
-        gc.collect() #FIXME none of this seemes to make any difference for memory usage :/
+        #fig=plot_raw_aligned(segments)
+        #spath=savepath+fn[:-4]+'_al.png'
+        #print(spath)
+        #fig.savefig(spath,bbox_inches='tight', pad_inches=0)
+        #fig.clf()
+        #plt.close()
+        #del(fig,segments)
+        #gc.collect() #FIXME none of this seemes to make any difference for memory usage :/
                      #WELL on the otherhand it did reduce it enough to prevent the explosion...
    
     from datetime import datetime
@@ -354,9 +367,9 @@ def main():
     print(len(items))
     itemss=[]
     #itemss.append(items[900:920])
-    divs=12 #memory limits man :/
+    divs=33 #memory limits man :/
     divisions=np.int32(np.linspace(0,975,divs))
-    for d in range(divs-1):
+    for d in range(divs-3,divs-1):
         print(divisions[d],divisions[d+1])
         dl=divisions[d]
         dr=divisions[d+1]
@@ -366,12 +379,15 @@ def main():
     #itemss.append(items[320:640])
     #itemss.append(items[640:975])
     if socket.gethostname() != 'athena':
-        if len(items) > 20:
+        if len(items) < 30:
             raise OSError('seriously dude, check your memory, 32gigs is only barely enough for some of this')
     start=datetime.now()
     for item,i in zip(itemss,range(len(itemss))):
         print('starting batch %s'%i)
-        parmap(plot_stuff, item) #XXX WARNING!!! This will explode anything but athena
+        #parmap(plot_stuff, item) #XXX WARNING!!! This will explode anything but athena
+        #FIXME EOFError on andromeda? pickel error?
+        print(item)
+        [plot_stuff(j) for j in item] #super confusing since item is a list >_<
     end=datetime.now()
     print(start,end,(end-start))
     #items=[(fn,tup) for fn,tup in seg_dict.items()]

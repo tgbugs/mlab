@@ -33,16 +33,16 @@ def pgTest(echo=False,wipe_db=False,username='sqla',password='asdf',host='localh
     return engine
 
 def pgReal(username,password,host,port=54321,database='postgres',echo=False): #FIXME postgres probably shouldn't be default
+    pg='postgresql://%s:%s@%s:%s/%s'
     if socket.gethostname()=='athena' and os.name == 'posix':
         port=5432
         database='scidb_v1_test'
-    pg='postgresql://%s:%s@%s:%s/%s'
     if socket.gethostname()=='andromeda':
         database='scidb_v1_test'
+    engine=create_engine(pg%(username,password,host,port,database),echo=echo)
+    con=engine.connect()
     try:
-        engine=create_engine(pg%(username,password,host,port,database),echo=echo)
-        con=engine.connect()
-
+        pass
     except: #FIXME specific please
         del(engine)
         print('database not found: creating!')
