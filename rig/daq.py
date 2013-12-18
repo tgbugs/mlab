@@ -11,8 +11,8 @@ Options:
     -o, --on=<ms>            on ms  [default: 1]
     -f, --off=<ms>           off ms [default: 0]
     -r, --rep=<int>          reps   [default: 1]
-    -u, --minV=<V>           minV   [default: 0]
-    -l, --maxV=<V>           maxV   [default: 4.2]
+    -l, --minV=<V>           minV   [default: 0]
+    -u, --maxV=<V>           maxV   [default: 4.2]
     -s, --square
     -a, --ramp
     -c, --cos

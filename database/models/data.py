@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, fHasNotes, HasMetaData
+from database.models.mixins import HasNotes, fHasNotes, HasMetaData, HasProperties
 from database.standards import URL_STAND
 
 #some global variables that are used here and there that would be magic otherwise
@@ -297,8 +297,7 @@ class Repository(Base):
         return super().strHelper(depth=depth,attr='url')
 
 
-
-class File(fHasNotes, Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
+class File(fHasNotes, HasProperties Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
     """class for interfacing with things stored outside the database, whether datafiles or citables or whatever"""
     #TODO references to a local file should be replaced with a reference to that computer so that on retrieval if the current computer does not match we can go find other repositories for the same file damn it this is going to be a bit complicated
     #ideally the failover version selection should be ordered by retrieval time and should be completely transparent
@@ -308,9 +307,12 @@ class File(fHasNotes, Base): #REALLY GOOD NEWS: in windows terminal drag and dro
 
     #TODO must hash all files on creation!
     __tablename__='file'
-    url=Column(String,ForeignKey('repository.url'),primary_key=True)
-    mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
+    #id=Column(Integer,primary_key=True) #TODO
+    url=Column(String,ForeignKey('repository.url'),primary_key=True) #TODO make it URLS??? maybe with hostnames?? single file multiple locations, that makes a damned lot of sense
     filename=Column(String,primary_key=True)
+    #__table_args__=(UniqueConstraint(url,filename),{}) #TODO
+    mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
+            
     creationDateTime=Column(DateTime,default=datetime.now)
     ident=Column(String) #used for inheritance
     @property
@@ -350,7 +352,8 @@ class DataFile(File): #data should be collected in the scope of an experiment
     __tablename__='datafile'
     url=Column(String,primary_key=True,autoincrement=False)
     filename=Column(String,primary_key=True,autoincrement=False)
-    __table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
+    __table_args__=(UniqueConstraint([url,filename],['file.url','file.filename']), {}) #FIXME need a way to have multiple urls per filename that are ALL unique...
+    #__table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
     datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),nullable=False)
     datafilesource=relationship('DataFileSource',uselist=False) #backref=backref('datafiles'),
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
