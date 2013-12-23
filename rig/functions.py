@@ -333,6 +333,7 @@ class datFuncs(kCtrlObj):
         return targets
 
     def get_df_statistics(self):
+        """ calculate and rpint the test pulse statistics and hopefully save them to the database? """
         from database.abf_analysis import print_tp_stats
         print_tp_stats(self.c_datafile.full_url[8:])
         
@@ -703,26 +704,26 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
 
     def getState(self): #FIXME this function and others like it should probably be called directly by dataman?
         printD('hMCCmsg outer',self.ctrl.hMCCmsg)
-        def base():
-            state.append(self.ctrl.GetHoldingEnable())
-            state.append(self.ctrl.GetHolding())
-            state.append(self.ctrl.GetPrimarySignal())
-            state.append(self.ctrl.GetPrimarySignalGain())
-            state.append(self.ctrl.GetPrimarySignalLPF())
-            state.append(self.ctrl.GetPipetteOffset())
+        def base(state):
+            state['HoldingEnable']=self.ctrl.GetHoldingEnable()
+            state['Holding']=self.ctrl.GetHolding()
+            state['PrimarySignal']=self.ctrl.GetPrimarySignal()
+            state['PrimarySignalGain']=self.ctrl.GetPrimarySignalGain() #also in abf file and already handled by AxonIO
+            state['PrimarySignalLPF']=self.ctrl.GetPrimarySignalLPF() #also in abf file
+            state['PipetteOffset']=self.ctrl.GetPipetteOffset()
 
-        def vc():
+        def vc(state):
             base()
-            state.append(self.ctrl.GetFastCompCap())
-            state.append(self.ctrl.GetSlowCompCap())
-            state.append(self.ctrl.GetFastCompTau())
-            state.append(self.ctrl.GetSlowCompTau())
-            state.append(self.ctrl.GetSlowCompTauX20Enable())
+            state['FastCompCap']=self.ctrl.GetFastCompCap())
+            state['SlowCompCap']=self.ctrl.GetSlowCompCap())
+            state['FastCompTau']=self.ctrl.GetFastCompTau())
+            state['SlowCompTau']=self.ctrl.GetSlowCompTau())
+            state['SlowCTX20Enable']=self.ctrl.GetSlowCompTauX20Enable())
 
-        def ic():
+        def ic(state):
             base()
-            state.append(self.ctrl.GetBridgeBalEnable())
-            state.append(self.ctrl.GetBridgeBalResist())
+            state['BridgeBalEnable']=self.ctrl.GetBridgeBalEnable())
+            state['BridgeBalResist']=self.ctrl.GetBridgeBalResist())
 
         def iez():
             base()
@@ -731,8 +732,8 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         stateList=[]
         for i in range(self.ctrl.mcNum):
             self.ctrl.selectMC(i)
-            state=[] #FIXME: make this a dict with keys as the name of the value? eh would probs complicate
-            state.append(i) #might be suprflulous but it could simplify the code to read out stateList
+            state={} #FIXME: make this a dict with keys as the name of the value? eh would probs complicate
+            state['Channel']=i #might be suprflulous but it could simplify the code to read out stateList
             mode=self.ctrl.GetMode()
             state.append(mode)
             modeDict[mode]()
@@ -740,7 +741,7 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
             print(state)
 
         self.MCCstateDict[datetime.datetime.utcnow()]=stateList
-        return self
+        return stateList
 
     def printMCCstate(self):
         print(re.sub('\), ',')\r\n',str(self.MCCstateDict)))

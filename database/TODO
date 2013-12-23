@@ -1,6 +1,11 @@
-make intersperse the distances with the spot over the cell
-fix minV maxV
-ADD NOTES TO DATAFILES AND EXPERIMENTS!!!
+add a way to track versions by commit hash
+find a way to integrate all the controllers without using the stupid dicts >_< so we can persist stuff without having to jump through all the hoops, maybe just have the classes also inherit from datFuncs?
+add properties to datafiles for keeping track of mcc state etc
+results tables or fields or something
+move stuff to analysis folder/module
+#make intersperse the distances with the spot over the cell
+#fix minV maxV
+#ADD NOTES TO DATAFILES AND EXPERIMENTS!!!
 change ':' command so that it looks up function names in a dict?
 add a way to mark harpstrings!
 add to the datafile record a HSTORE or something? that can track all the settings used on the multiclamp or even just put it in an array or add properties to datafiles?
