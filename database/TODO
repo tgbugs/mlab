@@ -1,3 +1,4 @@
+add a way to track versions by commit hash
 find a way to integrate all the controllers without using the stupid dicts >_< so we can persist stuff without having to jump through all the hoops, maybe just have the classes also inherit from datFuncs?
 add properties to datafiles for keeping track of mcc state etc
 results tables or fields or something
