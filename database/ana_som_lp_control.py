@@ -323,18 +323,18 @@ def bin_dists(dist,mean,std,bin_width=.025): #FIXME return dont plot?
     bin_lefts=np.arange(-shift,10*bin_width,bin_width)
     bin_dict={}
     for v in bin_lefts:
-        bin_dict[v]=[[],[]]
+        bin_dict[v]=[]#[[],[]]
     for d,m,s in zip(dist,mean,std):
         left=bin_lefts[bin_lefts<=d][-1] #left inclusive
-        right=left+bin_width
-        bin_dict[left][0].append(m)
-        bin_dict[left][1].append(s)
-    for left_bin,lst in bin_dict.items():
-        new_mean=np.mean(lst[0])
-        new_std=np.std(lst[0]) #FIXME ignores the individual vars
-        new_sem=new_std/np.sqrt(len(mean))
+        #right=left+bin_width
+        bin_dict[left].append(m)
+        #bin_dict[left][1].append(s)
+    for left_bin,means in bin_dict.items():
+        new_mean=np.mean(means)
+        new_std=np.std(means) #FIXME ignores the individual vars
+        new_sem=new_std/np.sqrt(len(means))
         #plt.errorbar(left_bin+shift,new_mean,fmt='bo',ecolor=(.8,.8,1),yerr=new_std,capthick=2)
-        plt.errorbar(left_bin+shift,new_mean,fmt='ko',ecolor=(.2,.2,.2),yerr=new_sem,capthick=2)
+        plt.errorbar(left_bin+shift,new_mean,fmt='ko',ecolor=(.2,.2,.2),yerr=new_sem,capsize=8,capthick=4,elinewidth=3,markersize=20)
     return bin_dict
 
 def get_cell_data(cid,abfpath):
@@ -445,7 +445,9 @@ def plot_abf_traces(filepaths,dists,spikes=False,spike_func=lambda filepath:None
                 title_base=''
                 if nseg == 1:
                     plt.subplot(6,1,6)
+                    base_fp=filepath
                 else:
+                    dist_fp=filepath
                     plt.subplot(6,1,n+1)
                 signal=seg.analogsignals[0].base
                 units_sig=seg.analogsignals[0].units
@@ -485,7 +487,7 @@ def plot_abf_traces(filepaths,dists,spikes=False,spike_func=lambda filepath:None
 
                 
                 if do_plot:
-                    title_base+='%s um from cell %s %s '%(int(distance*1000),cell_id,block.file_origin)
+                    title_base+='%s $\mu$m from cell %s $\\verb|%s|$ '%(int(distance*1000),cell_id,block.file_origin[:-4])
                     #title_base+='gain = %s *20'%gain
                     plt.title(title_base)
 
@@ -506,7 +508,7 @@ def plot_abf_traces(filepaths,dists,spikes=False,spike_func=lambda filepath:None
                     plt.xlim((sig_on_times[0],sig_on_times[-1]))
                     plt.legend(loc='upper right',fontsize='xx-small',frameon=False)
         
-        spike_count_callback(base_counts,spike_counts,base_dist,spike_dist,filepath)
+        spike_count_callback(base_counts,spike_counts,base_dist,spike_dist,dist_fp,base_fp)
         spath='/tmp/'+str(cell_id)+'_'+fn[:-4]+'.png'
         if do_plot:
             print(spath)
@@ -523,7 +525,7 @@ def plot_abf_traces(filepaths,dists,spikes=False,spike_func=lambda filepath:None
     cont['bnorm_dist_stats']=[]
     spike_fn_dict={}
     args=[(f1,f2,d1,d2) for f1,f2,d1,d2 in zip(filepaths[0::2],filepaths[1::2],dists[0::2],dists[1::2])]
-    def spike_count_callback(base_counts,spike_counts,base_dist,spike_dist,filepath):
+    def spike_count_callback(base_counts,spike_counts,base_dist,spike_dist,filepath,base_fp):
         mean_base=np.mean(base_counts)
         std_base=np.std(base_counts)
         mean_spikes=np.mean(spike_counts)
@@ -532,6 +534,7 @@ def plot_abf_traces(filepaths,dists,spikes=False,spike_func=lambda filepath:None
         mean_norm=np.mean(norm_counts)
         std_norm=np.std(norm_counts)
         spike_fn_dict[filepath]=spike_counts
+        spike_fn_dict[base_fp]=base_counts
 
 
         cont['base_dist_stats'].append((base_dist,mean_base,std_base))#,base_counts))
@@ -559,15 +562,38 @@ def plot_abf_traces(filepaths,dists,spikes=False,spike_func=lambda filepath:None
 
 def plot_by_dist(dist_stats,cell_id,end_file,yl='Normalized',yu='um'):
     normed=np.array(dist_stats)#np.array(cont['norm_dist_stats'])
-    plt.figure(figsize=(10,10))
-    bin_dists(normed[:,0],normed[:,1],normed[:,2],.025)
+    fig=plt.figure(figsize=(20,20))
+    dist,mean,std,bin_width=normed[:,0],normed[:,1]*1000,normed[:,2],25
+    shift=bin_width/2
+    bin_lefts=np.arange(-shift,10*bin_width,bin_width)
+    bin_dict={}
+    print(mean)
+    for v in bin_lefts:
+        bin_dict[v]=[]#[[],[]]
+    for d,m,s in zip(dist,mean,std):
+        left=bin_lefts[bin_lefts<=d][-1] #left inclusive
+        #right=left+bin_width
+        bin_dict[left].append(m)
+        #bin_dict[left][1].append(s)
+    for left_bin,means in bin_dict.items():
+        new_mean=np.mean(means)
+        new_std=np.std(means) #FIXME ignores the individual vars
+        new_sem=new_std/np.sqrt(len(means))
+        #plt.errorbar(left_bin+shift,new_mean,fmt='bo',ecolor=(.8,.8,1),yerr=new_std,capthick=2)
+        print('hell0')
+        plt.errorbar(left_bin+shift,new_mean,fmt='ko',ecolor=(.2,.2,.2),yerr=new_sem,capsize=8,capthick=4,elinewidth=3,markersize=20)
+
     #plt.errorbar(normed[:,0]*1000,normed[:,1],yerr=normed[:,2],fmt='ko',ecolor=(1,1,1))
-    plt.xlim((.01,.250))
-    plt.ylim(0,1.5)
-    plt.xlabel('Distance from cell body in mm')
-    plt.ylabel('%s spike rate %s'%(yl,yu))
+    #plt.xlim((.01,.250))
+    #plt.ylim(0,1.5)
+    format_axes(fig.axes[0],50,50)
+    plt.yticks(np.arange(0,1.25,.25))
+    plt.xticks(np.arange(0,225,25))
+    plt.xlim(xmin=-2)
+    plt.xlabel('Distance from cell body in um')
+    plt.ylabel('%s spikes %s'%(yl,yu))
     plt.title('%s spikes as a function of distance for cell %s'%(yl,cell_id))
-    plt.savefig('/tmp/norm_dist_%s_%s.png'%(cell_id,end_file),bbox_inches='tight',pad_inches=0)
+    fig.savefig('/tmp/norm_dist_%s_%s.png'%(cell_id,end_file),bbox_inches='tight',pad_inches=0)
 
 def plot_cell_data(cid,cell_pos,df_pos,dists,smeans,svars,slice_pos):
     plt.figure()
@@ -660,6 +686,7 @@ THRS_DICT={ #FIXME may need to include sub channels?
     '2013_12_11_0052':3.7,
     '2013_12_11_0054':3.6,
     '2013_12_11_0056':3.6,
+    '2013_12_11_0058':3.65,
     '2013_12_11_0185':5,
 }
 
@@ -741,7 +768,7 @@ def files_by_dist(files,dists,cid,endf):
     #all_files,dists=get_cell_traces(cid,abfpath)
     afd=[(file,dist) for file,dist in zip(files,dists)]
     #afd.sort(key=lambda tup: tup[1])
-    plt.figure(figsize=(20,20))
+    fig=plt.figure(figsize=(20,20),frameon=False)
     for filepath,distance in afd:
         raw,block,segments,header=load_abf(filepath) #TODO fp segment dict like I had with queue/threading
         if len(segments)==1:
@@ -752,16 +779,74 @@ def files_by_dist(files,dists,cid,endf):
             xs=np.linspace(0,.1,len(ass.times.base))+distance #center by distance
             #ys=(ass.base-np.min(ass.base))/(np.max(ass.base)-np.min(ass.base))-segment.index*1.5 #move down by segment number
             ys=(ass.base-np.mean(ass.base))/2.5+segment.index #move down by segment number
-            plt.plot(xs[:len(xs)//15],ys[:len(ys)//15],'k-',label='%s'%distance)
-            plt.xlabel('Distance from cell body in um. Normalized trial length')
-            plt.ylabel('Amplitude and run number')
+            plt.plot(xs[:len(xs)//14]*1000,ys[:len(ys)//14],'k-',label='%s'%distance)
+    plt.ylim(-.2,5)
+    plt.yticks(np.arange(0,5,1))
+    plt.xlabel('Distance from cell body in $\mu$m. Normalized trial length')
+    plt.ylabel('Amplitude and run number')
     plt.title('Example traces as a function of distance from cell %s'%cid)
-    plt.savefig('/tmp/fd_%s_%s.png'%(cid,endf[-4:]),bbox_inches='tight',pad_inches=0)
+    #fig.frameon(False)
+    #fig.patch.set_visible(False)
+    ax=fig.axes[0]
+    ax.spines['left'].set_edgecolor((1,1,1,1))
+    format_axes(ax)
+    #embed()
+    fig.savefig('/tmp/fd_%s_%s.png'%(cid,endf[-4:]),bbox_inches='tight',pad_inches=0)
+
+def format_axes(ax,fontsize=50,ticksize=50):
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    things=[ax.xaxis.label, ax.yaxis.label, ax.title]
+    ticks=ax.get_xticklabels()+ax.get_yticklabels()
+    [t.set_fontsize(fontsize) for t in things]
+    [t.set_fontsize(ticksize) for t in ticks]
+
+def do_files():
+    abfpath=get_abf_path()
+    cell_ids=36,37,41,43 #39, 40 no data
+    end=[#filename, go back, std_thrs, std_max
+        ('2013_12_10_0060', 58, 2.5, 5), #36 missing file 11 from the list due to weird bug #space=5
+        ('2013_12_10_0118', 58, 2.5, 5), #37 4V #space =3
+        ('2013_12_10_0176', 58, 2.5, 5), #37 4.1V #health failed
+        ('2013_12_11_0000', 58, 3.0, 5), #41 3V
+        ('2013_12_11_0058', 58, 3.0, 5), #41 0V
+        ('2013_12_11_0127', 58, 3.3, 5), #43 3V
+        ('2013_12_11_0208', 58, 2.5, 3.8), #43 0V, could go farther back and review the files around crash
+    ]
+    for cid in cell_ids:
+        all_files,dists=get_cell_traces(cid,abfpath)
+        cell=s.query(Cell).get(cid)
+        files=cell.datafiles
+        for endf,counts,std_thrs,std_max in end:
+            try:
+                indexes=get_n_before(counts,all_files,abfpath+endf+'.abf')
+            except ValueError as e:
+                continue
+            fileset=np.array(all_files)[indexes]
+            filenames=[f.split('/')[-1] for f in fileset]
+            distset=np.array(dists)[indexes]
+            #files_by_dist(fileset,distset,cid,endf)
+            fig=plt.figure(figsize=(20,20))
+            pos=np.array([ f.position for f in files if f.filename in filenames])
+            slice_=cell.parent
+            s_pos=np.array([d.value for d in get_metadata_query(Slice,slice_.id,'getPos').all()[:3]])
+            print(s_pos)
+            plt.plot(-pos[:,0]*1000,pos[:,1]*1000,'bo',color=(.8,.8,1),markersize=10)
+            plt.plot(-s_pos[:,0]*1000,s_pos[:,1]*1000,'go',markersize=20)
+            plt.plot(-cell.position[0]*1000,cell.position[1]*1000,'ro',markersize=20)
+            plt.axis('equal')
+            plt.xlabel('$\mu$m')
+            plt.ylabel('$\mu$m')
+            plt.title('Simulus positions and cortex surface for cell %s'%(cid))
+            format_axes(fig.axes[0])
+            plt.savefig('/tmp/positions_%s_%s'%(cid,endf[-4:]),bbox_inches='tight',pad_inches=0)
 
 
 
 
 def main():
+    #do_files()
+    #return None
     import pickle
     try:
         spike_fn_dict=pickle.load(open('/tmp/led_spikes.p','rb'))
@@ -797,6 +882,19 @@ def main():
         pickle.dump(spike_fn_dict, open('/tmp/led_spikes.p','wb'))
         pickle.dump(stats_dict, open('/tmp/led_stats.p','wb'))
 
+    
+    cid=37
+
+    #cid=41
+    abfpath=get_abf_path()
+    all_files,dists=get_cell_traces(cid,abfpath)
+    endf='2013_12_10_0118'
+    std_thrs=2.5
+    std_max=5
+    indexes=get_n_before(58,all_files,abfpath+endf+'.abf')
+    fileset=np.array(all_files)[indexes]
+    distset=np.array(dists)[indexes]
+    stats,sfnd=plot_abf_traces(fileset,distset,std_thrs=std_thrs,std_max=std_max,threshold_func=threshold_maker(abfpath,THRS_DICT),spikes=True,spike_func=make_spike_count_dict(abfpath,COUNT_DICT),cell_id=cid,do_plot=True)
 
     #cell_ids=16,26 #based on num files
     #cell_ids=32,34
@@ -832,36 +930,50 @@ def main():
     bmeans=b[:,1]
     bstds=b[:,2]
 
-    plt.figure(figsize=(10,10))
+    fig=plt.figure(figsize=(20,20))
     nbins=bin_dists(ndists*1000,nmeans,nstds,25)
-    plt.xticks(np.arange(0,250,25))
-    plt.xlim(-1,250)
+    plt.xlim(xmin=-2)
+    plt.xticks(np.arange(0,225,25))
+    #plt.ylim(ymax=2)
     plt.yticks(np.arange(0,1.25,.25))
-    plt.title('Normalized spike rate vs distance. Error is SEM.')
-    plt.xlabel('Distance in %sm'%_mu)
+    plt.title('Normalized spike count vs distance')#' (binned). Error is SEM.')
+    plt.xlabel(r'Distance in $\mu$m')
     plt.ylabel('Normalized spike counts')
-    plt.savefig('/tmp/norm_dist_all.png',bbox_inches='tight',pad_inches=0)
+    format_axes(fig.axes[0],50,50)
+    fig.savefig('/tmp/norm_dist_all.png',bbox_inches='tight',pad_inches=0)
 
-    plt.figure(figsize=(10,10))
+    fig=plt.figure(figsize=(20,20))
+    plt.plot(ndists*1000,nmeans,'ko',markersize=20)
+    plt.title('All spike counts vs distance')#' (binned). Error is SEM.')
+    plt.xlabel(r'Distance in $\mu$m')
+    plt.ylabel('Normalized spike counts')
+    format_axes(fig.axes[0],50,50)
+    fig.savefig('/tmp/population_normalized_counts.png',bbox_inches='tight',pad_inches=0)
+
+    fig=plt.figure(figsize=(20,20))
     sbins=bin_dists(sdists*1000,smeans,sstds,25)
-    plt.xticks(np.arange(0,250,25))
-    plt.title('Average spike rate vs distance. Error is SEM.')
-    plt.xlabel('Distance in %sm'%_mu)
+    plt.xlim(xmin=-2)
+    plt.xticks(np.arange(0,225,25))
+    plt.yticks(np.arange(0,8,1))
+    plt.title('Average spike count vs distance')#' (binned). Error is SEM.')
+    plt.xlabel(r'Distance in $\mu$m')
     plt.ylabel('Average spike count')
-    plt.savefig('/tmp/spike_dist_all.png',bbox_inches='tight',pad_inches=0)
+    format_axes(fig.axes[0],50,50)
+    fig.savefig('/tmp/spike_dist_all.png',bbox_inches='tight',pad_inches=0)
 
     bbins=bin_dists(bdists,bmeans,bstds)
+    #embed()
 
     def get_lmes(bins):
         lefts=[]
         means=[]
         stds=[]
         sems=[]
-        for left,lst in bins.items():
+        for left,means in bins.items():
             lefts.append(left)
-            new_mean=np.mean(lst[0])
-            new_std=np.std(lst[0])
-            new_sem=new_std/len(lst[0])
+            new_mean=np.mean(means)
+            new_std=np.std(means)
+            new_sem=new_std/len(means)
             means.append(new_mean)
             stds.append(new_std)
             sems.append(new_sem)
@@ -869,9 +981,9 @@ def main():
 
     lefts,means,stds,sems=get_lmes(nbins)
     plt.figure(figsize=(10,10))
-    plt.errorbar(lefts+.0125,means,sems,fmt='ko',ecolor=(.2,.2,.2))
-    plt.savefig('/tmp/test3.png')
-    useful="plt.figure();[ plt.errorbar(left+.0125,np.mean(lst[0]),np.std(lst[0])/np.sqrt(len(lst[0])) ) for left,lst in bins.items()];plt.xlim(-.1,.250);plt.savefig('/tmp/test2.png')"
+    #plt.errorbar(lefts+12.5,means,sems,fmt='ko',ecolor=(.2,.2,.2))
+    #plt.savefig('/tmp/test3.png')
+    #useful="plt.figure();[ plt.errorbar(left+.0125,np.mean(lst[0]),np.std(lst[0])/np.sqrt(len(lst[0])) ) for left,lst in bins.items()];plt.xlim(-.1,.250);plt.savefig('/tmp/test2.png')"
 
     #embed()
         #data=get_cell_data(cid)
