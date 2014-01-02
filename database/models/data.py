@@ -297,7 +297,7 @@ class Repository(Base):
         return super().strHelper(depth=depth,attr='url')
 
 
-class File(fHasNotes, HasProperties Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
+class File(fHasNotes, Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
     """class for interfacing with things stored outside the database, whether datafiles or citables or whatever"""
     #TODO references to a local file should be replaced with a reference to that computer so that on retrieval if the current computer does not match we can go find other repositories for the same file damn it this is going to be a bit complicated
     #ideally the failover version selection should be ordered by retrieval time and should be completely transparent
@@ -352,8 +352,8 @@ class DataFile(File): #data should be collected in the scope of an experiment
     __tablename__='datafile'
     url=Column(String,primary_key=True,autoincrement=False)
     filename=Column(String,primary_key=True,autoincrement=False)
-    __table_args__=(UniqueConstraint([url,filename],['file.url','file.filename']), {}) #FIXME need a way to have multiple urls per filename that are ALL unique...
-    #__table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
+    #__table_args__=(UniqueConstraint([url,filename],['file.url','file.filename']), {}) #FIXME need a way to have multiple urls per filename that are ALL unique...
+    __table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
     datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),nullable=False)
     datafilesource=relationship('DataFileSource',uselist=False) #backref=backref('datafiles'),
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
