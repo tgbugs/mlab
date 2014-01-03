@@ -297,7 +297,7 @@ class Repository(Base):
         return super().strHelper(depth=depth,attr='url')
 
 
-class File(fHasNotes, HasProperties, Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
+class File(HasNotes, HasProperties, Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
     """class for interfacing with things stored outside the database, whether datafiles or citables or whatever"""
     #TODO references to a local file should be replaced with a reference to that computer so that on retrieval if the current computer does not match we can go find other repositories for the same file damn it this is going to be a bit complicated
     #ideally the failover version selection should be ordered by retrieval time and should be completely transparent
