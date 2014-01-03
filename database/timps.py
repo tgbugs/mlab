@@ -24,7 +24,7 @@ from database.models import *
 from database.engines import engine
 from database.queries import *
 from database.table_logic import *
-from database.abf_analysis import *
+from analysis.abf_analysis import *
 from database.main import printFD
 from sqlalchemy.orm import Session
 

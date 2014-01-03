@@ -299,16 +299,18 @@ class HasDataFiles:
     @declared_attr
     def datafiles(cls):
         datafile_association = Table('%s_df_assoc'%cls.__tablename__, cls.metadata,
-            Column('datafile_url',String,primary_key=True),
-            Column('datafile_filename',String,primary_key=True),
-            ForeignKeyConstraint(['datafile_url','datafile_filename'],
-                                 ['datafile.url','datafile.filename']),
+            #Column('datafile_url',String,primary_key=True),
+            #Column('datafile_filename',String,primary_key=True),
+            #ForeignKeyConstraint(['datafile_url','datafile_filename'],
+                                 #['datafile.url','datafile.filename']),
+            Column('datafile_id', ForeignKey('datafile.id'), primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__),
                    primary_key=True),
         )
         return relationship('DataFile', secondary=datafile_association,
             primaryjoin='{0}_df_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
-            secondaryjoin='and_(DataFile.url=={0}.datafile_url,DataFile.filename=={0}.datafile_filename)'.format(cls.__tablename__+'_df_assoc.c'),
+            #secondaryjoin='and_(DataFile.url=={0}.datafile_url,DataFile.filename=={0}.datafile_filename)'.format(cls.__tablename__+'_df_assoc.c'),
+            secondaryjoin='DataFile.id=={0}.datafile_id'.format(cls.__tablename__+'_df_assoc.c'),
             backref=backref('%s'%cls.__tablename__),
         )
 
@@ -317,16 +319,18 @@ class HasFiles:
     @declared_attr
     def files(cls):
         file_association = Table('%s_f_assoc'%cls.__tablename__, cls.metadata,
-            Column('file_url',String,primary_key=True),
-            Column('file_filename',String,primary_key=True),
-            ForeignKeyConstraint(['file_url','file_filename'],
-                                 ['file.url','file.filename']),
+            #Column('file_url',String,primary_key=True),
+            #Column('file_filename',String,primary_key=True),
+            #ForeignKeyConstraint(['file_url','file_filename'],
+                                 #['file.url','file.filename']),
+            Column('file_id', ForeignKey('file.id'), primary_key=True),
             Column('%s_id'%cls.__tablename__, ForeignKey('%s.id'%cls.__tablename__),
                    primary_key=True),
         )
         return relationship('File', secondary=file_association,
             primaryjoin='{0}_f_assoc.c.{0}_id=={0}.c.id'.format(cls.__tablename__),
-            secondaryjoin='and_(File.url=={0}.file_url,File.filename=={0}.file_filename)'.format(cls.__tablename__+'_f_assoc.c'),
+            #secondaryjoin='and_(File.url=={0}.file_url,File.filename=={0}.file_filename)'.format(cls.__tablename__+'_f_assoc.c'),
+            secondaryjoin='File.id=={0}.file_id'.format(cls.__tablename__+'_f_assoc.c'),
             backref=backref('%s'%cls.__tablename__),
         )
 

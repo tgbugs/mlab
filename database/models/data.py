@@ -297,7 +297,7 @@ class Repository(Base):
         return super().strHelper(depth=depth,attr='url')
 
 
-class File(fHasNotes, HasProperties Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
+class File(fHasNotes, HasProperties, Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
     """class for interfacing with things stored outside the database, whether datafiles or citables or whatever"""
     #TODO references to a local file should be replaced with a reference to that computer so that on retrieval if the current computer does not match we can go find other repositories for the same file damn it this is going to be a bit complicated
     #ideally the failover version selection should be ordered by retrieval time and should be completely transparent
@@ -307,9 +307,10 @@ class File(fHasNotes, HasProperties Base): #REALLY GOOD NEWS: in windows termina
 
     #TODO must hash all files on creation!
     __tablename__='file'
-    #id=Column(Integer,primary_key=True) #TODO
-    url=Column(String,ForeignKey('repository.url'),primary_key=True) #TODO make it URLS??? maybe with hostnames?? single file multiple locations, that makes a damned lot of sense
-    filename=Column(String,primary_key=True)
+    id=Column(Integer,primary_key=True) #TODO
+    url=Column(String,ForeignKey('repository.url'),nullable=False)#,primary_key=True) #TODO make it URLS??? maybe with hostnames?? single file multiple locations, that makes a damned lot of sense
+    filename=Column(String,nullable=False)#,primary_key=True)
+    __table_args__=(UniqueConstraint(url,filename), {}) #FIXME need a way to have multiple urls per filename that are ALL unique...
     #__table_args__=(UniqueConstraint(url,filename),{}) #TODO
     mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
             
@@ -350,9 +351,9 @@ class File(fHasNotes, HasProperties Base): #REALLY GOOD NEWS: in windows termina
 
 class DataFile(File): #data should be collected in the scope of an experiment
     __tablename__='datafile'
-    url=Column(String,primary_key=True,autoincrement=False)
-    filename=Column(String,primary_key=True,autoincrement=False)
-    __table_args__=(UniqueConstraint([url,filename],['file.url','file.filename']), {}) #FIXME need a way to have multiple urls per filename that are ALL unique...
+    id=Column(Integer,ForeignKey('file.id'),primary_key=True)
+    #url=Column(String)#,primary_key=True,autoincrement=False)
+    #filename=Column(String)#,primary_key=True,autoincrement=False)
     #__table_args__=(ForeignKeyConstraint([url,filename],['file.url','file.filename']), {})
     datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),nullable=False)
     datafilesource=relationship('DataFileSource',uselist=False) #backref=backref('datafiles'),
