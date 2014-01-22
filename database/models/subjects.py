@@ -317,7 +317,11 @@ class Slice(HasGeneratingExperiment, HasLocation, Subject): #FIXME slice should 
         return exp.endDateTime
     @property
     def chamberTime(self):
-        td=self.startDateTime-self.dateTimeOut
+        try:
+            td=self.startDateTime-self.dateTimeOut
+        except TypeError:
+            printD('Warning! Types do not match, dateTime out probably was not set.')
+            return None
         return '%s hours'%(td.seconds/60/60)
     @property
     def thickness(self): #FIXME
