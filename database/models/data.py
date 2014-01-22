@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, fHasNotes, HasMetaData, HasProperties
+from database.models.mixins import HasNotes, HasMetaData, HasProperties
 from database.standards import URL_STAND
 
 #some global variables that are used here and there that would be magic otherwise
@@ -221,12 +221,13 @@ class DataFileSource(DataIO): #TODO think about how generalizing to other experi
 #in the namespace of their parent table
 #Thus DataFileMetaData is not exported via *
 
-class DataFileMetaData(Base): #FIXME naming
+class DataFileMetaData(Base): #XXX DEPRECATED
     __tablename__='datafiles_metadata'
     id=Column(Integer,primary_key=True)
-    url=Column(String,nullable=False)
-    filename=Column(String,nullable=False) #FIXME you know, using datafile.id would let it change naming w/o cascade...
-    __table_args__=(ForeignKeyConstraint([url,filename],['datafile.url','datafile.filename']), {})
+    #url=Column(String,nullable=False)
+    #filename=Column(String,nullable=False) #FIXME you know, using datafile.id would let it change naming w/o cascade...
+    #__table_args__=(ForeignKeyConstraint([url,filename],['datafile.url','datafile.filename']), {}) #this wont work because a direct reference to datafile.url does not exist (CTI)
+    datafile_id=Column(Integer,ForeignKey('datafile.id'),nullable=False) #TODO how to get this?
     metadatasource_id=Column(Integer,ForeignKey('metadatasources.id'),nullable=False) #TODO how to get this?
     dateTime=Column(DateTime,default=datetime.now)
     #value=Column(Float(53),nullable=False)
@@ -238,10 +239,11 @@ class DataFileMetaData(Base): #FIXME naming
     @validates('url','filename','metadatasource_id','dateTime','value','abs_error')
     def _wo(self, key, value): return self._write_once(key, value)
 
-    def __init__(self,value,metadatasource_id=None,abs_error=None,dateTime=None,DataFile=None,url=None,filename=None,getter_id=None):
+    def __init__(self,value,metadatasource_id=None,abs_error=None,dateTime=None,datafile_id=None,getter_id=None):
+        raise DeprecationWarning
         #FIXME I think sqlalchemy is smart enough to add the metadata to the file without explicitly telling it
-        self.url=url
-        self.filename=filename
+        #self.url=url
+        #self.filename=filename
         try:
             self.metadatasource_id=int(metadatasource_id) #FIXME hack for now
         except:
@@ -249,6 +251,7 @@ class DataFileMetaData(Base): #FIXME naming
         self.value=value
         self.abs_error=abs_error
         self.dateTime=dateTime
+        self.datafile_id
         if DataFile:
             if DataFile.url:
                 self.url=DataFile.url
@@ -297,7 +300,7 @@ class Repository(Base):
         return super().strHelper(depth=depth,attr='url')
 
 
-class File(HasNotes, HasProperties, Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
+class File(HasNotes, HasProperties, HasMetaData, Base): #REALLY GOOD NEWS: in windows terminal drag and drop produces filename! :D
     """class for interfacing with things stored outside the database, whether datafiles or citables or whatever"""
     #TODO references to a local file should be replaced with a reference to that computer so that on retrieval if the current computer does not match we can go find other repositories for the same file damn it this is going to be a bit complicated
     #ideally the failover version selection should be ordered by retrieval time and should be completely transparent
@@ -395,14 +398,16 @@ class DataFile(File): #data should be collected in the scope of an experiment
         assert filename[-3:]==dfe, 'file extension does not match %s'%dfe
         return value
 
-    @declared_attr
-    def metadata_(cls): #FIXME naming...
-        cls.MetaData=DataFileMetaData
-        return relationship(cls.MetaData)
+    #@declared_attr #XXX deprecated
+    #def metadata_(cls): #FIXME naming... 
+        #cls.MetaData=DataFileMetaData
+        #return relationship(cls.MetaData)
 
     def __init__(self,filename=None,url=None,datafilesource_id=None,experiment_id=None,Subjects=(),creationDateTime=None): #FIXME kwargs vs args? kwargs should exist internally for the purposes of doccumentation, args should be used in the interface for when I don't want to type something over and over
         super().__init__(filename,url,creationDateTime)
         self.datafilesource_id=int(datafilesource_id)
+        self.url=URL_STAND.urlClean(str(url))
+        self.filename=filename
         #if experiment_id is not None:
         self.experiment_id=int(experiment_id) #enforcing the idea that datafiles must have experiments
         self.subjects.extend(Subjects) #TODO in the interface.py make it so that current subjects 'auto' fill?
