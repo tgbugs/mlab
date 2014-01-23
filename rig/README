@@ -3,3 +3,6 @@ Dependencies:
 Python3
 rpdb/winpdb
 numpy
+
+#capture card/gui control
+pywin32
