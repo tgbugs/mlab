@@ -274,8 +274,8 @@ class Repository(Base):
     credentials_id=Column(Integer,ForeignKey('credentials.id')) 
     name=Column(String)
     blurb=Column(Text)
-    parent_url=Column(String,ForeignKey('repository.url'))
-    mirrors=relationship('Repository',primaryjoin='Repository.parent_url==Repository.url')
+    #parent_url=Column(String,ForeignKey('repository.url'))
+    #mirrors=relationship('Repository',primaryjoin='Repository.parent_url==Repository.url')
 
     def getStatus(self):
         URL_STAND.ping(self.url)
@@ -283,13 +283,12 @@ class Repository(Base):
     def validateFiles(self): #FIXME does this go here??! not really...
         return None
 
-    def __init__(self,url=None,credentials_id=None,name=None,assoc_program=None,parent_url=None):
+    def __init__(self,url=None,credentials_id=None,name=None,assoc_program=None):
         self.url=URL_STAND.urlClean(url)
+        URL_STAND.ping(self.url) #FIXME TODO probably need to check that we have write privs? esp if we want to save data collected using this system to track it eg for backups and stuff
         self.credentials_id=credentials_id
         self.assoc_program=assoc_program
         self.name=name
-        URL_STAND.ping(self.url) #FIXME TODO probably need to check that we have write privs? esp if we want to save data collected using this system to track it eg for backups and stuff
-        self.parent_url=parent_url
 
     def __str__(self):
         return self.url
@@ -315,7 +314,8 @@ class File(HasNotes, HasProperties, HasMetaData, Base): #REALLY GOOD NEWS: in wi
     filename=Column(String,nullable=False)#,primary_key=True)
     __table_args__=(UniqueConstraint(url,filename), {}) #FIXME need a way to have multiple urls per filename that are ALL unique...
     #__table_args__=(UniqueConstraint(url,filename),{}) #TODO
-    mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
+    urls=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
+    #mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
             
     creationDateTime=Column(DateTime,default=datetime.now)
     ident=Column(String) #used for inheritance

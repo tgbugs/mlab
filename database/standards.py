@@ -30,6 +30,12 @@ class URL_STAND:
         #see if one exists, it should...
         parsed=parse.urlparse(full_url)
         if parsed.scheme == 'file':
+            hostname=socket.gethostname()
+            host=parsed.netloc
+            if host != hostname:
+                #TODO this needs to try to access the netloc since this is PING, for actual retrieval we can choose the local repo ourselves
+                #raise FileNotFoundError('The file is on %s! You are on %s'%host,name) #FIXME this => wierd error handling
+                #printD('The file is on %s! You are on %s. Will try with hst==localhost'%host,name) #FIXME 
             path=parsed.path
             if path[2]==(':'): #FIXME this is not actually valid... windows :/
                 path=path[1:]
