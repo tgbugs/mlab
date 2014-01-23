@@ -36,9 +36,9 @@ def pgReal(username,password,host,port=54321,database='postgres',echo=False): #F
     pg='postgresql://%s:%s@%s:%s/%s'
     if socket.gethostname()=='athena' and os.name == 'posix':
         port=5432
-        database='scidb_v1_test'
+        database='scidb_v2_test'
     if socket.gethostname()=='andromeda':
-        database='scidb_v1_test'
+        database='scidb_v2_test'
     engine=create_engine(pg%(username,password,host,port,database),echo=echo)
     con=engine.connect()
     try:
@@ -62,5 +62,8 @@ def pgReal(username,password,host,port=54321,database='postgres',echo=False): #F
 
 pgEng=pgTest #XXX switch over at some point
 
-#engine=pgReal('sqla','asdf','localhost',54321,'scidb_v1',False) #XXX THIS IS THE ONE YOU SHOULD USE! update when ready!
+###
+# Database version definition, this is currently managed by git since the whole codebase changes >_<
+###
+#engine=pgReal('sqla','asdf','localhost',54321,'scidb_v2',False) #XXX THIS IS THE ONE YOU SHOULD USE! update when ready!
 engine=pgTest()

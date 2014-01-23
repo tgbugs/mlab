@@ -208,8 +208,10 @@ class t_breeders(TEST):
 
 class t_mating_record(TEST):
     def setup(self):
-        self.sires=[s for s in hasKVPair(self.session,Mouse,'sex','m')]
-        self.dams=[d for d in hasKVPair(self.session,Mouse,'sex','f')]
+        #self.sires=[s for s in hasKVPair(self.session,Mouse,'sex','m')]
+        #self.dams=[d for d in hasKVPair(self.session,Mouse,'sex','f')]
+        self.sires=self.session.query(Mouse).filter_by(sex_id='m').all()
+        self.dams=self.session.query(Mouse).filter_by(sex_id='f').all()
         strain=self.session.query(Strain)[0]
         s=[Mouse(sex_id='m',strain_id=strain) for i in range(self.num-len(self.sires))]
         d=[Mouse(sex_id='f',strain_id=strain) for i in range(self.num-len(self.dams))]
@@ -531,7 +533,7 @@ class t_dfmetadata(TEST):
     def make_all(self):
         ds=self.session.query(MetaDataSource)[0]
         self.records=[]
-        [self.records.extend([d.MetaData(i,DataFile=d,metadatasource_id=ds) for i in range(self.num)]) for d in self.session.query(DataFile)]
+        [self.records.extend([d.MetaData(i,parent_id=d,metadatasource_id=ds) for i in range(self.num)]) for d in self.session.query(DataFile)]
 ###-----------
 ###  inventory
 ###-----------
