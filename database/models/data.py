@@ -314,7 +314,7 @@ class File(HasNotes, HasProperties, HasMetaData, Base): #REALLY GOOD NEWS: in wi
     filename=Column(String,nullable=False)#,primary_key=True)
     __table_args__=(UniqueConstraint(url,filename), {}) #FIXME need a way to have multiple urls per filename that are ALL unique...
     #__table_args__=(UniqueConstraint(url,filename),{}) #TODO
-    urls=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
+    urls=relationship('Repository',primaryjoin='foreign(Repository.url)==File.url') #FIXME not causal!
     #mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
             
     creationDateTime=Column(DateTime,default=datetime.now)
