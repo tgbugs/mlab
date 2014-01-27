@@ -1,6 +1,7 @@
 """ Decorators to automatically trigger addition of information to the database go here
 """
 import os
+import socket
 import inspect
 from sqlalchemy.orm import sessionmaker, object_session
 from database.table_logic import logic_StepEdge
@@ -42,28 +43,40 @@ def Get_current_datafile():
     session.close()
     return out
 
-def Get_newest_abf(url):
-    print(url)
-    files=os.listdir(url)
+def Get_newest_abf(_path):
+    print(_path)
+    files=os.listdir(_path)
     abf_files=[file for file in files if file[-3:]=='abf']
     abf_files.sort() #FIXME make sure the filenames order correctly
     out=abf_files[-1] #get the last/newest file
     return out
 
-def get_local_abf_path():
-    if os.name == 'posix': #re: sys.platform
-        fpath='/home/tom/Dropbox/mlab/data' #TIL that //home/ is a valid path
-    elif os.name == 'nt':
-        fpath='D:/tom_data/clampex/'
-    return fpath
+def get_local_abf_path(): #FIXME make this not hardcoded also derp why does this have to exist
+
+    nt_paths={
+            'HILL_RIG':'D:/tom_data/clampex/',
+    }
+
+    posix_paths={
+            'athena':'/home/tom/Dropbox/mlab/data',
+    }
+
+    os_hostname_abf_path_link={ 'nt':nt_paths, 'posix':posix_paths, }
+
+    hostname=socket.gethostname()
+    osname=os.name
+
+    fpath=os_hostname_abf_path[osname][hostname]
+    return hostname,fpath
+
 
 ###
 #function decorators
 def new_abf_DataFile(subjects_getter=None): #TODO could wrap it one more time in a file type or url
     def inner(function): #TODO could wrap it one more time in a file type or url
         #fpath='D:/tom_data/clampex/' #FIXME
-        fpath=get_local_abf_path()
-        url='file:///'+fpath
+        hostname,fpath=get_local_abf_path()
+        url='file://%s/%s'%(hostname,fpath)
 
         init_sess=Session()
 

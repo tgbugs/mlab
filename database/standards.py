@@ -18,12 +18,18 @@ class URL_STAND:
     #TODO should handle matching local files to the computer they actually came from relative to the db
     @staticmethod
     def urlClean(url):
-        p=parse.urlparse(url)
-        if p.scheme is 'file':
-            #TODO get relatvie computer path #the good news is that only the database is remote, this code won't be, it will be local yay for transparency!
-            pass
-        return None if url is None else url.rstrip('/')+'/' #FIXME make it so this strips to last/
+        if url is None:
+            return None
+        else:
+            return url.rstrip('/')+'/' #FIXME make it so this strips to last/
     
+    @staticmethod
+    def urlHostPath(url):
+        p=parse.urlparse(url)
+        host=p.netloc
+        path=p.path
+        return host,path
+
     @staticmethod
     def ping(full_url):
         #FIXME rework this to go through a full url scheme handler that can be extended with resources
@@ -64,7 +70,6 @@ class URL_STAND:
                 raise FileNotFoundError('Local path does not exist!') #FIXME this => wierd error handling
         else:
             return datetime.now() #FIXME ideally we want to get the remote modified date
-
 ###---------------------------------------------------------------
 ###  Datetime and timedelta functions to be reused for consistency
 ###---------------------------------------------------------------

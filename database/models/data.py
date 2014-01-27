@@ -1,6 +1,6 @@
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData, HasProperties
+from database.models.mixins import HasNotes, HasMetaData, HasProperties, HasMirrors
 from database.standards import URL_STAND
 
 #some global variables that are used here and there that would be magic otherwise
@@ -269,13 +269,19 @@ class DataFileMetaData(Base): #XXX DEPRECATED
 ###  DataFiles and repositories for data stored externally (ie filesystem)
 ###-----------------------------------------------------------------------
 
-class Repository(Base):
-    url=Column(String,primary_key=True)
+class Repository(HasMirrors, Base):
+    id=Column(Integer,primary_key=True)
+    url=Column(String,unique=True,nullable=False)
+    hostname=Column(String)
+    path=Column(String)
     credentials_id=Column(Integer,ForeignKey('credentials.id')) 
     name=Column(String)
     blurb=Column(Text)
     #parent_url=Column(String,ForeignKey('repository.url'))
-    #mirrors=relationship('Repository',primaryjoin='Repository.parent_url==Repository.url')
+    #mirrors=relationship('Repository',primaryjoin='Repository.==Repository.url') #TODO needs a self m-m
+    #@property
+    #def mirrors(self): #leverages off of selfmtm
+        #return self.nodes
 
     def getStatus(self):
         URL_STAND.ping(self.url)
@@ -285,6 +291,7 @@ class Repository(Base):
 
     def __init__(self,url=None,credentials_id=None,name=None,assoc_program=None):
         self.url=URL_STAND.urlClean(url)
+        self.hostname,self.path=URL_STAND.urlHostPath(self.url)
         URL_STAND.ping(self.url) #FIXME TODO probably need to check that we have write privs? esp if we want to save data collected using this system to track it eg for backups and stuff
         self.credentials_id=credentials_id
         self.assoc_program=assoc_program
@@ -309,13 +316,16 @@ class File(HasNotes, HasProperties, HasMetaData, Base): #REALLY GOOD NEWS: in wi
 
     #TODO must hash all files on creation!
     __tablename__='file'
-    id=Column(Integer,primary_key=True) #TODO
-    url=Column(String,ForeignKey('repository.url'),nullable=False)#,primary_key=True) #TODO make it URLS??? maybe with hostnames?? single file multiple locations, that makes a damned lot of sense
+    id=Column(Integer,primary_key=True)
+    url=Column(String,ForeignKey('repository.url'),nullable=False)#this is the 'origin' url...#,primary_key=True) #TODO make it URLS??? maybe with hostnames?? single file multiple locations, that makes a damned lot of sense
     filename=Column(String,nullable=False)#,primary_key=True)
     __table_args__=(UniqueConstraint(url,filename), {}) #FIXME need a way to have multiple urls per filename that are ALL unique...
     #__table_args__=(UniqueConstraint(url,filename),{}) #TODO
-    urls=relationship('Repository',primaryjoin='foreign(Repository.url)==File.url') #FIXME not causal!
+    origin_repo=relationship('Repository',primaryjoin='foreign(Repository.url)==File.url',backref=backref('files')) #this will hook in to the m-m group of repositories by a url to a single one of them
     #mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
+    @property
+    def repositories(self):
+        return self.origin_repo.mirrors
             
     creationDateTime=Column(DateTime,default=datetime.now)
     ident=Column(String) #used for inheritance
@@ -324,7 +334,7 @@ class File(HasNotes, HasProperties, HasMetaData, Base): #REALLY GOOD NEWS: in wi
         return self.filename.split('.')[-1]
     @property
     def full_url(self):
-        return self.url+self.filename
+        return self.url+self.filename #FIXME make this return the local repository for the file
     __mapper_args__ = {
         'polymorphic_on':ident,
         'polymorphic_identity':'file',

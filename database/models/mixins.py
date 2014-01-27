@@ -4,6 +4,24 @@ from database.models.base import Base
 #some global variables that are used here and there that would be magic otherwise
 _plusMinus='\u00B1'
 
+class HasMirrors: #FIXME this should validate that they actually *are* mirrors?
+    @declared_attr
+    def mirrors_from_here(cls):
+        ctab=cls.__tablename__
+        cname=cls.__name__
+        self_assoc=Table('%s_self_assoc'%ctab, cls.metadata,
+                        Column('left_id',ForeignKey('%s.id'%ctab),primary_key=True),
+                        Column('right_id',ForeignKey('%s.id'%ctab),primary_key=True)
+        )
+        return relationship('%s'%cname,secondary=self_assoc,primaryjoin=
+                '%s.id==%s_self_assoc.c.left_id'%(cname,ctab),
+                secondaryjoin='%s.id==%s_self_assoc.c.right_id'%(cname,ctab),
+                backref='mirrors_to_here'
+                )
+    @property
+    def mirrors(self):
+        return self.mirrors_to_here+self.mirrors_from_here
+
 class selfmtm:
     @declared_attr
     def nodes(cls): #can use this for a self ref m-m mixin?
@@ -13,7 +31,7 @@ class selfmtm:
                         Column('parent_id',ForeignKey('%s.id'%ctab),primary_key=True),
                         Column('child_id',ForeignKey('%s.id'%ctab),primary_key=True) #FIXME we want to keep track of the expeirment too and those THREE need to be consistent
         )
-        return relationship('%s'%cname,secondary=thing_to_thing,primaryjoin=
+        return relationship('%s'%cname,secondary=self_assoc,primaryjoin=
                 '%s.ontpar_id==%s_self_assoc.parent_id'%(cname,ctab),
                 secondaryjoin='%s.id==%s_self_assoc.child_id'%(cname,ctab),
                 backref='offspring'
