@@ -67,6 +67,21 @@ def get_spline(points):
     #print(integral)
     return spline,space,integral,xs,ys
 
+def rand_x(min_,max_,num,f=lambda a:a):
+    #base=np.random.uniform(min_,max_)#,num)
+    #print(base)
+    noise=lambda a:np.random.randint(-np.abs(a),np.abs(a))*2
+    out=[]
+    while len(out) < num:
+        a=np.random.uniform(min_,max_)
+        fa=np.real(f(a))
+        if np.nan_to_num==0:
+            continue
+        else:
+            out.append((a,fa))
+    return out
+    #out= [(1,1)]+[(a,a**.6) for a in base]
+    #return [(a,np.cos(a/4)) for a in base]
 
 def rand_x2(min_,max_,num):
     base=np.random.uniform(min_,max_,num)
@@ -93,29 +108,31 @@ def get_xys_at_dist(spline,base,start_x,distances): #FIXME which way to mount th
     for distance in distances:
         span=np.argwhere(arcs <= distance)
         #print(span)
-        left=span[0] #FIXME
-        right=span[-1] #FIXME
-        x1=base[left][0]
-        y1=spline(base)[left][0]
+        left=span[0][0] #FIXME
+        right=span[-1][0] #FIXME
+        print(left,right)
+        x1=base[left]#[0]
+        y1=spline(base)[left]#[0]
         points.append((x1,y1))
-        x2=base[right][0]
-        y2=spline(base)[right][0]
+        x2=base[right]#[0]
+        y2=spline(base)[right]#[0]
         points.append((x2,y2))
     return points
 
-def get_points_from_spline(points,number=10,spacing=.05,switch_xy=False):
+def get_points_from_spline(points,start_x,number=10,spacing=.05,switch_xy=False): #FIXME
     """ note that total points is number*2 """
     if switch_xy: #since X would often not be a function
         points=[(b,a) for a,b in points]
     import pylab as plt
-    plt.plot([a for a,b in points],[b for a,b in points],'ro')
     spline,base,inte,xs,ys=get_spline(points)
-    plt.plot(base,spline(base))
-    plt.axis('equal')
-    plt.show()
+    #plt.plot([a for a,b in points],[b for a,b in points],'ro')
+    #plt.plot(base,spline(base))
+    #plt.axis('equal')
+    #plt.show()
     dists=[spacing*i for i in range(1,number)]
-    start_x=points[0][0]
+    #start_x=points[0][0]
     out=[(start_x,spline(start_x))]
+    print(dists)
     out+=get_xys_at_dist(spline,base,start_x,dists)
     if switch_xy:
         out=[(b,a) for a,b in out]
@@ -126,24 +143,34 @@ def get_points_from_spline(points,number=10,spacing=.05,switch_xy=False):
 def main():
     import pylab as plt
     from ipython import embed
+    from scipy import interpolate
+
 
     plt.figure()
-    for i in range(9):
-        points=rand_x2(-20,20,10)
+    num=10
+    for i in range(4):
+        points=rand_x(0,40,num,lambda x:x**.5)
         spline,space,integral,xs,ys=get_spline(points)
         base=np.linspace(np.min(xs),np.max(xs),10000)
+        #embed()
         #print(base)
         #spline(base)
         #left,right=get_xys_at_dist(spline,space,space[500],5)
-        dists=get_points_from_spline(points,number=10,spacing=5)
+        points.sort(key=lambda a:a[0]) #to get the median point just for this test
+        start_x=points[num//2][0]
+        plt.plot(start_x,0,'yo')
+        dists=get_points_from_spline(points,start_x,number=num,spacing=5)
         arcs=arc_lengths(spline,space,points[0][0])
-        plt.subplot(3,3,i+1)
+        plt.subplot(2,2,i+1)
         for dist in dists:
             plt.plot(dist[0],dist[1],'go')
         #plt.plot(left[0],left[1],'go')
         #plt.plot(right[0],right[1],'go')
         plt.plot(space,arcs,'r-')
         plt.plot(base,spline(base),'b-')
+        plt.axis('equal')
+        plt.xlim(-50,100)
+        plt.ylim(-50,100)
         #plt.plot(xs,ys,'ko')
         #plt.show()
         #plt.plot(space,integral)
@@ -162,6 +189,7 @@ def main():
             plt.plot(points[0::2],points[1::2],'g-')
             plt.plot(plist[:,0],plist[:,1],'ro')
 
+    #plt.show()
     plt.show()
 
 
