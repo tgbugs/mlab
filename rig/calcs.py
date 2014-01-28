@@ -53,10 +53,10 @@ def get_spline(points):
     #spline=InterpolatedUnivariateSpline(xs,ys)
     spline=UnivariateSpline(xs,ys)
     #spline=SmoothBivariateSpline(xs,ys)
-    integral=[]
+    #integral=[]
     #space=np.linspace(min(xs),max(xs),1000) #XXX NOTE XXX
-    dis=np.abs(np.abs(max(xs))-np.abs(min(xs)))
-    space=np.linspace(min(xs)-dis,max(xs)+dis,3*1000)
+    #dis=np.abs(np.abs(max(xs))-np.abs(min(xs)))
+    #space=np.linspace(min(xs)-dis,max(xs)+dis,3*1000)
     #for n in space:
         #start=np.random.randint(0,1000)
         #out=spline.integral(start,n)
@@ -65,7 +65,7 @@ def get_spline(points):
         #print(out)
         #integral.append(out)
     #print(integral)
-    return spline,space,integral,xs,ys
+    return spline,xs,ys
 
 def rand_x(min_,max_,num,f=lambda a:a):
     #base=np.random.uniform(min_,max_)#,num)
@@ -90,14 +90,13 @@ def rand_x2(min_,max_,num):
     return [(1,1)]+[(a,a**2) for a in base]
     #return [(a,np.cos(a/4)) for a in base]
 
-def arc_lengths(spline,space,start):
+def arc_lengths(spline,base,start):
     dspline=spline.derivative()
     def abs_ds(t):
-        #return (1+dspline(t)**2)**.5 #norm in higher dimensions
-        return np.abs(dspline(t))
+        return (1+dspline(t)**2)**.5 #not quite norm due to +1?
     arc_length=[]
-    for b in space:
-        s,base=integrate.quad(abs_ds,start,b)
+    for b in base:
+        s,space=integrate.quad(abs_ds,start,b)
         arc_length.append(abs(s))
     return np.array(arc_length)
 
@@ -119,7 +118,7 @@ def get_xys_at_dist(spline,base,start_x,distances): #FIXME which way to mount th
         points.append((x2,y2))
     return points
 
-def get_points_from_spline(points,start_x,number=10,spacing=.05,switch_xy=False): #FIXME
+def _get_points_from_spline(points,start_x,number=10,spacing=.05,switch_xy=False): #FIXME
     """ note that total points is number*2 """
     if switch_xy: #since X would often not be a function
         points=[(b,a) for a,b in points]
@@ -139,6 +138,17 @@ def get_points_from_spline(points,start_x,number=10,spacing=.05,switch_xy=False)
     return out
 
 
+def get_points_from_spline(spline,base,start_x,number=10,spacing=.05): #FIXME
+    """ note that total points is number*2 """
+    dists=[spacing*i for i in range(1,number)]
+    #start_x=points[0][0]
+    out=[(start_x,spline(start_x))]
+    print(dists)
+    out+=get_xys_at_dist(spline,base,start_x,dists)
+    return out
+
+def switch_xy(points): #TODO
+    return switched
 
 def main():
     import pylab as plt
@@ -146,31 +156,32 @@ def main():
     from scipy import interpolate
 
 
-    plt.figure()
+    plt.figure(figsize=(8,8))
     num=10
     for i in range(4):
-        points=rand_x(0,40,num,lambda x:x**.5)
-        spline,space,integral,xs,ys=get_spline(points)
-        base=np.linspace(np.min(xs),np.max(xs),10000)
+        points=rand_x(0,50,num,lambda x:x**.5)
+        spline,xs,ys=get_spline(points)
+        base=np.linspace(np.min(xs)*2,np.max(xs)*2,5000)
         #embed()
         #print(base)
         #spline(base)
         #left,right=get_xys_at_dist(spline,space,space[500],5)
         points.sort(key=lambda a:a[0]) #to get the median point just for this test
         start_x=points[num//2][0]
-        plt.plot(start_x,0,'yo')
-        dists=get_points_from_spline(points,start_x,number=num,spacing=5)
-        arcs=arc_lengths(spline,space,points[0][0])
+        print('start_x',start_x)
+        plt.plot(start_x,0,'ro')
+        dists=get_points_from_spline(spline,base,start_x,number=num,spacing=5)
+        arcs=arc_lengths(spline,base,start_x)
         plt.subplot(2,2,i+1)
         for dist in dists:
             plt.plot(dist[0],dist[1],'go')
         #plt.plot(left[0],left[1],'go')
         #plt.plot(right[0],right[1],'go')
-        plt.plot(space,arcs,'r-')
+        plt.plot(base,arcs,'r-')
         plt.plot(base,spline(base),'b-')
         plt.axis('equal')
-        plt.xlim(-50,100)
-        plt.ylim(-50,100)
+        plt.xlim(-10,110)
+        plt.ylim(-10,110)
         #plt.plot(xs,ys,'ko')
         #plt.show()
         #plt.plot(space,integral)
