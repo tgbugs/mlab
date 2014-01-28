@@ -1,3 +1,4 @@
+import os, socket #FIXME do we really want to handle this here?
 from database.imports import *
 from database.models.base import Base
 from database.models.mixins import HasNotes, HasMetaData, HasProperties, HasMirrors
@@ -314,7 +315,7 @@ class File(HasNotes, HasProperties, HasMetaData, Base): #REALLY GOOD NEWS: in wi
     #TODO need verfication that the file is actually AT the repository
     #fuck, what order do I do this in esp for my backup code
 
-    #TODO must hash all files on creation!
+    #TODO must hash all files on creation! use hashlib and stick the bastards in properties
     __tablename__='file'
     id=Column(Integer,primary_key=True)
     url=Column(String,ForeignKey('repository.url'),nullable=False)#this is the 'origin' url...#,primary_key=True) #TODO make it URLS??? maybe with hostnames?? single file multiple locations, that makes a damned lot of sense
@@ -326,6 +327,17 @@ class File(HasNotes, HasProperties, HasMetaData, Base): #REALLY GOOD NEWS: in wi
     @property
     def repositories(self):
         return self.origin_repo.mirrors #FIXME there is not a real link between the file and the repo going the other direction
+
+    @property
+    def local_repo(self):
+        hostname=socket.gethostname() #FIXME posix vs... nt ;_;
+        lrl=[r for r in self.repositories if r.hostname==hostname]
+        if os.name == 'posix':
+            lrl=[r for r in lrl if r.path[2] != ':'] #FIXME not the right way to discard windows paths >_<
+        try:
+            return lrl[0]
+        except:
+            return None #TODO I think this is correct, if there is no local repo we will handle that elsewhere
             
     creationDateTime=Column(DateTime,default=datetime.now)
     ident=Column(String) #used for inheritance

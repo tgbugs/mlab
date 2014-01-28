@@ -19,6 +19,12 @@ class HasMirrors: #FIXME this should validate that they actually *are* mirrors?
                 backref='mirrors_to_here'
                 )
 
+    def validate_mirror(self,repository):
+        #TODO FIXME how to actually do this...
+        if repository.origin_files:
+            return False
+
+
     @property
     def mirrors(self): #TODO fix append? not sure possible
         return list(set(self.mirrors_to_here+self.mirrors_from_here))
