@@ -6,7 +6,7 @@ _plusMinus='\u00B1'
 
 class HasMirrors: #FIXME this should validate that they actually *are* mirrors?
     @declared_attr
-    def mirrors_from_here(cls):
+    def mirrors_from_here(cls): #FIXME lots of bugs with files not actually being present!
         ctab=cls.__tablename__
         cname=cls.__name__
         self_assoc=Table('%s_self_assoc'%ctab, cls.metadata,
@@ -18,9 +18,21 @@ class HasMirrors: #FIXME this should validate that they actually *are* mirrors?
                 secondaryjoin='%s.id==%s_self_assoc.c.right_id'%(cname,ctab),
                 backref='mirrors_to_here'
                 )
+
     @property
-    def mirrors(self):
-        return self.mirrors_to_here+self.mirrors_from_here
+    def mirrors(self): #TODO fix append? not sure possible
+        return list(set(self.mirrors_to_here+self.mirrors_from_here))
+
+    @property
+    def files(self):
+        files_ = []
+        [files_.extend(m.origin_files) for m in self.mirrors_from_here]
+        [files_.extend(m.origin_files) for m in self.mirrors_to_here]
+        files_.extend(self.origin_files)
+        fs=list(set(files_))
+        fs.sort()
+        return fs #FIXME ;_; ugly and slow
+
 
 class selfmtm:
     @declared_attr

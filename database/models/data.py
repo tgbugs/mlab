@@ -321,11 +321,11 @@ class File(HasNotes, HasProperties, HasMetaData, Base): #REALLY GOOD NEWS: in wi
     filename=Column(String,nullable=False)#,primary_key=True)
     __table_args__=(UniqueConstraint(url,filename), {}) #FIXME need a way to have multiple urls per filename that are ALL unique...
     #__table_args__=(UniqueConstraint(url,filename),{}) #TODO
-    origin_repo=relationship('Repository',primaryjoin='foreign(Repository.url)==File.url',backref=backref('files')) #this will hook in to the m-m group of repositories by a url to a single one of them
+    origin_repo=relationship('Repository',primaryjoin='foreign(Repository.url)==File.url',uselist=False,backref=backref('origin_files',uselist=True)) #this will hook in to the m-m group of repositories by a url to a single one of them
     #mirrors=relationship('Repository',primaryjoin='foreign(Repository.parent_url)==File.url') #FIXME not causal!
     @property
     def repositories(self):
-        return self.origin_repo.mirrors
+        return self.origin_repo.mirrors #FIXME there is not a real link between the file and the repo going the other direction
             
     creationDateTime=Column(DateTime,default=datetime.now)
     ident=Column(String) #used for inheritance
@@ -361,6 +361,23 @@ class File(HasNotes, HasProperties, HasMetaData, Base): #REALLY GOOD NEWS: in wi
     def __repr__(self):
         return '\n%s%s'%(self.url,self.filename)
 
+    def __eq__(self,other):
+        a= type(other) == type(self)
+        b= self.id == other.id
+        return a and b
+
+    def __gt__(self,other):
+        return self.filename > other.filename
+    def __lt__(self,other):
+        return self.filename < other.filename
+
+    def __neq__(self,other):
+        a= type(other) != type(self)
+        b= self.id != other.id
+        return a or b
+
+    def __hash__(self):
+        return hash('%s%s'%(self.id,self.filename))
 
 class DataFile(File): #data should be collected in the scope of an experiment
     __tablename__='datafile'

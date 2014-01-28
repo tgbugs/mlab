@@ -28,6 +28,7 @@ class TEST:
         self.test_delete()
         if autocommit:
             self.commit()
+        self.tests()
     def make_date(self):
         from datetime import date,timedelta
         num=self.num
@@ -73,6 +74,10 @@ class TEST:
             pass
 
     def make_all(self):
+        pass
+
+    def tests(self):
+        "things to do once the things are made"
         pass
 
     def test_delete(self):
@@ -482,6 +487,15 @@ class t_repo(TEST):
                 print('Local path \'%s\' does not exist!'%r)
         #FIXME for some reason adding the fully inited Repository(url='asdf') inside the list didn't work...
         #figure out why please?!
+    def tests(self):
+        self.commit()
+        repos=self.session.query(Repository).all()
+        for repo in repos:
+            [repo.mirrors_from_here.append(r) for r in repos if r!=repo]
+            print(repo.mirrors)
+        self.commit()
+        [print(r.mirrors) for r in repos]
+
 
 
 class t_datafilesource(TEST):
@@ -527,7 +541,6 @@ class t_datafile(TEST):
                     pass
                 #data+=[DataFile(Repo=rp,filename='exp%s_cells_%s_%s_%s.data'%(c1.experiments[0].id,c1.id,c2.id,df),Experiment=c1.experiments[0],DataSource=ds,Subjects=[c1,c2]) for df in range(self.num)] 
         self.records=data
-
 
 class t_dfmetadata(TEST):
     def make_all(self):
