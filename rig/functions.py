@@ -1256,6 +1256,14 @@ class espFuncs(kCtrlObj):
         return self
 
 
+class guiFuncs(kCtrlObj): #FIXME GOD DAMN IT now hardware interfaces are not sufficient because this gui could interface with a ton of stuff >_<
+    from rig.gui import takeScreenCap
+    @new_DataFile('jpg') #TODO integrate this with the device and stick it in a dedicated paths config file, could look it up by program but...
+    def getCameraImage(self):
+        self.takeScreenCap()
+
+
+
 class keyFuncs(kCtrlObj):
     """utility functions eg meta functions such as : cmd and the like"""
     def __init__(self, modestate):

@@ -25,7 +25,7 @@ def clickMouse(x,y,slp=0):
     mX,mY=wig.GetCursorPos() #save the position so we can return to it
     SetCursorPos((x,y))
     mouse_event(wic.MOUSEEVENTF_LEFTDOWN,x,y,0,0)
-    sleep(0) #wintv is stuip
+    sleep(.001) #wintv is stuip
     mouse_event(wic.MOUSEEVENTF_LEFTUP,x,y,0,0)
     SetCursorPos((mX,mY))
 

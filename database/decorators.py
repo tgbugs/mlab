@@ -51,6 +51,14 @@ def Get_newest_abf(_path):
     out=abf_files[-1] #get the last/newest file
     return out
 
+def Get_newest_file(_path,extension): #FIXME TODO: I think the easiest way to do this is just to have watched folders with filetypes to watch, and they can be recursive, and then we can just call a 'go check for changes' function
+    print(_path,extension)
+    files=os.listdir(_path)
+    abf_files=[file for file in files if file[-3:]==extension]
+    abf_files.sort() #FIXME make sure the filenames order correctly
+    out=abf_files[-1] #get the last/newest file
+    return out
+
 def get_local_abf_path(): #FIXME make this not hardcoded also derp why does this have to exist
 
     nt_paths={
@@ -70,9 +78,78 @@ def get_local_abf_path(): #FIXME make this not hardcoded also derp why does this
     fpath=os_hostname_abf_path[osname][hostname]
     return hostname,fpath
 
+def get_local_jpg_path(): #TODO FIXME there are multiple jpg paths
+    hostname=socket.gethostname()
+    fpath='D:/tom_data/rigcam/'
+    return hostname,fpath
+
+def get_local_extension_path(extension):
+    exDict={'abf':get_local_abf_path,
+            'jpb':get_local_jpg_path,
+    }
+    hostname,fpath = exDict[extension]()
+    return hostname,fpath
+
+
 
 ###
 #function decorators
+def new_DataFile(extension,subjects_getter=None): #TODO could wrap it one more time in a file type or url #FIXME broken if there is more than one path per extension type >_<
+    def inner(function): #TODO could wrap it one more time in a file type or url
+        #fpath='D:/tom_data/clampex/' #FIXME
+        hostname,fpath=get_local_extension_path(extension)
+        url='file://%s/%s'%(hostname,fpath)
+
+        init_sess=Session()
+
+        repo=init_sess.query(Repository).filter_by(url=url).first() #FIXME try/except?
+        dfs=init_sess.query(DataFileSource).filter_by(name='clampex 9.2').first()
+        #printD(repo)
+        if not repo or not dfs:
+            if not repo:
+                init_sess.add(Repository(url=url))
+            if not dfs:
+                dfs=DataFileSource(name='clampex 9.2',extension='abf',docstring='a clampex!')
+                init_sess.add(dfs)
+            try:
+                init_sess.commit()
+            except:
+                init_sess.rollback()
+            finally:
+                init_sess.close()
+                del(init_sess)
+        else:
+            init_sess.close()
+            del(init_sess)
+
+        def wrapped(*args,subjects=[],**kwargs):
+            function(*args,**kwargs)
+            experiment=Get_newest_id(Experiment)
+            if not subjects:
+                try:
+                    subjects=subjects_getter()
+                except:
+                    pass
+            filename=Get_newest_abf(fpath)
+            print(filename,'will be added to the current experiment!')
+            new_df=DataFile(filename=filename,url=url,datafilesource_id=dfs.id,
+                            experiment_id=experiment.id,Subjects=subjects)
+            session=object_session(new_df) #need this because new_df may be on subjects session
+            if session:
+                session.add(new_df)
+                try:
+                    session.commit()
+                except:
+                    print('[!] %s could not be added! Rolling back!'%new_df)
+                    session.rollback()
+                    raise
+            else:
+                session_add_wrapper(new_df)
+        wrapped.__name__=function.__name__
+        wrapped.is_dfs=True #XXX this function is the literal datafile source# TODO perhaps update to match is_mds
+        return wrapped
+    return inner
+
 def new_abf_DataFile(subjects_getter=None): #TODO could wrap it one more time in a file type or url
     def inner(function): #TODO could wrap it one more time in a file type or url
         #fpath='D:/tom_data/clampex/' #FIXME
