@@ -4,6 +4,7 @@
 #input sanitization goes here
 from urllib import parse
 from os import listdir
+import socket
 
 from datetime import datetime,timedelta #ALL TIMES ARE UTC WITH tzinfo=None, CONVERT LATER
 

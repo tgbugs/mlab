@@ -55,13 +55,14 @@ def get_local_abf_path(): #FIXME make this not hardcoded also derp why does this
 
     nt_paths={
             'HILL_RIG':'D:/tom_data/clampex/',
+            'andromeda':'C:/tom_data/clampex/', #derp empty and fake
     }
 
     posix_paths={
-            'athena':'/home/tom/Dropbox/mlab/data',
+            'athena':'/home/tom/Dropbox/mlab/data', #FIXME this is clearly incorrect
     }
 
-    os_hostname_abf_path_link={ 'nt':nt_paths, 'posix':posix_paths, }
+    os_hostname_abf_path={ 'nt':nt_paths, 'posix':posix_paths, }
 
     hostname=socket.gethostname()
     osname=os.name
@@ -80,7 +81,7 @@ def new_abf_DataFile(subjects_getter=None): #TODO could wrap it one more time in
 
         init_sess=Session()
 
-        repo=init_sess.query(Repository).get(url)
+        repo=init_sess.query(Repository).filter_by(url=url).first() #FIXME try/except?
         dfs=init_sess.query(DataFileSource).filter_by(name='clampex 9.2').first()
         #printD(repo)
         if not repo or not dfs:

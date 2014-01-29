@@ -713,20 +713,20 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
             state['PipetteOffset']=self.ctrl.GetPipetteOffset()
 
         def vc(state):
-            base()
-            state['FastCompCap']=self.ctrl.GetFastCompCap())
-            state['SlowCompCap']=self.ctrl.GetSlowCompCap())
-            state['FastCompTau']=self.ctrl.GetFastCompTau())
-            state['SlowCompTau']=self.ctrl.GetSlowCompTau())
-            state['SlowCTX20Enable']=self.ctrl.GetSlowCompTauX20Enable())
+            base(state)
+            state['FastCompCap']=self.ctrl.GetFastCompCap()
+            state['SlowCompCap']=self.ctrl.GetSlowCompCap()
+            state['FastCompTau']=self.ctrl.GetFastCompTau()
+            state['SlowCompTau']=self.ctrl.GetSlowCompTau()
+            state['SlowCTX20Enable']=self.ctrl.GetSlowCompTauX20Enable()
 
         def ic(state):
-            base()
-            state['BridgeBalEnable']=self.ctrl.GetBridgeBalEnable())
-            state['BridgeBalResist']=self.ctrl.GetBridgeBalResist())
+            base(state)
+            state['BridgeBalEnable']=self.ctrl.GetBridgeBalEnable()
+            state['BridgeBalResist']=self.ctrl.GetBridgeBalResist()
 
-        def iez():
-            base()
+        def iez(state):
+            base(state)
 
         modeDict={0:vc,1:ic,2:iez}
         stateList=[]
