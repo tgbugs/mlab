@@ -61,9 +61,13 @@ def rigDict():
                     'f':'gotoMark',
                     '\'':'gotoMark',
                     #'r':'read',
-                    'z':'fakeMove',
+                    #'z':'fakeMove',
                     'm':'mark',
                     'l':'mark_to_movelist',
+                   },
+        'guiFuncs':{
+                    'z':'getCameraImage',
+                    'Z':'getSub_getCameraImage',
                    },
 
         'datFuncs':{
@@ -296,7 +300,7 @@ def mccDict():
         return led_dict
     step_um=100
     number=10
-    mccDict['mccFuncs']['d']=make_som_dict(step_um,number)
+    mccDict['mccFuncs']['d']=make_som_dict(number,step_um)
     mccDict['espFuncs'].update({'s':('mark_to_spline',step_um,number)}) #*2 for left and right traversal
 
 

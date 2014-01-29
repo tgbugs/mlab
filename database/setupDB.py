@@ -192,6 +192,8 @@ def popHardware(session):
     iuepPipette=Hardware(type_id='pipette',name='iuep pipette',Properties={'model':'3-000-203-G/X','manufacturer':'Drummond Scientific'}) #FIXME is this not a 'type'
     session.add_all([patchPipette,iuepPipette])
 
+    rigcam=Hardware(parent_id=root,type_id='camera',name='rigcam') #TODO
+
     esp300=Hardware(parent_id=root,type_id='motion controller/driver',name='ESP300')
     session.add(esp300)
     digidata=Hardware(parent_id=root,type_id='digitizer',name='Digidata 1322A',Properties={'unique_id':'105309'})

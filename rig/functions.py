@@ -6,8 +6,9 @@ from time import sleep
 from debug import TDB,ploc
 from rig.ipython import embed
 from sqlalchemy.orm import object_session #FIXME vs database.imports?
-from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds
+from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds, new_DataFile
 from threading import RLock
+from rig.gui import takeScreenCap #FIXME
 #from IPython import embed
 try:
     import rpdb2
@@ -1087,7 +1088,7 @@ class espFuncs(kCtrlObj):
         return moves
 
     @keyRequest
-    def mark_to_spline(self,step_um=100,number=10):
+    def mark_to_spline(self,number=10,step_um=100):
         from rig.calcs import get_points_from_spline
         from numpy.random import shuffle
         import pylab as plt
@@ -1107,7 +1108,7 @@ class espFuncs(kCtrlObj):
             else:
                 print('Mark not found exiting.')
                 return None
-        moves=get_points_from_spline(points,switch_xy=True) #XXX NOTE THE SWITCH XXX
+        moves=get_moves_from_points(points,points[1],number,step_um/1000,switch_xy=True) #XXX NOTE THE SWITCH XXX
         plt.plot(-moves[0][0],moves[0][1]+.01,'yo')
         shuffle(moves)
         [plt.plot(-m[0],m[1],'ro') for m in points]
@@ -1117,8 +1118,6 @@ class espFuncs(kCtrlObj):
         print(moves)
         print(len(moves))
         self.set_move_list(moves)
-
-
 
 
     def printMarks(self):
@@ -1256,11 +1255,12 @@ class espFuncs(kCtrlObj):
         return self
 
 
-class guiFuncs(kCtrlObj): #FIXME GOD DAMN IT now hardware interfaces are not sufficient because this gui could interface with a ton of stuff >_<
-    from rig.gui import takeScreenCap
+
+@datafile_maker
+class guiFuncs(kCtrlObj): #FIXME GOD DAMN IT now hardware interfaces and datafile makers are not sufficient because this gui could interface with a ton of stuff >_<
     @new_DataFile('jpg') #TODO integrate this with the device and stick it in a dedicated paths config file, could look it up by program but...
-    def getCameraImage(self):
-        self.takeScreenCap()
+    def getCameraImage(self): #XXX: getSub_getCameraImage via df maker
+        takeScreenCap()
 
 
 
@@ -1477,6 +1477,7 @@ __all__=(
     'keyFuncs',
     'trmFuncs',
     'datFuncs',
+    'guiFuncs',
 )
 if __name__=='__main__':
     main()

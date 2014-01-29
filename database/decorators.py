@@ -85,7 +85,7 @@ def get_local_jpg_path(): #TODO FIXME there are multiple jpg paths
 
 def get_local_extension_path(extension):
     exDict={'abf':get_local_abf_path,
-            'jpb':get_local_jpg_path,
+            'jpg':get_local_jpg_path,
     }
     hostname,fpath = exDict[extension]()
     return hostname,fpath
@@ -130,7 +130,7 @@ def new_DataFile(extension,subjects_getter=None): #TODO could wrap it one more t
                     subjects=subjects_getter()
                 except:
                     pass
-            filename=Get_newest_abf(fpath)
+            filename=Get_newest_file(fpath)
             print(filename,'will be added to the current experiment!')
             new_df=DataFile(filename=filename,url=url,datafilesource_id=dfs.id,
                             experiment_id=experiment.id,Subjects=subjects)

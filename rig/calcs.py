@@ -100,7 +100,10 @@ def arc_lengths(spline,base,start):
         arc_length.append(abs(s))
     return np.array(arc_length)
 
-def get_xys_at_dist(spline,base,start_x,distances): #FIXME which way to mount the slice?
+def get_xys_at_dist(spline,start_x,distances): #FIXME which way to mount the slice?
+    _min=start_x-distances[-1]#dont actually need the *2 since arc lengths is always >= x since an arc wont be shorter than the linear x value or else it would have to be discontinuous!
+    _max=start_x+distances[-1]
+    base=np.linspace(_min,_max,5000)
     arcs=arc_lengths(spline,base,start_x)
     #print(arcs)
     points=[]
@@ -138,30 +141,41 @@ def _get_points_from_spline(points,start_x,number=10,spacing=.05,switch_xy=False
     return out
 
 
-def get_points_from_spline(spline,base,start_x,number=10,spacing=.05): #FIXME
+def get_points_from_spline(spline,start_x,number=10,spacing=.05): #FIXME
     """ note that total points is number*2 """
     dists=[spacing*i for i in range(1,number)]
     #start_x=points[0][0]
     out=[(start_x,spline(start_x))]
     print(dists)
-    out+=get_xys_at_dist(spline,base,start_x,dists)
+    out+=get_xys_at_dist(spline,start_x,dists)
     return out
 
-def switch_xy(points): #TODO
-    return switched
+def switchXY(points):
+    return [(y,x) for x,y in points]
+
+def get_moves_from_points(points,start_x,number=10,spacing=.05,switch_xy=False):
+    """ this is what you want to use"""
+    if switch_xy:
+        points=switchXY(points)
+    spline,xs,ys=get_spline(points)
+    out_points = get_points_from_spline(spline,startx,number,spacing)
+    if switch_xy:
+        return switchXY(out_points)
+    else:
+        return out_points
+
 
 def main():
     import pylab as plt
     from ipython import embed
     from scipy import interpolate
 
-
     plt.figure(figsize=(8,8))
     num=10
+    spacing=5
     for i in range(4):
         points=rand_x(0,50,num,lambda x:x**.5)
         spline,xs,ys=get_spline(points)
-        base=np.linspace(np.min(xs)*2,np.max(xs)*2,5000)
         #embed()
         #print(base)
         #spline(base)
@@ -169,19 +183,22 @@ def main():
         points.sort(key=lambda a:a[0]) #to get the median point just for this test
         start_x=points[num//2][0]
         print('start_x',start_x)
-        plt.plot(start_x,0,'ro')
-        dists=get_points_from_spline(spline,base,start_x,number=num,spacing=5)
-        arcs=arc_lengths(spline,base,start_x)
+        s_points=get_points_from_spline(spline,start_x,number=num,spacing=spacing)
         plt.subplot(2,2,i+1)
-        for dist in dists:
-            plt.plot(dist[0],dist[1],'go')
+        for s_point in s_points:
+            plt.plot(s_point[0],s_point[1],'go')
         #plt.plot(left[0],left[1],'go')
         #plt.plot(right[0],right[1],'go')
+        plt.plot(start_x,spline(start_x)+5,'ro')
+        lim_min=start_x-(num-1)*spacing
+        lim_max=start_x+(num-1)*spacing
+        base=np.linspace(lim_min,lim_max,5000)
+        arcs=arc_lengths(spline,base,start_x)
         plt.plot(base,arcs,'r-')
         plt.plot(base,spline(base),'b-')
         plt.axis('equal')
-        plt.xlim(-10,110)
-        plt.ylim(-10,110)
+        plt.xlim(lim_min,lim_max)
+        plt.ylim(lim_min,lim_max)
         #plt.plot(xs,ys,'ko')
         #plt.show()
         #plt.plot(space,integral)

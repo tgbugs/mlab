@@ -237,7 +237,7 @@ class rigIOMan:
             self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
 
-        FUNCS=keyFuncs,trmFuncs,datFuncs #must init dat after trm?
+        FUNCS=keyFuncs,trmFuncs,datFuncs,guiFuncs #must init dat after trm?
         for func in FUNCS:
             initedFunc=func(self) #callback to register functions as keyRequesters happends here
             self.ikFuncDict[initedFunc.__mode__]=initedFunc
