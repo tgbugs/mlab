@@ -88,8 +88,8 @@ def main(echo=False,postgres=False,wipe_db=False,setupDB=False,test=False):
         if test:
             engine=pgTest(echo=echo,wipe_db=wipe_db) #double sure
         else:
-            #engine=pgEng(echo=echo,wipe_db=wipe_db)
-            engine=pgEng
+            engine=pgEng(echo=echo,wipe_db=wipe_db)
+            #engine=pgEng #FIXME have to use this to set up the global db >_<
         if setupDB:
             session=initDBScience(engine) #imported from base.py via *
             #add table logic
@@ -134,4 +134,5 @@ if __name__=='__main__':
     session=main(args['--echo'],args['--pgsql'],args['--wipe'],args['--setup'],args['--test']) #THAT WAS EASY
     if args['--ipython']:
         from rig.ipython import embed
+        s=session
         embed()

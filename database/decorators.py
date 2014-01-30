@@ -59,8 +59,7 @@ def Get_newest_file(_path,extension): #FIXME TODO: I think the easiest way to do
     out=abf_files[-1] #get the last/newest file
     return out
 
-def get_local_abf_path(): #FIXME make this not hardcoded also derp why does this have to exist
-
+def get_local_abf_path(hostname,osname,program=None): #FIXME make this not hardcoded also derp why does this have to exist
     nt_paths={
             'HILL_RIG':'D:/tom_data/clampex/',
             'andromeda':'C:/tom_data/clampex/', #derp empty and fake
@@ -72,22 +71,25 @@ def get_local_abf_path(): #FIXME make this not hardcoded also derp why does this
 
     os_hostname_abf_path={ 'nt':nt_paths, 'posix':posix_paths, }
 
+    fpath=os_hostname_abf_path[osname][hostname]
+    return fpath
+
+def get_local_jpg_path(hostname,osname,program=None): #TODO FIXME there are multiple jpg paths
+
+    os_hostname_jpg_path={ #;alksdjf;laksdjf;laksdjf;laksdjf;laksdjf FIXME
+    'nt':{'HILL_RIG':'D:/tom_data/rigcam/'},
+    'posix':{'athena':'/home/tom/mlab_data/rigcam/'},
+    }
+    fpath=os_hostname_jpg_path[osname][hostname]
+    return fpath
+
+def get_local_extension_path(extension,program=None):
     hostname=socket.gethostname()
     osname=os.name
-
-    fpath=os_hostname_abf_path[osname][hostname]
-    return hostname,fpath
-
-def get_local_jpg_path(): #TODO FIXME there are multiple jpg paths
-    hostname=socket.gethostname()
-    fpath='D:/tom_data/rigcam/'
-    return hostname,fpath
-
-def get_local_extension_path(extension):
     exDict={'abf':get_local_abf_path,
             'jpg':get_local_jpg_path,
     }
-    hostname,fpath = exDict[extension]()
+    fpath = exDict[extension](hostname,osname,program)
     return hostname,fpath
 
 
@@ -153,7 +155,7 @@ def new_DataFile(extension,subjects_getter=None): #TODO could wrap it one more t
 def new_abf_DataFile(subjects_getter=None): #TODO could wrap it one more time in a file type or url
     def inner(function): #TODO could wrap it one more time in a file type or url
         #fpath='D:/tom_data/clampex/' #FIXME
-        hostname,fpath=get_local_abf_path()
+        hostname,fpath=get_local_extension_path('abf')
         url='file://%s/%s'%(hostname,fpath)
 
         init_sess=Session()

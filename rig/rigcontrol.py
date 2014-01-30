@@ -1,12 +1,14 @@
 #!/usr/bin/env python3.3
 """ Rig controller. Does ALL THE THINGS.
 Usage:
-    main.py [ --echo --test ]
-    main.py -h | --help
+    rigcontrol.py [ --test --echo --person=<person_id> --project=<project_id> ]
+    rigcontrol.py -h | --help
 Options:
-    -h --help       print this
-    -e --echo       enable echo on the db engine
-    -t --test       launch into the test database
+    -h --help                 print this
+    -p --person=<person_id>   enable echo on the db engine defaults to 1 (Tom)
+    -j --project=<project_id> defaults to 1 (DANGERZONE) FIXME these are not options...
+    -t --test                 launch into the test database
+    -e --echo                 print out the raw sql from sqlalchemy
 """
 from docopt import docopt
 args=docopt(__doc__) #do this early to prevent all the lags
@@ -35,7 +37,7 @@ tdb.off()
 
 class rigIOMan:
     """Terminal input manager, control the rig from a terminal window"""
-    def __init__(self,keyDicts,sessionmaker):
+    def __init__(self,keyDicts,sessionmaker,person_id,project_id): #FIXME some day we will make it so taht we don't have to pass project_id and person_id here >_< that will happen when we can just initilize the *Func classes as their own things instead of the disaster we have at the moment
         #self.globs=globs #for passing in to for openIPyton and embed()
         self.keyDicts=keyDicts
         self.krdLock=threading.RLock()
@@ -67,7 +69,7 @@ class rigIOMan:
             #but what if I want to query something on the fly? urg
             #just open a new terminal m8
 
-        self.initControllers() #these need charBuffer and keyThread to work FIXME nope, dupe for ':':'cmd'
+        self.initControllers(person_id,project_id) #these need charBuffer and keyThread to work FIXME nope, dupe for ':':'cmd'
         self.setMode('rig')
 
         #TODO add a way for keys to enter programatic control mode, they will still need keyinput though
@@ -208,7 +210,7 @@ class rigIOMan:
                 raise Warning('cleaup for',kFunc,'failed')
         print('done!')
 
-    def initControllers(self): #FIXME
+    def initControllers(self,person_id,project_id): #FIXME by having the *Funcs deal with their own controller or better yet just import all the controllers and then you can actually use real code for stuff instead of the stupid retarded convoluted system we have right now RARGH
         #load the drivers so that they aren't just hidden in the Funcs
         controllers=clxControl,espControl,mccControl
         ctrlDict={}
@@ -237,10 +239,13 @@ class rigIOMan:
             self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
 
-        FUNCS=keyFuncs,trmFuncs,datFuncs,guiFuncs #must init dat after trm?
+        FUNCS=keyFuncs,trmFuncs,guiFuncs #must init dat after trm?
         for func in FUNCS:
             initedFunc=func(self) #callback to register functions as keyRequesters happends here
             self.ikFuncDict[initedFunc.__mode__]=initedFunc
+
+        initedFunc=datFuncs(self,person_id=person_id,project_id=project_id) #FIXME need a way to update these and only actually have them stored in one place >_<
+        self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
 
         self.updateModeDict() #bind keys to functions
@@ -251,6 +256,7 @@ class rigIOMan:
 def main():
     from sqlalchemy.orm import sessionmaker
     from database.table_logic import logic_StepEdge
+    print(args)
     if args['--test']:
         #from database.engines import pgTest
         #engine=pgTest()
@@ -261,6 +267,15 @@ def main():
     if args['--echo']:
         engine.echo=True
 
+    if args['--person']:
+        person_id=args['--person']
+    else:
+        person_id=1
+    if args['--project']:
+        project_id=args['--project']
+    else:
+        project_id=1
+
     _Session=sessionmaker(bind=engine)
     def Session():
         session=_Session()
@@ -268,7 +283,7 @@ def main():
         return session
 
     print('Connected to:',engine.url.database)
-    rigIO=rigIOMan(keyDicts,Session)
+    rigIO=rigIOMan(keyDicts,Session,person_id,project_id)
     rigIO.start()
 
 

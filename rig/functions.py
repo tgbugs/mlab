@@ -251,18 +251,18 @@ class kCtrlObj:
     def cleanup(self):
         pass
 
-from database.models import Person, ExperimentType, Experiment, Cell, Slice, Mouse, DataFile
+from database.models import Person, Project, ExperimentType, Experiment, Cell, Slice, Mouse, DataFile
 from datetime import datetime
 from database.imports import NoResultFound
 class datFuncs(kCtrlObj): 
     #interface with the database TODO this should be able to run independently?
     """Put ANYTHING permanent that might be data in here"""
-    def __init__(self,modestate,*args):
+    def __init__(self,modestate,*args,person_id=None,project_id=None):
         super().__init__(modestate)
         self.Session=modestate.Session #FIXME maybe THIS was the problem?
         session=self.Session()
-        self.c_person=session.query(Person).filter(Person.FirstName=='Tom',Person.LastName=='Gillespie').one()
-        self.c_project=self.c_person.projects[0] #FIXME
+        self.c_person=session.query(Person).filter_by(id=person_id).one()
+        self.c_project=session.query(Project).filter_by(id=project_id).one() #FIXME the person could not be on the project
         self.getUnfinished(session)
         self.c_datafile=None
         self.session=session #FIXME
@@ -423,7 +423,8 @@ class datFuncs(kCtrlObj):
                 self.c_experiment=experiment
                 self.c_target=experiment
                 print('New experiment added = %s'%self.c_experiment.strHelper())
-            except:
+            except :
+                print('[!] experiment NOT added')
                 session.rollback() #FIXME could be dangerous? if others are in the session?
             finally:
                 #session.close()
@@ -1161,7 +1162,10 @@ class espFuncs(kCtrlObj):
         print('entering disp mode')
 
         if not len(self.markDict):
-            self.markDict.update(self.modestate.ctrlDict['datFuncs'].c_slice.markDict)
+            try:
+                self.markDict.update(self.modestate.ctrlDict['datFuncs'].c_slice.markDict)
+            except:
+                pass #in the event there is no slice we don't really need to tell anyone
             if not len(self.markDict):
                 self.mark()
         else:
