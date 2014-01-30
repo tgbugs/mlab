@@ -20,7 +20,7 @@ def get_windows(): #XXX depricated
 def getLeftBottom(window):
     return window.GetWindowRect()[0::3] #left,top,right,bottom
 
-def clickMouse(x,y,slp=0):
+def clickMouse(x,y,slp=0): #FIXME need a way to change focus back to the original window!
     """click ye mouse"""
     mX,mY=wig.GetCursorPos() #save the position so we can return to it
     SetCursorPos((x,y))
@@ -28,6 +28,7 @@ def clickMouse(x,y,slp=0):
     sleep(.001) #wintv is stuip
     mouse_event(wic.MOUSEEVENTF_LEFTUP,x,y,0,0)
     SetCursorPos((mX,mY))
+    
 
 
 #offsets always reported in x,y

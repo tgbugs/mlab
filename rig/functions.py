@@ -355,7 +355,7 @@ class datFuncs(kCtrlObj):
             print(self.c_target.metadata_)
             print(self.c_target.notes)
 
-    def set_slice_md(self,markDict):
+    def set_slice_md(self,markDict): #FIXME seems like this might be related to our errors?
         self.c_slice.markDict=markDict
         self.session.add(self.c_slice)
         #print(self.c_slice.markDict)
@@ -943,7 +943,7 @@ class espFuncs(kCtrlObj):
                 self._current_move_list_pos=0
 
     @keyRequest
-    def mark(self): #FIXME
+    def mark(self): #FIXME seems like this might be where the crashes are coming from?
         """mark/store the position of a cell using a character sorta like vim"""
         try:
             slice_md=self.modestate.ctrlDict['datFuncs'].c_slice.markDict
@@ -1089,7 +1089,7 @@ class espFuncs(kCtrlObj):
 
     @keyRequest
     def mark_to_spline(self,number=10,step_um=100):
-        from rig.calcs import get_points_from_spline
+        from rig.calcs import get_moves_from_points
         from numpy.random import shuffle
         import pylab as plt
 
@@ -1108,7 +1108,7 @@ class espFuncs(kCtrlObj):
             else:
                 print('Mark not found exiting.')
                 return None
-        moves=get_moves_from_points(points,points[1],number,step_um/1000,switch_xy=True) #XXX NOTE THE SWITCH XXX
+        moves=get_moves_from_points(points,points[0],number,step_um/1000,switch_xy=True) #XXX NOTE THE SWITCH XXX
         plt.plot(-moves[0][0],moves[0][1]+.01,'yo')
         shuffle(moves)
         [plt.plot(-m[0],m[1],'ro') for m in points]
@@ -1261,6 +1261,7 @@ class guiFuncs(kCtrlObj): #FIXME GOD DAMN IT now hardware interfaces and datafil
     @new_DataFile('jpg') #TODO integrate this with the device and stick it in a dedicated paths config file, could look it up by program but...
     def getCameraImage(self): #XXX: getSub_getCameraImage via df maker
         takeScreenCap()
+        sleep(1) #ICK some day a callback FIXME
 
 
 

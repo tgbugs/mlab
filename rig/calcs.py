@@ -150,19 +150,30 @@ def get_points_from_spline(spline,start_x,number=10,spacing=.05): #FIXME
     out+=get_xys_at_dist(spline,start_x,dists)
     return out
 
-def switchXY(points):
-    return [(y,x) for x,y in points]
-
-def get_moves_from_points(points,start_x,number=10,spacing=.05,switch_xy=False):
-    """ this is what you want to use"""
-    if switch_xy:
-        points=switchXY(points)
-    spline,xs,ys=get_spline(points)
-    out_points = get_points_from_spline(spline,startx,number,spacing)
-    if switch_xy:
-        return switchXY(out_points)
+def switchXY(points,forward=True): #FIXME rename
+    #make the bottom left point 0,0
+    r=np.array([[0,-1],[1,0]]) #90 degrees
+    if forward:
+        return [tuple(np.dot([x,y],r)) for x,y in points]
     else:
-        return out_points
+        return [tuple(np.dot([x,y],r.T)) for x,y in points]
+
+def get_moves_from_points(points,start_point,number=10,spacing=.05,switch_xy=False): #FIXME naming hides the spline!
+    """ this is what you want to use"""
+    print(start_point)
+    if switch_xy: #TODO vectroize some day
+        #m_x=np.mean([point[0] for point in points])
+        #m_y=np.mean([point[1] for point in points])
+        #points=[(x-m_x,y-m_y) for x,y in points]
+        points=switchXY(points)
+        start_point=switchXY([start_point])[0]
+    print(start_point)
+    spline,xs,ys=get_spline(points)
+    out_points = get_points_from_spline(spline,start_point[0],number,spacing)
+    if switch_xy:
+        out_points = switchXY(out_points,False)
+        #out_points=[(x+m_x,y+m_y) for x,y in out_points]
+    return out_points
 
 
 def main():
@@ -170,38 +181,50 @@ def main():
     from ipython import embed
     from scipy import interpolate
 
-    plt.figure(figsize=(8,8))
     num=10
     spacing=5
-    for i in range(4):
-        points=rand_x(0,50,num,lambda x:x**.5)
-        spline,xs,ys=get_spline(points)
-        #embed()
-        #print(base)
-        #spline(base)
-        #left,right=get_xys_at_dist(spline,space,space[500],5)
-        points.sort(key=lambda a:a[0]) #to get the median point just for this test
-        start_x=points[num//2][0]
-        print('start_x',start_x)
-        s_points=get_points_from_spline(spline,start_x,number=num,spacing=spacing)
-        plt.subplot(2,2,i+1)
-        for s_point in s_points:
-            plt.plot(s_point[0],s_point[1],'go')
-        #plt.plot(left[0],left[1],'go')
-        #plt.plot(right[0],right[1],'go')
-        plt.plot(start_x,spline(start_x)+5,'ro')
-        lim_min=start_x-(num-1)*spacing
-        lim_max=start_x+(num-1)*spacing
-        base=np.linspace(lim_min,lim_max,5000)
-        arcs=arc_lengths(spline,base,start_x)
-        plt.plot(base,arcs,'r-')
-        plt.plot(base,spline(base),'b-')
-        plt.axis('equal')
-        plt.xlim(lim_min,lim_max)
-        plt.ylim(lim_min,lim_max)
-        #plt.plot(xs,ys,'ko')
-        #plt.show()
-        #plt.plot(space,integral)
+    points=rand_x(0,50,num,lambda x:x**.5)
+    points.sort(key=lambda a:a[0]) #to get the median point just for this test
+    start_x=points[num//2][0]
+    moves=get_moves_from_points(points,start_x,num,spacing)
+    r_moves=get_moves_from_points(points,start_x,num,spacing,switch_xy=True)
+    [plt.plot(move[0],move[1],'ro') for move in moves]
+    [plt.plot(move[0],move[1],'go') for move in r_moves]
+    plt.show()
+
+    def internal_test():
+        plt.figure(figsize=(8,8))
+        num=10
+        spacing=5
+        for i in range(4):
+            points=rand_x(0,50,num,lambda x:x**.5)
+            spline,xs,ys=get_spline(points)
+            #embed()
+            #print(base)
+            #spline(base)
+            #left,right=get_xys_at_dist(spline,space,space[500],5)
+            points.sort(key=lambda a:a[0]) #to get the median point just for this test
+            start_x=points[num//2][0]
+            print('start_x',start_x)
+            s_points=get_points_from_spline(spline,start_x,number=num,spacing=spacing)
+            plt.subplot(2,2,i+1)
+            for s_point in s_points:
+                plt.plot(s_point[0],s_point[1],'go')
+            #plt.plot(left[0],left[1],'go')
+            #plt.plot(right[0],right[1],'go')
+            plt.plot(start_x,spline(start_x)+5,'ro')
+            lim_min=start_x-(num-1)*spacing
+            lim_max=start_x+(num-1)*spacing
+            base=np.linspace(lim_min,lim_max,5000)
+            arcs=arc_lengths(spline,base,start_x)
+            plt.plot(base,arcs,'r-')
+            plt.plot(base,spline(base),'b-')
+            plt.axis('equal')
+            plt.xlim(lim_min,lim_max)
+            plt.ylim(lim_min,lim_max)
+            #plt.plot(xs,ys,'ko')
+            #plt.show()
+            #plt.plot(space,integral)
 
     #embed()
 

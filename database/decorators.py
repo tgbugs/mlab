@@ -109,7 +109,7 @@ def new_DataFile(extension,subjects_getter=None): #TODO could wrap it one more t
             if not repo:
                 init_sess.add(Repository(url=url))
             if not dfs:
-                dfs=DataFileSource(name='clampex 9.2',extension='abf',docstring='a clampex!')
+                dfs=DataFileSource(name='lol wut!?',extension=extension,docstring='a whoknows!') #FIXME TODO generalize!
                 init_sess.add(dfs)
             try:
                 init_sess.commit()
@@ -130,7 +130,7 @@ def new_DataFile(extension,subjects_getter=None): #TODO could wrap it one more t
                     subjects=subjects_getter()
                 except:
                     pass
-            filename=Get_newest_file(fpath)
+            filename=Get_newest_file(fpath,extension) #FIXME this can be faster than the snapshot!
             print(filename,'will be added to the current experiment!')
             new_df=DataFile(filename=filename,url=url,datafilesource_id=dfs.id,
                             experiment_id=experiment.id,Subjects=subjects)

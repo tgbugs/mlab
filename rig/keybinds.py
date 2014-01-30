@@ -300,8 +300,8 @@ def mccDict():
         return led_dict
     step_um=100
     number=10
-    mccDict['mccFuncs']['d']=make_som_dict(number,step_um)
-    mccDict['espFuncs'].update({'s':('mark_to_spline',step_um,number)}) #*2 for left and right traversal
+    mccDict['mccFuncs']['d']=make_som_dict(step_um,number)
+    mccDict['espFuncs'].update({'s':('mark_to_spline',number,step_um)}) #*2 for left and right traversal
 
 
     return mccDict
