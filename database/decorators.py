@@ -263,11 +263,8 @@ def is_mds(prefix,unit,hardware_name,mantissa=None,wt_getter=None):
 
             md_kwargs={'value':value,'abs_error':abs_error,'metadatasource_id':mds_id}
             for write_target in write_targets:
-                if type(write_target) == DataFile:
-                    md=write_target.MetaData(DataFile=write_target,**md_kwargs)
-                else:
-                    wt_id=write_target.id
-                    md=write_target.MetaData(parent_id=wt_id,**md_kwargs)
+                wt_id=write_target.id
+                md=write_target.MetaData(parent_id=wt_id,**md_kwargs)
                 session_add_wrapper(md) #FIXME we *may* encounter session collisions here
             return value
 

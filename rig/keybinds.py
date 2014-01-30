@@ -290,7 +290,7 @@ def mccDict():
         start=3
         nsteps=4
         check={}
-        for i in range(number-1): #-1 to comp for no zero?
+        for i in range(2*number-1): #-1 to comp for no zero? *2 because it moves in both directions
             loop_start=i*nsteps+start
             for func_name,dodict in base_steps.items():
                 for step_number,thing in dodict.items():
@@ -302,7 +302,6 @@ def mccDict():
     number=10
     mccDict['mccFuncs']['d']=make_som_dict(step_um,number)
     mccDict['espFuncs'].update({'s':('mark_to_spline',number,step_um)}) #*2 for left and right traversal
-
 
     return mccDict
 

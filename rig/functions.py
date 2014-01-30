@@ -1093,7 +1093,7 @@ class espFuncs(kCtrlObj):
         from numpy.random import shuffle
         import pylab as plt
 
-        marks='start','two','three','four','five'
+        marks='start','one','two','three','four','five'
         points=[]
         for i in range(len(marks)):
             stdout.write(marks[i]+'> ')

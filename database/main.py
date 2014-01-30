@@ -88,7 +88,8 @@ def main(echo=False,postgres=False,wipe_db=False,setupDB=False,test=False):
         if test:
             engine=pgTest(echo=echo,wipe_db=wipe_db) #double sure
         else:
-            engine=pgEng(echo=echo,wipe_db=wipe_db)
+            #engine=pgEng(echo=echo,wipe_db=wipe_db)
+            engine=pgEng
         if setupDB:
             session=initDBScience(engine) #imported from base.py via *
             #add table logic
