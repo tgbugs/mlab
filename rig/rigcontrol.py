@@ -256,7 +256,7 @@ class rigIOMan:
 def main():
     from sqlalchemy.orm import sessionmaker
     from database.table_logic import logic_StepEdge
-    print(args)
+    #print(args)
     if args['--test']:
         #from database.engines import pgTest
         #engine=pgTest()

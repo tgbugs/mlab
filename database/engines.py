@@ -64,8 +64,8 @@ def pgReal(username,password,host,port=54321,database='postgres',echo=False): #F
 ###
 # Database version definition, this is currently managed by git since the whole codebase changes >_<
 ###
-#engine=pgReal('sqla','asdf','localhost',54321,'scidb_v2',False) #XXX THIS IS THE ONE YOU SHOULD USE! update when ready!
-engine=pgTest()
+engine=pgReal('sqla','asdf','localhost',54321,'scidb_v2',False) #XXX THIS IS THE ONE YOU SHOULD USE! update when ready!
+#engine=pgTest()
 
 #pgEng=engine #XXX switch over at some point
 pgEng=pgTest #XXX switch over at some point

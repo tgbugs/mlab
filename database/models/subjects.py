@@ -35,6 +35,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
     __tablename__='subjects'
     id=Column(Integer,primary_key=True)
     type_id=Column(String,ForeignKey('subjecttype.id'),nullable=False)
+    name=Column(String) #since I refer to many subjects by a literal name in writing it might be nice to reference it here even if it is not unique
 
     #part-whole relationships for all subjects use primarily for tracking variables in experiments
     #can be used for both mutually exclusive (death) relationships and coterminus (in vivo, groups)
@@ -64,7 +65,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
 
     def __init__(self,parent_id=None,reproduction_experiment_id=None,
             group_id=None,startDateTime=None,sDT_abs_error=None,
-            Experiments=(),Hardware=(),Properties={}):
+            Experiments=(),Hardware=(),Properties={},name=None):
         if self.type_id is 'subject':
             raise NotImplementedError('You shouldn\'t add undefined subjects to the database!')
 
@@ -77,6 +78,7 @@ class Subject(HasMetaData, HasDataFiles, HasSwcHwRecords, HasExperiments, HasPro
             self.group_id=int(group_id)
         self.startDateTime=startDateTime
         self.sDT_abs_error=sDT_abs_error
+        self.name=name
 
         self.experiments.extend(Experiments)
         self.hardware.extend(Hardware)
