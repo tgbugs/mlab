@@ -1,3 +1,4 @@
+bug where incomplete datafiles are added to database and then not dropped when clampex rewrites over them :(
 god damn it the way I run stuff right now sucks ;_; I need a better way to integrate all the controllers and let them call eachother instead of just having the called by the keyboard >_<, which of course means that I have to deal with doing things in the right order, but that is what the steps are all about >_< DAMN IT
 add a way to track versions by commit hash
 find a way to integrate all the controllers without using the stupid dicts >_< so we can persist stuff without having to jump through all the hoops, maybe just have the classes also inherit from datFuncs?

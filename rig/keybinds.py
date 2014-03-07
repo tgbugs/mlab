@@ -345,7 +345,7 @@ def trmDict():
                 '3':'getInt',
                 '4':'getBool',
                 '5':'getKbdHit',
-                'u':'getWT_getDistance_um',
+                'u':'getWT_getDistance_um', #distance
             },
     }
     return trmDict
