@@ -14,7 +14,7 @@ def main():
     cells=1,8,10,14
     gs=[]
     es=[]
-    plt.figure(figsize=(20,20))
+    fig=plt.figure(figsize=(20,20))
     for i in range(len(cells)):
         cell=cells[i]
         mv,pa=get_mv_pa(cell,data)
@@ -29,18 +29,28 @@ def main():
         pa_fit=g*xs+b
 
         plt.subplot(2,2,i+1)
+        #fig=plt.figure(figsize=(5,5))
         plt.plot(mv,pa,'ko')
         plt.plot(xs,pa_fit,'r-')
-        plt.title('Cell %s I/V plot g = %s nS, E= %s mV'%(cell,g,Echan))
+        plt.title('Cell %s IV plot, g = %1.2f nS, E= %1.2f mV'%(cell,g,Echan))
         plt.xlabel('Holding potential mV')
         plt.ylabel('Photocurrent pA')
+        plt.xlim(-90,-10)
+        visSpines(fig,target=i)
+        centerSpines(fig,target=i,left=0)
+        visTicks(plt)
+
+    plt.savefig('cells.png')#,bbox_inches='tight',pad_inches=0)
 
     plt.figure(figsize=(5,5))
     plt.plot(np.ones_like(gs),gs,'ko')
     plt.ylim((0,max(gs)*1.5))
-    plt.title('Conductances')
+    plt.title('ChloR conductances, mean= %1.2f'%(np.mean(gs)))
+    plt.ylabel('Conductance nS')
+    plt.xticks([])
+    plt.savefig('cond.png')#,bbox_inches='tight',pad_inches=0)
 
-    plt.show()
+    #plt.show()
 
 if __name__ == '__main__':
     main()
