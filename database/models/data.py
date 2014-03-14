@@ -400,6 +400,9 @@ class DataFile(File): #data should be collected in the scope of an experiment
     datafilesource_id=Column(Integer,ForeignKey('datafilesources.id'),nullable=False)
     datafilesource=relationship('DataFileSource',uselist=False) #backref=backref('datafiles'),
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
+
+    mddictlist=Column( Array(DictType) ) #FIXME nasty stopgap for storing the mcc state ;_;
+
     __mapper_args__={'polymorphic_identity':'datafile'}
 
     experiment=relationship('Experiment',backref='datafiles',uselist=False)
@@ -445,7 +448,7 @@ class DataFile(File): #data should be collected in the scope of an experiment
     def __init__(self,filename=None,url=None,datafilesource_id=None,experiment_id=None,Subjects=(),creationDateTime=None): #FIXME kwargs vs args? kwargs should exist internally for the purposes of doccumentation, args should be used in the interface for when I don't want to type something over and over
         super().__init__(filename,url,creationDateTime)
         self.datafilesource_id=int(datafilesource_id)
-        self.url=URL_STAND.urlClean(str(url))
+        self.url=URL_STAND.urlClean(str(url)) #FIXME nasty bug with repos
         self.filename=filename
         #if experiment_id is not None:
         self.experiment_id=int(experiment_id) #enforcing the idea that datafiles must have experiments

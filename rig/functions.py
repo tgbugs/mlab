@@ -714,35 +714,40 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
             state['PrimarySignalLPF']=self.ctrl.GetPrimarySignalLPF() #also in abf file
             state['PipetteOffset']=self.ctrl.GetPipetteOffset()
 
-        def vc(state):
-            base(state)
+        #def vc(state):
+            #base(state)
+            #XXX ONLY RELEVANT FOR MODE 0
             state['FastCompCap']=self.ctrl.GetFastCompCap()
             state['SlowCompCap']=self.ctrl.GetSlowCompCap()
             state['FastCompTau']=self.ctrl.GetFastCompTau()
             state['SlowCompTau']=self.ctrl.GetSlowCompTau()
             state['SlowCTX20Enable']=self.ctrl.GetSlowCompTauX20Enable()
 
-        def ic(state):
-            base(state)
+        #def ic(state):
+            #base(state)
+            #XXX ONLY RELEVANT FOR MODE 1
             state['BridgeBalEnable']=self.ctrl.GetBridgeBalEnable()
             state['BridgeBalResist']=self.ctrl.GetBridgeBalResist()
 
-        def iez(state):
-            base(state)
+        #def iez(state):
+            #base(state)
 
-        modeDict={0:vc,1:ic,2:iez}
+        #modeDict={0:vc,1:ic,2:iez}
         stateList=[]
         for i in range(self.ctrl.mcNum):
             self.ctrl.selectMC(i)
             state={} #FIXME: make this a dict with keys as the name of the value? eh would probs complicate
             state['Channel']=i #might be suprflulous but it could simplify the code to read out stateList
             mode=self.ctrl.GetMode()
-            state.append(mode)
-            modeDict[mode]()
+            state['mode']=(mode)
+            #modeDict[mode](state)
+            base(state)
             stateList.append(state)
+            print()
             print(state)
 
-        self.MCCstateDict[datetime.datetime.utcnow()]=stateList
+        self.MCCstateDict[datetime.utcnow()]=stateList
+        #print(stateList)
         return stateList
 
     def printMCCstate(self):
