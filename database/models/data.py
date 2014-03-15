@@ -401,7 +401,7 @@ class DataFile(File): #data should be collected in the scope of an experiment
     datafilesource=relationship('DataFileSource',uselist=False) #backref=backref('datafiles'),
     experiment_id=Column(Integer,ForeignKey('experiments.id'),nullable=False)
 
-    mddictlist=Column( Array(DictType) ) #FIXME nasty stopgap for storing the mcc state ;_;
+    mddictlist=Column( PickleType ) #FIXME nasty stopgap for storing the mcc state ;_;, not only that but it is a one off, can't append
 
     __mapper_args__={'polymorphic_identity':'datafile'}
 

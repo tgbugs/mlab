@@ -16,6 +16,7 @@ from sqlalchemy                         import Interval
 from sqlalchemy                         import ForeignKey
 from sqlalchemy                         import ForeignKeyConstraint
 from sqlalchemy                         import UniqueConstraint
+from sqlalchemy                         import PickleType
 
 from sqlalchemy.exc                     import IntegrityError
 

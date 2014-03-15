@@ -750,6 +750,15 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         #print(stateList)
         return stateList
 
+    def stateToDataFile(self): #AAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH SO BAD FIXME
+        datFunc=self.modestate.ctrlDict['datFuns']
+        df=datFunc.c_datafile
+        stateList=self.getState()
+        df.mddictlist=stateList
+        datFunc.session.commit()
+        return self #IF THIS WORKS I WILL BUY A HAT AND EAT IT WAIT I ALREADY HAVE A HAT
+
+
     def printMCCstate(self):
         print(re.sub('\), ',')\r\n',str(self.MCCstateDict)))
         return self
