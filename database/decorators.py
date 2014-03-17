@@ -8,6 +8,7 @@ from database.table_logic import logic_StepEdge
 from database.models import DataFile,DataFileSource,Experiment,Hardware,MetaDataSource,Repository
 from database.engines import engine #FIXME tests >_< need a way to synchornize this ;_; need a way to make decorators based on the session, but right now we are just going to switch stuff manually
 from database.imports import printD
+from database.standards import Get_newest_file
 
 _Session=sessionmaker(bind=engine)
 def Session():
@@ -47,14 +48,6 @@ def Get_newest_abf(_path):
     print(_path)
     files=os.listdir(_path)
     abf_files=[file for file in files if file[-3:]=='abf']
-    abf_files.sort() #FIXME make sure the filenames order correctly
-    out=abf_files[-1] #get the last/newest file
-    return out
-
-def Get_newest_file(_path,extension): #FIXME TODO: I think the easiest way to do this is just to have watched folders with filetypes to watch, and they can be recursive, and then we can just call a 'go check for changes' function
-    print(_path,extension)
-    files=os.listdir(_path)
-    abf_files=[file for file in files if file[-3:]==extension]
     abf_files.sort() #FIXME make sure the filenames order correctly
     out=abf_files[-1] #get the last/newest file
     return out
