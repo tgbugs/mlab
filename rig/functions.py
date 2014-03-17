@@ -95,7 +95,7 @@ def hasKeyRequests(cls):
 
 class kCtrlObj:
     """key controller object"""
-    def __init__(self, modestate, controller=None):
+    def __init__(self, modestate):
         self.charBuffer=modestate.charBuffer
         #self.releaseKeyReq=modestate.releaseKeyRequest #FIXME don't even have to do this, @keyRequest can do it for me! :)
         #I probably do not need to pass key handler to thing outside of inputManager...
@@ -103,7 +103,6 @@ class kCtrlObj:
         self.setMode=modestate.setMode
         self.__mode__=self.__class__.__name__
         self.keyThread=modestate.keyThread
-        self.ctrl=controller
 
         self._kr_not_done=0
         self._releaseKR=modestate.releaseKeyRequest
@@ -269,6 +268,42 @@ class datFuncs(kCtrlObj):
         self.sLock=RLock() #a lock for the session, see if we need it
         #session.close()
 
+    @static_method
+    def getRepoDFS(extension,dfs_name='clampex 9.2',url=None): #FIXME make this persistent on init??
+        if not url:
+            hostname,fpath=get_local_extension_path(extension)
+            url='file://%s/%s'%(hostname,fpath)
+        init_sess=self.modestate.Session()
+        repo=init_sess.query(Repository).filter_by(url=url).first() #FIXME try/except?
+        dfs=init_sess.query(DataFileSource).filter_by(name=dfs_name).first()
+        if not repo or not dfs:
+            if not repo:
+                init_sess.add(Repository(url=url))
+            if not dfs:
+                dfs=DataFileSource(name='lol wut!?',extension=extension,docstring='a whoknows!') #FIXME TODO generalize!
+                init_sess.add(dfs)
+            try:
+                init_sess.commit()
+            except:
+                init_sess.rollback()
+            finally:
+                init_sess.close()
+                del(init_sess)
+        else:
+            init_sess.close()
+            del(init_sess)
+        return repo,dfs
+
+    def add_com_sess(self,obj_to_add):
+        self.session.add(obj_to_add)
+        try:
+            self.session.commit()
+        except:
+            print('[!] %s could not be added! Rolling back!'%obj_to_add)
+            session.rollback()
+            raise
+
+
     def getUnfinished(self,session): #FIXME it is possible to get cells or slices w/o experiment...
         def queryUnf(obj):
             return session.query(obj).filter(obj.endDateTime==None)
@@ -316,6 +351,7 @@ class datFuncs(kCtrlObj):
             self.c_target=self.c_datafile
         else:
             print('not a type, try fiddling with ipython if you really need to spec soemthing')
+            z
 
 
     def getDFSubjects(self):
@@ -380,6 +416,17 @@ class datFuncs(kCtrlObj):
         self.c_datafile=new_df
         self.c_target=new_df
     
+    def newDataFile(self,extension,experiment,subjects=[]): #FIXME need other selectors eg: repository >_<
+        repo,dfs=getRepoDFS(extension)
+        #experiment=Get_newest_id(Experiment) #FIXME unfinished?
+        filename=Get_newest_file(fpath,extension) #FIXME this can be faster than the snapshot!
+        print(filename,'will be added to the current experiment!')
+        new_df=DataFile(filename=filename,url=url,datafilesource_id=dfs.id,
+                            experiment_id=experiment.id,Subjects=subjects)
+
+        self.add_com_sess(new_df)
+        return new_df
+
     @keyRequest
     def newNote(self): #FIXME need a way to hit a single cell
         note=self.__getChars__('note> ')
@@ -566,16 +613,18 @@ class datFuncs(kCtrlObj):
     
 @datafile_maker#@hardware_interface('Digidata 1322A')
 class clxFuncs(kCtrlObj):
-    def __init__(self, modestate, controller):
+    def __init__(self, modestate, clx=None, **kwargs):
         try:
-            if controller.__class__.__name__ is not 'clxControl':
+            if clx.__class__.__name__ is not 'clxControl':
                 raise TypeError('wrong controller type')
         except:
             raise
         #from clx import clxControl
-        super().__init__(modestate,controller)
+        self.clx=clx
+
+        super().__init__(modestate)
         #self.initController(clxmsg)
-        #printD('clx ctrl',self.ctrl)
+        #printD('clx ctrl',self.clx)
         #self.clxCleanup=self.cleanup
         self.programDict={}
         self.current_program=''
@@ -593,8 +642,8 @@ class clxFuncs(kCtrlObj):
     def cleanup(self):
         super().cleanup()
         try:
-            self.ctrl.DestroyObject()
-            print(self.ctrl.__class__,'handler destroyed')
+            self.clx.DestroyObject()
+            print(self.clx.__class__,'handler destroyed')
         except:
             pass
             #print('this this works the way it is supposed to the we should never have to destory the object')
@@ -602,12 +651,12 @@ class clxFuncs(kCtrlObj):
 
     #input with output
     def getStatus(self,outputs=None): #TODO outputs... should be able to output to as many things as I want... probably should be a callback to simplify things elsewhere? no?!?!
-        status=self.ctrl.GetStatus()
+        status=self.clx.GetStatus()
         print(status)
         return self
 
     def wait_till_done(self):
-        gs=self.ctrl.GetStatus
+        gs=self.clx.GetStatus
         while gs() != 'CLXMSG_ACQ_STATUS_IDLE' and self.keyThread.is_alive():
             sleep(.001) #FIXME
         print('Done recording')
@@ -615,7 +664,7 @@ class clxFuncs(kCtrlObj):
     def loadfile(self,filename):
         try:
             filepath=self.protocolPath+filename
-            self.ctrl.LoadProtocol(filepath.encode('ascii'))
+            self.clx.LoadProtocol(filepath.encode('ascii'))
             self.current_program=filepath
             print('%s loaded!'%filepath)
         except BaseException as e:
@@ -629,7 +678,7 @@ class clxFuncs(kCtrlObj):
         try:
             filename=self.programDict[key]
             filepath=self.protocolPath+filename
-            self.ctrl.LoadProtocol(filepath.encode('ascii'))
+            self.clx.LoadProtocol(filepath.encode('ascii'))
             self.current_program=filepath
             print('%s loaded!'%filepath)
         except BaseException as e:
@@ -642,7 +691,7 @@ class clxFuncs(kCtrlObj):
     def record(self):
         #RECORD=109, RERECORD=110, VIEW=108
         try:
-            self.ctrl.StartAcquisition(109)
+            self.clx.StartAcquisition(109)
             print('Running %s'%self.current_program)
         except:
             raise
@@ -651,7 +700,7 @@ class clxFuncs(kCtrlObj):
     def view(self):
         #RECORD=109, RERECORD=110, VIEW=108
         try:
-            self.ctrl.StartAcquisition(108)
+            self.clx.StartAcquisition(108)
             print('Viewing %s'%self.current_program)
         except:
             raise
@@ -659,27 +708,30 @@ class clxFuncs(kCtrlObj):
             return self
     
     def stop_rec(self):
-        self.ctrl.StopAcquisition()
+        self.clx.StopAcquisition()
         print('Stopping curren acquistion')
 
 
     #input only
     def startMembTest(self):
-        self.ctrl.StartMembTest(120)
-        self.ctrl.StartMembTest(121)
+        self.clx.StartMembTest(120)
+        self.clx.StartMembTest(121)
         return self
 
 
 @hardware_interface('mc1') #FIXME or is it software interface?
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
-    def __init__(self, modestate, controller):
+    def __init__(self, modestate, mcc=None, **kwargs):
+        #mcc=kwargs['mcc']
         try:
-            if controller.__class__.__name__ is not 'mccControl':
+            if mcc.__class__.__name__ is not 'mccControl':
                 raise TypeError('wrong controller type')
         except:
             raise
         #from mcc import mccControl
-        super().__init__(modestate,controller) #FIXME this needs better error messages
+        self.mcc=mcc
+
+        super().__init__(modestate) #better error messages?
         #self.initController(mccmsg)
         self.MCCstateDict={}
         #self.wrapDoneCB()
@@ -688,15 +740,15 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         #self.state1DataSource=None
 
     def setGain(self,value=1):
-        self.ctrl.SetPrimarySignalGain(value)
+        self.mcc.SetPrimarySignalGain(value)
         print('Primary signal gain set to %s'%value)
         return self
 
     def allGain(self,value=1):
-        self.ctrl.selectMC(0)
-        self.ctrl.SetPrimarySignalGain(value)
-        self.ctrl.selectMC(1)
-        self.ctrl.SetPrimarySignalGain(value)
+        self.mcc.selectMC(0)
+        self.mcc.SetPrimarySignalGain(value)
+        self.mcc.selectMC(1)
+        self.mcc.SetPrimarySignalGain(value)
         return self
 
 
@@ -705,40 +757,40 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         raise DeprecationWarning('please use trmFuncs.getKbdHit()')
 
     def getState(self): #FIXME this function and others like it should probably be called directly by dataman?
-        printD('hMCCmsg outer',self.ctrl.hMCCmsg)
+        printD('hMCCmsg outer',self.mcc.hMCCmsg)
         def base(state):
-            state['HoldingEnable']=self.ctrl.GetHoldingEnable()
-            state['Holding']=self.ctrl.GetHolding()
-            state['PrimarySignal']=self.ctrl.GetPrimarySignal()
-            state['PrimarySignalGain']=self.ctrl.GetPrimarySignalGain() #also in abf file and already handled by AxonIO
-            state['PrimarySignalLPF']=self.ctrl.GetPrimarySignalLPF() #also in abf file
-            state['PipetteOffset']=self.ctrl.GetPipetteOffset()
+            state['HoldingEnable']=self.mcc.GetHoldingEnable()
+            state['Holding']=self.mcc.GetHolding()
+            state['PrimarySignal']=self.mcc.GetPrimarySignal()
+            state['PrimarySignalGain']=self.mcc.GetPrimarySignalGain() #also in abf file and already handled by AxonIO
+            state['PrimarySignalLPF']=self.mcc.GetPrimarySignalLPF() #also in abf file
+            state['PipetteOffset']=self.mcc.GetPipetteOffset()
 
         #def vc(state):
             #base(state)
             #XXX ONLY RELEVANT FOR MODE 0
-            state['FastCompCap']=self.ctrl.GetFastCompCap()
-            state['SlowCompCap']=self.ctrl.GetSlowCompCap()
-            state['FastCompTau']=self.ctrl.GetFastCompTau()
-            state['SlowCompTau']=self.ctrl.GetSlowCompTau()
-            state['SlowCTX20Enable']=self.ctrl.GetSlowCompTauX20Enable()
+            state['FastCompCap']=self.mcc.GetFastCompCap()
+            state['SlowCompCap']=self.mcc.GetSlowCompCap()
+            state['FastCompTau']=self.mcc.GetFastCompTau()
+            state['SlowCompTau']=self.mcc.GetSlowCompTau()
+            state['SlowCTX20Enable']=self.mcc.GetSlowCompTauX20Enable()
 
         #def ic(state):
             #base(state)
             #XXX ONLY RELEVANT FOR MODE 1
-            state['BridgeBalEnable']=self.ctrl.GetBridgeBalEnable()
-            state['BridgeBalResist']=self.ctrl.GetBridgeBalResist()
+            state['BridgeBalEnable']=self.mcc.GetBridgeBalEnable()
+            state['BridgeBalResist']=self.mcc.GetBridgeBalResist()
 
         #def iez(state):
             #base(state)
 
         #modeDict={0:vc,1:ic,2:iez}
         stateList=[]
-        for i in range(self.ctrl.mcNum):
-            self.ctrl.selectMC(i)
+        for i in range(self.mcc.mcNum):
+            self.mcc.selectMC(i)
             state={} #FIXME: make this a dict with keys as the name of the value? eh would probs complicate
             state['Channel']=i #might be suprflulous but it could simplify the code to read out stateList
-            mode=self.ctrl.GetMode()
+            mode=self.mcc.GetMode()
             state['mode']=(mode)
             #modeDict[mode](state)
             base(state)
@@ -766,145 +818,146 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
     def setMCState(self,MC=None,Mode=None,Holding=None,HoldingEnable=None): #TODO
         #FIXME all of the experiment logic needs to be stored in one place instead of hidden in 10 files
         #selectMC,SetMode,SetHolding,SetHoldingEnable,
-        #self.ctrl.selectMC()
+        #self.mcc.selectMC()
         return self
 
     def set_hs0(self):
         print('Setting headstage 0')
-        self.ctrl.selectMC(0)
+        self.mcc.selectMC(0)
         self.current_headstage=0
         return self
     def set_hs1(self):
         print('Setting headstage 1')
-        self.ctrl.selectMC(1)
+        self.mcc.selectMC(1)
         self.current_headstage=1 #TODO use this to link cells to the headstage!
         return self
     def set_hsAll(self): #FIXME
         self.ALL_HS=True
 
     def autoOffset(self):
-        self.ctrl.AutoPipetteOffset()
+        self.mcc.AutoPipetteOffset()
     def autoCap(self):
-        self.ctrl.AutoFastComp()
-        self.ctrl.AutoSlowComp()
+        self.mcc.AutoFastComp()
+        self.mcc.AutoSlowComp()
     def setVCholdOFF(self):
-        self.ctrl.SetMode(0)
-        self.ctrl.SetHoldingEnable(0)
+        self.mcc.SetMode(0)
+        self.mcc.SetHoldingEnable(0)
     def setVCholdON(self):
-        self.ctrl.SetMode(0)
-        self.ctrl.SetHoldingEnable(1)
+        self.mcc.SetMode(0)
+        self.mcc.SetHoldingEnable(1)
 
     def setVChold(self,holding_volts):
         #print(holding_volts)
-        self.ctrl.SetMode(0)
+        self.mcc.SetMode(0)
         print(holding_volts)
-        self.ctrl.SetHolding(float(holding_volts))
-        h=self.ctrl.GetHolding()
+        self.mcc.SetHolding(float(holding_volts))
+        h=self.mcc.GetHolding()
         print(h)
         #sleep(.001) #FIXME trying to figure out why holding set to -1000mV
-        #self.ctrl.SetHoldingEnable(1)
+        #self.mcc.SetHoldingEnable(1)
     def setICnoHold(self):
-        self.ctrl.SetMode(1)
-        self.ctrl.SetHoldingEnable(0)
+        self.mcc.SetMode(1)
+        self.mcc.SetHoldingEnable(0)
 
     def allVChold(self,holding_volts):
-        self.ctrl.selectMC(0)
-        self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(float(holding_volts))
-        #self.ctrl.SetHoldingEnable(1)
-        self.ctrl.selectMC(1)
-        self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(float(holding_volts))
-        #self.ctrl.SetHoldingEnable(1)
+        self.mcc.selectMC(0)
+        self.mcc.SetMode(0)
+        self.mcc.SetHolding(float(holding_volts))
+        #self.mcc.SetHoldingEnable(1)
+        self.mcc.selectMC(1)
+        self.mcc.SetMode(0)
+        self.mcc.SetHolding(float(holding_volts))
+        #self.mcc.SetHoldingEnable(1)
         return self
 
     def allIeZ(self):
-        self.ctrl.selectMC(0)
-        self.ctrl.SetMode(2)
-        self.ctrl.selectMC(1)
-        self.ctrl.SetMode(2)
+        self.mcc.selectMC(0)
+        self.mcc.SetMode(2)
+        self.mcc.selectMC(1)
+        self.mcc.SetMode(2)
         return self
     def allVCnoHold(self):
         #try:
-        self.ctrl.selectMC(0)
-        self.ctrl.SetMode(0)
-        self.ctrl.SetHoldingEnable(0)
-        self.ctrl.selectMC(1)
-        self.ctrl.SetMode(0)
-        self.ctrl.SetHoldingEnable(0)
+        self.mcc.selectMC(0)
+        self.mcc.SetMode(0)
+        self.mcc.SetHoldingEnable(0)
+        self.mcc.selectMC(1)
+        self.mcc.SetMode(0)
+        self.mcc.SetHoldingEnable(0)
         #except:
             #raise BaseException
         return self
     def allVChold_60(self):
-        self.ctrl.selectMC(0)
-        self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(-.06)
-        self.ctrl.SetHoldingEnable(1)
-        self.ctrl.selectMC(1)
-        self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(-.06)
-        self.ctrl.SetHoldingEnable(1)
+        self.mcc.selectMC(0)
+        self.mcc.SetMode(0)
+        self.mcc.SetHolding(-.06)
+        self.mcc.SetHoldingEnable(1)
+        self.mcc.selectMC(1)
+        self.mcc.SetMode(0)
+        self.mcc.SetHolding(-.06)
+        self.mcc.SetHoldingEnable(1)
         return self
     def allICnoHold(self):
-        self.ctrl.selectMC(0)
-        self.ctrl.SetMode(1)
-        self.ctrl.SetHoldingEnable(0)
-        self.ctrl.selectMC(1)
-        self.ctrl.SetMode(1)
-        self.ctrl.SetHoldingEnable(0)
+        self.mcc.selectMC(0)
+        self.mcc.SetMode(1)
+        self.mcc.SetHoldingEnable(0)
+        self.mcc.selectMC(1)
+        self.mcc.SetMode(1)
+        self.mcc.SetHoldingEnable(0)
         return self
     def testZtO(self,holding_voltage):
-        self.ctrl.selectMC(0)
-        self.ctrl.SetMode(1)
-        self.ctrl.SetHoldingEnable(0)
-        self.ctrl.selectMC(1)
-        self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(float(holding_voltage))
-        self.ctrl.SetHoldingEnable(1)
+        self.mcc.selectMC(0)
+        self.mcc.SetMode(1)
+        self.mcc.SetHoldingEnable(0)
+        self.mcc.selectMC(1)
+        self.mcc.SetMode(0)
+        self.mcc.SetHolding(float(holding_voltage))
+        self.mcc.SetHoldingEnable(1)
         return self
     def testOtZ(self,holding_voltage):
-        self.ctrl.selectMC(0)
-        self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(float(holding_voltage))
-        self.ctrl.SetHoldingEnable(1)
-        self.ctrl.selectMC(1)
-        self.ctrl.SetMode(1)
-        self.ctrl.SetHoldingEnable(0)
+        self.mcc.selectMC(0)
+        self.mcc.SetMode(0)
+        self.mcc.SetHolding(float(holding_voltage))
+        self.mcc.SetHoldingEnable(1)
+        self.mcc.selectMC(1)
+        self.mcc.SetMode(1)
+        self.mcc.SetHoldingEnable(0)
         return self
     def zeroVChold_60(self):
-        self.ctrl.selectMC(0)
-        self.ctrl.SetMode(0)
-        self.ctrl.SetHolding(-.06)
-        self.ctrl.SetHoldingEnable(1)
+        self.mcc.selectMC(0)
+        self.mcc.SetMode(0)
+        self.mcc.SetHolding(-.06)
+        self.mcc.SetHoldingEnable(1)
         return self
     def oneVChold_60(self):
-        self.ctrl.selectMC(1)
-        self.ctrl.SetMode(0)
-        #self.ctrl.poops(1) #awe, this is broken now due to something
-        self.ctrl.SetHolding(-.06)
-        self.ctrl.SetHoldingEnable(1)
+        self.mcc.selectMC(1)
+        self.mcc.SetMode(0)
+        #self.mcc.poops(1) #awe, this is broken now due to something
+        self.mcc.SetHolding(-.06)
+        self.mcc.SetHoldingEnable(1)
         return self
     def cleanup(self):
         super().cleanup()
         try:
-            self.ctrl.DestroyObject()
-            print(self.ctrl.__class__,'handler destroyed')
+            self.mcc.DestroyObject()
+            print(self.mcc.__class__,'handler destroyed')
         except:
             pass
 
 
 @hardware_interface('ESP300')
 class espFuncs(kCtrlObj):
-    def __init__(self, modestate, controller):
+    def __init__(self, modestate, esp=None, **kwargs):
         try:
-            if controller.__class__.__name__ is not 'espControl':
+            if esp.__class__.__name__ is not 'espControl':
                 raise TypeError('wrong controller type')
         except:
             raise
         #from esp import espControl
+        self.esp=esp
 
 
-        super().__init__(modestate,controller)
+        super().__init__(modestate)
         self.markDict={} #FIXME
         self.posDict={} #FIXME
         #self.initController(npControl)
@@ -923,7 +976,7 @@ class espFuncs(kCtrlObj):
         """ get the (x,y) position of the eps300 """
         #may want to demand a depth input (which can be bank)
         #try:
-        pos=self.ctrl.getPos()
+        pos=self.esp.getPos()
         #self.doneCB()
         self.posDict[datetime.now()]=pos #FIXME dat should handle ALL of this internally
         print(pos)
@@ -933,7 +986,7 @@ class espFuncs(kCtrlObj):
         return list(pos)
 
     def motorToggle(self):
-        self.ctrl.motorToggle()
+        self.esp.motorToggle()
     def printPosDict(self):
         #self.doneCB()
         print(re.sub('\), ',')\r\n',str(self.posDict)))
@@ -950,7 +1003,7 @@ class espFuncs(kCtrlObj):
         else:
             #stdout.write('\rMoving to next position')
             #stdout.flush()
-            self.ctrl.BsetPos(self.move_list[self._current_move_list_pos])
+            self.esp.BsetPos(self.move_list[self._current_move_list_pos])
             if self._current_move_list_pos + 1 < len(self.move_list):
                 self._current_move_list_pos+=1
             else:
@@ -974,7 +1027,7 @@ class espFuncs(kCtrlObj):
             yeskey=self.charBuffer.get()
             #self._releaseKR() #XXX
             if yeskey=='y' or yeskey=='Y':
-                self.markDict[key]=self.ctrl.getPos()
+                self.markDict[key]=self.esp.getPos()
                 print(key,'=',self.markDict[key])
             else:
                 print('No mark set')
@@ -982,7 +1035,7 @@ class espFuncs(kCtrlObj):
             self.unmark()
         else:
             #self._releaseKR() #XXX
-            self.markDict[key]=self.ctrl.getPos()
+            self.markDict[key]=self.esp.getPos()
             print(key,'=',self.markDict[key])
         #self.keyHandler(getMark) #fuck, this could be alot slower...
         try:
@@ -1018,7 +1071,7 @@ class espFuncs(kCtrlObj):
         key=self.charBuffer.get()
         #self._releaseKR() #XXX
         if key in self.markDict:
-            print('Moved to: ',self.ctrl.BsetPos(self.markDict[key])) #AH HA! THIS is what is printing stuff out as I mvoe FIXME I removed BsetPos at some point and now I need to add it... back? or what
+            print('Moved to: ',self.esp.BsetPos(self.markDict[key])) #AH HA! THIS is what is printing stuff out as I mvoe FIXME I removed BsetPos at some point and now I need to add it... back? or what
         else:
             print('No position has been set for mark %s'%(key))
         return self
@@ -1147,11 +1200,11 @@ class espFuncs(kCtrlObj):
 
     def fakeMove(self):
         #self.doneCB()
-        if self.ctrl.sim:
+        if self.esp.sim:
             from numpy import random #only for testing remove later
             a,b=random.uniform(-10,10,2) #DO NOT SET cX or cY manually
-            self.ctrl.setPos((a,b))
-            #print(self.ctrl._cX,self.ctrl._cY)
+            self.esp.setPos((a,b))
+            #print(self.esp._cX,self.esp._cY)
         else:
             print('Not in fake mode! Not moving!')
         return self
@@ -1207,7 +1260,7 @@ class espFuncs(kCtrlObj):
         print(list(self.markDict.keys()))
         while self.keyThread.is_alive() and not self._gd_exit: #FIXME may need a reentrant lock here to deal w/ keyboard control
             pos=self.markDict.values()
-            dist=(npsum((arr(self.ctrl._BgetPos()-arr(list(pos))))**2,axis=1))**.5 #FIXME the problem here is w/ _BgetPos()
+            dist=(npsum((arr(self.esp._BgetPos()-arr(list(pos))))**2,axis=1))**.5 #FIXME the problem here is w/ _BgetPos()
             if dist1!=dist[0]:
                 #names='%s \r'%(list(self.markDict.keys())) #FIXME sadly, it seems there is no way ;_;
                 #stdout.write('\r'+''.join(map('{:1.5f} '.format,dist)))
@@ -1240,12 +1293,12 @@ class espFuncs(kCtrlObj):
 
     def setSpeedDef(self):
         #self.doneCB()
-        self.ctrl.setSpeedDefaults()
+        self.esp.setSpeedDefaults()
         return self
 
     def cleanup(self):
         super().cleanup()
-        self.ctrl.cleanup()
+        self.esp.cleanup()
         return self
 
     def setMoveDict(self,moveDict={'w':'up','s':'down','a':'left','d':'right'}):
@@ -1257,19 +1310,19 @@ class espFuncs(kCtrlObj):
         #printD(key)
         if key.isupper(): #shit, this never triggers :(
             #printD('upper')
-            self.ctrl.move(self.moveDict[key.lower()],.05) #FIXME
+            self.esp.move(self.moveDict[key.lower()],.05) #FIXME
         else:
             #printD('lower')
-            self.ctrl.move(self.moveDict[key.lower()],.1)
+            self.esp.move(self.moveDict[key.lower()],.1)
         return self
 
     def printError(self):
-        print('Error:',self.ctrl.getErr().decode('utf-8'))
+        print('Error:',self.esp.getErr().decode('utf-8'))
         return self
     def readProgram(self):
         #self.keyHandler(1)
         #num=self.charBuffer.get()
-        print(self.ctrl.readProgram())
+        print(self.esp.readProgram())
         return self
 
 
