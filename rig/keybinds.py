@@ -245,6 +245,10 @@ def mccDict():
                 7:'getSub_record',
                 8:'wait_till_done',
                        },
+            'mccFuncs':{
+                3.5:'stateToDataFile', #FIXME will this break?
+                8.5:'stateToDataFile', #FIXME will this break?
+            },
             'espFuncs':{
                 0:'moveNext',
                 4:'getWT_getPos',

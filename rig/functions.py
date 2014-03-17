@@ -751,7 +751,7 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         return stateList
 
     def stateToDataFile(self): #AAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH SO BAD FIXME
-        datFunc=self.modestate.ctrlDict['datFuns']
+        datFunc=self.modestate.ctrlDict['datFuncs']
         df=datFunc.c_datafile
         stateList=self.getState()
         df.mddictlist=stateList
