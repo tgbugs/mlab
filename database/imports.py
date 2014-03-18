@@ -22,7 +22,7 @@ from sqlalchemy.exc                     import IntegrityError
 
 from sqlalchemy.orm                     import relationship, backref, object_session, validates, reconstructor
 
-from sqlalchemy.orm.exc                 import FlushError, NoResultFound
+from sqlalchemy.orm.exc                 import FlushError, NoResultFound, MultipleResultsFound
 
 from sqlalchemy.orm.collections         import attribute_mapped_collection
 

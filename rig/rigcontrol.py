@@ -249,6 +249,7 @@ class rigIOMan:
         initedFunc=datFuncs(self,person_id=person_id,project_id=project_id) #FIXME need a way to update these and only actually have them stored in one place >_<
         self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
+        print(ctrlDict)
         initedFunc=allFuncs(self,ctrlDict['clxControl'],ctrlDict['espControl'],ctrlDict['mccControl'],person_id=person_id,project_id=project_id) #FIXME need a way to update these and only actually have them stored in one place >_<
         self.ikFuncDict[initedFunc.__mode__]=initedFunc
 

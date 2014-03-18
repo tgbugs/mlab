@@ -56,7 +56,13 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs):
 
         #move dict?
         if self.getBool('Hit space if you want to make a new movelist'):
-            self.makeNewMoveList('spline',number=10,step_um=100)
+            if len(self.markDict) < 5:
+                print(self.markDict)
+                print('You don\' have enough marks! Go make some!')
+                DAQTask.cleanup()
+                return None
+            else:
+                self.makeNewMoveList('spline',number=10,step_um=100)
 
         #setup holding values
         self.allVChold(-.075)
@@ -67,7 +73,7 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs):
             self.esp.BsetPos(pos)
             self.record_abf_full()
 
-        self.move_record_loop(loop_func)
+        self.move_loop(loop_func)
         self.allVChold(-.06)
         self.allGain(1)
 

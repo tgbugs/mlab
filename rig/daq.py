@@ -209,7 +209,7 @@ def LEDcos(minV,maxV,samples): #FIXME need a way to deal with periodic stuff in 
     return wave
 
 def trigger_LED_train(minV,maxV,on_ms,off_ms,reps,stepType='square'):
-    stepTypeDict={'sqare':LEDsquarePulse,'sin':LEDcos,'ramp':LEDlinramp}
+    stepTypeDict={'square':LEDsquarePulse,'sin':LEDcos,'ramp':LEDlinRamp}
     waveFunc=stepTypeDict[stepType]
     DAQTask,DAQThrd=makeTrain(minV,maxV,on_ms,off_ms,waveFunc,LEDoff,reps)
     return DAQTask,DAQThrd

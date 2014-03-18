@@ -252,17 +252,17 @@ class kCtrlObj:
 
 from database.models import Person, Project, ExperimentType, Experiment, Cell, Slice, Mouse, DataFile
 from datetime import datetime
-from database.imports import NoResultFound
+from database.imports import NoResultFound, MultipleResultsFound
 class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
     #interface with the database TODO this should be able to run independently?
     """Put ANYTHING permanent that might be data in here"""
     def __init__(self,modestate,*args,person_id=None,project_id=None,**kwargs):
-        super().__init__(modestate)
+        super().__init__(modestate,**kwargs)
         self.Session=modestate.Session #FIXME maybe THIS was the problem?
         session=self.Session()
         self.c_person=session.query(Person).filter_by(id=person_id).one()
         self.c_project=session.query(Project).filter_by(id=project_id).one() #FIXME the person could not be on the project
-        self.getUnfinished(session)
+        self.getUnfinished(session) #FIXME huge problem: keyRequests are registered AFTER this >_<
         self.c_datafile=None
         self.session=session #FIXME
         self.sLock=RLock() #a lock for the session, see if we need it
@@ -307,19 +307,38 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
     def getUnfinished(self,session): #FIXME it is possible to get cells or slices w/o experiment...
         def queryUnf(obj):
             return session.query(obj).filter(obj.endDateTime==None)
+
         #experiemtns
         try:
-            self.c_experiment=queryUnf(Experiment).one()
-            self.c_target=self.c_experiment
-            print('Got unfinished experiment ',repr(self.c_experiment))
-        except NoResultFound:
-            self.c_experiment=None
-            self.c_target=None
+            equery=queryUnf(Experiment) #FIXME it is possible for there to be more than one unfinished experiment!
+            allexp=equery.all()
+            if not allexp:
+                self.c_experiment=None
+                self.c_target=None
+            elif len(allexp)>1:
+                #print([ (e.id,e.type,e.startDateTime) for e in allexp])
+                #eid=self.getInt('Please enter an experiment id')
+                #self.c_experiment=equery.get(eid) #FIXME
+                self.c_experiment=allexp[-1]
+                print('WARNING: multiple unfinished! Experiment set to %s. Change it if you need to!'%self.c_experiment)
+            else:
+                self.c_experiment=equery[0]
+                self.c_target=self.c_experiment
+                print('Got unfinished experiment ',repr(self.c_experiment.strHelper()))
+        except:
+            raise
+
         #slices
         try:
-            self.c_slice=queryUnf(Slice).one()
-            self.c_target=self.c_slice
-            print('Got unfinished slice ',self.c_slice.strHelper())
+            allsli=self.c_slice=queryUnf(Slice).all()
+            if not allsli:
+                self.c_slice=None
+            elif len(allsli)>1:
+                self.c_slice=allsli[-1]
+                print('WARNING: multiple unfinished! Slice set to %s. Change it if you need to!'%self.c_slice.strHelper())
+            else:
+                self.c_target=self.c_slice
+                print('Got unfinished slice ',self.c_slice.strHelper())
         except NoResultFound:
             self.c_slice=None
         #cells
@@ -613,6 +632,8 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
 @datafile_maker#@hardware_interface('Digidata 1322A')
 class clxFuncs(kCtrlObj):
     def __init__(self, modestate, clx=None, **kwargs):
+        #if not clx:
+            #clx=kwargs['clx']
         try:
             if clx.__class__.__name__ is not 'clxControl':
                 raise TypeError('wrong controller type %s'%clx.__class__)
@@ -621,7 +642,7 @@ class clxFuncs(kCtrlObj):
         #from clx import clxControl
         self.clx=clx
 
-        super().__init__(modestate)
+        super().__init__(modestate,**kwargs)
         #self.initController(clxmsg)
         #printD('clx ctrl',self.clx)
         #self.clxCleanup=self.cleanup
@@ -721,7 +742,8 @@ class clxFuncs(kCtrlObj):
 @hardware_interface('mc1') #FIXME or is it software interface?
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
     def __init__(self, modestate, mcc=None, **kwargs):
-        #mcc=kwargs['mcc']
+        #if not mcc:
+            #mcc=kwargs['mcc']
         try:
             if mcc.__class__.__name__ is not 'mccControl':
                 raise TypeError('wrong controller type')
@@ -730,7 +752,7 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         #from mcc import mccControl
         self.mcc=mcc
 
-        super().__init__(modestate) #better error messages?
+        super().__init__(modestate,**kwargs) #better error messages?
         #self.initController(mccmsg)
         self.MCCstateDict={}
         #self.wrapDoneCB()
@@ -943,6 +965,8 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
 @hardware_interface('ESP300')
 class espFuncs(kCtrlObj):
     def __init__(self, modestate, esp=None, **kwargs):
+        #if not esp:
+            #esp=kwargs['esp']
         try:
             if esp.__class__.__name__ is not 'espControl':
                 raise TypeError('wrong controller type')
@@ -952,7 +976,7 @@ class espFuncs(kCtrlObj):
         self.esp=esp
 
 
-        super().__init__(modestate)
+        super().__init__(modestate,**kwargs)
         self.markDict={} #FIXME
         self.posDict={} #FIXME
         #self.initController(npControl)
@@ -1034,7 +1058,7 @@ class espFuncs(kCtrlObj):
             print(key,'=',self.markDict[key])
         #self.keyHandler(getMark) #fuck, this could be alot slower...
         try:
-            self.modestate.ctrlDict['datFuncs'].set_slice_md(self.markDict)
+            self.modestate.ctrlDict['datFuncs'].set_slice_md(self.markDict) #FIXME WARNING
         except AttributeError:
             pass
             #raise
