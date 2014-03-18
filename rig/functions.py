@@ -253,10 +253,10 @@ class kCtrlObj:
 from database.models import Person, Project, ExperimentType, Experiment, Cell, Slice, Mouse, DataFile
 from datetime import datetime
 from database.imports import NoResultFound
-class datFuncs(kCtrlObj): 
+class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
     #interface with the database TODO this should be able to run independently?
     """Put ANYTHING permanent that might be data in here"""
-    def __init__(self,modestate,*args,person_id=None,project_id=None):
+    def __init__(self,modestate,*args,person_id=None,project_id=None,**kwargs):
         super().__init__(modestate)
         self.Session=modestate.Session #FIXME maybe THIS was the problem?
         session=self.Session()
@@ -268,7 +268,7 @@ class datFuncs(kCtrlObj):
         self.sLock=RLock() #a lock for the session, see if we need it
         #session.close()
 
-    @static_method
+    @staticmethod
     def getRepoDFS(extension,dfs_name='clampex 9.2',url=None): #FIXME make this persistent on init??
         if not url:
             hostname,fpath=get_local_extension_path(extension)
@@ -351,7 +351,6 @@ class datFuncs(kCtrlObj):
             self.c_target=self.c_datafile
         else:
             print('not a type, try fiddling with ipython if you really need to spec soemthing')
-            z
 
 
     def getDFSubjects(self):
@@ -419,7 +418,7 @@ class datFuncs(kCtrlObj):
     def newDataFile(self,extension,experiment,subjects=[]): #FIXME need other selectors eg: repository >_<
         repo,dfs=getRepoDFS(extension)
         #experiment=Get_newest_id(Experiment) #FIXME unfinished?
-        filename=Get_newest_file(fpath,extension) #FIXME this can be faster than the snapshot!
+        filename=Get_newest_file(fpath,extension) #FIXME this can be faster than the snapshot! FIXME race conditions!!!!
         print(filename,'will be added to the current experiment!')
         new_df=DataFile(filename=filename,url=url,datafilesource_id=dfs.id,
                             experiment_id=experiment.id,Subjects=subjects)
@@ -616,7 +615,7 @@ class clxFuncs(kCtrlObj):
     def __init__(self, modestate, clx=None, **kwargs):
         try:
             if clx.__class__.__name__ is not 'clxControl':
-                raise TypeError('wrong controller type')
+                raise TypeError('wrong controller type %s'%clx.__class__)
         except:
             raise
         #from clx import clxControl
@@ -751,12 +750,7 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         self.mcc.SetPrimarySignalGain(value)
         return self
 
-
-    def inpWait(self): #XXX depricated
-        #wait for keypress to move to the next program, this may need to spawn its own thread?
-        raise DeprecationWarning('please use trmFuncs.getKbdHit()')
-
-    def getState(self): #FIXME this function and others like it should probably be called directly by dataman?
+    def getMCCState(self): #FIXME this function and others like it should probably be called directly by dataman?
         printD('hMCCmsg outer',self.mcc.hMCCmsg)
         def base(state):
             state['HoldingEnable']=self.mcc.GetHoldingEnable()
@@ -803,9 +797,10 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         return stateList
 
     def stateToDataFile(self): #AAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH SO BAD FIXME
+        #XXX DEPRECATED
         datFunc=self.modestate.ctrlDict['datFuncs']
         df=datFunc.c_datafile
-        stateList=self.getState()
+        stateList=self.getMCCState()
         df.mddictlist=stateList
         datFunc.session.commit()
         return self #IF THIS WORKS I WILL BUY A HAT AND EAT IT WAIT I ALREADY HAVE A HAT
@@ -1078,7 +1073,7 @@ class espFuncs(kCtrlObj):
     #gotoMark.keyRequester=True
 
     @keyRequest
-    def mark_to_movelist(self):
+    def mark_to_movelist(self,step_um=None,number=None):
         names='origin','target'
         args=[]
         for i in range(2):
@@ -1094,13 +1089,11 @@ class espFuncs(kCtrlObj):
             else:
                 print('Mark not found exiting.')
                 return None
-        step=self.getFloat('step um>')
-        number=self.getInt('number>')
         from rig.calcs import random_vector_points, vector_points, random_vector_ret_start
         #moves=vector_points(*args,number=number,spacing=step/1000) #.05 mm = 50um
         #moves=random_vector_points(*args,number=number,spacing=step/1000) #.05 mm = 50um
-        moves=random_vector_ret_start(*args,number=number,spacing=step/1000)
-        print(moves)
+        moves=random_vector_ret_start(*args,number=number,spacing=step_um/1000)
+        #print(moves)
         self.set_move_list(moves)
 
     @keyRequest
@@ -1156,7 +1149,7 @@ class espFuncs(kCtrlObj):
         return moves
 
     @keyRequest
-    def mark_to_spline(self,number=10,step_um=100):
+    def mark_to_spline(self,step_um=100,number=10):
         from rig.calcs import get_moves_from_points
         from numpy.random import shuffle
         import pylab as plt
@@ -1187,6 +1180,15 @@ class espFuncs(kCtrlObj):
         print(len(moves))
         self.set_move_list(moves)
 
+    def makeNewMoveList(self,move_pattern=None,number=None,step_um=None):
+        make_func={'spline':self.mark_to_spline,'line':self.mark_to_movelist,'cross':self.mark_to_cardinal}[move_pattern]
+
+        if not step_um:
+            step_um=self.getFloat('step um>')
+        if not number:
+            number=self.getInt('number>')
+
+        make_func(step_um,number)
 
     def printMarks(self):
         """print out all marks and their associated coordinates"""

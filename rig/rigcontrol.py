@@ -19,6 +19,7 @@ from queue import Queue,Empty
 from rig.ipython import embed
 
 from rig.functions import * #__all__ has been set, update it
+from rig.combo import allFuncs
 from rig.keybinds import keyDicts
 from rig.dictMan import makeModeDict
 from rig.key import keyListener
@@ -103,6 +104,7 @@ class rigIOMan:
             self.keyLock.release()
 
     def updateModeDict(self):
+        """ This magic little function fills in ALL the keybings """
         #TODO keyDicts.values is where we will find the names of the functions that have been wrapped as keyRequests and that keybinding is what we need to hop on
         #all we need to do is pass in acquireKeyRequest and wrap the function when we make keyActDict
         self.helpDict,self.modeDict,self.modeKRDict=makeModeDict(self.ikFuncDict,self.kr_dict,*keyDicts.values())
@@ -245,6 +247,9 @@ class rigIOMan:
             self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
         initedFunc=datFuncs(self,person_id=person_id,project_id=project_id) #FIXME need a way to update these and only actually have them stored in one place >_<
+        self.ikFuncDict[initedFunc.__mode__]=initedFunc
+
+        initedFunc=allFuncs(self,ctrlDict['clxControl'],ctrlDict['espControl'],ctrlDict['mccControl'],person_id=person_id,project_id=project_id) #FIXME need a way to update these and only actually have them stored in one place >_<
         self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
 

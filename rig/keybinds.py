@@ -126,6 +126,11 @@ def clxDict():
                               'espFuncs':{1:'getWT_getPos'},
                          }
                         },
+             'allFuncs':{
+                 'r':'paired_led_vc',
+                 'p':'pair_test',
+                 'e':'basic_char',
+             },
             }
 
     
@@ -138,7 +143,7 @@ def mccDict():
     mccDict={
         'mode':'mcc',
         'mccFuncs':{
-                    'r':'reloadControl',
+                    #'r':'reloadControl',
                     '1':'set_hs0',
                     '2':'set_hs1',
                     #'3':'set_hsAll',
@@ -305,7 +310,7 @@ def mccDict():
     step_um=100
     number=10
     mccDict['mccFuncs']['d']=make_som_dict(step_um,number)
-    mccDict['espFuncs'].update({'s':('mark_to_spline',number,step_um)}) #*2 for left and right traversal
+    mccDict['espFuncs'].update({'s':('mark_to_spline',step_um,number)}) #*2 for left and right traversal
 
     return mccDict
 
