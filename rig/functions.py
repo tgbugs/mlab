@@ -116,11 +116,14 @@ class kCtrlObj:
 
         #some way to pass the state along to other controllers XXX REQUIRED FOR CLASS DECORATORS TO WORK XXX
         def dat_get_write_targets():
-            return modestate.ctrlDict['datFuncs'].getWriteTargets()
+            #return modestate.ctrlDict['datFuncs'].getWriteTargets()
+            return self.getWriteTargets()
         def dat_get_df_subjects():
-            return modestate.ctrlDict['datFuncs'].getDFSubjects()
+            #return modestate.ctrlDict['datFuncs'].getDFSubjects()
+            return self.getDFSubjects()
         def dat_new_df():
-            return modestate.ctrlDict['datFuncs'].newDataFileCallback()
+            #return modestate.ctrlDict['datFuncs'].newDataFileCallback()
+            return self.newDataFileCallback()
         self._wt_getter=dat_get_write_targets
         self._sub_getter=dat_get_df_subjects #name needs to match for decorators to work >_<
         self._new_datafile=dat_new_df
@@ -776,6 +779,18 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         self.mcc.SetPrimarySignalGain(value)
         return self
 
+    def setMCState(self,stateList):
+        """ ste the mcc state from a mcc state dict list """
+       for state in stateList:
+            self.mcc.selectMC(state['Channel'])
+            self.mcc.SetMode(state['mode'])
+            self.mcc.SetHolding(state['Holding'])
+            self.mcc.SetHoldingEnable(state['HoldingEnable'])
+            self.mcc.SetPrimarySignal(state['PrimarySignal'])
+            self.mcc.GetPrimarySignalGain(state['PrimarySignalGain'])
+            self.mcc.GetPrimarySignalLPF(state['PrimarySignalLPF'])
+        return self
+
     def getMCCState(self): #FIXME this function and others like it should probably be called directly by dataman?
         printD('hMCCmsg outer',self.mcc.hMCCmsg)
         def base(state):
@@ -786,23 +801,16 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
             state['PrimarySignalLPF']=self.mcc.GetPrimarySignalLPF() #also in abf file
             state['PipetteOffset']=self.mcc.GetPipetteOffset()
 
-        #def vc(state):
-            #base(state)
-            #XXX ONLY RELEVANT FOR MODE 0
+            #XXX ONLY RELEVANT FOR MODE 0 (VC)
             state['FastCompCap']=self.mcc.GetFastCompCap()
             state['SlowCompCap']=self.mcc.GetSlowCompCap()
             state['FastCompTau']=self.mcc.GetFastCompTau()
             state['SlowCompTau']=self.mcc.GetSlowCompTau()
             state['SlowCTX20Enable']=self.mcc.GetSlowCompTauX20Enable()
 
-        #def ic(state):
-            #base(state)
-            #XXX ONLY RELEVANT FOR MODE 1
+            #XXX ONLY RELEVANT FOR MODE 1 (IC)
             state['BridgeBalEnable']=self.mcc.GetBridgeBalEnable()
             state['BridgeBalResist']=self.mcc.GetBridgeBalResist()
-
-        #def iez(state):
-            #base(state)
 
         #modeDict={0:vc,1:ic,2:iez}
         stateList=[]
@@ -811,7 +819,7 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
             state={} #FIXME: make this a dict with keys as the name of the value? eh would probs complicate
             state['Channel']=i #might be suprflulous but it could simplify the code to read out stateList
             mode=self.mcc.GetMode()
-            state['mode']=(mode)
+            state['mode']=mode
             #modeDict[mode](state)
             base(state)
             stateList.append(state)
@@ -824,8 +832,8 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
 
     def stateToDataFile(self): #AAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH SO BAD FIXME
         #XXX DEPRECATED
-        datFunc=self.modestate.ctrlDict['datFuncs']
-        df=datFunc.c_datafile
+        #datFunc=self.modestate.ctrlDict['datFuncs']
+        df=self.c_datafile
         stateList=self.getMCCState()
         df.mddictlist=stateList
         datFunc.session.commit()
@@ -836,11 +844,6 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         print(re.sub('\), ',')\r\n',str(self.MCCstateDict)))
         return self
 
-    def setMCState(self,MC=None,Mode=None,Holding=None,HoldingEnable=None): #TODO
-        #FIXME all of the experiment logic needs to be stored in one place instead of hidden in 10 files
-        #selectMC,SetMode,SetHolding,SetHoldingEnable,
-        #self.mcc.selectMC()
-        return self
 
     def set_hs0(self):
         print('Setting headstage 0')
@@ -1038,7 +1041,8 @@ class espFuncs(kCtrlObj):
     def mark(self): #FIXME seems like this might be where the crashes are coming from?
         """mark/store the position of a cell using a character sorta like vim"""
         try:
-            slice_md=self.modestate.ctrlDict['datFuncs'].c_slice.markDict
+            #slice_md=self.modestate.ctrlDict['datFuncs'].c_slice.markDict
+            slice_md=self.c_slice.markDict
             self.markDict=slice_md
         except AttributeError:
             pass
@@ -1063,7 +1067,8 @@ class espFuncs(kCtrlObj):
             print(key,'=',self.markDict[key])
         #self.keyHandler(getMark) #fuck, this could be alot slower...
         try:
-            self.modestate.ctrlDict['datFuncs'].set_slice_md(self.markDict) #FIXME WARNING
+            #self.modestate.ctrlDict['datFuncs'].set_slice_md(self.markDict) #FIXME WARNING
+            self.set_slice_md(self.markDict) #FIXME WARNING
         except AttributeError:
             pass
             #raise
@@ -1078,7 +1083,8 @@ class espFuncs(kCtrlObj):
             pos=self.markDict.pop(mark)
             print("umarked '%s' at pos %s"%(mark,pos))
             try:
-                self.modestate.ctrlDict['datFuncs'].set_slice_md(self.markDict)
+                #self.modestate.ctrlDict['datFuncs'].set_slice_md(self.markDict)
+                self.set_slice_md(self.markDict) #FIXME WARNING
             except:
                 raise
         except KeyError:
@@ -1102,90 +1108,46 @@ class espFuncs(kCtrlObj):
     #gotoMark.keyRequester=True
 
     @keyRequest
-    def mark_to_movelist(self,step_um=None,number=None):
-        names='origin','target'
-        args=[]
-        for i in range(2):
-            stdout.write(names[i]+'> ')
-            stdout.flush()
-            key=self.charBuffer.get()
-            stdout.write(key)
-            stdout.flush()
-            if key in self.markDict:
-                args.extend(self.markDict[key]) #x,y,x,y
-                stdout.write('\n')
-                stdout.flush()
-            else:
-                print('Mark not found exiting.')
-                return None
+    def mark_to_movelist(self,step_um=None,number=None,points=[]):
+        marks='origin','target'
+        if len(points) != len(marks):
+            points=getMarks(marks)
+
         from rig.calcs import random_vector_points, vector_points, random_vector_ret_start
         #moves=vector_points(*args,number=number,spacing=step/1000) #.05 mm = 50um
         #moves=random_vector_points(*args,number=number,spacing=step/1000) #.05 mm = 50um
-        moves=random_vector_ret_start(*args,number=number,spacing=step_um/1000)
-        #print(moves)
+
+        moves=random_vector_ret_start(*points,number=number,spacing=step_um/1000)
+
         self.set_move_list(moves)
         return self
 
     @keyRequest
-    def mark_to_cardinal(self,step_um=25,number=8): #FIXME need a way to reload marks at startup!
+    def mark_to_cardinal(self,step_um=25,number=8,points=[]): #FIXME need a way to reload marks at startup!
         from numpy.random import shuffle
         from rig.calcs import vector_points, intersperse
-        #step_um=self.getFloat('step um>') #FIXME stupid having to compile this at startup >_<
-        #number=self.getInt('number>')
 
-        start='origin'
-        stdout.write(start+'> ')
-        stdout.flush()
-        key=self.charBuffer.get()
-        stdout.write(key)
-        stdout.flush()
-        #base_args=[]
-        if key in self.markDict:
-            base_args=self.markDict[key] #x,y,x,y #XXX NOTE XXX this is the origin!
-            stdout.write('\n')
-            stdout.flush()
-        else:
-            print('Mark not found!')
-            return None
+        marks='start','dorsal','ventral','medial','lateral'
+        if len(points) != len(marks):
+            points=getMarks(marks)
 
-        dirs='dorsal','ventral','medial','lateral'
-        base=[base_args] #include the origin somewhere in the list
-        for i in range(len(dirs)):
-            args=[]
-            args.extend(base_args)
-            stdout.write(dirs[i]+'> ')
-            stdout.flush()
-            key=self.charBuffer.get()
-            stdout.write(key)
-            stdout.flush()
-            if key in self.markDict:
-                args.extend(self.markDict[key]) #x,y,x,y
-                stdout.write('\n')
-                stdout.flush()
-                #print(base_args,args)
-                #pts=vector_points(args[0],args[1],args[2],args[3],number=number,spacing=step_um/1000)
-                pts=vector_points(*args,number=number,spacing=step_um/1000)[1:] #[1:] to prevent redundant origin calls
-                #print(pts)
-                base.extend(pts)
-            else:
-                print('Mark not found exiting.')
-                return None
+        base=[points[0]]
+        for point in points[1:]:
+            pts=vector_points(points[0],point,number=number,spacing=step_um/1000)[1:] #drop the origin
+            base.extend(pts)
+
         shuffle(base)
-        moves=[m for m in intersperse(base,base_args)]
-        moves.append(base_args) #add the last validation origin point
-        print(moves)
-        print(len(moves))
+        moves=[points[0]] #we need our first calibration point
+        moves.extend([m for m in intersperse(base,points[0])])
+        moves.append(points[0]) #add the last validation origin point
+        #print(moves)
+        #print(len(moves))
         self.set_move_list(moves)
         #return moves
         return self
 
     @keyRequest
-    def mark_to_spline(self,step_um=100,number=10):
-        from rig.calcs import get_moves_from_points
-        from numpy.random import shuffle
-        import pylab as plt
-
-        marks='start','one','two','three','four','five'
+    def getMarks(self,marks=[1,2,3]):
         points=[]
         for i in range(len(marks)):
             stdout.write(marks[i]+'> ')
@@ -1198,8 +1160,20 @@ class espFuncs(kCtrlObj):
                 stdout.write('\n')
                 stdout.flush()
             else:
-                print('Mark not found exiting.')
-                return None
+                raise IOError('Mark not found exiting.')
+                #return None
+        return points
+
+    @keyRequest
+    def mark_to_spline(self,step_um=100,number=10,points=[]):
+        from rig.calcs import get_moves_from_points
+        from numpy.random import shuffle
+        import pylab as plt
+
+        marks='start','one','two','three','four','five'
+        if len(points) != len(marks):
+            points=self.getMarks(marks)
+
         moves=get_moves_from_points(points,points[0],number,step_um/1000,switch_xy=True) #XXX NOTE THE SWITCH XXX
         plt.plot(-moves[0][0],moves[0][1]+.01,'yo')
         shuffle(moves)
@@ -1212,7 +1186,7 @@ class espFuncs(kCtrlObj):
         self.set_move_list(moves)
         return self
 
-    def makeNewMoveList(self,move_pattern=None,number=None,step_um=None):
+    def makeNewMoveList(self,move_pattern=None,number=None,step_um=None,points=[]):
         make_func={'spline':self.mark_to_spline,'line':self.mark_to_movelist,'cross':self.mark_to_cardinal}[move_pattern]
 
         if not step_um:
@@ -1220,13 +1194,15 @@ class espFuncs(kCtrlObj):
         if not number:
             number=self.getInt('number>')
 
-        if not make_func(step_um,number):
+        if not make_func(step_um,number,points):
             raise IOError('No move dict set!')
 
     def printMarks(self):
         """print out all marks and their associated coordinates"""
         try:
-            slice_md=self.modestate.ctrlDict['datFuncs'].c_slice.markDict
+            #slice_md=self.modestate.ctrlDict['datFuncs'].c_slice.markDict
+            slice_md=self.c_slice.markDict #should work coop...
+
             self.markDict=slice_md
         except AttributeError:
             pass
@@ -1265,7 +1241,8 @@ class espFuncs(kCtrlObj):
 
         if not len(self.markDict):
             try:
-                self.markDict.update(self.modestate.ctrlDict['datFuncs'].c_slice.markDict)
+                #self.markDict.update(self.modestate.ctrlDict['datFuncs'].c_slice.markDict)
+                self.markDict.update(self.c_slice.markDict)
             except:
                 pass #in the event there is no slice we don't really need to tell anyone
             if not len(self.markDict):

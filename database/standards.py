@@ -14,6 +14,21 @@ import requests as r #FIXME :(
 ###  File handling
 ###---------------
 
+def get_local_abf_path(hostname,osname,program=None): #FIXME make this not hardcoded also derp why does this have to exist
+    nt_paths={
+            'HILL_RIG':'D:/tom_data/clampex/',
+            'andromeda':'C:/tom_data/clampex/', #derp empty and fake
+    }
+
+    posix_paths={
+            'athena':'/home/tom/Dropbox/mlab/data', #FIXME this is clearly incorrect
+    }
+
+    os_hostname_abf_path={ 'nt':nt_paths, 'posix':posix_paths, }
+
+    fpath=os_hostname_abf_path[osname][hostname]
+    return fpath
+
 def Get_newest_file(_path,extension): #FIXME TODO: I think the easiest way to do this is just to have watched folders with filetypes to watch, and they can be recursive, and then we can just call a 'go check for changes' function
     print(_path,extension)
     files=os.listdir(_path)

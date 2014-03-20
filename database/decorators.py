@@ -8,7 +8,7 @@ from database.table_logic import logic_StepEdge
 from database.models import DataFile,DataFileSource,Experiment,Hardware,MetaDataSource,Repository
 from database.engines import engine #FIXME tests >_< need a way to synchornize this ;_; need a way to make decorators based on the session, but right now we are just going to switch stuff manually
 from database.imports import printD
-from database.standards import Get_newest_file
+from database.standards import Get_newest_file, get_local_abf_path
 
 _Session=sessionmaker(bind=engine)
 def Session():
@@ -51,21 +51,6 @@ def Get_newest_abf(_path):
     abf_files.sort() #FIXME make sure the filenames order correctly
     out=abf_files[-1] #get the last/newest file
     return out
-
-def get_local_abf_path(hostname,osname,program=None): #FIXME make this not hardcoded also derp why does this have to exist
-    nt_paths={
-            'HILL_RIG':'D:/tom_data/clampex/',
-            'andromeda':'C:/tom_data/clampex/', #derp empty and fake
-    }
-
-    posix_paths={
-            'athena':'/home/tom/Dropbox/mlab/data', #FIXME this is clearly incorrect
-    }
-
-    os_hostname_abf_path={ 'nt':nt_paths, 'posix':posix_paths, }
-
-    fpath=os_hostname_abf_path[osname][hostname]
-    return fpath
 
 def get_local_jpg_path(hostname,osname,program=None): #TODO FIXME there are multiple jpg paths
 

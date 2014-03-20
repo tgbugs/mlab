@@ -8,7 +8,9 @@ from rig.ipython import embed
 import pylab as plt
 import gc
 
+
 from multiprocessing import Process,Pipe
+
 def spawn(f):
     def fun(pipe,x):
         pipe.send(f(x))
@@ -42,7 +44,7 @@ def load_abf(filepath):
 def find_rs_test(header):
     enabled=header['nWaveformEnable']
     step_size=header['fEpochInitLevel']
-    cmds_steps=[ step_size[:10] , step_size[10:] ]
+    cmds_steps=[ step_size[:10] , step_size[10:] ] #split the command channels in half
     volts=[]
     step_indexes=[]
     for command in cmds_steps:
@@ -243,7 +245,7 @@ def plot_raw_aligned(segments):
 def plot_raw_serries(block):
     pass
 
-def get_protocol_offsets(protocol_name):
+def get_protocol_offsets(protocol_name): #TODO maintain the manual one elsewhere?
     """ as I have found no way to find the initial samples before the first step in a protocol we do it manually :/ """
     OFFSETS={
     '01_led_whole_cell_voltage.pro':7816,
@@ -259,7 +261,9 @@ def struct_read(binary,format,offset=None):
         binary.seek(offset)
     return struct.unpack(format, binary.read(struct.calcsize(format)))
 
-def print_tp_stats(filepath):
+
+def print_tp_stats(filepath): #FIXME this only works if there is only ONE epoch
+#FIXME also need to make all of these things work with NEGATIVE test pulses! (just use the sign on the step)
     raw=AxonIO(filepath)
         #raw,block,segments,header=load_abf(filepath)
     try:
@@ -289,6 +293,7 @@ def print_tp_stats(filepath):
     print('Rses',Rss)
     print('Rs_ests',Rs_ests)
     print('Rms',Rms)
+    return Taus,Rss,Rs_ests,Rms
     
 def get_segments_with_step(filepath):
     try:
@@ -317,7 +322,6 @@ def get_tmp_path(): #FIXME move to utils or something
             return 'C:/tmp/' #a poor substitue but whatever
         elif hostname == 'athena':
             return  None #'T:/asdf/' #FIXME
-
 def main():
     from sqlalchemy.orm import Session
     from database.table_logic import logic_StepEdge

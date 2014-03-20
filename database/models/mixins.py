@@ -522,5 +522,16 @@ class HasTreeStructure:
             return allChilds
 
 
+###-------------------------------
+### Has analysis and results!
+###-------------------------------
+
+
+#TODO figure out how to actually store the analysis code
+
+class HasAnalysis:
+    @declared_attr
+    def online_results(cls):
+        return Column(DictType)
 
 
