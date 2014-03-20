@@ -70,7 +70,7 @@ def get_local_abf_path(hostname,osname,program=None): #FIXME make this not hardc
 def get_local_jpg_path(hostname,osname,program=None): #TODO FIXME there are multiple jpg paths
 
     os_hostname_jpg_path={ #;alksdjf;laksdjf;laksdjf;laksdjf;laksdjf FIXME
-    'nt':{'HILL_RIG':'D:/tom_data/rigcam/'},
+    'nt':{'HILL_RIG':'D:/tom_data/rigcam/','andromeda':'C:/tom_data/rigcam/'},
     'posix':{'athena':'/home/tom/mlab_data/rigcam/'},
     }
     fpath=os_hostname_jpg_path[osname][hostname]

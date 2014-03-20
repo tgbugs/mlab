@@ -1013,6 +1013,7 @@ class espFuncs(kCtrlObj):
 
     def set_move_list(self,move_list): #FIXME TODO should probably be saved at the... slice level?
         self.move_list=move_list
+        self._current_move_list_index=0
         self._current_move_list_pos=0
 
     def moveNext(self):
@@ -1119,6 +1120,7 @@ class espFuncs(kCtrlObj):
         moves=random_vector_ret_start(*args,number=number,spacing=step_um/1000)
         #print(moves)
         self.set_move_list(moves)
+        return self
 
     @keyRequest
     def mark_to_cardinal(self,step_um=25,number=8): #FIXME need a way to reload marks at startup!
@@ -1170,7 +1172,8 @@ class espFuncs(kCtrlObj):
         print(moves)
         print(len(moves))
         self.set_move_list(moves)
-        return moves
+        #return moves
+        return self
 
     @keyRequest
     def mark_to_spline(self,step_um=100,number=10):
@@ -1203,6 +1206,7 @@ class espFuncs(kCtrlObj):
         print(moves)
         print(len(moves))
         self.set_move_list(moves)
+        return self
 
     def makeNewMoveList(self,move_pattern=None,number=None,step_um=None):
         make_func={'spline':self.mark_to_spline,'line':self.mark_to_movelist,'cross':self.mark_to_cardinal}[move_pattern]
@@ -1212,7 +1216,8 @@ class espFuncs(kCtrlObj):
         if not number:
             number=self.getInt('number>')
 
-        make_func(step_um,number)
+        if not make_func(step_um,number):
+            raise IOError('No move dict set!')
 
     def printMarks(self):
         """print out all marks and their associated coordinates"""

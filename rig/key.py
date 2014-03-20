@@ -162,6 +162,8 @@ def kl_win(charBuffer,keyHandler,keyLock): #FIXME
                         printD( keyEvent.controlKeyState )
                         if keyEvent.controlKeyState==48: #SHIFT_PRESSED
                             char = keyEvent.char.UnicodeChar.upper()
+                        elif keyEvent.controlKeyState==16: #for windows 7??? FIXME
+                            char = keyEvent.char.UnicodeChar.upper()
                         else:
                             char = keyEvent.char.UnicodeChar.lower()
                         printD(keyEvent.virtualKeyCode)

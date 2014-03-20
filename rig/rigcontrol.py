@@ -223,7 +223,7 @@ class rigIOMan:
                 ctrlDict[ctrl.__name__]=inited
             except:
                 #warnings.warn('[!] %s failed to init'%ctrl.__name__,UserWarning,0)
-                #raise
+                raise
                 print('[!] %s failed to init'%ctrl.__name__) #XXX print
 
         #init trmFuncs since it really should be part of key...

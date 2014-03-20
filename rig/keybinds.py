@@ -18,12 +18,13 @@ def rigDict():
                         },
                    },
 
-        'clxFuncs':{
+        'allFuncs':{
+        #'clxFuncs':{
                     'r':('setMode','clx'),
                     #'l':'load',
-                   },
+                   #},
 
-        'mccFuncs':{
+        #'mccFuncs':{
                     #'1':'allIeZ',
                     #'2':'allVCnoHold',
                     #'3':'allVChold_60',
@@ -35,9 +36,9 @@ def rigDict():
                     #'a':'printMCCstate',
                     'c':('setMode','mcc'),
                     'y':'getState',
-                   },
+                   #},
 
-        'espFuncs':{
+        #'espFuncs':{
                     #'o':'readProgram',
                     'o':'motorToggle',
                     'w':'move',
@@ -65,12 +66,12 @@ def rigDict():
                     'm':'mark',
                     'l':'mark_to_movelist',
                    },
-        'guiFuncs':{
+        #'guiFuncs':{
                     'z':'getCameraImage',
                     'Z':'getSub_getCameraImage',
-                   },
+                   #},
 
-        'datFuncs':{
+        #'datFuncs':{
                     't':'print_write_target',
                     'T':'setWriteTargets',
                     'P':'printAll',
@@ -78,15 +79,15 @@ def rigDict():
                     'e':('setMode','end'),
                     #'o':'test',
                     #'d':('setMode','dat'),
-                   },
+                   #},
 
-        'trmFuncs':{
+        #'trmFuncs':{
             'k':('setMode','trm'),
             'U':'getWT_getDistance_um',
             #'i':'ipython',
             #':':'test' #this works, so not sure why command doesnt
             ':':'command',
-            },
+            #},
     }
     return rigDict
 
@@ -112,7 +113,8 @@ def clxDict():
     # the #! opperator works by calling the the 'funcName' of the outer key name
     clxDict={
              'mode':'clx',
-             'clxFuncs':{
+             'allFuncs':{
+             #'clxFuncs':{
                          '#!1':('setProtocolPath',(protoPath,)), #FIXME massive hack as usual
                          '#!2':('readProgDict',(programDict,)),
                          #'l':'load',
@@ -124,25 +126,25 @@ def clxDict():
                          #'m':'startMembTest',
                          ' ':{'clxFuncs':{0:'getSub_record'},
                               'espFuncs':{1:'getWT_getPos'},
-                         }
+                         },
+                        #},
+                         'r':'paired_led_vc',
+                         'p':'pair_test',
+                         'e':'basic_char',
                         },
-             'allFuncs':{
-                 'r':'paired_led_vc',
-                 'p':'pair_test',
-                 'e':'basic_char',
-             },
             }
 
     
     for key in programDict.keys():
-        clxDict['clxFuncs'][key]=('load',key)
+        clxDict['allFuncs'][key]=('load',key)
 
     return clxDict
 
 def mccDict():
     mccDict={
         'mode':'mcc',
-        'mccFuncs':{
+        'allFuncs':{
+        #'mccFuncs':{
                     #'r':'reloadControl',
                     '1':'set_hs0',
                     '2':'set_hs1',
@@ -277,8 +279,8 @@ def mccDict():
         return led_dict
     step_um=25
     number=8 #XXX note that you need step_um * dist-1 to get to max dist here because zero counts as a stop
-    mccDict['espFuncs']={'m':('mark_to_cardinal',step_um,number)} #this means we need to multipy by number by 4 each position-origin pair should be accounted for
-    mccDict['mccFuncs']['l']=make_led_dict(step_um,number)
+    #mccDict['espFuncs']={'m':('mark_to_cardinal',step_um,number)} #this means we need to multipy by number by 4 each position-origin pair should be accounted for
+    #mccDict['mccFuncs']['l']=make_led_dict(step_um,number)
 
     def make_som_dict(step_um,number): #TODO
         led_dict={}
@@ -309,15 +311,16 @@ def mccDict():
         return led_dict
     step_um=100
     number=10
-    mccDict['mccFuncs']['d']=make_som_dict(step_um,number)
-    mccDict['espFuncs'].update({'s':('mark_to_spline',step_um,number)}) #*2 for left and right traversal
+    #mccDict['mccFuncs']['d']=make_som_dict(step_um,number)
+    #mccDict['espFuncs'].update({'s':('mark_to_spline',step_um,number)}) #*2 for left and right traversal
 
     return mccDict
 
 def newDict():
     datDict={
         'mode':'new',
-        'datFuncs':
+        'allFuncs':
+        #'datFuncs':
             {
                 'n':'newNote',
                 's':'newSlice',
@@ -331,7 +334,8 @@ def newDict():
 def endDict():
     datDict={
         'mode':'end',
-        'datFuncs':
+        'allFuncs':
+        #'datFuncs':
         {
             's':'endSlice',
             'c':'endCell', 
@@ -346,7 +350,8 @@ def endDict():
 def trmDict():
     trmDict={
         'mode':'trm',
-        'trmFuncs':
+        'allFuncs':
+        #'trmFuncs':
             {
                 'i':'openIPython',
                 '1':'getString',
