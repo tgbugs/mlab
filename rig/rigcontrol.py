@@ -18,7 +18,7 @@ from queue import Queue,Empty
 
 from rig.ipython import embed
 
-from rig.functions import * #__all__ has been set, update it
+#from rig.functions import * #__all__ has been set, update it
 from rig.combo import allFuncs
 from rig.keybinds import keyDicts
 from rig.dictMan import makeModeDict
@@ -231,23 +231,23 @@ class rigIOMan:
         #self.ikFuncDict['trmFuncs']=self.trm_io
         #self.ikFuncDict['trmFuncs']=lambda:raise DeprecationWarning('replace with reference to .trm_io please')
         #init the rest 
-        ctrlBindingDict={
-                'clxControl':clxFuncs,
-                'espControl':espFuncs,
-                'mccControl':mccFuncs,
-        }
-        for ctrl_name in ctrlDict.keys(): #initilize the function dicts
-            initedFunc=ctrlBindingDict[ctrl_name](self,ctrlDict[ctrl_name]) #callback to register functions as keyRequesters happends here
-            self.ikFuncDict[initedFunc.__mode__]=initedFunc
+        #ctrlBindingDict={
+                #'clxControl':clxFuncs,
+                #'espControl':espFuncs,
+                #'mccControl':mccFuncs,
+        #}
+        #for ctrl_name in ctrlDict.keys(): #initilize the function dicts
+            #initedFunc=ctrlBindingDict[ctrl_name](self,ctrlDict[ctrl_name]) #callback to register functions as keyRequesters happends here
+            #self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
 
-        FUNCS=keyFuncs,trmFuncs,guiFuncs #must init dat after trm?
-        for func in FUNCS:
-            initedFunc=func(self) #callback to register functions as keyRequesters happends here
-            self.ikFuncDict[initedFunc.__mode__]=initedFunc
+        #FUNCS=keyFuncs,trmFuncs,guiFuncs #must init dat after trm?
+        #for func in FUNCS:
+            #initedFunc=func(self) #callback to register functions as keyRequesters happends here
+            #self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
-        initedFunc=datFuncs(self,person_id=person_id,project_id=project_id) #FIXME need a way to update these and only actually have them stored in one place >_<
-        self.ikFuncDict[initedFunc.__mode__]=initedFunc
+        #initedFunc=datFuncs(self,person_id=person_id,project_id=project_id) #FIXME need a way to update these and only actually have them stored in one place >_<
+        #self.ikFuncDict[initedFunc.__mode__]=initedFunc
 
         print(ctrlDict)
         initedFunc=allFuncs(self,ctrlDict['clxControl'],ctrlDict['espControl'],ctrlDict['mccControl'],person_id=person_id,project_id=project_id) #FIXME need a way to update these and only actually have them stored in one place >_<

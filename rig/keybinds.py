@@ -6,7 +6,8 @@
 def rigDict():
     rigDict= {
         'mode':'rig',
-        'keyFuncs':{
+        'allFuncs':{
+        #'keyFuncs':{
                     'esc':'esc',
                     'h':'help',
                     'q': #FIXME depricated???
@@ -16,9 +17,8 @@ def rigDict():
                          'espFuncs':{2:'cleanup'},
                          'keyfuncs':{3:'esc'},
                         },
-                   },
+                   #},
 
-        'allFuncs':{
         #'clxFuncs':{
                     'r':('setMode','clx'),
                     #'l':'load',

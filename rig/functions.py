@@ -248,7 +248,11 @@ class kCtrlObj:
         return out
 
     def cleanup(self):
-        pass
+        """ this is the final super().cleanup() """
+        try:
+            super().cleaup()
+        except:
+            pass
 
 from database.models import Person, Project, ExperimentType, Experiment, Cell, Slice, Mouse, DataFile
 from datetime import datetime

@@ -5,11 +5,11 @@ from sqlalchemy.orm import object_session #FIXME vs database.imports?
 from database.standards import Get_newest_file
 from threading import RLock
 from rig.gui import takeScreenCap
-from rig.functions import keyRequest,espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs
+from rig.functions import keyRequest,espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs
 from rig.daq import trigger_LED_train
 
 
-class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs):
+class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
     def __init__(self,modestate,clx,esp,mcc,person_id=None,project_id=None):
         super().__init__(modestate,esp=esp,mcc=mcc,clx=clx,person_id=person_id,project_id=project_id) #FIXME one way around the problem is the have the funcs be separate so that they all have their own name spaces??
 
@@ -100,6 +100,8 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs):
         self._current_move_list_index=0
 
 
+    def cleanup(self):
+        super().cleanup()
 
 
 
