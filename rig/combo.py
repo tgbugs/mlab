@@ -3,7 +3,7 @@ from rig.ipython import embed
 from sqlalchemy.orm import object_session #FIXME vs database.imports?
 #from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds, new_DataFile
 from database.standards import Get_newest_file
-from threading import RLock
+from threading import RLock, Thread
 from rig.gui import takeScreenCap
 from rig.functions import keyRequest,espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs
 from rig.daq import trigger_LED_train
@@ -12,6 +12,7 @@ from analysis.online_analysis import abf_basic_vc_analysis
 
 class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
     def __init__(self,modestate,clx,esp,mcc,person_id=None,project_id=None):
+        self.session=modestate.Session()
         super().__init__(modestate,esp=esp,mcc=mcc,clx=clx,person_id=person_id,project_id=project_id) #FIXME one way around the problem is the have the funcs be separate so that they all have their own name spaces??
 
     def MCCstateToDataFile(self):
@@ -21,7 +22,7 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
 
     def spawn_online_analysis(self,datafile,analysis_function): #TODO
         """ Starts a new thread that runs online analysis"""
-        analysis_thread=threading.Thread(target=analysis_function,args=datafile)
+        analysis_thread=Thread(target=analysis_function,args=datafile)
         analysis_thread.start()
 
     def newMetaData(self,value,targets,metadatasource,abs_error=None):

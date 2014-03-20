@@ -477,6 +477,7 @@ class t_repo(TEST):
                     'file:///C:/asdf/test2//',
                     'file:///T:/db/Dropbox//',
                     'file://HILL_RIG/D:/tom_data/clampex',
+                    'file://andromeda/C:/tom_data/clampex',
                     'file://athena/home/tom/mlab_data/clampex',
                     'http://www.google.com/', #FIXME broken as expected?
                     'https://www.google.com/' #FIXME broken as expected?

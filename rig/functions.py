@@ -266,13 +266,13 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
     """Put ANYTHING permanent that might be data in here"""
     def __init__(self,modestate,*args,person_id=None,project_id=None,**kwargs):
         super().__init__(modestate,**kwargs)
-        self.Session=modestate.Session #FIXME maybe THIS was the problem?
-        session=self.Session()
-        self.c_person=session.query(Person).filter_by(id=person_id).one()
-        self.c_project=session.query(Project).filter_by(id=project_id).one() #FIXME the person could not be on the project
-        self.getUnfinished(session) #FIXME huge problem: keyRequests are registered AFTER this >_<
+        #self.Session=modestate.Session #FIXME maybe THIS was the problem?
+        #session=self.Session()
+        self.c_person=self.session.query(Person).filter_by(id=person_id).one()
+        self.c_project=self.session.query(Project).filter_by(id=project_id).one() #FIXME the person could not be on the project
+        self.getUnfinished() #FIXME huge problem: keyRequests are registered AFTER this >_<
         self.c_datafile=None
-        self.session=session #FIXME
+        #self.session=session #FIXME
         self.sLock=RLock() #a lock for the session, see if we need it
         #session.close()
 
@@ -311,9 +311,9 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
             raise
 
 
-    def getUnfinished(self,session): #FIXME it is possible to get cells or slices w/o experiment...
+    def getUnfinished(self): #FIXME it is possible to get cells or slices w/o experiment...
         def queryUnf(obj):
-            return session.query(obj).filter(obj.endDateTime==None)
+            return self.session.query(obj).filter(obj.endDateTime==None)
 
         #experiemtns
         try:

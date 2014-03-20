@@ -85,10 +85,14 @@ class URL_STAND:
             except:
                 raise FileNotFoundError('Local path \'%s\' does not exist!'%path) #FIXME this => wierd error handling
         else: #TODO requests does not actually handle anything besides http/s :/
-            if r.head(full_url).status_code == 404: #also data computer on the internet???
-                raise FileNotFoundError('Remote url \'%s\' is not OK!'%full_url) #FIXME this => wierd error handling
-            else:
-                return full_url
+            try:
+                if r.head(full_url).status_code == 404: #also data computer on the internet???
+                    raise FileNotFoundError('Remote url \'%s\' is not OK!'%full_url) #FIXME this => wierd error handling
+                else:
+                    return full_url
+            except: #connections error TODO FIXME
+                #raise FileNotFoundError('Remote url \'%s\' is not OK!'%full_url) #FIXME this => wierd error handling
+                pass
 
     @staticmethod
     def getCreationDateTime(full_url):
