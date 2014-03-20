@@ -26,6 +26,7 @@ from rig.key import keyListener
 from rig.clx import clxControl
 from rig.esp import espControl
 from rig.mcc import mccControl
+from rig.config import set_all_defaults
 
 from debug import TDB,ploc
 tdb=TDB()
@@ -73,11 +74,16 @@ class rigIOMan:
         self.initControllers(person_id,project_id) #these need charBuffer and keyThread to work FIXME nope, dupe for ':':'cmd'
         self.setMode('rig')
 
+        #set the defaults
+        set_all_defaults(self)
+
         #TODO add a way for keys to enter programatic control mode, they will still need keyinput though
         #FIXME TODO
         self.ctrlDict.update(self.ikFuncDict) #FIXME temp hack to get trmFuncs through to the rest of the world
         self.locs={} #for passing locals into ipython
         printD(self.modeKRDict)
+
+
     def start(self):
         self.keyThread.start()
 
@@ -251,7 +257,7 @@ class rigIOMan:
 
         print(ctrlDict)
         initedFunc=allFuncs(self,ctrlDict['clxControl'],ctrlDict['espControl'],ctrlDict['mccControl'],person_id=person_id,project_id=project_id) #FIXME need a way to update these and only actually have them stored in one place >_<
-        self.ikFuncDict[initedFunc.__mode__]=initedFunc
+        self.ikFuncDict[initedFunc.__mode__]=initedFunc #TODO just get rid of this, all we need is allFuncs now, dynamic loading is NOT going to happen any time in the near future
 
 
         self.updateModeDict() #bind keys to functions

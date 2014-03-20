@@ -6,7 +6,8 @@ from time import sleep
 from debug import TDB,ploc
 from rig.ipython import embed
 from sqlalchemy.orm import object_session #FIXME vs database.imports?
-from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds, new_DataFile
+from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds, new_DataFile, get_local_extension_path
+from database.standards import Get_newest_file
 from threading import RLock
 from rig.gui import takeScreenCap #FIXME
 #from IPython import embed
@@ -257,7 +258,7 @@ class kCtrlObj:
         except:
             pass
 
-from database.models import Person, Project, ExperimentType, Experiment, Cell, Slice, Mouse, DataFile
+from database.models import Person, Project, ExperimentType, Experiment, Cell, Slice, Mouse, DataFile, Repository, DataFileSource
 from datetime import datetime
 from database.imports import NoResultFound, MultipleResultsFound
 class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
@@ -275,12 +276,11 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
         self.sLock=RLock() #a lock for the session, see if we need it
         #session.close()
 
-    @staticmethod
-    def getRepoDFS(extension,dfs_name='clampex 9.2',url=None): #FIXME make this persistent on init??
+    def getRepoDFS(self,extension,dfs_name='clampex 9.2',url=None): #FIXME make this persistent on init??
         if not url:
             hostname,fpath=get_local_extension_path(extension)
             url='file://%s/%s'%(hostname,fpath)
-        init_sess=self.modestate.Session()
+        init_sess=self.session
         repo=init_sess.query(Repository).filter_by(url=url).first() #FIXME try/except?
         dfs=init_sess.query(DataFileSource).filter_by(name=dfs_name).first()
         if not repo or not dfs:
@@ -307,7 +307,7 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
             self.session.commit()
         except:
             print('[!] %s could not be added! Rolling back!'%obj_to_add)
-            session.rollback()
+            self.session.rollback()
             raise
 
 
@@ -442,11 +442,11 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
         self.c_target=new_df
     
     def newDataFile(self,extension,experiment,subjects=[]): #FIXME need other selectors eg: repository >_<
-        repo,dfs=getRepoDFS(extension)
+        repo,dfs=self.getRepoDFS(extension)
         #experiment=Get_newest_id(Experiment) #FIXME unfinished?
-        filename=Get_newest_file(fpath,extension) #FIXME this can be faster than the snapshot! FIXME race conditions!!!!
+        filename=Get_newest_file(repo.path,extension) #FIXME this can be faster than the snapshot! FIXME race conditions!!!!
         print(filename,'will be added to the current experiment!')
-        new_df=DataFile(filename=filename,url=url,datafilesource_id=dfs.id,
+        new_df=DataFile(filename=filename,url=repo.url,datafilesource_id=dfs.id,
                             experiment_id=experiment.id,Subjects=subjects)
 
         self.add_com_sess(new_df)
@@ -656,6 +656,17 @@ class clxFuncs(kCtrlObj):
         self.programDict={}
         self.current_program=''
         #self.wrapDoneCB()
+        if not self.getStatus():
+            self.TESTING=1
+            print('WARNING: CLAMPEX IS RUNNING IN FAKE MODE')
+            func=lambda *args,**kwargs: print('POOPBUTT')
+            self.loadfile=func
+            self.load=func
+            self.record=func
+            self.view=func
+            self.stop_rec=func
+
+
 
     #class only
     def readProgDict(self,progDict):
@@ -680,7 +691,7 @@ class clxFuncs(kCtrlObj):
     def getStatus(self,outputs=None): #TODO outputs... should be able to output to as many things as I want... probably should be a callback to simplify things elsewhere? no?!?!
         status=self.clx.GetStatus()
         print(status)
-        return self
+        #return self
 
     def wait_till_done(self):
         gs=self.clx.GetStatus
@@ -779,16 +790,16 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         self.mcc.SetPrimarySignalGain(value)
         return self
 
-    def setMCState(self,stateList):
+    def setMCCState(self,stateList):
         """ ste the mcc state from a mcc state dict list """
-       for state in stateList:
+        for state in stateList:
             self.mcc.selectMC(state['Channel'])
             self.mcc.SetMode(state['mode'])
             self.mcc.SetHolding(state['Holding'])
             self.mcc.SetHoldingEnable(state['HoldingEnable'])
             self.mcc.SetPrimarySignal(state['PrimarySignal'])
-            self.mcc.GetPrimarySignalGain(state['PrimarySignalGain'])
-            self.mcc.GetPrimarySignalLPF(state['PrimarySignalLPF'])
+            self.mcc.SetPrimarySignalGain(state['PrimarySignalGain'])
+            self.mcc.SetPrimarySignalLPF(state['PrimarySignalLPF'])
         return self
 
     def getMCCState(self): #FIXME this function and others like it should probably be called directly by dataman?
@@ -823,8 +834,8 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
             #modeDict[mode](state)
             base(state)
             stateList.append(state)
-            print()
-            print(state)
+            #print()
+            #print(state)
 
         self.MCCstateDict[datetime.utcnow()]=stateList
         #print(stateList)
@@ -1013,6 +1024,7 @@ class espFuncs(kCtrlObj):
 
     def motorToggle(self):
         self.esp.motorToggle()
+
     def printPosDict(self):
         #self.doneCB()
         print(re.sub('\), ',')\r\n',str(self.posDict)))
@@ -1175,14 +1187,16 @@ class espFuncs(kCtrlObj):
             points=self.getMarks(marks)
 
         moves=get_moves_from_points(points,points[0],number,step_um/1000,switch_xy=True) #XXX NOTE THE SWITCH XXX
-        plt.plot(-moves[0][0],moves[0][1]+.01,'yo')
-        shuffle(moves)
-        [plt.plot(-m[0],m[1],'ro') for m in points]
-        [plt.plot(-m[0],m[1],'go') for m in moves]
-        plt.axis('equal')
-        plt.show()
-        print(moves)
-        print(len(moves))
+        def _plot():
+            plt.plot(-moves[0][0],moves[0][1]+.01,'yo')
+            shuffle(moves)
+            [plt.plot(-m[0],m[1],'ro') for m in points]
+            [plt.plot(-m[0],m[1],'go') for m in moves]
+            plt.axis('equal')
+            plt.show()
+            print(moves)
+            print(len(moves))
+        #_plot()
         self.set_move_list(moves)
         return self
 

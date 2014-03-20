@@ -7,6 +7,7 @@ from threading import RLock
 from rig.gui import takeScreenCap
 from rig.functions import keyRequest,espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs
 from rig.daq import trigger_LED_train
+from analysis.online_analysis import abf_basic_vc_analysis
 
 
 class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
@@ -23,11 +24,43 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
         analysis_thread=threading.Thread(target=analysis_function,args=datafile)
         analysis_thread.start()
 
+    def newMetaData(self,value,targets,metadatasource,abs_error=None):
+        if hasattr(targets,'__iter__'):
+            for target in targets:
+                new_md=target.MetaData(value,target.id,metadatasource.id,abs_error)
+                self.add_com_sess(new_md)
+        else:
+            new_md=targets.MetaData(value,targets.id,metadatasource.id,abs_error)
+            self.add_com_sess(new_md)
+
+    @keyRequest
+    def get_cell(self):
+        hs=self.getBool('Hit space for HS 1 or anything else for HS 0') 
+        self.mcc.selectMC(hs)
+        self.current_headstage=hs
+
+        self.newCell()
+
+        #FIXME convert c_cells to a dict where the keys are headstages, that should make getting the data in much easier!
+
+        print('current target:',self.c_target)
+        position=self.getPos() #TODO
+        self.newMetaData(position,self.c_target,self.getPos.mds)
+        depth=self.getDistance_um()
+        self.newMetaData(depth,self.c_target,self.getDistance_um.mds)
+
+        self.setVCholdOFF()
+        self.setVChold(-.06)
+        self.autoOffset()
+        self.autoCap()
+        self.getKbdHit('hit a key when you bump a cell')
+        self.setVCholdON()
+        self.getBrokenIn()
+
     def record_abf_full(self,analysis_function=lambda df:None):
         self.record()
         self.c_datafile=self.newDataFile('abf',
                                          self.c_experiment,
-                                         self.write_target,
                                          self.c_cells)
         self.MCCstateToDataFile()
         self.wait_till_done()
@@ -38,7 +71,17 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
         self.loadfile('01_current_steps_-100-1000.pro')
         self.record_abf_full()
 
-    def test_pairs(self):
+    def check_for_cells(self,n=1):
+        #check that we have two cells!
+        if len(self.c_cells) != n:
+            raise IOError('I\'m sorry Dave. I can\'t do that.')
+        else:
+            return n
+
+    @keyRequest
+    def pair_test(self):
+        self.check_for_cells(2)
+
         self.getKbdHit('Hit a key after adjusting the program so that the cell will spike')
         self.testZtO(-.075)
         self.loadfile('pair_test_0-1.pro')
@@ -67,7 +110,7 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
                 except:
                     raise
 
-    def make_DAQ_wrapper(minV,maxV,on_ms,off_ms,reps,stepType)
+    def make_DAQ_wrapper(minV,maxV,on_ms,off_ms,reps,stepType):
         DAQTask,DAQThrd=trigger_LED_train(minV,maxV,on_ms,off_ms,reps,stepType)
         def wrapped(function):
             """ makes sure the DAQTask gets turned off no matter what"""
@@ -75,14 +118,14 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
             try:
                 return function()
             except:
-                print('FAILED')
+                print('Running protocol FAILED!')
                 raise
             finally:
                 DAQTask.cleanup()
         wrapped.__name__=function.__name__
         return wrapped
             
-    def wrapper_MCC(self,function):
+    def wrapper_MCC(self,function): #TODO could replace this with a hasattr check?
         """ save the original state of the mcc to return to after everything is done """
         saved_state=self.getMCCState()
         try:
@@ -92,6 +135,17 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
             raise
         finally:
             self.setMCCState(saved_state)
+
+
+    def move_loop(self,loop_func):
+        """ Run loop_function at each position in the move list
+            loop function should take args """
+        move_list=self.move_list[self._current_move_list_index:-1] #tracking for accidental failures
+        for pos in move_list:
+            loop_func(pos)
+            self._current_move_list_index+=1
+        print('Move list done')
+        self._current_move_list_index=0
 
     def VC_all_ML(self):
         #set MCC values
@@ -104,24 +158,26 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
         #repeated steps
         def loop_func(pos):
             self.esp.BsetPos(pos)
-            self.record_abf_full(vc_basic_analysis)
+            self.record_abf_full(abf_basic_vc_analysis)
 
 
         #run the loop
         self.move_loop(loop_func)
 
-    @keyRequest
-    def som_pyr_led_exp(self):
-        #movelist for 
 
-        points=getMarks(['start','one','two','three','four','five']) #TODO get this from spline layout early on?
+    @keyRequest
+    def som_pyr_led_exp(self): #FIXME shouldn't it be possible to keep these in their own class?
+        self.check_for_cells(2)
+
+        #points for movelists
+        points=self.getMarks(['start','one','two','three','four','five']) #TODO get this from spline layout early on?
 
         #do max-min along cortex to see what we see
-        self.ask_moveList('spline',number=2,step_um=1000,points=points) #FIXME
+        self.ask_moveList('spline',number=2,step_um=1000,points=points) #TODO find a way to save the points AND the movelist, maybe put the movelist in with the cells?
 
         #run the basic ephys
         self.wrapper_MCC(self.current_steps_01)
-        self.wrapper_MCC(self.test_pairs)
+        self.wrapper_MCC(self.pair_test)
 
         #setup the DAQ
         wrapper_DAQ=self.make_DAQ_wrapper(0,4.2,500,100,1,'square')
@@ -130,25 +186,13 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
         #run the maxmin
         wrapper_DAQ(self.wrapper_MCC(self.VC_all_ML))
 
-        self.ask_moveList('spline',number=10,step_um=100,points=points):
+
+        #make the movelist for the incremental
+        self.makeNewMoveList('spline',number=10,step_um=100,points=points)
 
         #run the distribution
         wrapper_DAQ(self.wrapper_MCC(self.VC_all_ML))
 
-    def move_loop(self,loop_func):
-        """ Run loop_function at each position in the move list
-            loop function should take args """
-        move_list=self.move_list[self._current_move_list_index:-1] #tracking for accidental failures
-        for pos in move_list:
-            loop_func(pos)
-            self._current_move_list_index+=1
-        print('Move list done')
-        self._current_move_list_index=0
-
-
     def cleanup(self):
         super().cleanup()
 
-
-
-    

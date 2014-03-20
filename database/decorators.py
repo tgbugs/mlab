@@ -61,7 +61,7 @@ def get_local_jpg_path(hostname,osname,program=None): #TODO FIXME there are mult
     fpath=os_hostname_jpg_path[osname][hostname]
     return fpath
 
-def get_local_extension_path(extension,program=None):
+def get_local_extension_path(extension,program=None): #FIXME move to standards or elsewhere
     hostname=socket.gethostname()
     osname=os.name
     exDict={'abf':get_local_abf_path,
@@ -252,6 +252,8 @@ def is_mds(prefix,unit,hardware_name,mantissa=None,wt_getter=None):
         wrapper.__doc__=function.__doc__+"\n This function REQUIRES a write_target, a fake one won't work"
         wrapper.hardware_name=hardware_name
         wrapper.is_mds=True
+        wrapper.mds_id=mds_id #FIXME wat
+        wrapper.mds=mds
         if hasattr(function,'keyRequester'): #FIXME
             wrapper.keyRequester=True
         return wrapper

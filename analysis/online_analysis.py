@@ -27,4 +27,15 @@ def abf_basic_vc_analysis(datafile): #TODO dump the online stats to the DB?
 
     return results_dict
 
+def analysis_protocol_lookup(protocol_filename):
+    """ get the correct analysis function by protocol name """
+    func=lambda:None
+    pro_ana_dict={
+        '.pro':func
+    }
+
+    return pro_ana_dict[protocol_filename]
+
+
+
 

@@ -1,7 +1,7 @@
 import os, socket #FIXME do we really want to handle this here?
 from database.imports import *
 from database.models.base import Base
-from database.models.mixins import HasNotes, HasMetaData, HasProperties, HasMirrors
+from database.models.mixins import HasNotes, HasMetaData, HasProperties, HasMirrors, HasAnalysis
 from database.standards import URL_STAND
 
 #some global variables that are used here and there that would be magic otherwise

@@ -38,7 +38,7 @@ class espControl:
     any individual scrips would need to look for an
     existing controller in memory which is frankly,
     too complicated right now, maybe in the future"""
-    def __init__(self,port=0,baudrate=19200,bytesize=8,parity='N',stopbits=1,timeout=.04,feLim=8):
+    def __init__(self,port=0,baudrate=19200,bytesize=8,parity='N',stopbits=1,timeout=.04):
         #self._cX, self._cY, self.feLim are READ ONLY, you can write them but you will get bugs
         #control of the serial port
         #all of these can then be referenced under self.esp for the lifetime of the npC object
@@ -63,13 +63,11 @@ class espControl:
 
         #control of the newport
         self.feLim=None
-        self.setFeLim(feLim)
+        #self.setFeLim(feLim)
 
-        self.jhSpd=1 #FIXME check this!
-        self.jwSpd=.1
-        self.setSpeedDefaults()
-        self.motors_on=False
-        self.write('1MF;2MF')
+        #self.setSpeed(fast=1,slow=.1)
+        #self._motors_on=False
+        #self.write('1MF;2MF')
 
 
 
@@ -85,12 +83,20 @@ class espControl:
             raise IOError('esp300 not responding, is it on?')
 
     def motorToggle(self):
-        if self.motors_on:
-            self.motors_on=False
-            self.write('1MF;2MF')
+        if self._motors_on:
+            self._motors_on=False
+            self._write('1MF;2MF')
         else:
-            self.motors_on=True
+            self._motors_on=True
             self.write('1MO;2MO')
+
+    def setMotorOn(self,on):
+        if on:
+            self.write('1MO;2MO')
+            self._motors_on=True
+        else:
+            self.write('1MF;2MF')
+            self._motors_on=False
 
     def write(self,string,writeback=0): #FIXME may need an rlock here... yep, writeTimeout doesnt work
         out=string+'\r\n'
@@ -156,9 +162,11 @@ class espControl:
         self.write('1FE{0};2FE{0}'.format(self.feLim)) #set the following error to feLim
         return 1
 
-    def setSpeedDefaults(self):
+    def setSpeed(self,fast,slow):
         """set speed defaults to override the build in joystick speeds, eventually should rewrite the bloody program"""
-        self.write('1JH%f;1JW%f;2JH%f;2JW%f'%(self.jhSpd,self.jwSpd,self.jhSpd,self.jwSpd)) #FIXME check
+        self.write('1JH%f;1JW%f;2JH%f;2JW%f'%(fast,slow,fast,slow))
+        self._jhSpd=fast
+        self._jwSpd=slow
         return 1
 
     def getPos(self):
@@ -235,7 +243,7 @@ class espControl:
                 if self.target[0]-bound <= self._cX <= self.target[0]+bound: #good old floating point errors
                     if self.target[1]-bound <= self._cY <= self.target[1]+bound:
                         self.write('1HX') #degroup oh man this is ugly and not transparent
-                        if not self.motors_on: #if the motors were off turn them back off
+                        if not self._motors_on: #if the motors were off turn them back off
                             self.write('1MF;2MF')
                         self.target=None
                         return self._cX,self._cY

@@ -65,7 +65,7 @@ def rigDict():
                     #'z':'fakeMove',
                     'm':'mark',
                     'l':'mark_to_movelist',
-                   },
+                   #},
         #'guiFuncs':{
                     'z':'getCameraImage',
                     'Z':'getSub_getCameraImage',
@@ -82,12 +82,12 @@ def rigDict():
                    #},
 
         #'trmFuncs':{
-            'k':('setMode','trm'),
-            'U':'getWT_getDistance_um',
-            #'i':'ipython',
-            #':':'test' #this works, so not sure why command doesnt
-            ':':'command',
-            #},
+                    'k':('setMode','trm'),
+                    'U':'getWT_getDistance_um',
+                    #'i':'ipython',
+                    #':':'test' #this works, so not sure why command doesnt
+                    ':':'command',
+            },
     }
     return rigDict
 
@@ -128,7 +128,7 @@ def clxDict():
                               'espFuncs':{1:'getWT_getPos'},
                          },
                         #},
-                         'r':'paired_led_vc',
+                         'r':'som_pyr_led_exp',
                          'p':'pair_test',
                          'e':'basic_char',
                         },
@@ -160,7 +160,8 @@ def mccDict():
                     #'0':['allIeZ','allVCnoHold','allVChold_60'],
 #get WHOLE cell steps 
                     'a':'autoOffset',
-                    'g':{#FIXME need a check to prevent running when cells are already gotten, but that requires the steps to work, cant do it with this setup :/
+                    'g':'get_cell',
+                    None:{#FIXME need a check to prevent running when cells are already gotten, but that requires the steps to work, cant do it with this setup :/
                          #FIXME also need a way to auto switch to next headstage if one is already occupied otherwise we will cook shit :(
                          'mccFuncs':{
                              #-1:'new', #TODO checkpoints so that we dont go when when have a cell #TODO headstage <-> cell linkage can happen here naturally
@@ -181,7 +182,7 @@ def mccDict():
                          },
                     },
 #current steps
-                    'c':{ 
+                    None:{ 
                         'mccFuncs':{-1:'allICnoHold',0:('allGain',1),4:'allIeZ'}, #FIXME need a check that we arent running
                          'clxFuncs':{
                             1:('loadfile','current_step_-100-1000'+'.pro'),
@@ -191,7 +192,7 @@ def mccDict():
                          #'trmFuncs':{3:''},
                     },
 #check connected pairs
-                    'p':{
+                    None:{
                          'mccFuncs':{
                              0:('testZtO',-.075), #excitation
                              5:('testZtO',-.05), #inhibition
@@ -219,7 +220,7 @@ def mccDict():
 #run the optogenetic stimulation!
                     #'s':{},
 
-                    'asdf':{'mccFuncs':{ #FIXME this is bloodly useless >_< replace w/ actual programatic control
+                    None:{'mccFuncs':{ #FIXME this is bloodly useless >_< replace w/ actual programatic control
                                      0:'allIeZ',
                                      3:'allICnoHold',
                                     },
@@ -237,6 +238,8 @@ def mccDict():
                     'y':'getState',
                    },
     }
+
+    #XXX all below here is DEPRECATED YAY YAY YAY YAY YAY! :D
     #mccDict['mccFuncs']['l']=None
     def make_led_dict(step_um,number): #FIXME it is monumentally stupid to have to compile this only at startup >_<
         led_dict={}
