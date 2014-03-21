@@ -8,8 +8,9 @@ from rig.ipython import embed
 from sqlalchemy.orm import object_session #FIXME vs database.imports?
 from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds, new_DataFile, get_local_extension_path
 from database.standards import Get_newest_file
-from threading import RLock
+from threading import RLock, Thread
 from rig.gui import takeScreenCap #FIXME
+from matplotlib.pyplot import figure,plot,axis,savefig,switch_backend,annotate
 #from IPython import embed
 try:
     import rpdb2
@@ -276,7 +277,7 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
         self.sLock=RLock() #a lock for the session, see if we need it
         #session.close()
 
-    def getRepoDFS(self,extension,dfs_name='clampex 9.2',url=None): #FIXME make this persistent on init??
+    def getRepoDFS(self,extension,dfs_name='clampex 9.2',url=None): #FIXME make this persistent on init?? TODO fix this so that it actually gets the dfs >_<
         if not url:
             hostname,fpath=get_local_extension_path(extension)
             url='file://%s/%s'%(hostname,fpath)
@@ -287,18 +288,15 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
             if not repo:
                 init_sess.add(Repository(url=url))
             if not dfs:
-                dfs=DataFileSource(name='lol wut!?',extension=extension,docstring='a whoknows!') #FIXME TODO generalize!
-                init_sess.add(dfs)
+                #dfs=DataFileSource(name='lol wut!?',extension=extension,docstring='a whoknows!') #FIXME TODO generalize!
+                #init_sess.add(dfs)
+                raise IOError('Need to do something about DFSes') #TODO need to figure out what to do with this
             try:
                 init_sess.commit()
             except:
                 init_sess.rollback()
-            finally:
-                init_sess.close()
-                del(init_sess)
-        else:
-            init_sess.close()
-            del(init_sess)
+                raise
+        #print(repo,dfs.name)
         return repo,dfs
 
     def add_com_sess(self,obj_to_add):
@@ -337,14 +335,14 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
 
         #slices
         try:
-            allsli=self.c_slice=queryUnf(Slice).all()
+            allsli=queryUnf(Slice).all()
             if not allsli:
                 self.c_slice=None
-            elif len(allsli)>1:
-                self.c_slice=allsli[-1]
-                print('WARNING: multiple unfinished! Slice set to %s. Change it if you need to!'%self.c_slice.strHelper())
             else:
+                self.c_slice=allsli[-1]
                 self.c_target=self.c_slice
+                if len(allsli)>1:
+                    print('WARNING: multiple unfinished! Slice set to %s. Change it if you need to!'%self.c_slice.strHelper())
                 print('Got unfinished slice ',self.c_slice.strHelper())
         except NoResultFound:
             self.c_slice=None
@@ -441,7 +439,7 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
         self.c_datafile=new_df
         self.c_target=new_df
     
-    def newDataFile(self,extension,experiment,subjects=[]): #FIXME need other selectors eg: repository >_<
+    def newDataFile(self,extension,experiment,subjects=[],dfs=None): #FIXME need other selectors eg: repository >_<
         repo,dfs=self.getRepoDFS(extension)
         #experiment=Get_newest_id(Experiment) #FIXME unfinished?
         filename=Get_newest_file(repo.path,extension) #FIXME this can be faster than the snapshot! FIXME race conditions!!!!
@@ -574,6 +572,7 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
         else:
             print('Your failure has been noted.')
             #self.c_target.notes.append('FAILURE MESSAGE') #TODO
+            self.headstage_state[self.c_target.headstage]=None #FIXME dangerous :(
             self.endCell(self.c_target) #FIXME make sure this works?
         return self
 
@@ -597,6 +596,7 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
         cell.endDateTime=datetime.now()
         self.session.commit()
         self.c_cells.remove(cell)
+        self.headstage_state[cell.headstage]=None #FIXME TODO need to track this with experiment state or something in case of chrashes
         print('Ended cell %s'%cell.strHelper())
         if self.c_cells:
             self.c_target=self.c_cells[0] #FIXME
@@ -691,7 +691,10 @@ class clxFuncs(kCtrlObj):
     def getStatus(self,outputs=None): #TODO outputs... should be able to output to as many things as I want... probably should be a callback to simplify things elsewhere? no?!?!
         status=self.clx.GetStatus()
         print(status)
-        #return self
+        if status == 'CLAMPEX IS NOT RUNNING':
+            return 0
+        else:
+            return 1
 
     def wait_till_done(self):
         gs=self.clx.GetStatus
@@ -702,6 +705,7 @@ class clxFuncs(kCtrlObj):
     def loadfile(self,filename):
         try:
             filepath=self.protocolPath+filename
+            print(filepath)
             self.clx.LoadProtocol(filepath.encode('ascii'))
             self.current_program=filepath
             print('%s loaded!'%filepath)
@@ -725,7 +729,7 @@ class clxFuncs(kCtrlObj):
             #raise
         return self
 
-    @new_abf_DataFile()
+    #@new_abf_DataFile() #XXX deprecated
     def record(self):
         #RECORD=109, RERECORD=110, VIEW=108
         try:
@@ -774,6 +778,7 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
         #self.initController(mccmsg)
         self.MCCstateDict={}
         #self.wrapDoneCB()
+        self.headstage_state={ chan:0 for chan in range(mcc.mcNum)}
         
         #associated metadata sources
         #self.state1DataSource=None
@@ -1180,24 +1185,31 @@ class espFuncs(kCtrlObj):
     def mark_to_spline(self,step_um=100,number=10,points=[]):
         from rig.calcs import get_moves_from_points
         from numpy.random import shuffle
-        import pylab as plt
+        from analysis.abf_analysis import get_tmp_path #FIXME
 
         marks='start','one','two','three','four','five'
         if len(points) != len(marks):
             points=self.getMarks(marks)
 
         moves=get_moves_from_points(points,points[0],number,step_um/1000,switch_xy=True) #XXX NOTE THE SWITCH XXX
-        def _plot():
-            plt.plot(-moves[0][0],moves[0][1]+.01,'yo')
-            shuffle(moves)
-            [plt.plot(-m[0],m[1],'ro') for m in points]
-            [plt.plot(-m[0],m[1],'go') for m in moves]
-            plt.axis('equal')
-            plt.show()
+        start=-moves[0][0],moves[0][1]+.1
+
+        shuffle(moves)
+        self.set_move_list(moves)
+
+        def _plot(start,moves,points): #TODO thread this
+            switch_backend('Agg')
+            figure(figsize=(4,4))
+            plot(start[0],start[1],'yo')
+            [plot(-m[0],m[1],'ro') for m in points]
+            [plot(-m[0],m[1],'go') for m in moves]
+            axis('equal')
+            cellids=''.join(['%s_'%c.id for c in self.c_cells])
+            savefig(get_tmp_path()+'/s%s_c%spts_mvs.png'%(self.c_slice.id,cellids),bb_inches='tight',pad_inches=0) #FIXME copies
             print(moves)
             print(len(moves))
-        #_plot()
-        self.set_move_list(moves)
+        pltThrd=Thread(target=_plot,args=(start,moves,points))
+        pltThrd.start()
         return self
 
     def makeNewMoveList(self,move_pattern=None,number=None,step_um=None,points=[]):
@@ -1211,6 +1223,25 @@ class espFuncs(kCtrlObj):
         if not make_func(step_um,number,points):
             raise IOError('No move dict set!')
 
+    @staticmethod
+    def plotMarks(slice_id,markDict):
+        from analysis.abf_analysis import get_tmp_path #FIXME
+        from numpy import vstack
+        asdf=vstack(markDict.values()) 
+        switch_backend('Agg')
+        figure(figsize=(4,4))
+        plot(-asdf[:,0],asdf[:,1],'ko')
+        for mark,(x,y) in markDict.items():
+            annotate(
+                '%s'%mark, xy=(-x,y) , xytext=(5,5),
+                textcoords = 'offset points', ha = 'right', va = 'bottom',
+                #bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
+                #arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'),
+            )
+        axis('equal')
+        path=get_tmp_path()
+        savefig(path+'/s%s_markdict.png'%slice_id,bb_inches='tight',pad_inches=0)
+        
     def printMarks(self):
         """print out all marks and their associated coordinates"""
         try:
@@ -1218,6 +1249,8 @@ class espFuncs(kCtrlObj):
             slice_md=self.c_slice.markDict #should work coop...
 
             self.markDict=slice_md
+            pltThrd=Thread(target=self.plotMarks,args=(self.c_slice.id,self.markDict))
+            pltThrd.start()
         except AttributeError:
             pass
         print(re.sub('\), ','),\r\n ',str(self.markDict)))
@@ -1410,7 +1443,9 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
     @keyRequest
     def getKbdHit(self,prompt='Hit any key to advance.'):
         print(prompt)
-        self.charBuffer.get()
+        key=self.charBuffer.get()
+        if key == '@': #nasty hack for dealing w/ exits FIXME
+            raise IOError('Program has terminated!')
         return True
 
     def getDoneNB(self): #FIXME 

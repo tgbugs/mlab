@@ -293,7 +293,7 @@ class Repository(HasMirrors, Base):
     def __init__(self,url=None,credentials_id=None,name=None,assoc_program=None):
         self.url=URL_STAND.urlClean(url)
         self.hostname,self.path=URL_STAND.urlHostPath(self.url)
-        URL_STAND.ping(self.url) #FIXME TODO probably need to check that we have write privs? esp if we want to save data collected using this system to track it eg for backups and stuff
+        URL_STAND.ping(self.url,is_file=False) #FIXME TODO probably need to check that we have write privs? esp if we want to save data collected using this system to track it eg for backups and stuff
         self.credentials_id=credentials_id
         self.assoc_program=assoc_program
         self.name=name
@@ -331,7 +331,8 @@ class File(HasNotes, HasProperties, HasMetaData, Base, HasAnalysis): #REALLY GOO
     @property
     def local_repo(self):
         hostname=socket.gethostname() #FIXME posix vs... nt ;_;
-        lrl=[r for r in self.repositories if r.hostname==hostname]
+        lrl=[r for r in self.repositories if r.hostname==hostname] #local repo list
+        #print(lrl)
         if os.name == 'posix':
             lrl=[r for r in lrl if r.path[2] != ':'] #FIXME not the right way to discard windows paths >_<
         try:
@@ -409,6 +410,8 @@ class DataFile(File): #data should be collected in the scope of an experiment
     __mapper_args__={'polymorphic_identity':'datafile'}
 
     experiment=relationship('Experiment',backref='datafiles',uselist=False)
+
+    #TODO protocol??? it would def be nice to filter by them...
 
     @property
     def position(self):

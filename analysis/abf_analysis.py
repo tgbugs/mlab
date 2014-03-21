@@ -10,7 +10,6 @@ import gc
 
 
 from multiprocessing import Process,Pipe
-
 def spawn(f):
     def fun(pipe,x):
         pipe.send(f(x))
@@ -42,7 +41,7 @@ def load_abf(filepath):
     return raw,block,segments,header
 
 def find_rs_test(header):
-    enabled=header['nWaveformEnable']
+    #enabled=header['listDACInfo']['nWaveformEnable'] #only in abf2 :/
     step_size=header['fEpochInitLevel']
     cmds_steps=[ step_size[:10] , step_size[10:] ] #split the command channels in half
     volts=[]
@@ -322,6 +321,7 @@ def get_tmp_path(): #FIXME move to utils or something
             return 'C:/tmp/' #a poor substitue but whatever
         elif hostname == 'athena':
             return  None #'T:/asdf/' #FIXME
+
 def main():
     from sqlalchemy.orm import Session
     from database.table_logic import logic_StepEdge

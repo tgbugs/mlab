@@ -100,7 +100,7 @@ def clxDict():
                  #'1':protPath+'2ch_scope'+'.pro',
                  '1':'1_led_loose_patch'+'.pro',
                  '2':'1_scope'+'.pro',
-                 '3':'current_step_-100-1000'+'.pro',
+                 '3':'01_current_step_-100-1000'+'.pro',
                  '4':'pair_test_0-1'+'.pro',
                  '5':'pair_test_1-0'+'.pro',
                  '6':'protname'+'.pro',

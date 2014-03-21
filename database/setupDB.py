@@ -249,6 +249,7 @@ def popExperimentType(session): #FIXME
 def popDataFileSources(session):
     session.add(DataFileSource(name='clampex9_scope',extension='abf',docstring='a clampex!'))
     session.add(DataFileSource(name='clampex 9.2',extension='abf',docstring='a clampex!'))
+    session.commit() #LOL OOPS
 
 def popMetaDataSources(session):
     espX=None
@@ -264,9 +265,22 @@ def popMetaDataSources(session):
 
 def popRepos(session):
     jax='http://jaxmice.jax.org/strain'
+    hrr='file://HILL_RIG/D:/tom_data/rigcam'
+    hrc='file://HILL_RIG/D:/tom_data/clampex'
+    anc='file://andromeda/C:/tom_data/clampex'
+    atc='file://athena/home/tom/mlab_data/clampex'
     session.add(Repository(jax,name='jax strain db'))
+    session.add(Repository(hrr,name='rig rigcam'))
+
+    r1=Repository(hrc,name='rig clampex')
+    r2=Repository(anc,name='andromeda clampex')
+    r3=Repository(atc,name='athena clampex')
+    session.add(r1)
+    session.add(r2)
+    session.add(r3)
+    r1.mirrors_from_here.extend((r2,r3))
+
     session.commit()
-    pass
 
 def popFiles(session):
     rep=session.query(Repository).filter_by(name='jax strain db')[0]
@@ -329,6 +343,8 @@ def populateTables(session):
     popCiteType(session)
     popCiteables(session)
     popStrains(session)
+    popDataFileSources(session)
+
 if __name__=='__main__':
     import re
     printT=lambda tup:print(re.sub('\), ','),\r\n',str(tup)))

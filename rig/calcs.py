@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.interpolate import UnivariateSpline, SmoothBivariateSpline, InterpolatedUnivariateSpline
 from scipy import integrate
+from matplotlib.pyplot import plot,savefig,figure,switch_backend
 
 
 def intersperse(iterable,delim):
@@ -167,6 +168,13 @@ def get_moves_from_points(points,start_point,number=10,spacing=.05,switch_xy=Fal
         #points=[(x-m_x,y-m_y) for x,y in points]
         points=switchXY(points)
         start_point=switchXY([start_point])[0]
+    print(points)
+    switch_backend('Agg')
+    figure(figsize=(4,4))
+    for point in points:
+        print(point[0],point[1])
+        plot(point[0],point[1],'bo')
+    savefig('D:/tmp/asdf.png')
     print(start_point)
     spline,xs,ys=get_spline(points)
     out_points = get_points_from_spline(spline,start_point[0],number,spacing)

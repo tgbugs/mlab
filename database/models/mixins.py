@@ -4,6 +4,7 @@ from database.models.base import Base
 #some global variables that are used here and there that would be magic otherwise
 _plusMinus='\u00B1'
 
+#FIXME MASSIVELY BROKEN
 class HasMirrors: #FIXME this should validate that they actually *are* mirrors?
     @declared_attr
     def mirrors_from_here(cls): #FIXME lots of bugs with files not actually being present!
@@ -27,7 +28,10 @@ class HasMirrors: #FIXME this should validate that they actually *are* mirrors?
 
     @property
     def mirrors(self): #TODO fix append? not sure possible
-        return list(set(self.mirrors_to_here+self.mirrors_from_here))
+        #return list(set(self.mirrors_to_here+self.mirrors_from_here))
+        out=[self]
+        out.extend(self.mirrors_to_here)
+        return out
 
     @property
     def files(self):

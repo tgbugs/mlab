@@ -272,7 +272,7 @@ class HasLocation(UsesJTI): #FIXME may not need JTI on this one in particular...
 #FIXME Mixins MUST Implement ForeignKey constraints otherwise they should not be a mixin
 
 ###---------------------------------------------------------------------------------
-###  Subjects THOU SHALT NOT USE THESE FOR QUERYING only for creation and post query
+###  Subjects THOU SHALT NOT USE THESE FOR QUERYING only for creation and post query #XXX I think this has been fixed?
 ###---------------------------------------------------------------------------------
 
 class NewSubjectType(UsesJTI, Subject):
@@ -333,6 +333,7 @@ class Slice(HasGeneratingExperiment, HasLocation, Subject): #FIXME slice should 
 
 
 class Cell(HasGeneratingExperiment, Subject):
+    headstage=Column(Integer) #FIXME another hack for the time being >_<
     @property
     def position(self):
         try: 
@@ -359,6 +360,11 @@ class Cell(HasGeneratingExperiment, Subject):
                 dists[file.filename]=norm(self.position,file.position)
         return dists
 
+    @property
+    def df_range(self):
+        start=self.datafiles[0].filename[-8:-4]
+        stop=self.datafiles[-1].filename[-8:-4]
+        return start+'-'+stop
 
 
     #def __repr__(self):

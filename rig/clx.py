@@ -176,7 +176,7 @@ class clxControl: #clxmsg
         return errPrint(self)
 
     # Request the Clampex status.
-    def GetStatus(self):
+    def GetStatus(self): #FIXME
         statusDict={
         0:'CLAMPEX IS NOT RUNNING',
         100:'CLXMSG_ACQ_STATUS_IDLE',

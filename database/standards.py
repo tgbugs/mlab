@@ -32,9 +32,7 @@ def get_local_abf_path(hostname,osname,program=None): #FIXME make this not hardc
 def Get_newest_file(_path,extension): #FIXME TODO: I think the easiest way to do this is just to have watched folders with filetypes to watch, and they can be recursive, and then we can just call a 'go check for changes' function
     print(_path,extension)
     files=listdir(_path)
-    print(files)
     ext_files=[file for file in files if file[-3:]==extension]
-    print(ext_files)
     ext_files.sort() #FIXME make sure the filenames order correctly
     out=ext_files[-1] #get the last/newest file
     return out
@@ -64,18 +62,27 @@ class URL_STAND:
         return host,path
 
     @staticmethod
-    def ping(full_url):
+    def ping(full_url,is_file=True): #FIXME nasty hack
         #FIXME rework this to go through a full url scheme handler that can be extended with resources
         #see if one exists, it should...
         parsed=parse.urlparse(full_url)
         if parsed.scheme == 'file':
+            print('file scheme with url=',full_url)
             hostname=socket.gethostname()
             host=parsed.netloc
-            if host != hostname:
-                raise FileNotFoundError('The file is on %s! You are on %s'%host,name) #FIXME this => wierd error handling
+            if host != hostname and is_file:
+                raise FileNotFoundError('The file is on %s! You are on %s'%(host,hostname)) #FIXME this => wierd error handling
                 #this is just ping, we are not going to worry about finding the correct file location here
                 #TODO this needs to try to access the netloc since this is PING, for actual retrieval we can choose the local repo ourselves
-                #printD('The file is on %s! You are on %s. Will try with hst==localhost'%host,name) #FIXME 
+                #printD('The file is on %s! You are on %s. Will try with hst==localhost'%(host,name)) #FIXME 
+            elif host != hostname and not is_file:
+                print('Cannot check whether this path exists, but we\'ll believe you for now')
+                path=parsed.path
+                if path[2]==(':'): #FIXME this is not actually valid... windows :/
+                    path=path[1:]
+                return path
+
+
             path=parsed.path
             if path[2]==(':'): #FIXME this is not actually valid... windows :/
                 path=path[1:]
@@ -85,6 +92,7 @@ class URL_STAND:
             except:
                 raise FileNotFoundError('Local path \'%s\' does not exist!'%path) #FIXME this => wierd error handling
         else: #TODO requests does not actually handle anything besides http/s :/
+            print('Assuming not local repo')
             try:
                 if r.head(full_url).status_code == 404: #also data computer on the internet???
                     raise FileNotFoundError('Remote url \'%s\' is not OK!'%full_url) #FIXME this => wierd error handling

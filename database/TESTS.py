@@ -476,9 +476,6 @@ class t_repo(TEST):
                     'file:///C:/asdf/test1',
                     'file:///C:/asdf/test2//',
                     'file:///T:/db/Dropbox//',
-                    'file://HILL_RIG/D:/tom_data/clampex',
-                    'file://andromeda/C:/tom_data/clampex',
-                    'file://athena/home/tom/mlab_data/clampex',
                     'http://www.google.com/', #FIXME broken as expected?
                     'https://www.google.com/' #FIXME broken as expected?
         )
@@ -487,7 +484,7 @@ class t_repo(TEST):
                 self.records.append(Repository(url=r))
             except:
                 #raise Warning('Local path \'%s\' does not exist!'%r)
-                print('Local path \'%s\' does not exist!'%r)
+                print('Path \'%s\' does not exist!'%r)
         #FIXME for some reason adding the fully inited Repository(url='asdf') inside the list didn't work...
         #figure out why please?!
     def tests(self):
