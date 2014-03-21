@@ -941,16 +941,18 @@ def main():
     plt.ylabel('Normalized spike counts')
     format_axes(fig.axes[0],50,50)
     fig.savefig('/tmp/norm_dist_all.png',bbox_inches='tight',pad_inches=0)
+    plt.clf()
 
-    fig=plt.figure(figsize=(20,20))
+    #fig=plt.figure(figsize=(20,20))
     plt.plot(ndists*1000,nmeans,'ko',markersize=20)
     plt.title('All spike counts vs distance')#' (binned). Error is SEM.')
     plt.xlabel(r'Distance in $\mu$m')
     plt.ylabel('Normalized spike counts')
     format_axes(fig.axes[0],50,50)
     fig.savefig('/tmp/population_normalized_counts.png',bbox_inches='tight',pad_inches=0)
+    plt.clf()
 
-    fig=plt.figure(figsize=(20,20))
+    #fig=plt.figure(figsize=(20,20))
     sbins=bin_dists(sdists*1000,smeans,sstds,25)
     plt.xlim(xmin=-2)
     plt.xticks(np.arange(0,225,25))
@@ -960,6 +962,7 @@ def main():
     plt.ylabel('Average spike count')
     format_axes(fig.axes[0],50,50)
     fig.savefig('/tmp/spike_dist_all.png',bbox_inches='tight',pad_inches=0)
+    plt.clf()
 
     bbins=bin_dists(bdists,bmeans,bstds)
     #embed()
@@ -980,7 +983,7 @@ def main():
         return np.array(lefts),np.array(means),np.array(stds),np.array(sems)
 
     lefts,means,stds,sems=get_lmes(nbins)
-    plt.figure(figsize=(10,10))
+    #plt.figure(figsize=(10,10))
     #plt.errorbar(lefts+12.5,means,sems,fmt='ko',ecolor=(.2,.2,.2))
     #plt.savefig('/tmp/test3.png')
     #useful="plt.figure();[ plt.errorbar(left+.0125,np.mean(lst[0]),np.std(lst[0])/np.sqrt(len(lst[0])) ) for left,lst in bins.items()];plt.xlim(-.1,.250);plt.savefig('/tmp/test2.png')"

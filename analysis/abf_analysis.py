@@ -40,8 +40,59 @@ def load_abf(filepath):
     header=raw.read_header()
     return raw,block,segments,header
 
+def build_waveform(header):
+    chans_on=header['nWaveformEnable'] #turns out I just havent properly updated neo at lab >_<
+    header['nWaveformSource']
+
+    nloops=header['lEpisodesPerRun']
+    len_base=header['lNumSamplesPerEpisode']
+    base=np.zeros_like(len_base)
+
+    #epoch property list
+
+    wave=np.vstack(( #or is it hstack...
+    header['nEpochType'], #1 is step, 2 is ramp
+
+    header['fEpochInitLevel'], #val
+    header['fEpochLevelInc'], #val_inc
+
+    header['lEpochInitDuration'], #time
+    header['lEpochDurationInc'], #time_inc
+    ))
+
+    header['lPreTriggerSamples'] #not sure what this is actually for...
+
+    header['nDigitalEnable']
+    header['nActiveDACChannel']
+    header['nDigitalValue']
+    header['nDigitalHolding']
+
+
+    def get_val_samp(loop_n,et,val,vi,samps,si):
+        value=val+vi*loop_n
+        nsamples=samps+si*loop_n
+        return value,nsamples
+
+    def build_traces(nloops,wave):
+        channels={}
+        for chan in range(len(chans_on)):
+            channels[chan]=[]
+            for loop_n in range(nloops):
+                samps_start=0
+                trace=np.zeros(len_base/2)
+                for epoch in range(10*chan,10*(chan+1)):
+                    value,samps_end=get_val_samp(loop_n,*wave[:,epoch])
+                    trace[samps_start:samps_end]=value
+                    samps_start=samps_end
+                channels[chan].append(trace)
+        return channels
+
+    return build_traces(nloops,wave)
+
+
+
 def find_rs_test(header):
-    #enabled=header['listDACInfo']['nWaveformEnable'] #only in abf2 :/
+    enabled=header['nWaveformEnable'] #turns out I just havent properly updated neo at lab >_<
     step_size=header['fEpochInitLevel']
     cmds_steps=[ step_size[:10] , step_size[10:] ] #split the command channels in half
     volts=[]
@@ -323,6 +374,57 @@ def get_tmp_path(): #FIXME move to utils or something
             return  None #'T:/asdf/' #FIXME
 
 def main():
+
+    test_files=[
+        '2013_12_13_0045.abf',
+        '2013_12_13_0046.abf',
+        '2013_12_13_0047.abf',
+        '2013_12_13_0048.abf',
+        '2013_12_13_0049.abf',
+        '2013_12_13_0050.abf',
+        '2013_12_13_0051.abf',
+        '2013_12_13_0052.abf',
+        '2013_12_13_0053.abf',
+        '2013_12_13_0054.abf',
+        '2013_12_13_0055.abf',
+        '2013_12_13_0056.abf',
+        '2013_12_13_0057.abf',
+        '2013_12_13_0058.abf',
+        '2013_12_13_0059.abf',
+        '2013_12_13_0060.abf',
+        '2013_12_13_0061.abf',
+        '2013_12_13_0062.abf',
+        '2013_12_13_0063.abf',
+        '2013_12_13_0064.abf',
+        '2013_12_13_0065.abf',
+        '2013_12_13_0066.abf',
+        '2013_12_13_0067.abf',
+        '2013_12_13_0068.abf',
+    ]
+    dat_dir='/home/tom/mlab_data/clampex/'
+    test_files=os.listdir(dat_dir)
+
+    fig=plt.figure(figsize=(10,10))
+    for filename in test_files:
+        header=AxonIO(dat_dir+filename).read_header()
+        chans=build_waveform(header)
+        n_chans=len(chans)
+        for chan,traces in chans.items():
+            plt.subplot(2,1,chan+1)
+            plt.title(chan)
+            tmax=0
+            for trace in traces:
+                plt.plot(trace,'k-')
+                nmax=np.max(trace)
+                if nmax > tmax:
+                    tmax = nmax
+            plt.ylim(-1.2*tmax,1.2*tmax)
+        plt.savefig('/tmp/test%s.png'%filename[-8:-4])
+        plt.clf()
+
+    
+
+def _main():
     from sqlalchemy.orm import Session
     from database.table_logic import logic_StepEdge
     from database.engines import engine
