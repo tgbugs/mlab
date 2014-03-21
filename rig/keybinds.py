@@ -58,7 +58,8 @@ def rigDict():
                     'I':'showDisp', #FIXME Mod, Ctrl etc... :/
                     #'s':'setSpeedDef',
                     'g':'getPos',
-                    'G':'getWT_getPos', #FIXME some subjects dont move?
+                    'G':'getPosWrite',
+                    #'G':'getWT_getPos', #FIXME some subjects dont move?
                     'f':'gotoMark',
                     '\'':'gotoMark',
                     #'r':'read',

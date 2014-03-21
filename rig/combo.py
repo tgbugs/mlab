@@ -80,6 +80,9 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
         self.setVCholdON()
         self.getBrokenIn()
 
+    def getPosWrite(self):
+        self.newMetaData(self.getPos(),self.c_target,self.getPos.mds)
+
     def record_abf_full(self,analysis_function=lambda df:None):
         self.record()
         self.c_datafile=self.newDataFile('abf',
