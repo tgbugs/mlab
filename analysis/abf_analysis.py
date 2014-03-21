@@ -67,6 +67,12 @@ def build_waveform(header):
     header['nDigitalValue']
     header['nDigitalHolding']
 
+    #start_samp=header['lSynchArrayPtr']
+
+    #sample_offset=header['nFileStartMillisecs'] #FIXME where is this number hiding!!!
+    #sample_offset=200
+    #sample_offset=header['lActualAcqLength']*(200/12000)
+    sample_offset=7816 #TODO figure out where these bloody things come from :/
 
     def get_val_samp(loop_n,et,val,vi,samps,si):
         value=val+vi*loop_n
@@ -81,9 +87,10 @@ def build_waveform(header):
                 samps_start=0
                 trace=np.zeros(len_base/2)
                 for epoch in range(10*chan,10*(chan+1)):
-                    value,samps_end=get_val_samp(loop_n,*wave[:,epoch])
-                    trace[samps_start:samps_end]=value
-                    samps_start=samps_end
+                    value,samps_delta=get_val_samp(loop_n,*wave[:,epoch])
+                    #print(epoch,value,samps_delta)
+                    trace[samps_start+sample_offset:samps_start+samps_delta+sample_offset]=value
+                    samps_start+=samps_delta
                 channels[chan].append(trace)
         return channels
 
@@ -386,6 +393,8 @@ def main():
         '2013_12_13_0052.abf',
         '2013_12_13_0053.abf',
         '2013_12_13_0054.abf',
+    ]
+    more=[
         '2013_12_13_0055.abf',
         '2013_12_13_0056.abf',
         '2013_12_13_0057.abf',
@@ -402,15 +411,23 @@ def main():
         '2013_12_13_0068.abf',
     ]
     dat_dir='/home/tom/mlab_data/clampex/'
-    test_files=os.listdir(dat_dir)
+    #test_files=os.listdir(dat_dir)
 
     fig=plt.figure(figsize=(10,10))
     for filename in test_files:
-        header=AxonIO(dat_dir+filename).read_header()
+        raw=AxonIO(dat_dir+filename)
+        header=raw.read_header()
+        print(repr(header))
+        blk=raw.read_block()
         chans=build_waveform(header)
         n_chans=len(chans)
+        scale=40
         for chan,traces in chans.items():
-            plt.subplot(2,1,chan+1)
+            plt.subplot(4,1,chan*2+1)
+            for s in blk.segments:
+                plt.plot(s.analogsignals[chan].base,'r-',linewidth=.5)
+            plt.xlim(0,len(traces[0])/scale)
+            plt.subplot(4,1,(chan+1)*2)
             plt.title(chan)
             tmax=0
             for trace in traces:
@@ -418,7 +435,8 @@ def main():
                 nmax=np.max(trace)
                 if nmax > tmax:
                     tmax = nmax
-            plt.ylim(-1.2*tmax,1.2*tmax)
+            #plt.ylim(-1.2*tmax,1.2*tmax)
+            plt.xlim(0,len(traces[0])/scale)
         plt.savefig('/tmp/test%s.png'%filename[-8:-4])
         plt.clf()
 
