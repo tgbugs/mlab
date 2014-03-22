@@ -20,10 +20,10 @@ class HasMirrors: #FIXME this should validate that they actually *are* mirrors?
                 backref='mirrors_to_here'
                 )
 
-    def validate_mirror(self,repository):
+    #def validate_mirror(self,repository):
         #TODO FIXME how to actually do this...
-        if repository.origin_files:
-            return False
+        #if repository.origin_files:
+            #return False
 
 
     @property

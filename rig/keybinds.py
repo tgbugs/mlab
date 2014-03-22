@@ -124,6 +124,7 @@ def clxDict():
                          #'v':'view', #FIXME try not to have things overlap >_<
                          'g':'getStatus',
                          's':'stop_rec',
+                         'd':'record_abf_pos',
                          #'m':'startMembTest',
                          ' ':{'clxFuncs':{0:'getSub_record'},
                               'espFuncs':{1:'getWT_getPos'},
@@ -151,7 +152,7 @@ def mccDict():
                     '2':'set_hs1',
                     #'3':'set_hsAll',
                     '0':'allIeZ', #FIXME make this generalize by allow a list of the headstages!
-                    'n':'allVCnoHold',
+                    #'n':'allVCnoHold',
                     #'3':'allVChold_60',
                     #'4':'allICnoHold',
                     #'5':'testZtO_75',

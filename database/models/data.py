@@ -338,7 +338,7 @@ class File(HasNotes, HasProperties, HasMetaData, Base, HasAnalysis): #REALLY GOO
         try:
             return lrl[0]
         except:
-            return None #TODO I think this is correct, if there is no local repo we will handle that elsewhere
+            return self.origin_repo #None #TODO I think this is correct, if there is no local repo we will handle that elsewhere
     @property
     def local_path(self):
         return self.local_repo.path+self.filename

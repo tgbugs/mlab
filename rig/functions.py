@@ -442,7 +442,10 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
     def newDataFile(self,extension,experiment,subjects=[],dfs=None): #FIXME need other selectors eg: repository >_<
         repo,dfs=self.getRepoDFS(extension)
         #experiment=Get_newest_id(Experiment) #FIXME unfinished?
-        filename=Get_newest_file(repo.path,extension) #FIXME this can be faster than the snapshot! FIXME race conditions!!!!
+        rpath=repo.path
+        if rpath[2] == ':':
+            rpath = rpath[1:] #FIXME stupid windows paths
+        filename=Get_newest_file(rpath,extension) #FIXME this can be faster than the snapshot! FIXME race conditions!!!!
         print(filename,'will be added to the current experiment!')
         new_df=DataFile(filename=filename,url=repo.url,datafilesource_id=dfs.id,
                             experiment_id=experiment.id,Subjects=subjects)
@@ -1388,7 +1391,7 @@ class espFuncs(kCtrlObj):
 
 @datafile_maker
 class guiFuncs(kCtrlObj): #FIXME GOD DAMN IT now hardware interfaces and datafile makers are not sufficient because this gui could interface with a ton of stuff >_<
-    @new_DataFile('jpg') #TODO integrate this with the device and stick it in a dedicated paths config file, could look it up by program but...
+    #@new_DataFile('jpg') #TODO integrate this with the device and stick it in a dedicated paths config file, could look it up by program but...
     def getCameraImage(self): #XXX: getSub_getCameraImage via df maker
         takeScreenCap()
         sleep(1) #ICK some day a callback FIXME

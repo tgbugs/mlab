@@ -30,11 +30,14 @@ def get_local_abf_path(hostname,osname,program=None): #FIXME make this not hardc
     return fpath
 
 def Get_newest_file(_path,extension): #FIXME TODO: I think the easiest way to do this is just to have watched folders with filetypes to watch, and they can be recursive, and then we can just call a 'go check for changes' function
+    #FIXME THIS IS APHABETICAL!!
     print(_path,extension)
     files=listdir(_path)
     ext_files=[file for file in files if file[-3:]==extension]
     ext_files.sort() #FIXME make sure the filenames order correctly
     out=ext_files[-1] #get the last/newest file
+    #if out[2] == ':':
+        #out = out[1:] #FIXME stupid windows paths
     return out
 
 

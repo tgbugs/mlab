@@ -16,7 +16,7 @@ def update_online_res_dict(thing,results_dict): #FIXME this might go in the 'dat
 
 #Online analysis
 def abf_basic_vc_analysis(datafile): #TODO dump the online stats to the DB?
-    Taus,Rss,Rs_ests,Rms=print_tp_stats(datafile.local_path)
+    Taus,Rss,Rs_ests,Rms=print_tp_stats(datafile.local_path) #FIXME datafile.local path is not having the / dropped for some reason!
     new_results_dict={
             'taus':Taus,
             'rss':Rss,

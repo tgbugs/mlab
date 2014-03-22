@@ -78,7 +78,7 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
         self.autoCap()
         self.getKbdHit('hit a key when you bump a cell')
         self.setVCholdON()
-        self.getBrokenIn()
+        self.getBrokenIn() #FIXME make sure to set everything back to 0!
 
     def getPosWrite(self):
         self.newMetaData(self.getPos(),self.c_target,self.getPos.mds)
@@ -88,9 +88,14 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
         self.c_datafile=self.newDataFile('abf',
                                          self.c_experiment,
                                          self.c_cells)
+        self.c_target=self.c_datafile
         self.MCCstateToDataFile()
         self.wait_till_done()
         self.spawn_online_analysis(self.c_datafile,analysis_function)
+
+    def record_abf_pos(self):
+        self.record_abf_full()
+        self.getPosWrite()
 
     def current_steps_01(self): #TODO make this autodetect the number of active chans
         self.allICnoHold()
