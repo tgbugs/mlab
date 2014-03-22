@@ -341,7 +341,10 @@ class File(HasNotes, HasProperties, HasMetaData, Base, HasAnalysis): #REALLY GOO
             return self.origin_repo #None #TODO I think this is correct, if there is no local repo we will handle that elsewhere
     @property
     def local_path(self):
-        return self.local_repo.path+self.filename
+        path=self.local_repo.path+self.filename
+        if path[2] == ':':
+            path = path[1:] #after running fixes.py shouldnt need this anymore... SANITIZE YOUR INPUTS PEOPLE
+        return path
             
     creationDateTime=Column(DateTime,default=datetime.now)
     ident=Column(String) #used for inheritance

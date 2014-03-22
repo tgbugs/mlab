@@ -72,7 +72,9 @@ def build_waveform(header):
     #sample_offset=header['nFileStartMillisecs'] #FIXME where is this number hiding!!!
     #sample_offset=200
     #sample_offset=header['lActualAcqLength']*(200/12000)
-    sample_offset=7816 #TODO figure out where these bloody things come from :/
+    #sample_offset=get_protocol_offsets([]) #7816 #TODO figure out where these bloody things come from :/
+    prot_name=header['sProtocolPath'].split(b'/')[-1].decode('utf-8')
+    offset=get_protocol_offsets(prot_name)
 
     def get_val_samp(loop_n,et,val,vi,samps,si):
         value=val+vi*loop_n
@@ -82,7 +84,10 @@ def build_waveform(header):
     def build_traces(nloops,wave):
         channels={}
         for chan in range(len(chans_on)):
-            channels[chan]=[]
+            if chans_on[chan]:
+                channels[chan]=[]
+            else:
+                continue
             for loop_n in range(nloops):
                 samps_start=0
                 trace=np.zeros(len_base/2)
@@ -306,7 +311,7 @@ def get_protocol_offsets(protocol_name): #TODO maintain the manual one elsewhere
     """ as I have found no way to find the initial samples before the first step in a protocol we do it manually :/ """
     OFFSETS={
     '01_led_whole_cell_voltage.pro':7816,
-    'current_step_-100-1000.pro':0,
+    '01_current_step_-100-1000.pro':0,
     '1_led_loose_patch.pro':0,
     '1_led_loose_cell.pro':0,
     }
@@ -381,6 +386,7 @@ def get_tmp_path(): #FIXME move to utils or something
             return  None #'T:/asdf/' #FIXME
 
 def main():
+    from rig.ipython import embed
 
     test_files=[
         '2013_12_13_0045.abf',
@@ -411,7 +417,7 @@ def main():
         '2013_12_13_0068.abf',
     ]
     dat_dir='/home/tom/mlab_data/clampex/'
-    #test_files=os.listdir(dat_dir)
+    test_files=np.sort(os.listdir(dat_dir))[-133:]
 
     fig=plt.figure(figsize=(10,10))
     for filename in test_files:
@@ -419,24 +425,38 @@ def main():
         header=raw.read_header()
         print(repr(header))
         blk=raw.read_block()
-        chans=build_waveform(header)
-        n_chans=len(chans)
-        scale=40
-        for chan,traces in chans.items():
-            plt.subplot(4,1,chan*2+1)
-            for s in blk.segments:
-                plt.plot(s.analogsignals[chan].base,'r-',linewidth=.5)
-            plt.xlim(0,len(traces[0])/scale)
-            plt.subplot(4,1,(chan+1)*2)
-            plt.title(chan)
-            tmax=0
-            for trace in traces:
-                plt.plot(trace,'k-')
-                nmax=np.max(trace)
-                if nmax > tmax:
-                    tmax = nmax
-            #plt.ylim(-1.2*tmax,1.2*tmax)
-            plt.xlim(0,len(traces[0])/scale)
+        waveforms=build_waveform(header)
+        scale=1
+        downsample=10
+
+        n_plots=len(waveforms)+len(blk.segments[0].analogsignals)
+
+        tmax=0
+        for s in blk.segments:
+            c_plot=1
+            count = 0
+            for signal in s.analogsignals:
+                plt.subplot(n_plots,1,c_plot)
+                c_plot+=1
+                plt.plot(signal.base[::downsample],'r-',linewidth=.5)
+                plt.title(signal.name)
+                plt.xlim(0,len(signal)/(scale*downsample))
+                plt.ylabel(signal.units)
+
+                waveform=waveforms.get(signal.channel_index)
+                if waveform:
+                    plt.subplot(n_plots,1,c_plot)
+                    c_plot+=1
+                    #plt.plot(waveform[count][::downsample],'k-')
+                    plt.plot(waveform[count],'k-')
+                    plt.title('Command')
+                    #plt.xlim(0,len(signal)/(scale*downsample))
+                    nmax=np.max(waveform)
+                    if nmax > tmax:
+                        tmax = nmax
+                    #plt.ylim(-1.2*tmax,1.2*tmax)
+            count+=1
+
         plt.savefig('/tmp/test%s.png'%filename[-8:-4])
         plt.clf()
 
