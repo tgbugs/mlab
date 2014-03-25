@@ -102,6 +102,20 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
         self.loadfile('01_current_step_-100-1000.pro') #spelling as usual
         self.record_abf_full()
 
+    def current_steps_0(self):
+        self.set_hs0()
+        self.setICnoHold()
+        self.loadfile('0_current_step_-100-1000.pro') #spelling as usual
+        self.record_abf_full()
+
+    def led_v_0(self):
+        self.set_hs0()
+        self.setVChold(-.075)
+
+        self.loadfile('0_led_whole_cell_voltage.pro') #spelling as usual
+        self.record_abf_full()
+
+
     def check_for_cells(self,n=1):
         #check that we have two cells!
         if len(self.c_cells) != n:
@@ -198,6 +212,18 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
 
         #run the loop
         self.move_loop(loop_func)
+
+    def practice_0(self):
+        wrapper_DAQ=self.make_DAQ_wrapper(0,4.2,500,100,1,'square')
+        print('Is the LED controller on? Are all the filters in the right place? Shutter open? Light block pointing the right direction?')
+        #setup the MCC
+        run_current=self.make_MCC_wrapper(self.current_steps_0)
+        run_led=self.make_MCC_wrapper(self.led_v_0)
+
+    
+        run_current()
+        wrapper_DAQ(run_led)
+
 
     def getMeanCellsPos(self): #TODO anaFuncs??? move this...
         plist=[c.position for c in self.c_cells]
