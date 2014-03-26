@@ -225,6 +225,43 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
         wrapper_DAQ(run_led)
 
 
+
+
+    @keyRequest
+    def do_led_pairs(self):
+        self.testZtO(-.075)
+        self.loadfile('pair_test_0-1.pro')
+        self.getKbdHit('Hit a key after adjusting the program so that the cell will spike')
+        self.record_abf_full()
+
+        self.testOtZ(-.075)
+        self.loadfile('pair_test_1-0.pro')
+        self.getKbdHit('Hit a key after adjusting the program so that the cell will spike')
+        self.record_abf_full()
+
+    #led on
+        self.testZtO(-.075)
+        self.loadfile('pair_test_led_0-1.pro')
+        self.getKbdHit('Hit a key after adjusting the program so that the cell will spike')
+        self.record_abf_full()
+
+        self.testOtZ(-.075)
+        self.loadfile('pair_test_led_1-0.pro')
+        self.getKbdHit('Hit a key after adjusting the program so that the cell will spike')
+        self.record_abf_full()
+
+    @keyRequest
+    def chlr_pairs(self):
+        #self.check_for_cells(2)
+        wrapper_DAQ=self.make_DAQ_wrapper(0,4.2,50,1,1,'square')
+        run_current=self.make_MCC_wrapper(self.current_steps_01)
+        run_base=self.make_MCC_wrapper(self.do_led_pairs)
+
+        run_current()
+        wrapper_DAQ(run_base)
+
+
+
     def getMeanCellsPos(self): #TODO anaFuncs??? move this...
         plist=[c.position for c in self.c_cells]
         return tuple(np.mean( np.vstack(plist) , axis=0 ))
@@ -272,4 +309,5 @@ class allFuncs(espFuncs,clxFuncs,mccFuncs,datFuncs,trmFuncs,guiFuncs,keyFuncs):
 
     def cleanup(self):
         super().cleanup()
+
 

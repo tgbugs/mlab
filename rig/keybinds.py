@@ -131,6 +131,7 @@ def clxDict():
                          },
                         #},
                          'r':'som_pyr_led_exp',
+                         'c':'chlr_pairs',
                          'p':'practice_0',
                          'e':'basic_char',
                         },
