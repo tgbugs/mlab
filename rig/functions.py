@@ -15,7 +15,12 @@ except:
 
 from threading import RLock, Thread
 from rig.gui import takeScreenCap #FIXME
-from matplotlib.pyplot import figure,plot,axis,savefig,switch_backend,annotate
+
+try:
+    from matplotlib.pyplot import figure,plot,axis,savefig,switch_backend,annotate
+except:
+    #only used in espFunc
+    pass
 #from IPython import embed
 try:
     import rpdb2
