@@ -72,11 +72,13 @@ def errPrint(self):
 
 #main class
 class clxControl: #clxmsg
-    def __init__(self):
+    def __init__(self,dllPath=None):
         #create a lock so that we can pass this around
         self.clxLock=RLock()
         #load the clx msg dll
         clxDllPath='C:/Axon/pCLAMP9.2/3rd Party Support/AxClampexMsg/' #change this to match install loc
+        if dllPath:
+            clxDllPath=dllPath
         #or put it in the same folder with your code! NOPE doesnt work!
         try:
             olddir=os.getcwd()
