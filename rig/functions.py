@@ -274,9 +274,13 @@ class kCtrlObj:
         except:
             pass
 
-from database.models import Person, Project, ExperimentType, Experiment, Cell, Slice, Mouse, DataFile, Repository, DataFileSource
-from datetime import datetime
-from database.imports import NoResultFound, MultipleResultsFound
+try:
+    from database.models import Person, Project, ExperimentType, Experiment, Cell, Slice, Mouse, DataFile, Repository, DataFileSource
+    from datetime import datetime
+    from database.imports import NoResultFound, MultipleResultsFound
+except:
+    #only needed for dat funcs, split these damned things out into their own files
+    pass
 class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
     #interface with the database TODO this should be able to run independently?
     """Put ANYTHING permanent that might be data in here"""
