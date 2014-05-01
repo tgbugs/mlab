@@ -16,8 +16,8 @@ What I found.
 Dependencies
 ------------
 
->= python 3.X (may run on 2.7.X but untested and may have hidden gotchas)
->= sqlalchemy-0.8
+\>= python 3.X (may run on 2.7.X but untested and may have hidden gotchas)
+\>= sqlalchemy-0.8
 psycopg2
 docopt
 numpy
