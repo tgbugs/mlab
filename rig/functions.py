@@ -4,9 +4,15 @@ import inspect as ins
 from sys import stdout,stdin
 from time import sleep
 from rig.ipython import embed
-from sqlalchemy.orm import object_session #FIXME vs database.imports?
-from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds, new_DataFile, get_local_extension_path
-from database.standards import Get_newest_file
+
+try: 
+    from sqlalchemy.orm import object_session #FIXME vs database.imports?
+    from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds, new_DataFile, get_local_extension_path
+    from database.standards import Get_newest_file
+except:
+    # assume we are running without database support at that we are not accidentally going to call something and crash
+    pass
+
 from threading import RLock, Thread
 from rig.gui import takeScreenCap #FIXME
 from matplotlib.pyplot import figure,plot,axis,savefig,switch_backend,annotate
