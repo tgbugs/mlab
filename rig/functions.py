@@ -658,7 +658,7 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
         self.c_experiment=None
         self.c_target=None
     
-@datafile_maker#@hardware_interface('Digidata 1322A')
+#@datafile_maker#@hardware_interface('Digidata 1322A')
 class clxFuncs(kCtrlObj):
     def __init__(self, modestate, clx=None, **kwargs):
         #if not clx:
@@ -783,7 +783,7 @@ class clxFuncs(kCtrlObj):
         return self
 
 
-@hardware_interface('mc1') #FIXME or is it software interface?
+#@hardware_interface('mc1') #FIXME or is it software interface?
 class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... telegraph?
     def __init__(self, modestate, mcc=None, **kwargs):
         #if not mcc:
@@ -1007,7 +1007,7 @@ class mccFuncs(kCtrlObj): #FIXME add a way to get the current V and I via... tel
             pass
 
 
-@hardware_interface('ESP300')
+#@hardware_interface('ESP300')
 class espFuncs(kCtrlObj):
     def __init__(self, modestate, esp=None, **kwargs):
         #if not esp:
@@ -1408,7 +1408,7 @@ class espFuncs(kCtrlObj):
 
 
 
-@datafile_maker
+#@datafile_maker
 class guiFuncs(kCtrlObj): #FIXME GOD DAMN IT now hardware interfaces and datafile makers are not sufficient because this gui could interface with a ton of stuff >_<
     #@new_DataFile('jpg') #TODO integrate this with the device and stick it in a dedicated paths config file, could look it up by program but...
     def getCameraImage(self): #XXX: getSub_getCameraImage via df maker
@@ -1433,7 +1433,7 @@ class keyFuncs(kCtrlObj):
         return 0
 
 
-@hardware_interface('keyboard')
+#@hardware_interface('keyboard')
 class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
     def __init__(self, modestate):
         self._keyThread=modestate.keyThread
