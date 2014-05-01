@@ -1,16 +1,20 @@
 from ctypes import *
 import os
 import inspect as ins
-from debug import TDB
 from time import sleep
 from threading import RLock
 #import rpdb2
 #rpdb2.settrace()
 
-tdb=TDB()
-printD=tdb.printD
-printFuncDict=tdb.printFuncDict
-tdbOff=tdb.tdbOff
+try:
+    from debug import TDB
+    tdb=TDB()
+    printD=tdb.printD
+    printFuncDict=tdb.printFuncDict
+    tdbOff=tdb.tdbOff
+except:
+    printD=print
+    printFuncDict=print
 
 #developed for api version 1.0.0.5
 

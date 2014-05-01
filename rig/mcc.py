@@ -2,15 +2,19 @@ from ctypes import *
 from time import sleep
 import inspect as ins
 import os
-from debug import TDB,ploc
 #import rpdb2
 #rpdb2.settrace()
 
-tdb=TDB()
-printD=tdb.printD
-printFD=tdb.printFuncDict
-tdbOff=tdb.tdbOff
-#tdbOff()
+try:
+    from debug import TDB,ploc
+    tdb=TDB()
+    printD=tdb.printD
+    printFD=tdb.printFuncDict
+    tdbOff=tdb.tdbOff
+    #tdbOff()
+except:
+    printD=print
+    printFD=print
 
 #developed for api version 1.0.0.7
 

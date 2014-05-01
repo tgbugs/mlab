@@ -20,6 +20,8 @@ from rig.clx import clxControl
 from rig.mcc import mccControl
 from rig.functions import clxFuncs,mccFuncs
 
+#todo all multiclamps
+
 class danteFuncs(clxFuncs,mccFuncs):
     def __init__(self,clx,mcc,csvFile,hsToCellDict):
         """ Some voodoo to get everything up and running without fixing other code """
@@ -42,6 +44,8 @@ class danteFuncs(clxFuncs,mccFuncs):
         ''' This is the function that writes the data we got to file '''
         #TODO format for this
 
+        #write to binary file, full mcc states, functions to get that back out to a csv
+
         return None
 
 
@@ -50,7 +54,18 @@ class danteFuncs(clxFuncs,mccFuncs):
         writeFile(csvPath)
         print(csvPath,hsToCellDict)
         #FIXME may need a way to stop execution in the middle???
+
+
+        #load mcc state
+        #load protocol
+        #wait for key input or cancel
+        #record mcc state, protocol name, and cells
+        #run protocol
+
         return None
+
+
+#structure for associating protocols to mcc settings
 
 def main():
     #define our constants

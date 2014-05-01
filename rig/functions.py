@@ -3,7 +3,6 @@ import datetime
 import inspect as ins
 from sys import stdout,stdin
 from time import sleep
-from debug import TDB,ploc
 from rig.ipython import embed
 from sqlalchemy.orm import object_session #FIXME vs database.imports?
 from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds, new_DataFile, get_local_extension_path
@@ -17,10 +16,15 @@ try:
 except:
     pass
 
-tdb=TDB()
-printD=tdb.printD
-printFD=tdb.printFuncDict
-tdb.off()
+try:
+    from debug import TDB,ploc
+    tdb=TDB()
+    printD=tdb.printD
+    printFD=tdb.printFuncDict
+    tdb.off()
+except:
+    printD=print
+    printFD=print
 
 #file to consolidate all the different functions I want to execute using the xxx.Control classes
 #TODO this file needs a complete rework so that it can pass data to the database AND so that it can be used by keyboard AND so that it can be used by experiment scripts... means I may need to split stuff up? ;_;
