@@ -7,7 +7,7 @@ from rig.ipython import embed
 
 try: 
     from sqlalchemy.orm import object_session #FIXME vs database.imports?
-    from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds, new_DataFile, get_local_extension_path
+    from database.decorators import Get_newest_id, datafile_maker, new_abf_DataFile, hardware_interface, is_mds, new_DataFile, get_local_extension_path #FIXME get rid of these
     from database.standards import Get_newest_file
 except:
     # assume we are running without database support at that we are not accidentally going to call something and crash
@@ -296,6 +296,7 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
         self.sLock=RLock() #a lock for the session, see if we need it
         #session.close()
 
+    """
     def getRepoDFS(self,extension,dfs_name='clampex 9.2',url=None): #FIXME make this persistent on init?? TODO fix this so that it actually gets the dfs >_<
         if not url:
             hostname,fpath=get_local_extension_path(extension)
@@ -317,6 +318,7 @@ class datFuncs(kCtrlObj): #FIXME split this out into expFuncs and datFuncs?
                 raise
         #print(repo,dfs.name)
         return repo,dfs
+    """
 
     def add_com_sess(self,obj_to_add):
         self.session.add(obj_to_add)
@@ -1035,7 +1037,7 @@ class espFuncs(kCtrlObj):
         #self.EspXDataSource=None
         #self.EspYDataSource=None
 
-    @is_mds('m','m','ESP300',5)
+    #@is_mds('m','m','ESP300',5)
     def getPos(self):
         """ get the (x,y) position of the eps300 """
         #may want to demand a depth input (which can be bank)
@@ -1455,7 +1457,7 @@ class trmFuncs(kCtrlObj): #FIXME THIS NEEDS TO BE IN THE SAME THREAD
                 #setattr(self,name,printwrap(getattr(self,name)))
                 #setattr(getattr(self,name),'__name__',name)
 
-    @is_mds('u','m','BX51WI',0)
+    #@is_mds('u','m','BX51WI',0)
     @keyRequest
     def getDistance_um(self):
         """ get a distance in um in this case read from the olympus bx51wi wheel """
