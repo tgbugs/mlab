@@ -41,6 +41,8 @@ def load_abf(filepath):
     return raw,block,segments,header
 
 def build_waveform(header):
+    if header['fFileVersionNumber'] >= 2.:
+        return {'':''}
     chans_on=header['nWaveformEnable'] #turns out I just havent properly updated neo at lab >_<
     header['nWaveformSource']
 
@@ -90,6 +92,7 @@ def build_waveform(header):
                 continue
             for loop_n in range(nloops):
                 samps_start=0
+                sample_offset=0 #FIXME
                 trace=np.zeros(len_base/2)
                 for epoch in range(10*chan,10*(chan+1)):
                     value,samps_delta=get_val_samp(loop_n,*wave[:,epoch])
@@ -311,9 +314,13 @@ def get_protocol_offsets(protocol_name): #TODO maintain the manual one elsewhere
     """ as I have found no way to find the initial samples before the first step in a protocol we do it manually :/ """
     OFFSETS={
     '01_led_whole_cell_voltage.pro':7816,
+    '0_led_whole_cell_voltage_single.pro':7816,
+    '1_led_whole_cell_voltage_single.pro':7816,
     '01_current_step_-100-1000.pro':0,
+    '0_current_step_-100-1000.pro':0,
     '1_led_loose_patch.pro':0,
     '1_led_loose_cell.pro':0,
+    '0_led_loose_patch.pro':0,
     }
     return OFFSETS[protocol_name]
 
@@ -416,18 +423,30 @@ def main():
         '2013_12_13_0067.abf',
         '2013_12_13_0068.abf',
     ]
-    dat_dir='/home/tom/mlab_data/clampex/'
-    test_files=np.sort(os.listdir(dat_dir))[-133:]
+
+    test_files=[
+'/mnt/tstr/db/Dropbox/mlab/chlr project/20140305_0011 Cs.abf',
+'/mnt/str/tom/mlab_data/clampex/2014_03_21_0120.abf', #this file is an example of the sampling seq bug
+'/mnt/str/tom/mlab_data/clampex/13n29011.abf',
+    ]
+
+    #dat_dir='/home/tom/mlab_data/clampex/'
+    #test_files=np.sort(os.listdir(dat_dir))[-133:]
 
     fig=plt.figure(figsize=(10,10))
     for filename in test_files:
-        raw=AxonIO(dat_dir+filename)
+        #raw=AxonIO(dat_dir+filename)
+        raw=AxonIO(filename)
         header=raw.read_header()
-        print(repr(header))
+        #print(repr(header))
         blk=raw.read_block()
         waveforms=build_waveform(header)
         scale=1
         downsample=10
+
+        embed()
+        #break
+
 
         n_plots=len(waveforms)+len(blk.segments[0].analogsignals)
 
